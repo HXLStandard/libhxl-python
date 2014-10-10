@@ -174,10 +174,13 @@ class HXLReader:
             return None
 
     def parseHashtag(self, sourceColumnNumber, rawString):
+        print "Checking " + rawString + " for a hashtag"
         tagRegexp = '(#[a-zA-z0-9_]+)(?:\/([a-zA-Z]{2}))?'
-        fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?\s*\$';
+        fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?\s*$';
         result = re.match(fullRegexp, rawString)
         if result != None:
+            print "Match!"
+            exit
             col1 = HXLColumn(result.group(1), result.group(2))
             col2 = Null
             if result.group(3):
@@ -187,7 +190,8 @@ class HXLReader:
                 colSpec = HXLColSpec(sourceColumnNumber, col1, None)
             return colSpec
         else:
-            return 0
+            print "Failed"
+            return False
 
     def prettyTag(self, hxlTag):
         hxlTag = re.replace('^#', '', hxlTag)
