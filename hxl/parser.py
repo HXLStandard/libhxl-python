@@ -9,11 +9,14 @@ Documentation: http://hxlstandard.org
 
 import csv
 
-class HXLReader:
+class hxlreader:
     """Read HXL data from a file"""
 
     def __init__(self, source):
-        self.source = source
+        self.csvreader = csv.reader(source)
 
-    def read(self):
-        print 'hello'
+    def next(self):
+        return self.csvreader.next()
+
+    def __iter__(self):
+        return self;
