@@ -1,8 +1,8 @@
-from hxl.parser import hxlreader
+from hxl.parser import HXLReader
 import pprint
 import sys
 
-reader = hxlreader(sys.stdin)
+reader = HXLReader(sys.stdin)
 
 for row in reader:
     print(row)
