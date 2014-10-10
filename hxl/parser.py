@@ -24,7 +24,8 @@ class HXLColSpec:
     column = None
     fixedColumn = None
     fixedValue = None
-    def __init__(self, column, fixedColumn, fixedValue):
+    def __init__(self, sourceColumnNumber, column=None, fixedColumn=None, fixedValue=None):
+        self.sourceColumnNumber = sourceColumnNumber
         self.column = column
         self.fixedColumn = fixedColumn
         self.fixedValue = fixedValue
@@ -163,8 +164,8 @@ class HXLReader:
                 else:
                     return None
             else:
-                colSpec = HXLColSpec(sourceColumnNumber, None, None)
-                colSpec.column = HXLColumn(None, None, None)
+                colSpec = HXLColSpec(sourceColumnNumber)
+                colSpec.column = HXLColumn()
             tableSpec.add(colSpec)
             ++sourceColumnNumber
 
@@ -174,27 +175,23 @@ class HXLReader:
             return None
 
     def parseHashtag(self, sourceColumnNumber, rawString):
-        print "Checking " + rawString + " for a hashtag"
         tagRegexp = '(#[a-zA-z0-9_]+)(?:\/([a-zA-Z]{2}))?'
-        fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?\s*$';
+        fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?$';
         result = re.match(fullRegexp, rawString)
         if result != None:
-            print "Match!"
-            exit
             col1 = HXLColumn(result.group(1), result.group(2))
-            col2 = Null
+            col2 = None
             if result.group(3):
                 col2 = HXLColumn(result.group(3), result.group(4))
                 colSpec = HXLColSpec(sourceColumnNumber, col2, col1)
             else:
-                colSpec = HXLColSpec(sourceColumnNumber, col1, None)
+                colSpec = HXLColSpec(sourceColumnNumber, col1)
             return colSpec
         else:
-            print "Failed"
             return False
 
     def prettyTag(self, hxlTag):
-        hxlTag = re.replace('^#', '', hxlTag)
-        hxlTag = re.replace('_(date|deg|id|link|num)$', '', hxlTag)
-        hxlTag = re.replace('_', ' ', hxlTag)
+        hxlTag = re.sub('^#', '', hxlTag)
+        hxlTag = re.sub('_(date|deg|id|link|num)$', '', hxlTag)
+        hxlTag = re.sub('_', ' ', hxlTag)
         return hxlTag.capitalize()

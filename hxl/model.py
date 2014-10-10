@@ -15,7 +15,7 @@ class HXLColumn:
     languageCode = None
     headerText = None
 
-    def __init__(self, hxlTag, languageCode, headerText):
+    def __init__(self, hxlTag=None, languageCode=None, headerText=None):
         self.hxlTag = hxlTag
         self.languageCode = languageCode
         self.headerText = headerText
@@ -35,12 +35,13 @@ class HXLRow:
 
     Implements the iterator convention.
     """
-    data = []
+    data = None
     rowNumber = -1
     sourceRowNumber = -1
     iteratorIndex = -1
 
-    def __init__(self, rowNumber, sourceRowNumber):
+    def __init__(self, data, rowNumber=None, sourceRowNumber=None):
+        self.data = data
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
 
