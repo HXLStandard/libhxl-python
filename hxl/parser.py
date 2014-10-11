@@ -30,12 +30,12 @@ class HXLTableSpec:
                 n += 1
         return n
 
-    def getFixedPosition(self, n):
+    def getRawPosition(self, disaggregationPosition):
         for pos, colSpec in enumerate(self.colSpecs):
-            if n == 0:
+            if colSpec.fixedColumn:
+                disaggregationPosition -= 1
+            if disaggregationPosition < 0:
                 return pos
-            else:
-                --n
         return -1
 
     def __str__(self):
@@ -83,7 +83,7 @@ class HXLReader:
         self.lastHeaderRow = None
         self.currentRow = None
         self.rawData = None
-        self.disaggregationPosition = -1
+        self.disaggregationPosition = 0
 
     def __iter__(self):
         return self;
@@ -97,7 +97,6 @@ class HXLReader:
         # If we don't have a tableSpec yet (row of HXL tags), scan for one
         if self.tableSpec == None:
             self.tableSpec = self.parseTableSpec()
-            self.disaggregationPosition = 0
 
         # Read more raw data unless we're in the middle of generating virtual rows
         # from compact-disaggregated syntax
@@ -130,21 +129,22 @@ class HXLReader:
                 # There's a fixed column involved
                 if not seenFixed:
                     columnNumber += 1
-                    fixedPosition = self.tableSpec.getFixedPosition(self.disaggregationPosition)
+                    rawPosition = self.tableSpec.getRawPosition(self.disaggregationPosition)
                     row.append(HXLValue(
-                            self.tableSpec.colSpecs[fixedPosition].fixedColumn,
-                            self.tableSpec.colSpecs[fixedPosition].fixedValue,
+                            self.tableSpec.colSpecs[rawPosition].fixedColumn,
+                            self.tableSpec.colSpecs[rawPosition].fixedValue,
                             columnNumber,
                             sourceColumnNumber
                             ))
                     columnNumber += 1
                     row.append(HXLValue(
-                            self.tableSpec.colSpecs[fixedPosition].column,
-                            self.rawData[fixedPosition],
+                            self.tableSpec.colSpecs[rawPosition].column,
+                            self.rawData[rawPosition],
                             columnNumber,
                             sourceColumnNumber
                             ))
                     seenFixed = True
+                    self.disaggregationPosition += 1
             else:
                 # regular column
                 columnNumber += 1
@@ -155,7 +155,6 @@ class HXLReader:
                         sourceColumnNumber
                         ))
 
-        self.disaggregationPosition += 1
         return row
 
     def parseTableSpec(self):
