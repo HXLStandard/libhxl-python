@@ -27,17 +27,15 @@ class HXLTableSpec:
         n = 0;
         for colSpec in self.colSpecs:
             if colSpec.fixedColumn:
-                ++n
+                n += 1
         return n
 
     def getFixedPosition(self, n):
-        pos = 0
-        for colSpec in self.colSpecs:
+        for pos, colSpec in enumerate(self.colSpecs):
             if n == 0:
                 return pos
             else:
                 --n
-            ++pos
         return -1
 
     def __str__(self):
@@ -110,7 +108,7 @@ class HXLReader:
             self.disaggregationPosition = 0
 
         # Next logical row
-        ++self.rowNumber
+        self.rowNumber += 1
 
         # The row we're going to populate
         row = HXLRow(self.rowNumber, self.sourceRowNumber)
@@ -131,7 +129,7 @@ class HXLReader:
             if colSpec.fixedColumn:
                 # There's a fixed column involved
                 if not seenFixed:
-                    ++columnNumber
+                    columnNumber += 1
                     fixedPosition = self.tableSpec.getFixedPosition(self.disaggregationPosition)
                     row.append(HXLValue(
                             self.tableSpec.colSpecs[fixedPosition].fixedColumn,
@@ -139,7 +137,7 @@ class HXLReader:
                             columnNumber,
                             sourceColumnNumber
                             ))
-                    ++columnNumber
+                    columnNumber += 1
                     row.append(HXLValue(
                             self.tableSpec.colSpecs[fixedPosition].column,
                             self.rawData[fixedPosition],
@@ -149,7 +147,7 @@ class HXLReader:
                     seenFixed = True
             else:
                 # regular column
-                ++columnNumber
+                columnNumber += 1
                 row.append(HXLValue(
                         self.tableSpec.colSpecs[sourceColumnNumber].column,
                         self.rawData[sourceColumnNumber],
@@ -157,7 +155,7 @@ class HXLReader:
                         sourceColumnNumber
                         ))
 
-        ++self.disaggregationPosition
+        self.disaggregationPosition += 1
         return row
 
     def parseTableSpec(self):
@@ -241,7 +239,7 @@ class HXLReader:
         Parse a row of raw CSV data.
         Returns an array of strings.
         """
-        ++self.sourceRowNumber
+        self.sourceRowNumber += 1
         return self.csvreader.next()
 
     def prettyTag(self, hxlTag):
