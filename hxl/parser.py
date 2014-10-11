@@ -12,28 +12,13 @@ import re
 
 from model import HXLColumn, HXLRow, HXLValue
 
-class HXLColSpec:
-    """
-    Column specification for parsing a HXL CSV file
-
-    This class captures the way a column is encoded in the input CSV
-    file, which might be different from the logical structure of the
-    HXL data. Used only during parsing.
-    """
-    sourceColumnNumber = -1
-    column = None
-    fixedColumn = None
-    fixedValue = None
-    def __init__(self, sourceColumnNumber, column=None, fixedColumn=None, fixedValue=None):
-        self.sourceColumnNumber = sourceColumnNumber
-        self.column = column
-        self.fixedColumn = fixedColumn
-        self.fixedValue = fixedValue
-
 class HXLTableSpec:
+    """
+    Table metadata for parsing a HXL dataset
+    """
     colSpecs = []
 
-    def add(self, colSpec):
+    def append(self, colSpec):
         self.colSpecs.append(colSpec)
 
     def getDisaggregationCount(self):
@@ -52,6 +37,42 @@ class HXLTableSpec:
                 --n
             ++pos
         return -1
+
+    def __str__(self):
+        s = '<HXL tablespec';
+        for colSpec in self.colSpecs:
+            s += "\n  " + re.sub("\n", "\n  ", str(colSpec));
+        s += "\n>"
+        return s
+
+class HXLColSpec:
+    """
+    Column metadata for parsing a HXL CSV file
+
+    This class captures the way a column is encoded in the input CSV
+    file, which might be different from the logical structure of the
+    HXL data. Used only during parsing.
+    """
+    sourceColumnNumber = -1
+    column = None
+    fixedColumn = None
+    fixedValue = None
+
+    def __init__(self, sourceColumnNumber, column=None, fixedColumn=None, fixedValue=None):
+        self.sourceColumnNumber = sourceColumnNumber
+        self.column = column
+        self.fixedColumn = fixedColumn
+        self.fixedValue = fixedValue
+
+    def __str__(self):
+        s = "<HXL colspec";
+        s += "\n  main: " + str(self.column)
+        if (self.fixedColumn):
+            s += "\n  fixed: " + str(self.fixedColumn)
+            s += "\n  fixed value: " + str(self.fixedValue)
+        s += "\n  source column number: " + str(self.sourceColumnNumber)
+        s += "\n>"
+        return s
 
 class HXLReader:
     """
@@ -166,7 +187,7 @@ class HXLReader:
             else:
                 colSpec = HXLColSpec(sourceColumnNumber)
                 colSpec.column = HXLColumn()
-            tableSpec.add(colSpec)
+            tableSpec.append(colSpec)
             ++sourceColumnNumber
 
         if seenHeader:
