@@ -6,6 +6,6 @@
 #   sh run-tests.sh
 ########################################################################
 
-python -m unittest discover hxl
+python -m unittest discover tests
 
 # end

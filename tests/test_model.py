@@ -7,7 +7,7 @@ License: Public Domain
 """
 
 import unittest
-from model import HXLColumn, HXLRow, HXLValue
+from hxl.model import HXLColumn, HXLRow, HXLValue
 
 class TestColumn(unittest.TestCase):
 
