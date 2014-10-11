@@ -11,9 +11,6 @@ class HXLColumn:
     """
     The definition of a logical column in the HXL data.
     """ 
-    hxlTag = None
-    languageCode = None
-    headerText = None
 
     def __init__(self, hxlTag=None, languageCode=None, headerText=None):
         self.hxlTag = hxlTag
@@ -40,11 +37,9 @@ class HXLRow:
     """
     An iterable row of HXLValue objects in a HXL dataset.
     """
-    values = []
-    rowNumber = -1
-    sourceRowNumber = -1
 
     def __init__(self, rowNumber=None, sourceRowNumber=None):
+        self.values = []
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
 
@@ -65,10 +60,6 @@ class HXLValue:
     """
     A single HXL value at the intersection of a row and column
     """
-    column = None
-    content = None
-    columnNumber = -1
-    sourceColumnNumber = -1
 
     def __init__(self, column, content, columnNumber, sourceColumnNumber):
         self.column = column

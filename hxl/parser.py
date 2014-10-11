@@ -16,7 +16,9 @@ class HXLTableSpec:
     """
     Table metadata for parsing a HXL dataset
     """
-    colSpecs = []
+
+    def __init__(self):
+        self.colSpecs = []
 
     def append(self, colSpec):
         self.colSpecs.append(colSpec)
@@ -53,10 +55,6 @@ class HXLColSpec:
     file, which might be different from the logical structure of the
     HXL data. Used only during parsing.
     """
-    sourceColumnNumber = -1
-    column = None
-    fixedColumn = None
-    fixedValue = None
 
     def __init__(self, sourceColumnNumber, column=None, fixedColumn=None, fixedValue=None):
         self.sourceColumnNumber = sourceColumnNumber
@@ -79,19 +77,16 @@ class HXLReader:
     Read HXL data from a file
     """
 
-    source = None
-    tableSpec = None
-    sourceRowNumber = -1
-    rowNumber = -1
-    lastHeaderRow = None
-    currentRow = None
-
-    rawData = None
-    disaggregationCount = 0
-    disaggregationPosition = -1
-
     def __init__(self, source):
         self.csvreader = csv.reader(source)
+        self.tableSpec = None
+        self.sourceRowNumber = -1
+        self.rowNumber = -1
+        self.lastHeaderRow = None
+        self.currentRow = None
+        self.rawData = None
+        self.disaggregationCount = 0
+        self.disaggregationPosition = -1
 
     def __iter__(self):
         return self;
