@@ -28,7 +28,7 @@ class HXLTableSpec:
                 ++n
         return n
 
-    def getFixedPos(self, n):
+    def getFixedPosition(self, n):
         pos = 0
         for colSpec in self.colSpecs:
             if n == 0:
@@ -39,7 +39,7 @@ class HXLTableSpec:
         return -1
 
     def __str__(self):
-        s = '<HXL tablespec';
+        s = '<HXLTableSpec';
         for colSpec in self.colSpecs:
             s += "\n  " + re.sub("\n", "\n  ", str(colSpec));
         s += "\n>"
@@ -65,7 +65,7 @@ class HXLColSpec:
         self.fixedValue = fixedValue
 
     def __str__(self):
-        s = "<HXL colspec";
+        s = "<HXLColSpec";
         s += "\n  main: " + str(self.column)
         if (self.fixedColumn):
             s += "\n  fixed: " + str(self.fixedColumn)
@@ -97,11 +97,19 @@ class HXLReader:
         return self;
 
     def next(self):
+        """
+        Iterable function to return the next row of HXL values.
+        Returns a HXLRow, or raises StopIteration exception at end
+        """
+
+        # If we don't have a tableSpec yet (row of HXL tags), scan for one
         if self.tableSpec == None:
             self.tableSpec = self.parseTableSpec()
             self.disaggregationCount = self.tableSpec.getDisaggregationCount()
             self.disaggregationPosition = 0
 
+        # Read more raw data unless we're in the middle of generating virtual rows
+        # from compact-disaggregated syntax
         if self.disaggregationPosition >= self.disaggregationCount or not self.rawData:
             self.rawData = self.parseSourceRow()
             if (self.rawData == None):
@@ -109,12 +117,12 @@ class HXLReader:
             self.disaggregationPosition = 0
         ++self.rowNumber
 
-        data = []
+        row = HXLRow(self.rowNumber, self.sourceRowNumber)
         columnNumber = -1
-        seenFixed = 0
-        n = 0
-        for content in self.rawData:
-            colSpec = self.tableSpec.colSpecs[n]
+        seenFixed = False
+
+        for sourceColumnNumber, content in enumerate(self.rawData):
+            colSpec = self.tableSpec.colSpecs[sourceColumnNumber]
 
             if not colSpec.column.hxlTag:
                 continue
@@ -123,38 +131,37 @@ class HXLReader:
                 if not seenFixed:
                     ++columnNumber
                     fixedPosition = self.tableSpec.getFixedPosition(self.disaggregationPosition)
-                    data.append(HXLValue(
+                    row.append(HXLValue(
                             self.tableSpec.colSpecs[fixedPosition].fixedColumn,
                             self.tableSpec.colSpecs[fixedPosition].fixedValue,
                             columnNumber,
                             sourceColumnNumber
                             ))
                     ++columnNumber
-                    data.append(HXLValue(
+                    row.append(HXLValue(
                             self.tableSpec.colSpecs[fixedPosition].column,
                             self.rawData[fixedPosition],
                             columnNumber,
                             sourceColumnNumber
                             ))
-                    seenFixed = true
+                    seenFixed = True
                 else:
                     ++columnNumber
-                    data.append(HXLValue(
+                    row.append(HXLValue(
                             self.tableSpec.colSpecs[sourceColumnNumber].column,
                             self.rawData[sourceColumnNumber],
                             columnNumber,
                             sourceColumnNumber
                             ))
-                ++n
 
         ++self.disaggregationPosition
-        return HXLRow(data, self.rowNumber, self.sourceRowNumber)
-
-    def parseSourceRow(self):
-        ++self.sourceRowNumber
-        return self.csvreader.next()
+        return row
 
     def parseTableSpec(self):
+        """
+        Go fishing for the HXL hashtag row.
+        Returns a HXLTableSpec on success. Throws an exception on failure.
+        """
         rawData = self.parseSourceRow()
         while rawData:
             tableSpec = self.parseHashtagRow(rawData)
@@ -164,9 +171,12 @@ class HXLReader:
                 self.lastHeaderRow = rawData
             rawData = self.parseSourceRow()
         raise Exception("HXL hashtag row not found")
-
     
     def parseHashtagRow(self, rawDataRow):
+        """
+        Try parsing the current raw CSV data row as a HXL hashtag row.
+        Returns a HXLTableSpec on success, or None on failure
+        """
         tableSpec = HXLTableSpec()
         seenHeader = 0
         sourceColumnNumber = 0
@@ -196,20 +206,42 @@ class HXLReader:
             return None
 
     def parseHashtag(self, sourceColumnNumber, rawString):
+        """
+        Attempt to parse a full hashtag specification.
+        May include compact disaggregated syntax
+        Returns a colspec or None
+        """
+
+        # Pattern for a single tag
         tagRegexp = '(#[a-zA-z0-9_]+)(?:\/([a-zA-Z]{2}))?'
+
+        # Pattern for full tag spec (optional second tag following '+')
         fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?$';
+
+        # Try a match
         result = re.match(fullRegexp, rawString)
-        if result != None:
+        if result:
             col1 = HXLColumn(result.group(1), result.group(2))
             col2 = None
+
             if result.group(3):
+                # There were two tags
                 col2 = HXLColumn(result.group(3), result.group(4))
                 colSpec = HXLColSpec(sourceColumnNumber, col2, col1)
             else:
+                # There was just one tag
                 colSpec = HXLColSpec(sourceColumnNumber, col1)
             return colSpec
         else:
-            return False
+            return None
+
+    def parseSourceRow(self):
+        """
+        Parse a row of raw CSV data.
+        Returns an array of strings.
+        """
+        ++self.sourceRowNumber
+        return self.csvreader.next()
 
     def prettyTag(self, hxlTag):
         hxlTag = re.sub('^#', '', hxlTag)

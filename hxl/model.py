@@ -32,30 +32,32 @@ class HXLColumn:
     def __str__(self):
         tag = self.getDisplayTag()
         if tag:
-            return '<HXL col ' + str(tag) + '>'
+            return '<HXLColumn ' + str(tag) + '>'
         else:
-            return '<HXL col>'
+            return '<HXLColumn>'
 
 class HXLRow:
     """
     An iterable row of HXLValue objects in a HXL dataset.
     """
-    values = None
+    values = []
     rowNumber = -1
     sourceRowNumber = -1
 
-    def __init__(self, values, rowNumber=None, sourceRowNumber=None):
-        self.values = values
+    def __init__(self, rowNumber=None, sourceRowNumber=None):
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
+
+    def append(self, value):
+        self.values.append(value)
 
     def __getitem__(self, index):
         return self.values[index]
 
     def __str__(self):
-        s = '<HXL row';
-        for value in self:
-            s += "\n  " + value
+        s = '<HXLRow';
+        for value in self.values:
+            s += "\n  " + str(value)
         s += "\n>"
         return s
 
@@ -75,9 +77,9 @@ class HXLValue:
         self.sourceColumnNumber = sourceColumnNumber
 
     def __str__(self):
-        s = '<HXL value'
+        s = '<HXLValue'
         if self.column:
-            s += ' ' + str(self.column.hashTag) + '=' + str(self.content)
+            s += ' ' + str(self.column.hxlTag) + '=' + str(self.content)
         s += '>'
         return s
 
