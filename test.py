@@ -5,4 +5,6 @@ import sys
 reader = HXLReader(sys.stdin)
 
 for row in reader:
-    print(row)
+    for value in row:
+        print(value)
+

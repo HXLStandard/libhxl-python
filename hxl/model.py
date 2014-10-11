@@ -31,26 +31,19 @@ class HXLColumn:
 
 class HXLRow:
     """
-    A row of data in a HXL dataset.
-
-    Implements the iterator convention.
+    An iterable row of HXLValue objects in a HXL dataset.
     """
-    data = None
+    values = None
     rowNumber = -1
     sourceRowNumber = -1
-    iteratorIndex = -1
 
-    def __init__(self, data, rowNumber=None, sourceRowNumber=None):
-        self.data = data
+    def __init__(self, values, rowNumber=None, sourceRowNumber=None):
+        self.values = values
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
 
-    def next(self):
-        ++self.iteratorIndex
-        return self.data[iteratorIndex]
-
-    def __iter__(self):
-        return self
+    def __getitem__(self, index):
+        return self.values[index]
 
 class HXLValue:
     """
