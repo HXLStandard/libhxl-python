@@ -51,6 +51,8 @@ class HXLRow:
 
     def __str__(self):
         s = '<HXLRow';
+        s += "\n  rowNumber: " + str(self.rowNumber)
+        s += "\n  sourceRowNumber: " + str(self.sourceRowNumber)
         for value in self.values:
             s += "\n  " + str(value)
         s += "\n>"
