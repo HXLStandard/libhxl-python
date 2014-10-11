@@ -29,6 +29,13 @@ class HXLColumn:
         else:
             return None
 
+    def __str__(self):
+        tag = self.getDisplayTag()
+        if tag:
+            return '<col ' + tag + '>'
+        else:
+            return '<col>'
+
 class HXLRow:
     """
     An iterable row of HXLValue objects in a HXL dataset.
@@ -45,6 +52,13 @@ class HXLRow:
     def __getitem__(self, index):
         return self.values[index]
 
+    def __str__(self):
+        s = "<row\n";
+        for value in self:
+            s += '  ' + value
+        s += '>'
+        return s
+
 class HXLValue:
     """
     A single HXL value at the intersection of a row and column
@@ -60,3 +74,5 @@ class HXLValue:
         self.columnNumber = columnNumber
         self.sourceColumnNumber = sourceColumnNumber
 
+    def __str__(self):
+        return '<value ' + self.column.hashTag + '=' + self.content + '>'
