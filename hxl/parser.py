@@ -64,11 +64,11 @@ class HXLColSpec:
 
     def __str__(self):
         s = "<HXLColSpec";
-        s += "\n  main: " + str(self.column)
+        s += "\n  column: " + str(self.column)
         if (self.fixedColumn):
-            s += "\n  fixed: " + str(self.fixedColumn)
-            s += "\n  fixed value: " + str(self.fixedValue)
-        s += "\n  source column number: " + str(self.sourceColumnNumber)
+            s += "\n  fixedColumn: " + str(self.fixedColumn)
+            s += "\n  fixedValue: " + str(self.fixedValue)
+        s += "\n  sourceColumnNumberumber: " + str(self.sourceColumnNumber)
         s += "\n>"
         return s
 
@@ -85,7 +85,6 @@ class HXLReader:
         self.lastHeaderRow = None
         self.currentRow = None
         self.rawData = None
-        self.disaggregationCount = 0
         self.disaggregationPosition = -1
 
     def __iter__(self):
@@ -100,29 +99,37 @@ class HXLReader:
         # If we don't have a tableSpec yet (row of HXL tags), scan for one
         if self.tableSpec == None:
             self.tableSpec = self.parseTableSpec()
-            self.disaggregationCount = self.tableSpec.getDisaggregationCount()
             self.disaggregationPosition = 0
 
         # Read more raw data unless we're in the middle of generating virtual rows
         # from compact-disaggregated syntax
-        if self.disaggregationPosition >= self.disaggregationCount or not self.rawData:
+        if self.disaggregationPosition >= self.tableSpec.getDisaggregationCount() or not self.rawData:
             self.rawData = self.parseSourceRow()
             if (self.rawData == None):
                 return None
             self.disaggregationPosition = 0
+
+        # Next logical row
         ++self.rowNumber
 
+        # The row we're going to populate
         row = HXLRow(self.rowNumber, self.sourceRowNumber)
+
         columnNumber = -1
         seenFixed = False
 
+        # Loop through the raw CSV data
         for sourceColumnNumber, content in enumerate(self.rawData):
+
+            # grab the specificationf o
             colSpec = self.tableSpec.colSpecs[sourceColumnNumber]
 
+            # We're reading only columns that have HXL tags
             if not colSpec.column.hxlTag:
                 continue
 
             if colSpec.fixedColumn:
+                # There's a fixed column involved
                 if not seenFixed:
                     ++columnNumber
                     fixedPosition = self.tableSpec.getFixedPosition(self.disaggregationPosition)
@@ -140,14 +147,15 @@ class HXLReader:
                             sourceColumnNumber
                             ))
                     seenFixed = True
-                else:
-                    ++columnNumber
-                    row.append(HXLValue(
-                            self.tableSpec.colSpecs[sourceColumnNumber].column,
-                            self.rawData[sourceColumnNumber],
-                            columnNumber,
-                            sourceColumnNumber
-                            ))
+            else:
+                # regular column
+                ++columnNumber
+                row.append(HXLValue(
+                        self.tableSpec.colSpecs[sourceColumnNumber].column,
+                        self.rawData[sourceColumnNumber],
+                        columnNumber,
+                        sourceColumnNumber
+                        ))
 
         ++self.disaggregationPosition
         return row
@@ -174,8 +182,7 @@ class HXLReader:
         """
         tableSpec = HXLTableSpec()
         seenHeader = 0
-        sourceColumnNumber = 0
-        for rawString in rawDataRow:
+        for sourceColumnNumber, rawString in enumerate(rawDataRow):
             rawString = rawString.strip()
             if rawString:
                 colSpec = self.parseHashtag(sourceColumnNumber, rawString)
@@ -193,7 +200,6 @@ class HXLReader:
                 colSpec = HXLColSpec(sourceColumnNumber)
                 colSpec.column = HXLColumn()
             tableSpec.append(colSpec)
-            ++sourceColumnNumber
 
         if seenHeader:
             return tableSpec
