@@ -12,7 +12,9 @@ from hxl.parser import HXLReader
 import sys
 
 reader = HXLReader(sys.stdin)
+
 for row in reader:
+    print "Row " + str(row.rowNumber)
     for value in row:
-        print(value)
+        print '  ' + str(value.column.hxlTag) + '=' + str(value.content)
 ```
