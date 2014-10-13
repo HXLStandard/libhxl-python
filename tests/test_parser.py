@@ -1,5 +1,5 @@
 """
-Unit tests for the hxl.model module
+Unit tests for the hxl.parser module
 David Megginson
 October 2014
 
