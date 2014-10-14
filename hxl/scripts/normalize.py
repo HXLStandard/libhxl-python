@@ -24,8 +24,8 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
+import csv
 from hxl.parser import HXLReader
-from hxl.writer import HXLWriter
 
 def normalize(input, output):
     """
@@ -33,15 +33,13 @@ def normalize(input, output):
     """
 
     parser = HXLReader(input)
-    writer = HXLWriter(output)
-    is_first = True
+    writer = csv.writer(output)
+
+    writer.writerow(parser.headers)
+    writer.writerow(parser.tags)
 
     for row in parser:
-        if is_first:
-            writer.writeHeaders(row)
-            writer.writeTags(row)
-            is_first = False
-        writer.writeData(row)
+        writer.writerow(row.data)
 
 # If run as script
 if __name__ == '__main__':
