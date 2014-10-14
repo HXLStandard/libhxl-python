@@ -16,17 +16,17 @@ class TestParser(unittest.TestCase):
 
     SAMPLE_FILE = 'sample-data/sample.csv'
     EXPECTED_ROW_COUNT = 8
-    EXPECTED_HEADERS = ['Sector/Cluster','Subsector',"Organización",'País','Sex','Targeted','Departamento/Provincia/Estado']
-    EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#country', '#sex', '#targeted_num', '#adm1']
+    EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organización','Sex','Targeted','País','Departamento/Provincia/Estado']
+    EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#sex', '#targeted_num', '#country', '#adm1']
     EXPECTED_CONTENT = [
-        ['WASH', 'Subsector 1', 'Org 1', 'Panamá', 'Hombres', '100', 'Los Santos'],
-        ['WASH', 'Subsector 1', 'Org 1', 'Panamá', 'Mujeres', '100', 'Los Santos'],
-        ['Salud', 'Subsector 2', 'Org 2', 'Colombia', 'Hombres', '', 'Cauca'],
-        ['Salud', 'Subsector 2', 'Org 2', 'Colombia', 'Mujeres', '', 'Cauca'],
-        ['Educación', 'Subsector 3', 'Org 3', 'Colombia', 'Hombres', '250', 'Chocó'],
-        ['Educación', 'Subsector 3', 'Org 3', 'Colombia', 'Mujeres', '300', 'Chocó'],
-        ['WASH', 'Subsector 4', 'Org 1', 'Venezuela', 'Hombres', '80', 'Amazonas'],
-        ['WASH', 'Subsector 4', 'Org 1', 'Venezuela', 'Mujeres', '95', 'Amazonas']
+        ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
+        ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
+        ['Salud', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
+        ['Salud', 'Vacunación', 'OMS', 'Mujeres', '', 'Colombia', 'Cauca'],
+        ['Educación', 'Formación de enseñadores', 'UNICEF', 'Hombres', '250', 'Colombia', 'Chocó'],
+        ['Educación', 'Formación de enseñadores', 'UNICEF', 'Mujeres', '300', 'Colombia', 'Chocó'],
+        ['WASH', 'Urbano', 'OMS', 'Hombres', '80', 'Venezuela', 'Amazonas'],
+        ['WASH', 'Urbano', 'OMS', 'Mujeres', '95', 'Venezuela', 'Amazonas']
     ]
 
     def setUp(self):
