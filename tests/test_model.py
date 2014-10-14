@@ -41,6 +41,9 @@ class TestRow(unittest.TestCase):
             value = HXLValue(HXLColumn(hxlTag), TestRow.CONTENT[columnNumber], columnNumber, columnNumber)
             self.row.append(value)
 
+    def test_data(self):
+        self.assertEquals(TestRow.CONTENT, self.row.data)
+
     def test_variables(self):
         self.assertEquals(TestRow.ROW_NUMBER, self.row.rowNumber)
         self.assertEquals(TestRow.SOURCE_ROW_NUMBER, self.row.sourceRowNumber)

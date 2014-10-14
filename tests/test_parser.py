@@ -14,7 +14,8 @@ class TestParser(unittest.TestCase):
 
     SAMPLE_FILE = 'sample-data/sample.csv'
     EXPECTED_ROW_COUNT = 8
-    EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#country', '#sex', '#targeted_num', '#adm1'];
+    EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organisation','Country','Sex','Targeted','Subregion']
+    EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#country', '#sex', '#targeted_num', '#adm1']
     EXPECTED_CONTENT = [
         ['WASH', 'Subsector 1', 'Org 1', 'Country 1', 'Males', '100', 'Region 1'],
         ['WASH', 'Subsector 1', 'Org 1', 'Country 1', 'Females', '100', 'Region 1'],
@@ -36,6 +37,10 @@ class TestParser(unittest.TestCase):
         for row in self.reader:
             row_count += 1
         self.assertEquals(TestParser.EXPECTED_ROW_COUNT, row_count)
+
+    def test_headers(self):
+        headers = self.reader.headers
+        self.assertEquals(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
         tags = self.reader.tags

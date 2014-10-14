@@ -83,11 +83,32 @@ class HXLReader:
         self.lastHeaderRow = None
         self.currentRow = None
         self.rawData = None
+        self.cachedHeaders = []
         self.cachedTags = []
         self.disaggregationPosition = 0
 
     def __iter__(self):
         return self;
+
+    @property
+    def headers(self):
+        """
+        Property function to get the row of HXL headers.
+        FIXME ridiculously over-complicated, due to the initial design
+        """
+        if (self.cachedHeaders):
+            return self.cachedHeaders
+        self.parseTableSpec()
+        seenFixed = False
+        for colSpec in self.tableSpec.colSpecs:
+            if colSpec.column.hxlTag:
+                if colSpec.fixedColumn and seenFixed:
+                    continue
+                if colSpec.fixedColumn:
+                    self.cachedHeaders.append(colSpec.fixedColumn.headerText)
+                    seenFixed = True
+                self.cachedHeaders.append(colSpec.column.headerText)
+        return self.cachedHeaders
 
     @property
     def tags(self):

@@ -42,9 +42,18 @@ class HXLRow:
         self.values = []
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
+        self.cachedData = []
 
     def append(self, value):
         self.values.append(value)
+
+    @property
+    def data(self):
+        if self.cachedData:
+            return self.cachedData
+        for value in self:
+            self.cachedData.append(value.content)
+        return self.cachedData
 
     def __getitem__(self, index):
         return self.values[index]
