@@ -18,3 +18,22 @@ for row in reader:
     for value in row:
         print '  ' + str(value.column.hxlTag) + '=' + str(value.content)
 ```
+
+Identity transformation in a pipeline (read from standard input, write to standard output):
+
+```
+import sys
+from hxl.parser import HXLReader
+from hxl.writer import HXLWriter
+
+parser = HXLReader(sys.stdin)
+writer = HXLWriter(sys.stdout)
+
+is_first = True
+for row in parser:
+    if is_first:
+        writer.writeHeaders(row)
+        writer.writeTags(row)
+        is_first = False
+    writer.writeData(row)
+```
