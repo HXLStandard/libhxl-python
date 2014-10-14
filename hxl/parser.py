@@ -83,10 +83,31 @@ class HXLReader:
         self.lastHeaderRow = None
         self.currentRow = None
         self.rawData = None
+        self.cachedTags = []
         self.disaggregationPosition = 0
 
     def __iter__(self):
         return self;
+
+    @property
+    def tags(self):
+        """
+        Property function to get the row of HXL tags.
+        FIXME ridiculously over-complicated, due to the initial design
+        """
+        if (self.cachedTags):
+            return self.cachedTags
+        self.parseTableSpec()
+        seenFixed = False
+        for colSpec in self.tableSpec.colSpecs:
+            if colSpec.column.hxlTag:
+                if colSpec.fixedColumn and seenFixed:
+                    continue
+                if colSpec.fixedColumn:
+                    self.cachedTags.append(colSpec.fixedColumn.hxlTag)
+                    seenFixed = True
+                self.cachedTags.append(colSpec.column.hxlTag)
+        return self.cachedTags
 
     def next(self):
         """
@@ -94,9 +115,8 @@ class HXLReader:
         Returns a HXLRow, or raises StopIteration exception at end
         """
 
-        # If we don't have a tableSpec yet (row of HXL tags), scan for one
-        if self.tableSpec == None:
-            self.tableSpec = self.parseTableSpec()
+        # Won't do anything if it already exists
+        self.parseTableSpec()
 
         # Read more raw data unless we're in the middle of generating virtual rows
         # from compact-disaggregated syntax
@@ -162,10 +182,17 @@ class HXLReader:
         Go fishing for the HXL hashtag row.
         Returns a HXLTableSpec on success. Throws an exception on failure.
         """
+
+        # If we already have it, return it
+        if (self.tableSpec):
+            return self.tableSpec
+
+        # OK, need to go fishing ...
         rawData = self.parseSourceRow()
         while rawData:
             tableSpec = self.parseHashtagRow(rawData)
             if (tableSpec != None):
+                self.tableSpec = tableSpec
                 return tableSpec
             else:
                 self.lastHeaderRow = rawData

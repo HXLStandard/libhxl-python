@@ -37,6 +37,10 @@ class TestParser(unittest.TestCase):
             row_count += 1
         self.assertEquals(TestParser.EXPECTED_ROW_COUNT, row_count)
 
+    def test_tags(self):
+        tags = self.reader.tags
+        self.assertEquals(TestParser.EXPECTED_TAGS, tags)
+
     def test_column_count(self):
         for row in self.reader:
             self.assertEquals(len(TestParser.EXPECTED_TAGS), len(row.values))
