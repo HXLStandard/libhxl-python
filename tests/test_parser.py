@@ -1,3 +1,4 @@
+#coding=UTF8
 """
 Unit tests for the hxl.parser module
 David Megginson
@@ -8,28 +9,29 @@ License: Public Domain
 
 import unittest
 import os
+import codecs
 from hxl.parser import HXLReader
 
 class TestParser(unittest.TestCase):
 
     SAMPLE_FILE = 'sample-data/sample.csv'
     EXPECTED_ROW_COUNT = 8
-    EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organisation','Country','Sex','Targeted','Subregion']
+    EXPECTED_HEADERS = ['Sector/Cluster','Subsector',"Organización",'País','Sex','Targeted','Departamento/Provincia/Estado']
     EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#country', '#sex', '#targeted_num', '#adm1']
     EXPECTED_CONTENT = [
-        ['WASH', 'Subsector 1', 'Org 1', 'Country 1', 'Males', '100', 'Region 1'],
-        ['WASH', 'Subsector 1', 'Org 1', 'Country 1', 'Females', '100', 'Region 1'],
-        ['Health', 'Subsector 2', 'Org 2', 'Country 2', 'Males', '', 'Region 2'],
-        ['Health', 'Subsector 2', 'Org 2', 'Country 2', 'Females', '', 'Region 2'],
-        ['Education', 'Subsector 3', 'Org 3', 'Country 2', 'Males', '250', 'Region 3'],
-        ['Education', 'Subsector 3', 'Org 3', 'Country 2', 'Females', '300', 'Region 3'],
-        ['WASH', 'Subsector 4', 'Org 1', 'Country 3', 'Males', '80', 'Region 4'],
-        ['WASH', 'Subsector 4', 'Org 1', 'Country 3', 'Females', '95', 'Region 4']
+        ['WASH', 'Subsector 1', 'Org 1', 'Panamá', 'Hombres', '100', 'Los Santos'],
+        ['WASH', 'Subsector 1', 'Org 1', 'Panamá', 'Mujeres', '100', 'Los Santos'],
+        ['Salud', 'Subsector 2', 'Org 2', 'Colombia', 'Hombres', '', 'Cauca'],
+        ['Salud', 'Subsector 2', 'Org 2', 'Colombia', 'Mujeres', '', 'Cauca'],
+        ['Educación', 'Subsector 3', 'Org 3', 'Colombia', 'Hombres', '250', 'Chocó'],
+        ['Educación', 'Subsector 3', 'Org 3', 'Colombia', 'Mujeres', '300', 'Chocó'],
+        ['WASH', 'Subsector 4', 'Org 1', 'Venezuela', 'Hombres', '80', 'Amazonas'],
+        ['WASH', 'Subsector 4', 'Org 1', 'Venezuela', 'Mujeres', '95', 'Amazonas']
     ]
 
     def setUp(self):
         self.filename = os.path.join(os.path.dirname(__file__), TestParser.SAMPLE_FILE)
-        self.reader = HXLReader(open(self.filename, 'r'))
+        self.reader = HXLReader(open(self.filename, 'rb'))
 
     def test_row_count(self):
         # logical row count
