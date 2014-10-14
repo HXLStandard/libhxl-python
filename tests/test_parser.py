@@ -18,6 +18,7 @@ class TestParser(unittest.TestCase):
     EXPECTED_ROW_COUNT = 8
     EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organización','Sex','Targeted','País','Departamento/Provincia/Estado']
     EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#sex', '#targeted_num', '#country', '#adm1']
+    EXPECTED_LANGUAGES = ['es', 'es', 'es', None, None, None, None]
     EXPECTED_CONTENT = [
         ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
         ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
@@ -47,6 +48,11 @@ class TestParser(unittest.TestCase):
     def test_tags(self):
         tags = self.reader.tags
         self.assertEquals(TestParser.EXPECTED_TAGS, tags)
+
+    def test_languages(self):
+        for row in self.reader:
+            for columnNumber, value in enumerate(row):
+                self.assertEquals(TestParser.EXPECTED_LANGUAGES[columnNumber], value.column.languageCode)
 
     def test_column_count(self):
         for row in self.reader:
