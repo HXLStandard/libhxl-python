@@ -335,6 +335,9 @@ class HXLReader:
         return self.csvreader.next()
 
     def prettyTag(self, hxlTag):
+        """
+        Hack a human-readable heading from a HXL tag name.
+        """
         hxlTag = re.sub('^#', '', hxlTag)
         hxlTag = re.sub('_(date|deg|id|link|num)$', '', hxlTag)
         hxlTag = re.sub('_', ' ', hxlTag)
