@@ -12,20 +12,49 @@ import re
 
 from model import HXLColumn, HXLRow, HXLValue
 
+class HXLParseException(Exception):
+
+    def __init__(self, message, sourceRowNumber = -1, sourceColumnNumber = -1):
+        super(Exception, self).__init__(message)
+        self.sourceRowNumber = sourceRowNumber
+        self.sourceColumnNumber = sourceColumnNumber
+
+    def __str__(self):
+        return '<HXLException: ' + str(self.message) + ' @ ' + str(self.sourceRowNumber) + ', ' + str(self.sourceColumnNumber) + '>'
+
 class HXLTableSpec:
     """
     Table metadata for parsing a HXL dataset
+    
+    This class also contains logic for translating between raw source
+    columns and logical output columns (taking into account untagged
+    columns and compact-disaggregated syntax. It also caches
+    calculated values for later reuse.
     """
 
     def __init__(self):
         self.colSpecs = []
+        self.resetCache()
 
     def append(self, colSpec):
+        """
+        Append a new HXLColSpec to the table spec
+        """
         self.colSpecs.append(colSpec)
-        self.cachedColumns = None
+        self.resetCache()
 
     @property
     def columns(self):
+        """
+        Fairly-complex function to extract logical columns from virtual ones:
+
+        - remove any column without a HXL hashtag
+        - include the *first* compact disaggregated column, expanded to two
+        - remove any other compact disaggregated columns
+
+        Use self.cachedColumns to save the result, so that it has to run only
+        once, no matter how many times it's called.
+        """
         if self.cachedColumns == None:
             self.cachedColumns = []
             seenFixed = False
@@ -38,20 +67,59 @@ class HXLTableSpec:
                 self.cachedColumns.append(colSpec.column)
         return self.cachedColumns
 
-    def getDisaggregationCount(self):
-        n = 0;
-        for colSpec in self.colSpecs:
-            if colSpec.fixedColumn:
-                n += 1
-        return n
+    @property
+    def headers(self):
+        """
+        Get a simple list of header strings from the columns.
+        """
+        if self.cachedHeaders == None:
+            self.cachedHeaders = map(lambda column: column.headerText, self.columns)
+        return self.cachedHeaders
 
-    def getRawPosition(self, disaggregationPosition):
+    @property
+    def tags(self):
+        """
+        Get a simple list of HXL hashtags from the columns.
+        """
+        if self.cachedTags == None:
+            self.cachedTags = map(lambda column: column.hxlTag, self.columns)
+        return self.cachedTags
+
+    @property
+    def disaggregationCount(self):
+        """
+        Get the number of columns using compact disaggregated syntax
+        
+        They will all be merged into one logical column, with repeated rows
+        for different values. Cache the result in self.cachedDisaggregationCount.
+        """
+        if self.cachedDisaggregationCount == None:
+            self.cachedDisaggregationCount = 0;
+            for colSpec in self.colSpecs:
+                if colSpec.fixedColumn:
+                    self.cachedDisaggregationCount += 1
+        return self.cachedDisaggregationCount
+
+    def getDisaggregatedSourceColumnNumber(self, disaggregationPosition):
+        """
+        For a logical sequence number in disaggregation, figure out the
+        actual source column number.
+        """
         for pos, colSpec in enumerate(self.colSpecs):
             if colSpec.fixedColumn:
                 disaggregationPosition -= 1
             if disaggregationPosition < 0:
                 return pos
         return -1
+
+    def resetCache(self):
+        """
+        Reset all cached values so that they'll be regenerated.
+        """
+        self.cachedColumns = None
+        self.cachedHeaders = None
+        self.cachedTags = None
+        self.cachedDisaggregationCount = None
 
     def __str__(self):
         s = '<HXLTableSpec';
@@ -98,8 +166,6 @@ class HXLReader:
         self.lastHeaderRow = None
         self.currentRow = None
         self.rawData = None
-        self.cachedHeaders = []
-        self.cachedTags = []
         self.disaggregationPosition = 0
 
     def __iter__(self):
@@ -108,42 +174,18 @@ class HXLReader:
     @property
     def headers(self):
         """
-        Property function to get the row of HXL headers.
-        FIXME ridiculously over-complicated, due to the initial design
+        Return a list of header strings (for a spreadsheet row).
         """
-        if (self.cachedHeaders):
-            return self.cachedHeaders
-        self.parseTableSpec()
-        seenFixed = False
-        for colSpec in self.tableSpec.colSpecs:
-            if colSpec.column.hxlTag:
-                if colSpec.fixedColumn and seenFixed:
-                    continue
-                if colSpec.fixedColumn:
-                    self.cachedHeaders.append(colSpec.fixedColumn.headerText)
-                    seenFixed = True
-                self.cachedHeaders.append(colSpec.column.headerText)
-        return self.cachedHeaders
+        self.setupTableSpec()
+        return self.tableSpec.headers
 
     @property
     def tags(self):
         """
-        Property function to get the row of HXL tags.
-        FIXME ridiculously over-complicated, due to the initial design
+        Return a list of HXL hashtag strings (for a spreadsheet row).
         """
-        if (self.cachedTags):
-            return self.cachedTags
-        self.parseTableSpec()
-        seenFixed = False
-        for colSpec in self.tableSpec.colSpecs:
-            if colSpec.column.hxlTag:
-                if colSpec.fixedColumn and seenFixed:
-                    continue
-                if colSpec.fixedColumn:
-                    self.cachedTags.append(colSpec.fixedColumn.hxlTag)
-                    seenFixed = True
-                self.cachedTags.append(colSpec.column.hxlTag)
-        return self.cachedTags
+        self.setupTableSpec()
+        return self.tableSpec.tags
 
     def next(self):
         """
@@ -152,11 +194,11 @@ class HXLReader:
         """
 
         # Won't do anything if it already exists
-        self.parseTableSpec()
+        self.setupTableSpec()
 
         # Read more raw data unless we're in the middle of generating virtual rows
         # from compact-disaggregated syntax
-        if self.disaggregationPosition >= self.tableSpec.getDisaggregationCount() or not self.rawData:
+        if self.disaggregationPosition >= self.tableSpec.disaggregationCount or not self.rawData:
             self.rawData = self.parseSourceRow()
             if (self.rawData == None):
                 return None
@@ -185,10 +227,10 @@ class HXLReader:
                 # There's a fixed column involved
                 if not seenFixed:
                     columnNumber += 1
-                    rawPosition = self.tableSpec.getRawPosition(self.disaggregationPosition)
-                    row.append(self.tableSpec.colSpecs[rawPosition].fixedValue)
+                    disaggregatedSourceColumnNumber = self.tableSpec.getDisaggregatedSourceColumnNumber(self.disaggregationPosition)
+                    row.append(self.tableSpec.colSpecs[disaggregatedSourceColumnNumber].fixedValue)
                     columnNumber += 1
-                    row.append(self.rawData[rawPosition])
+                    row.append(self.rawData[disaggregatedSourceColumnNumber])
                     seenFixed = True
                     self.disaggregationPosition += 1
             else:
@@ -198,7 +240,7 @@ class HXLReader:
 
         return row
 
-    def parseTableSpec(self):
+    def setupTableSpec(self):
         """
         Go fishing for the HXL hashtag row.
         Returns a HXLTableSpec on success. Throws an exception on failure.
@@ -214,11 +256,11 @@ class HXLReader:
             tableSpec = self.parseHashtagRow(rawData)
             if (tableSpec != None):
                 self.tableSpec = tableSpec
-                return tableSpec
+                return self.tableSpec
             else:
                 self.lastHeaderRow = rawData
             rawData = self.parseSourceRow()
-        raise Exception("HXL hashtag row not found")
+        raise HXLParseException("HXL hashtag row not found", self.sourceRowNumber)
     
     def parseHashtagRow(self, rawDataRow):
         """
@@ -297,3 +339,5 @@ class HXLReader:
         hxlTag = re.sub('_(date|deg|id|link|num)$', '', hxlTag)
         hxlTag = re.sub('_', ' ', hxlTag)
         return hxlTag.capitalize()
+
+# end
