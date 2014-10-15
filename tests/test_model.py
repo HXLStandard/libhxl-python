@@ -14,11 +14,16 @@ class TestColumn(unittest.TestCase):
     HXL_TAG = '#foo'
     LANGUAGE_CODE = 'en'
     HEADER_TEXT = 'Foo header'
+    COLUMN_NUMBER = 5
+    SOURCE_COLUMN_NUMBER = 7
 
     def setUp(self):
-        self.column = HXLColumn(TestColumn.HXL_TAG, TestColumn.LANGUAGE_CODE, TestColumn.HEADER_TEXT)
+        self.column = HXLColumn(TestColumn.COLUMN_NUMBER, TestColumn.SOURCE_COLUMN_NUMBER,
+                                TestColumn.HXL_TAG, TestColumn.LANGUAGE_CODE, TestColumn.HEADER_TEXT)
 
     def test_variables(self):
+        self.assertEquals(TestColumn.COLUMN_NUMBER, self.column.columnNumber)
+        self.assertEquals(TestColumn.SOURCE_COLUMN_NUMBER, self.column.sourceColumnNumber)
         self.assertEquals(TestColumn.HXL_TAG, self.column.hxlTag)
         self.assertEquals(TestColumn.LANGUAGE_CODE, self.column.languageCode)
         self.assertEquals(TestColumn.HEADER_TEXT, self.column.headerText)
@@ -38,7 +43,7 @@ class TestRow(unittest.TestCase):
     def setUp(self):
         self.row = HXLRow(TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
         for columnNumber, hxlTag in enumerate(TestRow.TAGS):
-            value = HXLValue(HXLColumn(hxlTag), TestRow.CONTENT[columnNumber], columnNumber, columnNumber)
+            value = HXLValue(HXLColumn(columnNumber, -1, hxlTag), TestRow.CONTENT[columnNumber], columnNumber, columnNumber)
             self.row.append(value)
 
     def test_data(self):
@@ -58,7 +63,7 @@ class TestRow(unittest.TestCase):
     def test_append(self):
         columnNumber = len(TestRow.TAGS)
         oldLength = len(self.row.values)
-        value = HXLValue(HXLColumn('#adm1'), 'Lofa County', columnNumber, columnNumber)
+        value = HXLValue(HXLColumn(columnNumber, -1, '#adm1'), 'Lofa County', columnNumber, columnNumber)
         self.row.append(value)
         self.assertEquals(oldLength + 1, len(self.row.values))
         self.assertEquals('#adm1', self.row.values[oldLength].column.hxlTag)
@@ -72,7 +77,7 @@ class TestValue(unittest.TestCase):
 
     def setUp(self):
         self.value = HXLValue(
-            HXLColumn(TestValue.HXL_TAG), TestValue.CONTENT,
+            HXLColumn(TestValue.COLUMN_NUMBER, TestValue.SOURCE_COLUMN_NUMBER, TestValue.HXL_TAG), TestValue.CONTENT,
             TestValue.COLUMN_NUMBER, TestValue.SOURCE_COLUMN_NUMBER
         )
 

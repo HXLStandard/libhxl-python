@@ -12,9 +12,11 @@ class HXLColumn(object):
     The definition of a logical column in the HXL data.
     """ 
 
-    __slots__ = ['hxlTag', 'languageCode', 'headerText']
+    __slots__ = ['columnNumber', 'sourceColumnNumber', 'hxlTag', 'languageCode', 'headerText']
 
-    def __init__(self, hxlTag=None, languageCode=None, headerText=None):
+    def __init__(self, columnNumber, sourceColumnNumber, hxlTag=None, languageCode=None, headerText=None):
+        self.columnNumber = columnNumber
+        self.sourceColumnNumber = sourceColumnNumber
         self.hxlTag = hxlTag
         self.languageCode = languageCode
         self.headerText = headerText

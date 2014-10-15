@@ -227,23 +227,26 @@ class HXLReader:
         """
         tableSpec = HXLTableSpec()
         seenHeader = 0
+        columnNumber = 0
         for sourceColumnNumber, rawString in enumerate(rawDataRow):
             rawString = rawString.strip()
             if rawString:
-                colSpec = self.parseHashtag(sourceColumnNumber, rawString)
+                colSpec = self.parseHashtag(columnNumber,sourceColumnNumber, rawString)
                 if (colSpec):
                     seenHeader = 1
                     if (colSpec.fixedColumn):
                         colSpec.fixedColumn.headerText = self.prettyTag(colSpec.fixedColumn.hxlTag)
                         colSpec.column.headerText = self.prettyTag(colSpec.column.hxlTag)
                         colSpec.fixedValue = self.lastHeaderRow[sourceColumnNumber]
+                        columnNumber += 1
                     else:
                         colSpec.column.headerText = self.lastHeaderRow[sourceColumnNumber]
                 else:
                     return None
             else:
                 colSpec = HXLColSpec(sourceColumnNumber)
-                colSpec.column = HXLColumn()
+                colSpec.column = HXLColumn(columnNumber, sourceColumnNumber)
+            columnNumber += 1
             tableSpec.append(colSpec)
 
         if seenHeader:
@@ -251,7 +254,7 @@ class HXLReader:
         else:
             return None
 
-    def parseHashtag(self, sourceColumnNumber, rawString):
+    def parseHashtag(self, columnNumber, sourceColumnNumber, rawString):
         """
         Attempt to parse a full hashtag specification.
         May include compact disaggregated syntax
@@ -267,12 +270,12 @@ class HXLReader:
         # Try a match
         result = re.match(fullRegexp, rawString)
         if result:
-            col1 = HXLColumn(result.group(1), result.group(2))
+            col1 = HXLColumn(columnNumber, sourceColumnNumber, result.group(1), result.group(2))
             col2 = None
 
             if result.group(3):
                 # There were two tags
-                col2 = HXLColumn(result.group(3), result.group(4))
+                col2 = HXLColumn(columnNumber, sourceColumnNumber, result.group(3), result.group(4))
                 colSpec = HXLColSpec(sourceColumnNumber, col2, col1)
             else:
                 # There was just one tag
