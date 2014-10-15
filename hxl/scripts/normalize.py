@@ -39,7 +39,7 @@ def normalize(input, output):
     writer.writerow(parser.tags)
 
     for row in parser:
-        writer.writerow(row.data)
+        writer.writerow(row.values)
 
 # If run as script
 if __name__ == '__main__':
