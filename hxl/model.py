@@ -7,10 +7,12 @@ License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
-class HXLColumn:
+class HXLColumn(object):
     """
     The definition of a logical column in the HXL data.
     """ 
+
+    __slots__ = ['hxlTag', 'languageCode', 'headerText']
 
     def __init__(self, hxlTag=None, languageCode=None, headerText=None):
         self.hxlTag = hxlTag
@@ -18,6 +20,7 @@ class HXLColumn:
         self.headerText = headerText
 
     def getDisplayTag(self):
+        """Generate a display version of the column hashtag"""
         if (self.hxlTag):
             if (self.languageCode):
                 return self.hxlTag + '/' + self.languageCode
@@ -33,10 +36,12 @@ class HXLColumn:
         else:
             return '<HXLColumn>'
 
-class HXLRow:
+class HXLRow(object):
     """
     An iterable row of HXLValue objects in a HXL dataset.
     """
+
+    __slots__ = ['values', 'rowNumber', 'sourceRowNumber', 'cachedData']
 
     def __init__(self, rowNumber=None, sourceRowNumber=None):
         self.values = []
@@ -67,10 +72,12 @@ class HXLRow:
         s += "\n>"
         return s
 
-class HXLValue:
+class HXLValue(object):
     """
     A single HXL value at the intersection of a row and column
     """
+
+    __slots__ = ['column', 'content', 'columnNumber', 'sourceColumnNumber']
 
     def __init__(self, column, content, columnNumber, sourceColumnNumber):
         self.column = column
