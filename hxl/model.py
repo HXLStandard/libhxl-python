@@ -1,7 +1,7 @@
 """
 Data model for the Humanitarian Exchange Language (HXL) v1.0
 David Megginson
-October 2014
+Started October 2014
 
 License: Public Domain
 Documentation: http://hxlstandard.org
@@ -79,13 +79,11 @@ class HXLValue(object):
     A single HXL value at the intersection of a row and column
     """
 
-    __slots__ = ['column', 'content', 'columnNumber', 'sourceColumnNumber']
+    __slots__ = ['column', 'content']
 
-    def __init__(self, column, content, columnNumber, sourceColumnNumber):
+    def __init__(self, column, content):
         self.column = column
         self.content = content
-        self.columnNumber = columnNumber
-        self.sourceColumnNumber = sourceColumnNumber
 
     def __str__(self):
         s = '<HXLValue'

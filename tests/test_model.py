@@ -43,7 +43,7 @@ class TestRow(unittest.TestCase):
     def setUp(self):
         self.row = HXLRow(TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
         for columnNumber, hxlTag in enumerate(TestRow.TAGS):
-            value = HXLValue(HXLColumn(columnNumber, -1, hxlTag), TestRow.CONTENT[columnNumber], columnNumber, columnNumber)
+            value = HXLValue(HXLColumn(columnNumber, -1, hxlTag), TestRow.CONTENT[columnNumber])
             self.row.append(value)
 
     def test_data(self):
@@ -63,7 +63,7 @@ class TestRow(unittest.TestCase):
     def test_append(self):
         columnNumber = len(TestRow.TAGS)
         oldLength = len(self.row.values)
-        value = HXLValue(HXLColumn(columnNumber, -1, '#adm1'), 'Lofa County', columnNumber, columnNumber)
+        value = HXLValue(HXLColumn(columnNumber, -1, '#adm1'), 'Lofa County')
         self.row.append(value)
         self.assertEquals(oldLength + 1, len(self.row.values))
         self.assertEquals('#adm1', self.row.values[oldLength].column.hxlTag)
@@ -77,14 +77,14 @@ class TestValue(unittest.TestCase):
 
     def setUp(self):
         self.value = HXLValue(
-            HXLColumn(TestValue.COLUMN_NUMBER, TestValue.SOURCE_COLUMN_NUMBER, TestValue.HXL_TAG), TestValue.CONTENT,
-            TestValue.COLUMN_NUMBER, TestValue.SOURCE_COLUMN_NUMBER
+            HXLColumn(TestValue.COLUMN_NUMBER, TestValue.SOURCE_COLUMN_NUMBER, TestValue.HXL_TAG),
+            TestValue.CONTENT
         )
 
     def test_variables(self):
         self.assertEquals(TestValue.HXL_TAG, self.value.column.hxlTag)
         self.assertEquals(TestValue.CONTENT, self.value.content)
-        self.assertEquals(TestValue.COLUMN_NUMBER, self.value.columnNumber)
-        self.assertEquals(TestValue.SOURCE_COLUMN_NUMBER, self.value.sourceColumnNumber)
+        self.assertEquals(TestValue.COLUMN_NUMBER, self.value.column.columnNumber)
+        self.assertEquals(TestValue.SOURCE_COLUMN_NUMBER, self.value.column.sourceColumnNumber)
 
 # end

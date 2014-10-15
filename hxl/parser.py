@@ -173,16 +173,12 @@ class HXLReader:
                     rawPosition = self.tableSpec.getRawPosition(self.disaggregationPosition)
                     row.append(HXLValue(
                             self.tableSpec.colSpecs[rawPosition].fixedColumn,
-                            self.tableSpec.colSpecs[rawPosition].fixedValue,
-                            columnNumber,
-                            sourceColumnNumber
+                            self.tableSpec.colSpecs[rawPosition].fixedValue
                             ))
                     columnNumber += 1
                     row.append(HXLValue(
                             self.tableSpec.colSpecs[rawPosition].column,
-                            self.rawData[rawPosition],
-                            columnNumber,
-                            sourceColumnNumber
+                            self.rawData[rawPosition]
                             ))
                     seenFixed = True
                     self.disaggregationPosition += 1
@@ -191,9 +187,7 @@ class HXLReader:
                 columnNumber += 1
                 row.append(HXLValue(
                         self.tableSpec.colSpecs[sourceColumnNumber].column,
-                        self.rawData[sourceColumnNumber],
-                        columnNumber,
-                        sourceColumnNumber
+                        self.rawData[sourceColumnNumber]
                         ))
 
         return row
