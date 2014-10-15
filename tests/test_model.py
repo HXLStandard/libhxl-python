@@ -41,13 +41,15 @@ class TestRow(unittest.TestCase):
     CONTENT = ['Health', 'WFP', 'Liberia'];
 
     def setUp(self):
-        self.row = HXLRow(TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
+        columns = []
         for columnNumber, hxlTag in enumerate(TestRow.TAGS):
-            value = HXLValue(HXLColumn(columnNumber, -1, hxlTag), TestRow.CONTENT[columnNumber])
-            self.row.append(value)
+            columns.append(HXLColumn(columnNumber, -1, hxlTag))
+        self.row = HXLRow(columns, TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
+        for content in TestRow.CONTENT:
+            self.row.append(content)
 
     def test_data(self):
-        self.assertEquals(TestRow.CONTENT, self.row.data)
+        self.assertEquals(TestRow.CONTENT, self.row.values)
 
     def test_variables(self):
         self.assertEquals(TestRow.ROW_NUMBER, self.row.rowNumber)

@@ -22,6 +22,21 @@ class HXLTableSpec:
 
     def append(self, colSpec):
         self.colSpecs.append(colSpec)
+        self.cachedColumns = None
+
+    @property
+    def columns(self):
+        if self.cachedColumns == None:
+            self.cachedColumns = []
+            seenFixed = False
+            for colSpec in self.colSpecs:
+                if not colSpec.column.hxlTag or (colSpec.fixedColumn and seenFixed):
+                    continue
+                if colSpec.fixedColumn:
+                    self.cachedColumns.append(colSpec.fixedColumn)
+                    seenFixed = True
+                self.cachedColumns.append(colSpec.column)
+        return self.cachedColumns
 
     def getDisaggregationCount(self):
         n = 0;
@@ -151,7 +166,7 @@ class HXLReader:
         self.rowNumber += 1
 
         # The row we're going to populate
-        row = HXLRow(self.rowNumber, self.sourceRowNumber)
+        row = HXLRow(self.tableSpec.columns, self.rowNumber, self.sourceRowNumber)
 
         columnNumber = -1
         seenFixed = False
@@ -171,24 +186,15 @@ class HXLReader:
                 if not seenFixed:
                     columnNumber += 1
                     rawPosition = self.tableSpec.getRawPosition(self.disaggregationPosition)
-                    row.append(HXLValue(
-                            self.tableSpec.colSpecs[rawPosition].fixedColumn,
-                            self.tableSpec.colSpecs[rawPosition].fixedValue
-                            ))
+                    row.append(self.tableSpec.colSpecs[rawPosition].fixedValue)
                     columnNumber += 1
-                    row.append(HXLValue(
-                            self.tableSpec.colSpecs[rawPosition].column,
-                            self.rawData[rawPosition]
-                            ))
+                    row.append(self.rawData[rawPosition])
                     seenFixed = True
                     self.disaggregationPosition += 1
             else:
                 # regular column
                 columnNumber += 1
-                row.append(HXLValue(
-                        self.tableSpec.colSpecs[sourceColumnNumber].column,
-                        self.rawData[sourceColumnNumber]
-                        ))
+                row.append(self.rawData[sourceColumnNumber])
 
         return row
 

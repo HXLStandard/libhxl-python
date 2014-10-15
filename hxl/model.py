@@ -43,27 +43,19 @@ class HXLRow(object):
     An iterable row of HXLValue objects in a HXL dataset.
     """
 
-    __slots__ = ['values', 'rowNumber', 'sourceRowNumber', 'cachedData']
+    __slots__ = ['columns', 'values', 'rowNumber', 'sourceRowNumber']
 
-    def __init__(self, rowNumber=None, sourceRowNumber=None):
+    def __init__(self, columns, rowNumber=None, sourceRowNumber=None):
+        self.columns = columns
         self.values = []
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
-        self.cachedData = []
 
     def append(self, value):
         self.values.append(value)
 
-    @property
-    def data(self):
-        if self.cachedData:
-            return self.cachedData
-        for value in self:
-            self.cachedData.append(value.content)
-        return self.cachedData
-
     def __getitem__(self, index):
-        return self.values[index]
+        return HXLValue(self.columns[index], self.values[index])
 
     def __str__(self):
         s = '<HXLRow';
