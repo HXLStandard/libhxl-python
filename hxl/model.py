@@ -54,6 +54,25 @@ class HXLRow(object):
     def append(self, value):
         self.values.append(value)
 
+    def get(self, tag, index=0):
+        for i, column in enumerate(self.columns):
+            if column.hxlTag == tag:
+                if index == 0:
+                    return self.__getitem__(i)
+                else:
+                    index = index - 1
+        return False
+
+    def getAll(self, tag, index=0):
+        result = []
+        for i, column in enumerate(self.columns):
+            if column.hxlTag == tag:
+                result.append(self.__getitem__(i))
+        if result:
+            return result
+        else:
+            return False
+
     def __getitem__(self, index):
         return HXLValue(self.columns[index], self.values[index])
 

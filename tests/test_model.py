@@ -70,6 +70,15 @@ class TestRow(unittest.TestCase):
         self.assertEquals(oldLength + 1, len(self.row.values))
         self.assertEquals('#adm1', self.row.values[oldLength].column.hxlTag)
 
+    def test_get(self):
+        self.assertEquals('WFP', self.row.get('#org').content)
+
+    def test_getAll(self):
+        result = self.row.getAll('#org')
+        self.assertTrue(type(result) is list)
+        self.assertEquals(1, len(result))
+        self.assertEquals('#org', result[0].column.hxlTag)
+
 class TestValue(unittest.TestCase):
 
     HXL_TAG = '#sector'
