@@ -48,7 +48,7 @@ Create a normalised version of a HXL dataset, removing columns with no
 tags, stripping leading and trailing whitespace from values, and
 expanding compact-disaggregated notation.
 
-``
+```
 python -m hxl.scripts.normalize < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
