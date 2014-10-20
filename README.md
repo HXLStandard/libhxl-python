@@ -3,6 +3,8 @@ libhxl-python
 
 Python support library for the Humanitarian Exchange Language (HXL) data standard.
 
+http://hxlstandard.org
+
 # Usage
 
 Read a HXL file from standard input, row by row:
