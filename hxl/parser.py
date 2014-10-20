@@ -309,7 +309,7 @@ class HXLReader:
         """
 
         # Pattern for a single tag
-        tagRegexp = '(#[a-zA-z0-9_]+)(?:\/([a-zA-Z]{2}))?'
+        tagRegexp = '(#[a-zA-Z0-9_]+)(?:\/([a-zA-Z]{2}))?'
 
         # Pattern for full tag spec (optional second tag following '+')
         fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?$';
