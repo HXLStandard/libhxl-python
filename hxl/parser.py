@@ -13,6 +13,9 @@ import re
 from model import HXLColumn, HXLRow, HXLValue
 
 class HXLParseException(Exception):
+    """
+    A parsing error in a HXL dataset.
+    """
 
     def __init__(self, message, sourceRowNumber = -1, sourceColumnNumber = -1):
         super(Exception, self).__init__(message)
@@ -251,16 +254,18 @@ class HXLReader:
             return self.tableSpec
 
         # OK, need to go fishing ...
-        rawData = self.parseSourceRow()
-        while rawData:
-            tableSpec = self.parseHashtagRow(rawData)
-            if (tableSpec != None):
-                self.tableSpec = tableSpec
-                return self.tableSpec
-            else:
-                self.lastHeaderRow = rawData
+        try:
             rawData = self.parseSourceRow()
-        raise HXLParseException("HXL hashtag row not found", self.sourceRowNumber)
+            while rawData:
+                tableSpec = self.parseHashtagRow(rawData)
+                if (tableSpec != None):
+                    self.tableSpec = tableSpec
+                    return self.tableSpec
+                else:
+                    self.lastHeaderRow = rawData
+                    rawData = self.parseSourceRow()
+        except StopIteration:
+            raise HXLParseException("HXL hashtag row not found", self.sourceRowNumber)
     
     def parseHashtagRow(self, rawDataRow):
         """
