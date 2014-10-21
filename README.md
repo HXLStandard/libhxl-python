@@ -28,7 +28,7 @@ for row in parser:
 
 There are several scripts that you can call from the command line:
 
-## _Normalize_ script
+## _normalize_ script
 
 Create a normalised version of a HXL dataset, removing columns with no
 tags, stripping leading and trailing whitespace from values, and
@@ -38,14 +38,14 @@ expanding compact-disaggregated notation.
 python -m hxl.scripts.normalize < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
-## _Counter_ script
+## _counter_ script
 
 Count unique combinations of values for one or more HXL tags (you may
 omit the leading '#' from hashtags to avoid having to quote them on
 the command line):
 
 ```
-python -m hxl.scripts.counter org sector < DATASET_IN.csv > DATASET_out.csv
+python -m hxl.scripts.counter org sector < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 Sample output:
@@ -57,3 +57,14 @@ OMS,Salud,2
 OMS,WASH,2
 UNICEF,Educación,2
 ```
+
+## _hxl2geojson_ script
+
+Generate a GeoJSON file from a HXL dataset. There will be one GeoJSON
+"point" feature for each input row that contains values for the
+'#lat_deg' and '#lon_deg' HXL hashtags:
+
+```
+python -m hxl.scripts.hxl2geojson < DATASET_IN.csv > DATASET_OUT.json
+```
+
