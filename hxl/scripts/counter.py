@@ -45,7 +45,7 @@ def counter(input, output, tags):
         for tag in tags:
             value = row.get(tag)
             if value is not False:
-                values.append(value.content)
+                values.append(value)
 
         if values:
             # need to use a tuple as a key

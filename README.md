@@ -25,19 +25,17 @@ Identity transformation in a pipeline (read from standard input, write to standa
 
 ```
 import sys
+import csv
 from hxl.parser import HXLReader
-from hxl.writer import HXLWriter
+
 
 parser = HXLReader(sys.stdin)
-writer = HXLWriter(sys.stdout)
+writer = csv.writer(sys.stdout)
 
-is_first = True
+writer.writerow(parser.headers)
+writer.writerow(parser.tags)
 for row in parser:
-    if is_first:
-        writer.writeHeaders(row)
-        writer.writeTags(row)
-        is_first = False
-    writer.writeData(row)
+    writer.writerow(row.values)
 ```
 
 # Scripts

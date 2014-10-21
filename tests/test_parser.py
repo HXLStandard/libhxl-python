@@ -51,8 +51,8 @@ class TestParser(unittest.TestCase):
 
     def test_languages(self):
         for row in self.reader:
-            for columnNumber, value in enumerate(row):
-                self.assertEquals(TestParser.EXPECTED_LANGUAGES[columnNumber], value.column.languageCode)
+            for columnNumber, column in enumerate(row.columns):
+                self.assertEquals(TestParser.EXPECTED_LANGUAGES[columnNumber], column.languageCode)
 
     def test_column_count(self):
         for row in self.reader:
@@ -60,10 +60,10 @@ class TestParser(unittest.TestCase):
 
     def test_columns(self):
         for row in self.reader:
-            for i, value in enumerate(row):
-                self.assertEquals(TestParser.EXPECTED_TAGS[i], value.column.hxlTag)
+            for columnNumber, column in enumerate(row.columns):
+                self.assertEquals(TestParser.EXPECTED_TAGS[columnNumber], column.hxlTag)
 
     def test_content(self):
         for i, row in enumerate(self.reader):
             for j, value in enumerate(row):
-                self.assertEquals(TestParser.EXPECTED_CONTENT[i][j], value.content)
+                self.assertEquals(TestParser.EXPECTED_CONTENT[i][j], value)

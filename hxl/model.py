@@ -40,7 +40,7 @@ class HXLColumn(object):
 
 class HXLRow(object):
     """
-    An iterable row of HXLValue objects in a HXL dataset.
+    An iterable row of values in a HXL dataset.
     """
 
     __slots__ = ['columns', 'values', 'rowNumber', 'sourceRowNumber']
@@ -74,7 +74,7 @@ class HXLRow(object):
             return False
 
     def __getitem__(self, index):
-        return HXLValue(self.columns[index], self.values[index])
+        return self.values[index]
 
     def __str__(self):
         s = '<HXLRow';
@@ -83,24 +83,6 @@ class HXLRow(object):
         for value in self.values:
             s += "\n  " + str(value)
         s += "\n>"
-        return s
-
-class HXLValue(object):
-    """
-    A single HXL value at the intersection of a row and column
-    """
-
-    __slots__ = ['column', 'content']
-
-    def __init__(self, column, content):
-        self.column = column
-        self.content = content
-
-    def __str__(self):
-        s = '<HXLValue'
-        if self.column:
-            s += ' ' + str(self.column.hxlTag) + '=' + str(self.content)
-        s += '>'
         return s
 
 # end

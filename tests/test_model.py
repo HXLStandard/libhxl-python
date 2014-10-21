@@ -7,7 +7,7 @@ License: Public Domain
 """
 
 import unittest
-from hxl.model import HXLColumn, HXLRow, HXLValue
+from hxl.model import HXLColumn, HXLRow
 
 class TestColumn(unittest.TestCase):
 
@@ -65,37 +65,15 @@ class TestRow(unittest.TestCase):
     def test_append(self):
         columnNumber = len(TestRow.TAGS)
         oldLength = len(self.row.values)
-        value = HXLValue(HXLColumn(columnNumber, -1, '#adm1'), 'Lofa County')
-        self.row.append(value)
+        self.row.append('Lofa County')
         self.assertEquals(oldLength + 1, len(self.row.values))
-        self.assertEquals('#adm1', self.row.values[oldLength].column.hxlTag)
 
     def test_get(self):
-        self.assertEquals('WFP', self.row.get('#org').content)
+        self.assertEquals('WFP', self.row.get('#org'))
 
     def test_getAll(self):
         result = self.row.getAll('#org')
         self.assertTrue(type(result) is list)
         self.assertEquals(1, len(result))
-        self.assertEquals('#org', result[0].column.hxlTag)
-
-class TestValue(unittest.TestCase):
-
-    HXL_TAG = '#sector'
-    CONTENT = 'Health'
-    COLUMN_NUMBER = 5
-    SOURCE_COLUMN_NUMBER = 6
-
-    def setUp(self):
-        self.value = HXLValue(
-            HXLColumn(TestValue.COLUMN_NUMBER, TestValue.SOURCE_COLUMN_NUMBER, TestValue.HXL_TAG),
-            TestValue.CONTENT
-        )
-
-    def test_variables(self):
-        self.assertEquals(TestValue.HXL_TAG, self.value.column.hxlTag)
-        self.assertEquals(TestValue.CONTENT, self.value.content)
-        self.assertEquals(TestValue.COLUMN_NUMBER, self.value.column.columnNumber)
-        self.assertEquals(TestValue.SOURCE_COLUMN_NUMBER, self.value.column.sourceColumnNumber)
 
 # end

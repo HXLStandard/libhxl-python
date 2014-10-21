@@ -10,7 +10,7 @@ Documentation: http://hxlstandard.org
 import csv
 import re
 
-from model import HXLColumn, HXLRow, HXLValue
+from model import HXLColumn, HXLRow
 
 class HXLParseException(Exception):
     """
