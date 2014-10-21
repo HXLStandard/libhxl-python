@@ -45,28 +45,34 @@ def hxl2geojson(input, output):
         lon = row.get('#lon_deg')
         if lat and lon:
 
-            # Construct the basic feature
-            feature = {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [lat, lon]
-                    },
-                }
+            try:
 
-            # Add selected properties if present
-            properties = {}
-            for tag in ['#loctype', '#loc', '#country', '#adm1', '#adm2', '#adm3']:
-                if row.get(tag):
-                    properties[tag] = row.get(tag)
-            feature['properties'] = properties
+                # Construct the basic feature
+                feature = {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [float(lon), float(lat)]
+                        },
+                    }
 
-            # Render the feature
-            if isFirst:
-                isFirst = False
-            else:
-                print ','
-            output.write(re.sub(pattern, '   ', json.dumps(feature, indent=1)))
+                # Add selected properties if present
+                properties = {}
+                for tag in ['#loctype', '#loc', '#country', '#adm1', '#adm2', '#adm3']:
+                    if row.get(tag):
+                        properties[tag] = row.get(tag)
+                        feature['properties'] = properties
+                        
+                # Render the feature
+                if isFirst:
+                    isFirst = False
+                else:
+                    output.write(',\n')
+
+                output.write(re.sub(pattern, '   ', json.dumps(feature, indent=1)))
+
+            except ValueError:
+                sys.stderr.write('Badly formed #lat_deg or #lon_deg: ' + lat + ', ' + lon + '\n')
 
     output.write('\n ]\n}\n')
 
