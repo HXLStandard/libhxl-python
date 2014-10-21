@@ -7,20 +7,6 @@ http://hxlstandard.org
 
 # Usage
 
-Read a HXL file from standard input, row by row:
-
-```
-from hxl.parser import HXLReader
-import sys
-
-reader = HXLReader(sys.stdin)
-
-for row in reader:
-    print "Row " + str(row.rowNumber)
-    for value in row:
-        print '  ' + str(value.column.hxlTag) + '=' + str(value.content)
-```
-
 Identity transformation in a pipeline (read from standard input, write to standard output):
 
 ```
