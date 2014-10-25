@@ -30,6 +30,20 @@ There are several scripts that you can call from the command line:
 
 ## _normalize_ script
 
+```
+usage: normalize.py [-h] [-H] [infile] [outfile]
+
+Normalize a HXL file.
+
+positional arguments:
+  infile         HXL file to read (if omitted, use standard input).
+  outfile        HXL file to write (if omitted, use standard output).
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -H, --headers  Preserve text header row above HXL hashtags
+```
+
 Create a normalised version of a HXL dataset, removing columns with no
 tags, stripping leading and trailing whitespace from values, and
 expanding compact-disaggregated notation.

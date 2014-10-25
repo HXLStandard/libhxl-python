@@ -25,9 +25,10 @@ Documentation: http://hxlstandard.org
 
 import sys
 import csv
+import argparse
 from hxl.parser import HXLReader
 
-def normalize(input, output):
+def normalize(input, output, showHeaders = False):
     """
     Normalize a HXL dataset
     """
@@ -35,7 +36,8 @@ def normalize(input, output):
     parser = HXLReader(input)
     writer = csv.writer(output)
 
-    writer.writerow(parser.headers)
+    if (showHeaders):
+        writer.writerow(parser.headers)
     writer.writerow(parser.tags)
 
     for row in parser:
@@ -43,6 +45,14 @@ def normalize(input, output):
 
 # If run as script
 if __name__ == '__main__':
-    normalize(sys.stdin, sys.stdout)
+
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Normalize a HXL file.')
+    parser.add_argument('-H', '--headers', help='Preserve text header row above HXL hashtags', action='store_const', const=True, default=False);
+    parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
+    parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+    args = parser.parse_args()
+
+    normalize(args.infile, args.outfile, args.headers)
 
 # end
