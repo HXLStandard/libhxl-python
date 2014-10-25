@@ -12,12 +12,14 @@ Command-line usage:
 
   python -m hxl.scripts.normalize < DATA_IN.csv > DATA_OUT.csv
 
+(Use -h option to get all options.)
+
 Program usage:
 
   import sys
   from hxl.scripts.normalize import normalize
 
-  normalize(sys.stdin, sys.stdout)
+  normalize(sys.stdin, sys.stdout, show_headers = true)
 
 License: Public Domain
 Documentation: http://hxlstandard.org
@@ -39,6 +41,7 @@ def normalize(input, output, show_headers = False, include_tags = [], exclude_ta
     tags = parser.tags
 
     def restrict_tags(list_in):
+        '''Apply include_tags and exclude_tags to the columns'''
         list_out = []
         for i, e in enumerate(list_in):
             if ((not include_tags) or (tags[i] in include_tags)) and ((not exclude_tags) or (tags[i] not in exclude_tags)):
@@ -72,14 +75,11 @@ if __name__ == '__main__':
     parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
 
     parser.add_argument('-H', '--headers', help='Preserve text header row above HXL hashtags', action='store_const', const=True, default=False);
-
-    group = parser.add_mutually_exclusive_group();
-    group.add_argument('-i', '--include', help='Comma-separated list of tags to include', metavar='tag,tag...', type=parse_tags)
-    group.add_argument('-e', '--exclude', help='Comma-separated list of tags to exclude', metavar='tag,tag...', type=parse_tags)
-
+    parser.add_argument('-i', '--include-tags', help='Comma-separated list of column tags to include', metavar='tag,tag...', type=parse_tags)
+    parser.add_argument('-e', '--exclude-tags', help='Comma-separated list of column tags to exclude', metavar='tag,tag...', type=parse_tags)
 
     args = parser.parse_args()
 
-    normalize(args.infile, args.outfile, show_headers=args.headers, include_tags=args.include, exclude_tags=args.exclude)
+    normalize(args.infile, args.outfile, show_headers=args.headers, include_tags=args.include_tags, exclude_tags=args.exclude_tags)
 
 # end
