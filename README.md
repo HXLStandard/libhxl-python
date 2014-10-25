@@ -46,7 +46,11 @@ optional arguments:
 
 Create a normalised version of a HXL dataset, removing columns with no
 tags, stripping leading and trailing whitespace from values, and
-expanding compact-disaggregated notation.
+expanding compact-disaggregated notation. Unless the user provides the
+-H / --headers option, the script will also strip headers and preserve
+only the HXL tags, so that the file is suitable for processing by
+regular CSV tools like
+[csvkit](http://csvkit.readthedocs.org/en/0.9.0/).
 
 ```
 python -m hxl.scripts.normalize < DATASET_IN.csv > DATASET_OUT.csv
