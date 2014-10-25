@@ -63,8 +63,8 @@ python -m hxl.scripts.normalize < DATASET_IN.csv > DATASET_OUT.csv
 
 You can include columns by tag using the -i option, or exclude them
 using the -e option (it's OK to leave the leading '#' off tag
-names). The following example strips any columns with the tags #name,
-#email, or #phone from the input file:
+names). The following example strips any columns with the tags `#name`,
+`#email`, or `#phone` from the input file:
 
 ```
 python -m hxl.scripts.normalize -e name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
