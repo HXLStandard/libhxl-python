@@ -10,16 +10,16 @@ Strip all but one pre-tag header row.
 
 Command-line usage:
 
-  python -m hxl.scripts.normalize < DATA_IN.csv > DATA_OUT.csv
+  python -m hxl.scripts.hxlnorm < DATA_IN.csv > DATA_OUT.csv
 
 (Use -h option to get all options.)
 
 Program usage:
 
   import sys
-  from hxl.scripts.normalize import normalize
+  from hxl.scripts.hxlnorm import hxlnorm
 
-  normalize(sys.stdin, sys.stdout, show_headers = true)
+  hxlnorm(sys.stdin, sys.stdout, show_headers = true)
 
 License: Public Domain
 Documentation: http://hxlstandard.org
@@ -30,7 +30,7 @@ import csv
 import argparse
 from hxl.parser import HXLReader
 
-def normalize(input, output, show_headers = False, include_tags = [], exclude_tags = []):
+def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = []):
     """
     Normalize a HXL dataset
     """
@@ -80,6 +80,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    normalize(args.infile, args.outfile, show_headers=args.headers, include_tags=args.include_tags, exclude_tags=args.exclude_tags)
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers, include_tags=args.include_tags, exclude_tags=args.exclude_tags)
 
 # end

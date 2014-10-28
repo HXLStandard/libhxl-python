@@ -28,13 +28,13 @@ for row in parser:
 
 There are several scripts that you can call from the command line:
 
-## _normalize_ script
+## _hxlnorm_ script
 
 ```
-usage: normalize.py [-h] [-H] [-i tag,tag...] [-e tag,tag...]
+usage: hxlnorm.py [-h] [-H] [-i tag,tag...] [-e tag,tag...]
                     [infile] [outfile]
 
-Normalize a HXL file.
+Hxlnorm a HXL file.
 
 positional arguments:
   infile                HXL file to read (if omitted, use standard input).
@@ -58,7 +58,7 @@ regular CSV tools like
 [csvkit](http://csvkit.readthedocs.org/en/0.9.0/).
 
 ```
-python -m hxl.scripts.normalize < DATASET_IN.csv > DATASET_OUT.csv
+python -m hxl.scripts.hxlnorm < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 You can include columns by tag using the -i option, or exclude them
@@ -67,7 +67,7 @@ names). The following example strips any columns with the tags `#name`,
 `#email`, or `#phone` from the input file:
 
 ```
-python -m hxl.scripts.normalize -e name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
+python -m hxl.scripts.hxlnorm -e name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 ## _counter_ script
