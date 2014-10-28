@@ -31,22 +31,17 @@ There are several scripts that you can call from the command line:
 ## _hxlnorm_ script
 
 ```
-usage: hxlnorm.py [-h] [-H] [-i tag,tag...] [-e tag,tag...]
-                    [infile] [outfile]
+usage: hxlnorm.py [-h] [-H] [infile] [outfile]
 
-Hxlnorm a HXL file.
+Normalize a HXL file.
 
 positional arguments:
-  infile                HXL file to read (if omitted, use standard input).
-  outfile               HXL file to write (if omitted, use standard output).
+  infile         HXL file to read (if omitted, use standard input).
+  outfile        HXL file to write (if omitted, use standard output).
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -H, --headers         Preserve text header row above HXL hashtags
-  -i tag,tag..., --include-tags tag,tag...
-                        Comma-separated list of column tags to include
-  -e tag,tag..., --exclude-tags tag,tag...
-                        Comma-separated list of column tags to exclude
+  -h, --help     show this help message and exit
+  -H, --headers  Preserve text header row above HXL hashtags
 ```
 
 Create a normalised version of a HXL dataset, removing columns with no
@@ -57,17 +52,31 @@ only the HXL tags, so that the file is suitable for processing by
 regular CSV tools like
 [csvkit](http://csvkit.readthedocs.org/en/0.9.0/).
 
-```
-python -m hxl.scripts.hxlnorm < DATASET_IN.csv > DATASET_OUT.csv
-```
-
-You can include columns by tag using the -i option, or exclude them
-using the -e option (it's OK to leave the leading '#' off tag
-names). The following example strips any columns with the tags `#name`,
-`#email`, or `#phone` from the input file:
+## _hxlcut_ script
 
 ```
-python -m hxl.scripts.hxlnorm -e name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
+usage: hxlcut.py [-h] [-c tag,tag...] [-C tag,tag...] [infile] [outfile]
+
+Cut columns from a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard input).
+  outfile               HXL file to write (if omitted, use standard output).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c tag,tag..., --include-tags tag,tag...
+                        Comma-separated list of column tags to include
+  -C tag,tag..., --exclude-tags tag,tag...
+                        Comma-separated list of column tags to exclude
+```
+
+Selectively cuts columns from a HXL dataset, using a whitelist, a
+blacklist, or both.  Example removing personal information from a HXL
+dataset:
+
+```
+python -m hxl.scripts.hxlcut -C name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 ## _hxlcount_ script

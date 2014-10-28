@@ -190,6 +190,16 @@ class HXLReader:
         self.setupTableSpec()
         return self.tableSpec.tags
 
+    @property
+    def hasHeaders(self):
+        """
+        Report whether any non-empty header strings exist.
+        """
+        for header in self.headers:
+            if header:
+                return True
+        return False
+
     def next(self):
         """
         Iterable function to return the next row of HXL values.
