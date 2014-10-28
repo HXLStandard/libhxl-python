@@ -99,6 +99,28 @@ OMS,WASH,2
 UNICEF,Educación,2
 ```
 
+## _hxlbounds_ script
+
+(TO BE DOCUMENTED)
+
+```
+usage: hxlbounds.py [-h] -b BOUNDS [-c tag,tag...] [infile] [outfile]
+
+Normalize a HXL file.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard input).
+  outfile               HXL file to write (if omitted, use standard output).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -b BOUNDS, --bounds BOUNDS
+                        Preserve text header row above HXL hashtags
+  -c tag,tag..., --tags tag,tag...
+                        Comma-separated list of column tags to include in
+                        error reports
+```
+
 ## _hxl2geojson_ script
 
 Generate a GeoJSON file from a HXL dataset. There will be one GeoJSON
