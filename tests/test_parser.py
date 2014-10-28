@@ -14,7 +14,7 @@ from hxl.parser import HXLReader
 
 class TestParser(unittest.TestCase):
 
-    SAMPLE_FILE = 'sample-data/sample.csv'
+    SAMPLE_FILE = '../sample-data/sample.csv'
     EXPECTED_ROW_COUNT = 8
     EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organización','Sex','Targeted','País','Departamento/Provincia/Estado']
     EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#sex', '#targeted_num', '#country', '#adm1']
