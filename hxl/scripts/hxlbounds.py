@@ -46,16 +46,35 @@ def hxlbounds(input, output, bounds):
     """
     Check that all points in a HXL dataset fall without a set of bounds.
     """
+
+    def error(row, message):
+        """Report a bounds error."""
+        loctype = row.get('#loctype')
+        loc = row.get('#loc')
+        lat = row.get('#lat_deg')
+        lon = row.get('#lon_deg')
+        # fixme - use output specified
+        print(loctype + ': ' + loc + ' (row ' + str(row.sourceRowNumber) + '): ' + message + ': ' + str(lat) + ', ' + str(lon))
+
     reader = HXLReader(input)
     for row in reader:
         lat = row.get('#lat_deg')
         lon = row.get('#lon_deg')
         if lat and lon:
-            for s in shapes:
-                loctype = row.get('#loctype')
-                loc = row.get('#loc')
-                if not s.contains(Point(float(lon), float(lat))):
-                    print(loctype + ': ' + loc + ' (row ' + str(row.sourceRowNumber) + ') is outside of bounds: ' + str(lat) + ', ' + str(lon))
+            try:
+                seen_shape = False
+                for s in shapes:
+                    if s.contains(Point(float(lon), float(lat))):
+                        seen_shape = True
+                        break;
+                if not seen_shape:
+                    error(row, 'out of bounds')
+            except ValueError:
+                error(row, 'malformed lat/lon')
+        elif lat or lon:
+            error(row, '#lat_deg or #lon_deg missing')
+        # TODO user option to report no lat *and* no lon
+                    
 
 # If run as script
 if __name__ == '__main__':
