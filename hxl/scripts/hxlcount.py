@@ -16,9 +16,9 @@ Command-line usage:
 Program usage:
 
   import sys
-  from hxl.scripts.counter import counter
+  from hxl.scripts.hxlcount import hxlcount
 
-  counter(sys.stdin, sys.stdout, tags)
+  hxlcount(sys.stdin, sys.stdout, tags)
 
 License: Public Domain
 Documentation: http://hxlstandard.org
@@ -29,7 +29,7 @@ import csv
 import json
 from hxl.parser import HXLReader
 
-def counter(input, output, tags):
+def hxlcount(input, output, tags):
     """
     Count occurances of value combinations for a set of tags.
     """
@@ -73,8 +73,8 @@ if __name__ == '__main__':
             tag = '#' + tag
         tags.append(tag)
     if tags:
-        counter(sys.stdin, sys.stdout, tags)
+        hxlcount(sys.stdin, sys.stdout, tags)
     else:
-        sys.exit('Usage: python -m hxl.scripts.counter <hxlTag> [hxlTag...] < DATA_IN.csv > DATA_OUT.csv')
+        sys.exit('Usage: python -m hxl.scripts.hxlcount <hxlTag> [hxlTag...] < DATA_IN.csv > DATA_OUT.csv')
 
 # end

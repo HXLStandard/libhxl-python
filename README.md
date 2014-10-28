@@ -70,14 +70,14 @@ names). The following example strips any columns with the tags `#name`,
 python -m hxl.scripts.hxlnorm -e name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
-## _counter_ script
+## _hxlcount_ script
 
 Count unique combinations of values for one or more HXL tags (you may
 omit the leading '#' from hashtags to avoid having to quote them on
 the command line):
 
 ```
-python -m hxl.scripts.counter org sector < DATASET_IN.csv > DATASET_OUT.csv
+python -m hxl.scripts.hxlcount org sector < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 Sample output:
