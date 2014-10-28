@@ -41,20 +41,28 @@ import argparse
 import json
 from shapely.geometry import Point, shape
 from hxl.parser import HXLReader
+from . import parse_tags
 
-def hxlbounds(input, output, bounds):
+def hxlbounds(input, output, bounds, tags=[]):
     """
     Check that all points in a HXL dataset fall without a set of bounds.
     """
 
     def error(row, message):
         """Report a bounds error."""
-        loctype = row.get('#loctype')
-        loc = row.get('#loc')
         lat = row.get('#lat_deg')
         lon = row.get('#lon_deg')
-        # fixme - use output specified
-        print(loctype + ': ' + loc + ' (row ' + str(row.sourceRowNumber) + '): ' + message + ': ' + str(lat) + ', ' + str(lon))
+        context = [
+            '#lat_deg' + '=' + lat,
+            '#lon_deg' + '=' + lon
+            ]
+        if (tags):
+            for tag in tags:
+                value = row.get(tag)
+                if value:
+                    context.append(tag + '=' + value)
+        report = str(message) + ' (row ' + str(row.sourceRowNumber) + ') ' + str(context)
+        print >>output, report
 
     reader = HXLReader(input)
     for row in reader:
@@ -84,6 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
     parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
     parser.add_argument('-b', '--bounds', help='Preserve text header row above HXL hashtags', required=True, type=argparse.FileType('r'))
+    parser.add_argument('-c', '--tags', help='Comma-separated list of column tags to include in error reports', metavar='tag,tag...', type=parse_tags, default='loc,org,sector,adm1,adm2,adm3')
     args = parser.parse_args()
 
     data = json.load(args.bounds)
@@ -92,6 +101,6 @@ if __name__ == '__main__':
         shapes.append(shape(d['geometry']))
 
     # Call the command function
-    hxlbounds(args.infile, args.outfile, shapes)
+    hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
 
 # end
