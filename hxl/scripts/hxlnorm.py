@@ -12,7 +12,7 @@ Command-line usage:
 
   python -m hxl.scripts.hxlnorm < DATA_IN.csv > DATA_OUT.csv
 
-(Use -h option to get all options.)
+(Use -h option to get full usage.)
 
 Program usage:
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Normalize a HXL file.')
     parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
     parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
-    parser.add_argument('-H', '--headers', help='Preserve text header row above HXL hashtags', action='store_const', const=True, default=False);
+    parser.add_argument('-H', '--headers', help='Preserve text header row above HXL hashtags', action='store_const', const=True, default=False)
     args = parser.parse_args()
 
     # Call the command function
