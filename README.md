@@ -101,7 +101,20 @@ UNICEF,Educación,2
 
 ## _hxlbounds_ script
 
-(TO BE DOCUMENTED)
+Check whether all of the points in a HXL dataset are contained
+somewhere within a GeoJSON feature set.
+
+**Prerequisites:** the Python
+[Shapely](https://pypi.python.org/pypi/Shapely) library and the C
+[libgeos](http://trac.osgeo.org/geos/) library must be available on
+your system. In Ubuntu Linux, the follow commands may be sufficient:
+
+```
+sudo apt-get install libgeos_c1
+sudo pip install Shapely
+```
+
+**Usage:**
 
 ```
 usage: hxlbounds.py [-h] -b BOUNDS [-c tag,tag...] [infile] [outfile]
@@ -119,6 +132,16 @@ optional arguments:
   -c tag,tag..., --tags tag,tag...
                         Comma-separated list of column tags to include in
                         error reports
+```
+
+**Example:**
+
+Test whether all lat/lon data falls within the bounds of the GeoJSON
+feature collection Colombia.json, showing also the #activity and #org
+values in any error reports:
+
+```
+python -m hxl.scripts.hxlbounds -c activity,org -b Colombia.json hxl-data.csv > hxl-data-errors.txt
 ```
 
 ## _hxl2geojson_ script
