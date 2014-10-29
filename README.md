@@ -79,6 +79,42 @@ dataset:
 python -m hxl.scripts.hxlcut -C name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
+## _hxlfilter_ script
+
+Filter lines in a HXL dataset, preserving or removing matches.
+
+**Usage:**
+
+```
+usage: hxlfilter.py [-h] [-f tag=value] [-v] [infile] [outfile]
+
+Cut columns from a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard input).
+  outfile               HXL file to write (if omitted, use standard output).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f tag=value, --filter tag=value
+                        hashtag=value pair for filtering
+  -v, --invert          Show only lines *not* matching criteria
+```
+
+**Examples:**
+
+Show only lines where the country is Colombia and the sector is WASH:
+
+```
+python -m hxl.scripts.hxlfilter -f country=Colombia -f sector=WASH < DATASET_IN.csv > DATASET_OUT.csv
+```
+
+Show only lines where the org is not UNICEF:
+
+```
+python -m hxl.scripts.hxlfilter -f org=UNICEF -v < DATASET_IN.csv > DATASET_OUT.csv
+```
+
 ## _hxlcount_ script
 
 Count unique combinations of values for one or more HXL tags (you may
