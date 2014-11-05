@@ -7,7 +7,7 @@ http://hxlstandard.org
 
 # Usage
 
-Identity transformation in a pipeline (read from standard input, write to standard output):
+Streaming identity transformation in a pipeline (read from standard input, write to standard output):
 
 ```
 import sys
@@ -22,6 +22,16 @@ writer.writerow(parser.headers)
 writer.writerow(parser.tags)
 for row in parser:
     writer.writerow(row.values)
+```
+
+Same transformation, but loading the entire dataset into memory:
+
+```
+import sys
+from hxl.parser import readHXL, writeHXL
+
+dataset = readHXL(sys.stdin)
+writeHXL(sys.stdout, dataset)
 ```
 
 # Scripts
