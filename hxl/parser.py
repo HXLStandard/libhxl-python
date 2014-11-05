@@ -10,7 +10,7 @@ Documentation: http://hxlstandard.org
 import csv
 import re
 
-from model import HXLColumn, HXLRow
+from model import HXLDataset, HXLColumn, HXLRow
 
 class HXLParseException(Exception):
     """
@@ -191,6 +191,14 @@ class HXLReader:
         return self.tableSpec.tags
 
     @property
+    def columns(self):
+        """
+        Return a list of HXLColumn objects.
+        """
+        self.setupTableSpec()
+        return self.tableSpec.columns
+
+    @property
     def hasHeaders(self):
         """
         Report whether any non-empty header strings exist.
@@ -357,5 +365,25 @@ class HXLReader:
         hxlTag = re.sub('_(date|deg|id|link|num)$', '', hxlTag)
         hxlTag = re.sub('_', ' ', hxlTag)
         return hxlTag.capitalize()
+
+def readHXL(input, url=None):
+    """Load an in-memory HXL dataset."""
+    dataset = HXLDataset(url)
+
+    parser = HXLReader(input)
+    dataset.columns = parser.columns
+    for row in parser:
+        dataset.rows.append(row)
+
+    return dataset
+
+def writeHXL(output, dataset):
+    """Serialize a HXL dataset to an output stream."""
+    writer = csv.writer(output)
+    if (dataset.headers):
+        writer.writerow(dataset.headers)
+    writer.writerow(dataset.tags)
+    for row in dataset.rows:
+        writer.writerow(row.values)
 
 # end

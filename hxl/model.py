@@ -7,6 +7,35 @@ License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
+class HXLDataset(object):
+    """
+    In-memory HXL document.
+    """
+
+    def __init__(self, url=None):
+        self.columns = []
+        self.rows = []
+        self.cachedTags = None
+        self.cachedHeaders = None
+
+    @property
+    def headers(self):
+        """
+        Get a simple list of HXL hashtags from the columns.
+        """
+        if self.cachedHeaders == None:
+            self.cachedHeaders = map(lambda column: column.headerText, self.columns)
+        return self.cachedHeaders
+
+    @property
+    def tags(self):
+        """
+        Get a simple list of HXL hashtags from the columns.
+        """
+        if self.cachedTags == None:
+            self.cachedTags = map(lambda column: column.hxlTag, self.columns)
+        return self.cachedTags
+
 class HXLColumn(object):
     """
     The definition of a logical column in the HXL data.
