@@ -43,7 +43,7 @@ class HXLColumn(object):
 
     __slots__ = ['columnNumber', 'sourceColumnNumber', 'hxlTag', 'languageCode', 'headerText']
 
-    def __init__(self, columnNumber, sourceColumnNumber, hxlTag=None, languageCode=None, headerText=None):
+    def __init__(self, columnNumber=-1, sourceColumnNumber=-1, hxlTag=None, languageCode=None, headerText=None):
         self.columnNumber = columnNumber
         self.sourceColumnNumber = sourceColumnNumber
         self.hxlTag = hxlTag
