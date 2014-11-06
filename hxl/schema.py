@@ -22,9 +22,10 @@ class HXLSchemaRule(object):
     TYPE_EMAIL = 4
     TYPE_PHONE = 5
 
-    def __init__(self, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None, caseSensitive=True):
-        self.minOccur = None
-        self.maxOccur = None
+    def __init__(self, hashTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None, caseSensitive=True):
+        self.hashTag = hashTag
+        self.minOccur = minOccur
+        self.maxOccur = maxOccur
         self.dataType = dataType
         self.minValue = minValue
         self.maxValue = maxValue
@@ -34,7 +35,17 @@ class HXLSchemaRule(object):
 
     def validateRow(self, row):
         numberSeen = 0
-        # TODO
+        values = row.getAll(self.hashTag)
+        for value in values:
+            if not self.validate(value):
+                return False
+            if value:
+                numberSeen += 1
+        if self.minOccur is not None and numberSeen < self.minOccur:
+            return False
+        elif self.maxOccur is not None and numberSeen > self.maxOccur:
+            return False
+        return True
 
     def validate(self, value):
         return self._testType(value) and self._testRange(value) and self._testPattern(value) and self._testEnumeration(value)
