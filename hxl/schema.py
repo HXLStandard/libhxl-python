@@ -22,7 +22,7 @@ class HXLSchemaRule(object):
     TYPE_EMAIL = 4
     TYPE_PHONE = 5
 
-    def __init__(self, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None):
+    def __init__(self, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None, caseSensitive=True):
         self.minOccur = None
         self.maxOccur = None
         self.dataType = dataType
@@ -30,6 +30,7 @@ class HXLSchemaRule(object):
         self.maxValue = maxValue
         self.valuePattern = valuePattern
         self.valueEnumeration = valueEnumeration
+        self.caseSensitive = caseSensitive
 
     def validateRow(self, row):
         numberSeen = 0
@@ -66,13 +67,22 @@ class HXLSchemaRule(object):
 
     def _testPattern(self, value):
         if self.valuePattern:
-            return re.match(self.valuePattern, value)
+            if self.caseSensitive:
+                return re.match(self.valuePattern, value)
+            else:
+                return re.match(self.valuePattern, value, re.IGNORECASE)
         else:
             return True
 
     def _testEnumeration(self, value):
-        # TODO
-        return True
+        if self.valueEnumeration is not None:
+            if self.caseSensitive:
+                return value in self.valueEnumeration
+            else:
+                value = value.upper()
+                return value in map(lambda item: item.upper(), self.valueEnumeration)
+        else:
+            return True
                 
 class HXLSchema(object):
     """

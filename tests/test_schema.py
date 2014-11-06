@@ -65,6 +65,12 @@ class TestSchemaRule(unittest.TestCase):
     def test_value_enumeration(self):
         rule = HXLSchemaRule(valueEnumeration=['aa', 'bb', 'cc'])
         self.assertTrue(rule.validate('bb'))
+        self.assertFalse(rule.validate('BB'))
+        self.assertFalse(rule.validate('dd'))
+
+        rule.caseSensitive = False
+        self.assertTrue(rule.validate('bb'))
+        self.assertTrue(rule.validate('BB'))
         self.assertFalse(rule.validate('dd'))
 
 # end
