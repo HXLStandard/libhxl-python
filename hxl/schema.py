@@ -22,8 +22,8 @@ class HXLSchemaRule(object):
     TYPE_EMAIL = 4
     TYPE_PHONE = 5
 
-    def __init__(self, hashTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None, caseSensitive=True):
-        self.hashTag = hashTag
+    def __init__(self, hxlTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None, caseSensitive=True):
+        self.hxlTag = hxlTag
         self.minOccur = minOccur
         self.maxOccur = maxOccur
         self.dataType = dataType
@@ -35,12 +35,13 @@ class HXLSchemaRule(object):
 
     def validateRow(self, row):
         numberSeen = 0
-        values = row.getAll(self.hashTag)
-        for value in values:
-            if not self.validate(value):
-                return False
-            if value:
-                numberSeen += 1
+        values = row.getAll(self.hxlTag)
+        if values:
+            for value in values:
+                if not self.validate(value):
+                    return False
+                if value:
+                    numberSeen += 1
         if self.minOccur is not None and numberSeen < self.minOccur:
             return False
         elif self.maxOccur is not None and numberSeen > self.maxOccur:
@@ -100,7 +101,16 @@ class HXLSchema(object):
     Schema against which to validate a HXL document.
     """
 
-    def __init__(self):
-        self.tagRules = {}
+    def __init__(self, rules=[]):
+        self.rules = rules
+
+    def validateRow(self, row):
+        for rule in self.rules:
+            if not rule.validateRow(row):
+                return False
+        return True
+
+# end
+
 
 

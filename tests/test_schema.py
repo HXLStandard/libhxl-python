@@ -8,12 +8,37 @@ License: Public Domain
 
 import unittest
 from hxl.model import HXLColumn, HXLRow
-from hxl.schema import HXLSchemaRule
+from hxl.schema import HXLSchema, HXLSchemaRule
 
+class TestSchema(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_row(self):
+        schema = HXLSchema(
+            rules=[HXLSchemaRule('#sector', minOccur=1), HXLSchemaRule('#affected_num', dataType=HXLSchemaRule.TYPE_NUM)]
+            )
+        row = HXLRow(
+            columns = [HXLColumn(hxlTag='#affected_num'), HXLColumn(hxlTag='#sector'), HXLColumn(hxlTag='#sector')],
+            )
+
+        row.values = ['35', 'WASH', '']
+        self.assertTrue(schema.validateRow(row))
+        
+        row.values = ['35', 'WASH', 'Health']
+        self.assertTrue(schema.validateRow(row))
+        
+        row.values = ['35', '', '']
+        self.assertFalse(schema.validateRow(row))
+
+        row.values = ['abc', 'WASH', '']
+        self.assertFalse(schema.validateRow(row))
+        
 class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
-        return True
+        pass
 
     def test_type_none(self):
         rule = HXLSchemaRule('#sector',)
