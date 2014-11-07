@@ -3,11 +3,7 @@ Script to produce GeoJSON from HXL
 David Megginson
 October 2014
 
-Command-line usage:
-
-  python -m hxl.scripts.hxl2geojson < DATA_IN.csv > DATA_OUT.json
-
-Program usage:
+Usage:
 
   import sys
   from hxl.scripts.hxl2geojson import hxl2geojson
