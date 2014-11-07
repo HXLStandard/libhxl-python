@@ -18,7 +18,7 @@ In Ubuntu Linux, the following commands will do the trick:
 
 Usage:
 
-  python -m hxl.scripts.hxlbounds -b BOUNDS.json DATA.csv > report.txt
+  hxlbounds -b BOUNDS.json DATA.csv > report.txt
 
 (Use -h option to get full usage.)
 
