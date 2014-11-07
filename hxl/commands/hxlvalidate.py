@@ -1,17 +1,11 @@
 """
-Script to schema-validate a HXL dataset.
+Command function to schema-validate a HXL dataset.
 David Megginson
 November 2014
 
 Can use a whitelist of HXL tags, a blacklist, or both.
 
-Command-line usage:
-
-  python -m hxl.scripts.hxlvalidate --schema MYSCHEMA.csv > error-list.txt
-
-(Use -h option to get all options.)
-
-Program usage:
+Usage:
 
   import sys
   from hxl.scripts.hxlvalidate import hxlvalidate

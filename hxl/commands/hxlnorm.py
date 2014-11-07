@@ -1,5 +1,5 @@
 """
-Script to normalise a HXL dataset.
+Command function to normalise a HXL dataset.
 David Megginson
 October 2014
 
@@ -8,13 +8,7 @@ Strip columns without hashtags.
 Strip leading and trailing whitespace from values.
 Strip all but one pre-tag header row.
 
-Command-line usage:
-
-  python -m hxl.scripts.hxlnorm < DATA_IN.csv > DATA_OUT.csv
-
-(Use -h option to get full usage.)
-
-Program usage:
+Usage:
 
   import sys
   from hxl.scripts.hxlnorm import hxlnorm

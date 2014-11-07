@@ -1,18 +1,12 @@
 """
-Script to filter rows columns from a HXL dataset.
+Command function to filter rows columns from a HXL dataset.
 David Megginson
 October 2014
 
 Supply a list of tag=value pairs, and return only the rows in the HXL
 dataset that contain matches for all of them.
 
-Command-line usage:
-
-  python -m hxl.scripts.hxlfilter -f country=Colombia -f sector=WASH < DATA_IN.csv > DATA_OUT.csv
-
-(Use -h option to get full usage.)
-
-Program usage:
+Usage:
 
   import sys
   from hxl.scripts.hxlfilter import hxlfilter

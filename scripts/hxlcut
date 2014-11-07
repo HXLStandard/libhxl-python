@@ -1,5 +1,22 @@
 #!/usr/bin/python
 
+"""
+Script to cut columns from a HXL dataset.
+David Megginson
+October 2014
+
+Can use a whitelist of HXL tags, a blacklist, or both.
+
+Usage:
+
+  hxlcut -c org,country,sector < DATA_IN.csv > DATA_OUT.csv
+
+(Use -h option to get all options.)
+
+License: Public Domain
+Documentation: http://hxlstandard.org
+"""
+
 import sys
 import argparse
 from hxl.commands import parse_tags
@@ -7,10 +24,34 @@ from hxl.commands.hxlcut import hxlcut
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
-parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
-parser.add_argument('-c', '--include-tags', help='Comma-separated list of column tags to include', metavar='tag,tag...', type=parse_tags)
-parser.add_argument('-C', '--exclude-tags', help='Comma-separated list of column tags to exclude', metavar='tag,tag...', type=parse_tags)
+parser.add_argument(
+    'infile',
+    help='HXL file to read (if omitted, use standard input).',
+    nargs='?',
+    type=argparse.FileType('r'),
+    default=sys.stdin
+    )
+parser.add_argument(
+    'outfile',
+    help='HXL file to write (if omitted, use standard output).',
+    nargs='?',
+    type=argparse.FileType('w'),
+    default=sys.stdout
+    )
+parser.add_argument(
+    '-c',
+    '--include-tags',
+    help='Comma-separated list of column tags to include',
+    metavar='tag,tag...',
+    type=parse_tags
+    )
+parser.add_argument(
+    '-C',
+    '--exclude-tags',
+    help='Comma-separated list of column tags to exclude',
+    metavar='tag,tag...',
+    type=parse_tags
+    )
 args = parser.parse_args()
 
 # Call the command function

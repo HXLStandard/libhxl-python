@@ -1,14 +1,50 @@
 #!/usr/bin/python
 
+"""
+Script to schema-validate a HXL dataset.
+David Megginson
+November 2014
+
+Can use a whitelist of HXL tags, a blacklist, or both.
+
+Usage:
+
+  hxlvalidate --schema MYSCHEMA.csv > error-list.txt
+
+(Use -h option to get all options.)
+
+License: Public Domain
+Documentation: http://hxlstandard.org
+"""
+
 import sys
 import argparse
 from hxl.commands.hxlvalidate import hxlvalidate
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Validate a HXL dataset.')
-parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
-parser.add_argument('-s', '--schema', help='Schema file for validating the HXL dataset.', metavar='schema', type=argparse.FileType('r'), default=None)
+parser.add_argument(
+    'infile',
+    help='HXL file to read (if omitted, use standard input).',
+    nargs='?',
+    type=argparse.FileType('r'),
+    default=sys.stdin
+    )
+parser.add_argument(
+    'outfile',
+    help='HXL file to write (if omitted, use standard output).',
+    nargs='?',
+    type=argparse.FileType('w'),
+    default=sys.stdout
+    )
+parser.add_argument(
+    '-s',
+    '--schema',
+    help='Schema file for validating the HXL dataset.',
+    metavar='schema',
+    type=argparse.FileType('r'),
+    default=None
+    )
 args = parser.parse_args()
 
 # Call the command function

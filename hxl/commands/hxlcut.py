@@ -1,17 +1,11 @@
 """
-Script to cut columns from a HXL dataset.
+Command function to cut columns from a HXL dataset.
 David Megginson
 October 2014
 
 Can use a whitelist of HXL tags, a blacklist, or both.
 
-Command-line usage:
-
-  python -m hxl.scripts.hxlcut -c org,country,sector < DATA_IN.csv > DATA_OUT.csv
-
-(Use -h option to get all options.)
-
-Program usage:
+Usage:
 
   import sys
   from hxl.scripts.hxlcut import hxlcut
