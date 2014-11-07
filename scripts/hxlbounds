@@ -18,7 +18,7 @@ shapes = []
 for d in data['features']:
     shapes.append(shape(d['geometry']))
 
-    # Call the command function
-    hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
+# Call the command function
+hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
 
 
