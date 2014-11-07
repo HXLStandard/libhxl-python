@@ -305,7 +305,8 @@ class HXLReader:
                         colSpec.fixedValue = self.lastHeaderRow[sourceColumnNumber]
                         columnNumber += 1
                     else:
-                        colSpec.column.headerText = self.lastHeaderRow[sourceColumnNumber]
+                        if self.lastHeaderRow and sourceColumnNumber < len(self.lastHeaderRow):
+                            colSpec.column.headerText = self.lastHeaderRow[sourceColumnNumber]
                 else:
                     return None
             else:
