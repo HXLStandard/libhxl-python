@@ -10,6 +10,7 @@ Documentation: http://hxlstandard.org
 import urlparse
 import re
 from email.utils import parseaddr
+from parser import HXLReader
 
 class HXLSchemaRule(object):
     """
@@ -17,7 +18,7 @@ class HXLSchemaRule(object):
     """
 
     TYPE_TEXT = 1
-    TYPE_NUM = 2
+    TYPE_NUMBER = 2
     TYPE_URL = 3
     TYPE_EMAIL = 4
     TYPE_PHONE = 5
@@ -53,7 +54,7 @@ class HXLSchemaRule(object):
 
     def _testType(self, value):
         """Check the datatype."""
-        if self.dataType == self.TYPE_NUM:
+        if self.dataType == self.TYPE_NUMBER:
             try:
                 float(value)
                 return True
@@ -95,6 +96,10 @@ class HXLSchemaRule(object):
                 return value in map(lambda item: item.upper(), self.valueEnumeration)
         else:
             return True
+
+    def __str__(self):
+        """String representation of a rule (for debugging)"""
+        return "<HXL schema rule: " + self.hxlTag + ">"
                 
 class HXLSchema(object):
     """
@@ -104,11 +109,71 @@ class HXLSchema(object):
     def __init__(self, rules=[]):
         self.rules = rules
 
+    # TODO add support for validating columns against rules, too
+    # this is where to mention impossible conditions, or columns
+    # without rules
+
     def validateRow(self, row):
         for rule in self.rules:
             if not rule.validateRow(row):
                 return False
         return True
+
+    def __str__(self):
+        """String representation of a schema (for debugging)"""
+        s = "<HXL schema\n"
+        for rule in self.rules:
+            s += "  " + str(rule) + "\n"
+        s += ">"
+        return s
+
+def loadHXLSchema(input):
+    """
+    Load a HXL schema from the provided input stream.
+    """
+    schema = HXLSchema()
+
+    def parseType(typeString):
+        if typeString == 'text':
+            return HXLSchemaRule.TYPE_TEXT
+        elif typeString == 'number':
+            return HXLSchemaRule.TYPE_NUMBER
+        elif typeString == 'url':
+            return HXLSchemaRule.TYPE_URL
+        elif typeString == 'email':
+            return HXLSchemaRule.TYPE_EMAIL
+        elif typeString == 'phone':
+            return HXLSchemaRule.TYPE_PHONE
+        else:
+            #TODO add warning
+            return None
+
+    def toInt(s):
+        if s:
+            return int(s)
+        else:
+            return None
+        
+    def toFloat(s):
+        if s:
+            return float(s)
+        else:
+            return None
+
+    parser = HXLReader(input)
+    for row in parser:
+        rule = HXLSchemaRule(row.get('#x_tag'))
+        rule.minOccur = toInt(row.get('#x_minoccur_num'))
+        rule.maxOccur = toInt(row.get('#x_maxoccur_num'))
+        rule.dataType = parseType(row.get('#x_datatype'))
+        rule.minValue = toFloat(row.get('#x_minvalue_num'))
+        rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
+        rule.valuePattern = re.compile(row.get('#x_pattern'))
+        rule.valueEnumeration = row.get('#x_enumeration').split('|')
+        rule.caseSensitive = int(row.get('#x_casesensitive'))
+        schema.rules.append(rule)
+
+    return schema
 
 # end
 

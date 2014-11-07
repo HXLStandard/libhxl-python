@@ -17,7 +17,7 @@ class TestSchema(unittest.TestCase):
 
     def test_row(self):
         schema = HXLSchema(
-            rules=[HXLSchemaRule('#sector', minOccur=1), HXLSchemaRule('#affected_num', dataType=HXLSchemaRule.TYPE_NUM)]
+            rules=[HXLSchemaRule('#sector', minOccur=1), HXLSchemaRule('#affected_num', dataType=HXLSchemaRule.TYPE_NUMBER)]
             )
         row = HXLRow(
             columns = [HXLColumn(hxlTag='#affected_num'), HXLColumn(hxlTag='#sector'), HXLColumn(hxlTag='#sector')],
@@ -53,7 +53,7 @@ class TestSchemaRule(unittest.TestCase):
         self.assertTrue(rule.validate('hello, world'))
 
     def test_type_num(self):
-        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_NUM)
+        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_NUMBER)
         self.assertTrue(rule.validate(10))
         self.assertTrue(rule.validate(' -10.1  '))
         self.assertFalse(rule.validate('ten'))
