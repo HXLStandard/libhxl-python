@@ -83,14 +83,14 @@ class HXLRow(object):
     def append(self, value):
         self.values.append(value)
 
-    def get(self, tag, index=0):
+    def get(self, tag, index=0, default=None):
         for i, column in enumerate(self.columns):
             if column.hxlTag == tag:
                 if index == 0:
                     return self.__getitem__(i)
                 else:
                     index = index - 1
-        return False
+        return default
 
     def getAll(self, tag, index=0):
         result = []
