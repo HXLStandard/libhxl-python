@@ -41,7 +41,7 @@ There are several scripts that you can call from the command line:
 ## _hxlnorm_ script
 
 ```
-usage: hxlnorm.py [-h] [-H] [infile] [outfile]
+usage: hxlnorm [-h] [-H] [infile] [outfile]
 
 Normalize a HXL file.
 
@@ -65,7 +65,7 @@ regular CSV tools like
 ## _hxlcut_ script
 
 ```
-usage: hxlcut.py [-h] [-c tag,tag...] [-C tag,tag...] [infile] [outfile]
+usage: hxlcut [-h] [-c tag,tag...] [-C tag,tag...] [infile] [outfile]
 
 Cut columns from a HXL dataset.
 
@@ -86,7 +86,7 @@ blacklist, or both.  Example removing personal information from a HXL
 dataset:
 
 ```
-python -m hxl.scripts.hxlcut -C name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
+hxlcut -C name,email,phone < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 ## _hxlfilter_ script
@@ -96,7 +96,7 @@ Filter lines in a HXL dataset, preserving or removing matches.
 **Usage:**
 
 ```
-usage: hxlfilter.py [-h] [-f tag=value] [-v] [infile] [outfile]
+usage: hxlfilter [-h] [-f tag=value] [-v] [infile] [outfile]
 
 Cut columns from a HXL dataset.
 
@@ -116,13 +116,13 @@ optional arguments:
 Show only lines where the country is Colombia and the sector is WASH:
 
 ```
-python -m hxl.scripts.hxlfilter -f country=Colombia -f sector=WASH < DATASET_IN.csv > DATASET_OUT.csv
+hxlfilter -f country=Colombia -f sector=WASH < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 Show only lines where the org is not UNICEF:
 
 ```
-python -m hxl.scripts.hxlfilter -f org=UNICEF -v < DATASET_IN.csv > DATASET_OUT.csv
+hxlfilter -f org=UNICEF -v < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 ## _hxlcount_ script
@@ -132,7 +132,7 @@ omit the leading '#' from hashtags to avoid having to quote them on
 the command line):
 
 ```
-python -m hxl.scripts.hxlcount org sector < DATASET_IN.csv > DATASET_OUT.csv
+hxlcount org sector < DATASET_IN.csv > DATASET_OUT.csv
 ```
 
 Sample output:
@@ -163,7 +163,7 @@ sudo pip install Shapely
 **Usage:**
 
 ```
-usage: hxlbounds.py [-h] -b BOUNDS [-c tag,tag...] [infile] [outfile]
+usage: hxlbounds [-h] -b BOUNDS [-c tag,tag...] [infile] [outfile]
 
 Normalize a HXL file.
 
@@ -187,7 +187,7 @@ feature collection Colombia.json, showing also the #activity and #org
 values in any error reports:
 
 ```
-python -m hxl.scripts.hxlbounds -c activity,org -b Colombia.json hxl-data.csv > hxl-data-errors.txt
+hxlbounds -c activity,org -b Colombia.json hxl-data.csv > hxl-data-errors.txt
 ```
 
 ## _hxl2geojson_ script
@@ -197,6 +197,6 @@ Generate a GeoJSON file from a HXL dataset. There will be one GeoJSON
 '#lat_deg' and '#lon_deg' HXL hashtags:
 
 ```
-python -m hxl.scripts.hxl2geojson < DATASET_IN.csv > DATASET_OUT.json
+hxl2geojson < DATASET_IN.csv > DATASET_OUT.json
 ```
 
