@@ -76,8 +76,4 @@ def hxl2geojson(input, output):
 
     output.write('\n ]\n}\n')
 
-# If run as script
-if __name__ == '__main__':
-    hxl2geojson(sys.stdin, sys.stdout)
-
 # end

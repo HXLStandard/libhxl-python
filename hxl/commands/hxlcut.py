@@ -53,18 +53,4 @@ def hxlcut(input, output, include_tags = [], exclude_tags = []):
     for row in parser:
         writer.writerow(restrict_tags(row.values))
 
-# If run as script
-if __name__ == '__main__':
-
-    # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
-    parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-    parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
-    parser.add_argument('-c', '--include-tags', help='Comma-separated list of column tags to include', metavar='tag,tag...', type=parse_tags)
-    parser.add_argument('-C', '--exclude-tags', help='Comma-separated list of column tags to exclude', metavar='tag,tag...', type=parse_tags)
-    args = parser.parse_args()
-
-    # Call the command function
-    hxlcut(args.infile, args.outfile, include_tags=args.include_tags, exclude_tags=args.exclude_tags)
-
 # end

@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+import sys
+import argparse
+from hxl.commands.hxlvalidate import hxlvalidate
+
+# Command-line arguments
+parser = argparse.ArgumentParser(description = 'Validate a HXL dataset.')
+parser.add_argument('infile', help='HXL file to read (if omitted, use standard input).', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
+parser.add_argument('outfile', help='HXL file to write (if omitted, use standard output).', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+parser.add_argument('-s', '--schema', help='Schema file for validating the HXL dataset.', metavar='schema', type=argparse.FileType('r'), default=None)
+args = parser.parse_args()
+
+# Call the command function
+hxlvalidate(input=args.infile, output=args.outfile, schema_input=args.schema)
+
+# end
+

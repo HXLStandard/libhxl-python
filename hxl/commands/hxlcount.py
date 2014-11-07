@@ -65,16 +65,4 @@ def hxlcount(input, output, tags):
         data.append(aggregate[1])
         writer.writerow(data)
 
-# If run as script
-if __name__ == '__main__':
-    tags = []
-    for tag in sys.argv[1:]:
-        if not tag.startswith('#'):
-            tag = '#' + tag
-        tags.append(tag)
-    if tags:
-        hxlcount(sys.stdin, sys.stdout, tags)
-    else:
-        sys.exit('Usage: python -m hxl.scripts.hxlcount <hxlTag> [hxlTag...] < DATA_IN.csv > DATA_OUT.csv')
-
 # end

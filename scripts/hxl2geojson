@@ -1,0 +1,5 @@
+#!/usr/bin/python
+
+from hxl.commands.hxl2geojson import hxl2geojson
+
+hxl2geojson()
