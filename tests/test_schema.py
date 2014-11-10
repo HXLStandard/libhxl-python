@@ -39,17 +39,16 @@ class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
         self.errors = []
+        self.rule = HXLSchemaRule('#x_test', callback=lambda error: self.errors.append(error))
 
     def test_type_none(self):
-        rule = HXLSchemaRule('#sector', callback=self._callback)
-
-        self.assertTrue(rule.validate(''))
+        self.assertTrue(self.rule.validate(''))
         self._test_errors()
 
-        self.assertTrue(rule.validate(10))
+        self.assertTrue(self.rule.validate(10))
         self._test_errors()
 
-        self.assertTrue(rule.validate('hello, world'))
+        self.assertTrue(self.rule.validate('hello, world'))
         self._test_errors()
 
     def test_type_text(self):
@@ -117,10 +116,10 @@ class TestSchemaRule(unittest.TestCase):
         self.assertFalse(rule.validate('5.0'))
 
     def test_value_pattern(self):
-        rule = HXLSchemaRule('#sector',valuePattern='^a+b$', callback=self._callback)
-        self.assertTrue(rule.validate('ab'))
-        self.assertTrue(rule.validate('aab'))
-        self.assertFalse(rule.validate('bb'))
+        self.rule.valuePattern = '^a+b$'
+        self.validate_value('ab', 0)
+        self.validate_value('aab', 0)
+        self.validate_value('bb', 1)
 
     def test_value_enumeration(self):
         rule = HXLSchemaRule('#sector',valueEnumeration=['aa', 'bb', 'cc'], callback=self._callback)
@@ -148,6 +147,17 @@ class TestSchemaRule(unittest.TestCase):
 
         rule = HXLSchemaRule('#sector', maxOccur=0, callback=self._callback)
         self.assertFalse(rule.validateRow(row))
+
+    def validate_value(self, value, errors_expected = 0):
+        """
+        Validate a single value with a HXLSchemaRule
+        """
+        if errors_expected == 0:
+            self.assertTrue(self.rule.validate(value))
+        else:
+            self.assertFalse(self.rule.validate(value))
+        self.assertEqual(len(self.errors), errors_expected)
+        self.errors = [] # clear errors for the next run
 
     def _callback(self, error):
         self.errors.append(error)

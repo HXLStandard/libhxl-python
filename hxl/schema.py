@@ -109,12 +109,13 @@ class HXLSchemaRule(object):
 
     def _testPattern(self, value):
         if self.valuePattern:
+            flags = 0
             if self.caseSensitive:
-                return re.match(self.valuePattern, value)
-            else:
-                return re.match(self.valuePattern, value, re.IGNORECASE)
-        else:
-            return True
+                flags = re.IGNORECASE
+                if not re.match(self.valuePattern, value, flags):
+                    self.reportError("Failed to match pattern " + str(self.valuePattern))
+                    return False
+        return True
 
     def _testEnumeration(self, value):
         if self.valueEnumeration is not None:
