@@ -99,6 +99,14 @@ class TestSchemaRule(unittest.TestCase):
         self.assertTrue(rule.validate('BB'))
         self.assertFalse(rule.validate('dd'))
 
+    def test_callback(self):
+        errors = []
+        def error_callback(error):
+            errors.append(error)
+        rule = HXLSchemaRule('#sector', dataType=HXLSchemaRule.TYPE_NUMBER, callback=error_callback)
+        self.assertFalse(rule.validate('abc'))
+        self.assertEqual(len(errors), 1)
+
     def test_row_restrictions(self):
         row = HXLRow([HXLColumn(hxlTag='#sector'), HXLColumn(hxlTag='#subsector'), HXLColumn(hxlTag='#sector')]);
         row.values = ['WASH', '', ''];

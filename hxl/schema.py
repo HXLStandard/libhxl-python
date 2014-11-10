@@ -12,6 +12,19 @@ import re
 from email.utils import parseaddr
 from parser import HXLReader
 
+class HXLValidationException(Exception):
+    """
+    Data structure to hold a HXL validation error.
+    """
+
+    def __init__(self, rule, message, rowNumber=-1, columnNumber=-1, sourceRowNumber=-1, sourceColumnNumber=-1):
+        self.rule = rule
+        self.message = message
+        self.rowNumber = rowNumber
+        self.sourceRowNumber = sourceRowNumber
+        self.columnNumber = columnNumber
+        self.sourceColumnNumber = sourceColumnNumber
+
 class HXLSchemaRule(object):
     """
     Validation rule for a single HXL hashtag.
@@ -23,7 +36,8 @@ class HXLSchemaRule(object):
     TYPE_EMAIL = 4
     TYPE_PHONE = 5
 
-    def __init__(self, hxlTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None, valuePattern=None, valueEnumeration=None, caseSensitive=True):
+    def __init__(self, hxlTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
+                 valuePattern=None, valueEnumeration=None, caseSensitive=True, callback=None):
         self.hxlTag = hxlTag
         self.minOccur = minOccur
         self.maxOccur = maxOccur
@@ -33,6 +47,7 @@ class HXLSchemaRule(object):
         self.valuePattern = valuePattern
         self.valueEnumeration = valueEnumeration
         self.caseSensitive = caseSensitive
+        self.callback = callback
 
     def validateRow(self, row):
         numberSeen = 0
@@ -51,6 +66,16 @@ class HXLSchemaRule(object):
 
     def validate(self, value):
         return self._testType(value) and self._testRange(value) and self._testPattern(value) and self._testEnumeration(value)
+
+    def reportError(self, message, rowNumber = -1, columnNumber = -1, sourceRowNumber = -1, sourceColumnNumber = -1):
+        if (self.callback != None):
+            self.callback(
+                HXLValidationException(
+                    rule=self, message=message,
+                    rowNumber=rowNumber, columnNumber=columnNumber,
+                    sourceRowNumber=sourceRowNumber, sourceColumnNumber=sourceColumnNumber
+                    )
+                )
 
     def _testType(self, value):
         """Check the datatype."""
