@@ -13,7 +13,7 @@ from hxl.schema import HXLSchema, HXLSchemaRule
 class TestSchema(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.errors = []
 
     def test_row(self):
         schema = HXLSchema(
@@ -38,58 +38,92 @@ class TestSchema(unittest.TestCase):
 class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.errors = []
 
     def test_type_none(self):
-        rule = HXLSchemaRule('#sector',)
+        rule = HXLSchemaRule('#sector', callback=self._callback)
+
         self.assertTrue(rule.validate(''))
+        self._test_errors()
+
         self.assertTrue(rule.validate(10))
+        self._test_errors()
+
         self.assertTrue(rule.validate('hello, world'))
+        self._test_errors()
 
     def test_type_text(self):
-        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_TEXT)
+        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_TEXT, callback=self._callback)
+
         self.assertTrue(rule.validate(''))
+        self._test_errors()
+
         self.assertTrue(rule.validate(10))
+        self._test_errors()
+
         self.assertTrue(rule.validate('hello, world'))
+        self._test_errors()
 
     def test_type_num(self):
-        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_NUMBER)
+        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_NUMBER, callback=self._callback)
+
         self.assertTrue(rule.validate(10))
+        self._test_errors()
+
         self.assertTrue(rule.validate(' -10.1  '))
+        self._test_errors()
+
         self.assertFalse(rule.validate('ten'))
+        self._test_errors(1)
 
     def test_type_url(self):
-        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_URL)
+        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_URL, callback=self._callback)
+
         self.assertTrue(rule.validate('http://www.example.org'))
+        self._test_errors()
+
         self.assertFalse(rule.validate('hello, world'))
+        self._test_errors(1)
 
     def test_type_email(self):
-        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_EMAIL)
+        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_EMAIL, callback=self._callback)
+
         self.assertTrue(rule.validate('somebody@example.org'))
+        self._test_errors()
+
         self.assertFalse(rule.validate('hello, world'))
+        self._test_errors(1)
 
     def test_type_phone(self):
-        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_PHONE)
+        rule = HXLSchemaRule('#sector',dataType=HXLSchemaRule.TYPE_PHONE, callback=self._callback)
+
         self.assertTrue(rule.validate('+1-613-555-1111 x1234'))
+        self._test_errors()
+
         self.assertTrue(rule.validate('(613) 555-1111'))
+        self._test_errors()
+
         self.assertFalse(rule.validate('123'))
+        self._test_errors(1)
+
         self.assertFalse(rule.validate('123456789abc'))
+        self._test_errors(1)
 
     def test_value_range(self):
-        rule = HXLSchemaRule('#sector',minValue=3.5, maxValue=4.5)
+        rule = HXLSchemaRule('#sector',minValue=3.5, maxValue=4.5, callback=self._callback)
         self.assertTrue(rule.validate(4.0))
         self.assertTrue(rule.validate('4'))
         self.assertFalse(rule.validate('3.49'))
         self.assertFalse(rule.validate('5.0'))
 
     def test_value_pattern(self):
-        rule = HXLSchemaRule('#sector',valuePattern='^a+b$')
+        rule = HXLSchemaRule('#sector',valuePattern='^a+b$', callback=self._callback)
         self.assertTrue(rule.validate('ab'))
         self.assertTrue(rule.validate('aab'))
         self.assertFalse(rule.validate('bb'))
 
     def test_value_enumeration(self):
-        rule = HXLSchemaRule('#sector',valueEnumeration=['aa', 'bb', 'cc'])
+        rule = HXLSchemaRule('#sector',valueEnumeration=['aa', 'bb', 'cc'], callback=self._callback)
         self.assertTrue(rule.validate('bb'))
         self.assertFalse(rule.validate('BB'))
         self.assertFalse(rule.validate('dd'))
@@ -99,28 +133,27 @@ class TestSchemaRule(unittest.TestCase):
         self.assertTrue(rule.validate('BB'))
         self.assertFalse(rule.validate('dd'))
 
-    def test_callback(self):
-        errors = []
-        def error_callback(error):
-            errors.append(error)
-        rule = HXLSchemaRule('#sector', dataType=HXLSchemaRule.TYPE_NUMBER, callback=error_callback)
-        self.assertFalse(rule.validate('abc'))
-        self.assertEqual(len(errors), 1)
-
     def test_row_restrictions(self):
         row = HXLRow([HXLColumn(hxlTag='#sector'), HXLColumn(hxlTag='#subsector'), HXLColumn(hxlTag='#sector')]);
         row.values = ['WASH', '', ''];
 
-        rule = HXLSchemaRule('#sector',minOccur=1)
+        rule = HXLSchemaRule('#sector', minOccur=1, callback=self._callback)
         self.assertTrue(rule.validateRow(row))
 
-        rule = HXLSchemaRule('#sector',minOccur=2)
+        rule = HXLSchemaRule('#sector', minOccur=2, callback=self._callback)
         self.assertFalse(rule.validateRow(row))
 
-        rule = HXLSchemaRule('#sector',maxOccur=1)
+        rule = HXLSchemaRule('#sector', maxOccur=1, callback=self._callback)
         self.assertTrue(rule.validateRow(row))
 
-        rule = HXLSchemaRule('#sector',maxOccur=0)
+        rule = HXLSchemaRule('#sector', maxOccur=0, callback=self._callback)
         self.assertFalse(rule.validateRow(row))
+
+    def _callback(self, error):
+        self.errors.append(error)
+
+    def _test_errors(self, number_expected = 0):
+        self.assertEqual(len(self.errors), number_expected)
+        self.errors = []
 
 # end
