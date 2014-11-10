@@ -68,7 +68,7 @@ class HXLSchemaRule(object):
         return self._testType(value) and self._testRange(value) and self._testPattern(value) and self._testEnumeration(value)
 
     def reportError(self, message, rowNumber = -1, columnNumber = -1, sourceRowNumber = -1, sourceColumnNumber = -1):
-        if (self.callback != None):
+        if self.callback != None:
             self.callback(
                 HXLValidationException(
                     rule=self, message=message,
@@ -76,6 +76,7 @@ class HXLSchemaRule(object):
                     sourceRowNumber=sourceRowNumber, sourceColumnNumber=sourceColumnNumber
                     )
                 )
+        return False
 
     def _testType(self, value):
         """Check the datatype."""
@@ -84,16 +85,19 @@ class HXLSchemaRule(object):
                 float(value)
                 return True
             except ValueError:
-                return False
+                return self.reportError("Expected a number")
         elif self.dataType == self.TYPE_URL:
             pieces = urlparse.urlparse(value)
-            return (pieces.scheme and pieces.netloc)
+            if not (pieces.scheme and pieces.netloc):
+                return self.reportError("Expected a URL")
         elif self.dataType == self.TYPE_EMAIL:
-            return re.match('^[^@]+@[^@]+$', value)
+            if not re.match('^[^@]+@[^@]+$', value):
+                return self.reportError("Expected an email address")
         elif self.dataType == self.TYPE_PHONE:
-            return re.match('^\+?[0-9xX()\s-]{5,}$', value)
-        else:
-            return True
+            if not re.match('^\+?[0-9xX()\s-]{5,}$', value):
+                return self.reportError("Expected a phone number")
+        
+        return True
 
     def _testRange(self, value):
         if self.minValue is not None and float(value) < float(self.minValue):
