@@ -51,18 +51,19 @@ class HXLSchemaRule(object):
 
     def validateRow(self, row):
         numberSeen = 0
+        result = True
         values = row.getAll(self.hxlTag)
         if values:
             for value in values:
                 if not self.validate(value):
-                    return False
+                    result = False
                 if value:
                     numberSeen += 1
         if self.minOccur is not None and numberSeen < self.minOccur:
-            return False
-        elif self.maxOccur is not None and numberSeen > self.maxOccur:
-            return False
-        return True
+            result = self.reportError("Expected at least " + str(self.minOccur) + " instances but found " + str(numberSeen))
+        if self.maxOccur is not None and numberSeen > self.maxOccur:
+            result = self.reportError("Expected at most " + str(self.maxOccur) + " instances but found " + str(numberSeen))
+        return result
 
     def validate(self, value):
         return self._testType(value) and self._testRange(value) and self._testPattern(value) and self._testEnumeration(value)
