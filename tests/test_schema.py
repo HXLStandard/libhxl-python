@@ -90,15 +90,17 @@ class TestSchemaRule(unittest.TestCase):
         self.validate_value('bb', 1)
 
     def test_value_enumeration(self):
-        rule = HXLSchemaRule('#sector',valueEnumeration=['aa', 'bb', 'cc'], callback=self._callback)
-        self.assertTrue(rule.validate('bb'))
-        self.assertFalse(rule.validate('BB'))
-        self.assertFalse(rule.validate('dd'))
+        self.rule.valueEnumeration=['aa', 'bb', 'cc']
 
-        rule.caseSensitive = False
-        self.assertTrue(rule.validate('bb'))
-        self.assertTrue(rule.validate('BB'))
-        self.assertFalse(rule.validate('dd'))
+        self.rule.caseSensitive = True
+        self.validate_value('bb')
+        self.validate_value('BB', 1)
+        self.validate_value('dd', 1)
+
+        self.rule.caseSensitive = False
+        self.validate_value('bb')
+        self.validate_value('BB')
+        self.validate_value('dd', 1)
 
     def test_row_restrictions(self):
         row = HXLRow([HXLColumn(hxlTag='#sector'), HXLColumn(hxlTag='#subsector'), HXLColumn(hxlTag='#sector')]);

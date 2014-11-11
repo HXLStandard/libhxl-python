@@ -121,12 +121,12 @@ class HXLSchemaRule(object):
     def _testEnumeration(self, value):
         if self.valueEnumeration is not None:
             if self.caseSensitive:
-                return value in self.valueEnumeration
+                if value not in self.valueEnumeration:
+                    return self.reportError("Must be one of " + str(self.valueEnumeration))
             else:
-                value = value.upper()
-                return value in map(lambda item: item.upper(), self.valueEnumeration)
-        else:
-            return True
+                if value.upper() not in map(lambda item: item.upper(), self.valueEnumeration):
+                    return self.reportError("Must be one of " + str(self.valueEnumeration) + " (case-insensitive)")
+        return True
 
     def __str__(self):
         """String representation of a rule (for debugging)"""
