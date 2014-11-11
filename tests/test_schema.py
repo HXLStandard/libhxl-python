@@ -76,11 +76,12 @@ class TestSchemaRule(unittest.TestCase):
         self.validate_value('123456789abc', 1)
 
     def test_value_range(self):
-        rule = HXLSchemaRule('#sector',minValue=3.5, maxValue=4.5, callback=self._callback)
-        self.assertTrue(rule.validate(4.0))
-        self.assertTrue(rule.validate('4'))
-        self.assertFalse(rule.validate('3.49'))
-        self.assertFalse(rule.validate('5.0'))
+        self.rule.minValue = 3.5
+        self.rule.maxValue = 4.5
+        self.validate_value(4.0)
+        self.validate_value('4')
+        self.validate_value('3.49', 1)
+        self.validate_value(5.0, 1)
 
     def test_value_pattern(self):
         self.rule.valuePattern = '^a+b$'

@@ -100,12 +100,13 @@ class HXLSchemaRule(object):
         return True
 
     def _testRange(self, value):
-        if self.minValue is not None and float(value) < float(self.minValue):
-            return False
-        elif self.maxValue is not None and float(value) > float(self.maxValue):
-            return False
-        else:
-            return True
+        if self.minValue is not None:
+            if float(value) < float(self.minValue):
+                return self.reportError("Value is less than " + str(self.minValue))
+        if self.maxValue is not None:
+            if float(value) > float(self.maxValue):
+                return self.reportError("Value is great than " + str(self.maxValue))
+        return True
 
     def _testPattern(self, value):
         if self.valuePattern:
