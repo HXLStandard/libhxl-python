@@ -18,16 +18,25 @@ class HXLValidationException(Exception):
     Data structure to hold a HXL validation error.
     """
 
-    def __init__(self, rule, message, rowNumber=-1, columnNumber=-1, sourceRowNumber=-1, sourceColumnNumber=-1):
-        self.rule = rule
+    def __init__(self, message, rule = None, value = None, row = None, column = None):
         self.message = message
-        self.rowNumber = rowNumber
-        self.sourceRowNumber = sourceRowNumber
-        self.columnNumber = columnNumber
-        self.sourceColumnNumber = sourceColumnNumber
+        self.rule = rule
+        self.value = value
+        self.row = row
+        self.column = column
 
     def __str__(self):
-        return "E " + self.rule.hxlTag + ": " + self.message
+        value = "<no value>"
+        if self.value:
+            value = str(re.sub('\s+', ' ', self.value))
+            value = '"' + value[:10] + (value[10:] and '...') + '"'
+        sourceRowNumber = "?"
+        if self.row:
+            sourceRowNumber = str(self.row.sourceRowNumber + 1)
+        sourceColumnNumber = "?"
+        if self.column:
+            sourceColumnNumber = str(self.column.sourceColumnNumber + 1)
+        return "E " + "(" + sourceRowNumber + "," + sourceColumnNumber + ") " + self.rule.hxlTag + " " + value + ": " + self.message
 
 class HXLSchemaRule(object):
     """
@@ -58,92 +67,104 @@ class HXLSchemaRule(object):
         result = True
         values = row.getAll(self.hxlTag)
         if values:
-            for value in values:
-                if not self.validate(value):
+            for columnNumber, value in enumerate(values):
+                if not self.validate(value, row, row.columns[columnNumber]):
                     result = False
                 if value:
                     numberSeen += 1
         if self.minOccur is not None and numberSeen < self.minOccur:
-            result = self.reportError("Expected at least " + str(self.minOccur) + " instances but found " + str(numberSeen))
+            result = self.reportError(
+                "Expected at least " + str(self.minOccur) + " instance(s) but found " + str(numberSeen),
+                row = row
+                )
         if self.maxOccur is not None and numberSeen > self.maxOccur:
-            result = self.reportError("Expected at most " + str(self.maxOccur) + " instances but found " + str(numberSeen))
+            result = self.reportError(
+                "Expected at most " + str(self.maxOccur) + " instance(s) but found " + str(numberSeen),
+                row = row
+                )
         return result
 
-    def validate(self, value):
+    def validate(self, value, row = None, column = None):
         if value is None or value == '':
             return True
 
         result = True
-        if not self._testType(value):
+        if not self._testType(value, row, column):
             result = False
-        if not self._testRange(value):
+        if not self._testRange(value, row, column):
             result = False
-        if not self._testPattern(value):
+        if not self._testPattern(value, row, column):
             result = False
-        if not self._testEnumeration(value):
+        if not self._testEnumeration(value, row, column):
             result = False
 
         return result
 
-    def reportError(self, message, rowNumber = -1, columnNumber = -1, sourceRowNumber = -1, sourceColumnNumber = -1):
+    def reportError(self, message, value=None, row=None, column=None):
         if self.callback != None:
             self.callback(
                 HXLValidationException(
-                    rule=self, message=message,
-                    rowNumber=rowNumber, columnNumber=columnNumber,
-                    sourceRowNumber=sourceRowNumber, sourceColumnNumber=sourceColumnNumber
+                    message=message,
+                    rule=self,
+                    value = value,
+                    row = row,
+                    column = column
                     )
                 )
         return False
 
-    def _testType(self, value):
+    def _testType(self, value, row, column):
         """Check the datatype."""
         if self.dataType == self.TYPE_NUMBER:
             try:
                 float(value)
                 return True
             except ValueError:
-                return self.reportError("Expected a number")
+                return self.reportError("Expected a number", value, row, column)
         elif self.dataType == self.TYPE_URL:
             pieces = urlparse.urlparse(value)
             if not (pieces.scheme and pieces.netloc):
-                return self.reportError("Expected a URL")
+                return self.reportError("Expected a URL", value, row, column)
         elif self.dataType == self.TYPE_EMAIL:
             if not re.match('^[^@]+@[^@]+$', value):
-                return self.reportError("Expected an email address")
+                return self.reportError("Expected an email address", value, row, column)
         elif self.dataType == self.TYPE_PHONE:
             if not re.match('^\+?[0-9xX()\s-]{5,}$', value):
-                return self.reportError("Expected a phone number")
+                return self.reportError("Expected a phone number", value, row, column)
         
         return True
 
-    def _testRange(self, value):
-        if self.minValue is not None:
-            if float(value) < float(self.minValue):
-                return self.reportError("Value is less than " + str(self.minValue))
-        if self.maxValue is not None:
-            if float(value) > float(self.maxValue):
-                return self.reportError("Value is great than " + str(self.maxValue))
-        return True
+    def _testRange(self, value, row, column):
+        result = True
+        try:
+            if self.minValue is not None:
+                if float(value) < float(self.minValue):
+                    result = self.reportError("Value is less than " + str(self.minValue), value, row, column)
+            if self.maxValue is not None:
+                if float(value) > float(self.maxValue):
+                    result = self.reportError("Value is great than " + str(self.maxValue), value, row, column)
+        except ValueError:
+            result = False
+        return result
 
-    def _testPattern(self, value):
+    def _testPattern(self, value, row, column):
         if self.valuePattern:
             flags = 0
             if self.caseSensitive:
                 flags = re.IGNORECASE
                 if not re.match(self.valuePattern, value, flags):
-                    self.reportError("Failed to match pattern " + str(self.valuePattern))
+                    self.reportError("Failed to match pattern " + str(self.valuePattern), value, row, column)
                     return False
         return True
 
-    def _testEnumeration(self, value):
+    def _testEnumeration(self, value, row, column):
         if self.valueEnumeration is not None:
             if self.caseSensitive:
                 if value not in self.valueEnumeration:
-                    return self.reportError("Must be one of " + str(self.valueEnumeration))
+                    return self.reportError("Must be one of " + str(self.valueEnumeration), value, row, column)
             else:
                 if value.upper() not in map(lambda item: item.upper(), self.valueEnumeration):
-                    return self.reportError("Must be one of " + str(self.valueEnumeration) + " (case-insensitive)")
+                    return self.reportError("Must be one of " + str(self.valueEnumeration) + " (case-insensitive)", value, row, column)
         return True
 
     def __str__(self):
