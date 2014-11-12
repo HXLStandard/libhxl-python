@@ -38,6 +38,36 @@ writeHXL(sys.stdout, dataset)
 
 There are several scripts that you can call from the command line:
 
+## _hxlvalidate_ script
+
+```
+usage: hxlvalidate [-h] [-s schema] [infile] [outfile]
+
+Validate a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard input).
+  outfile               HXL file to write (if omitted, use standard output).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s schema, --schema schema
+                        Schema file for validating the HXL dataset.
+```
+
+Use a simple HXL-encoded spreadsheet to validate another HXL-encoded
+dataset.  For details of the HXL schema format, see
+https://github.com/HXLStandard/libhxl-python/wiki/HXL-validation
+
+This script allows users to perform quality control on datasets
+without the need for programming skills: simply create a HXL schema in
+a spreadsheet editor specifying the rules for your dataset
+(e.g. what's required and optional), then use this script to find any
+problems.
+
+(Will soon be modified to use a default HXL core schema if the user
+doesn't provide one.)
+
 ## _hxlnorm_ script
 
 ```
