@@ -14,26 +14,38 @@ class TestSchema(unittest.TestCase):
 
     def setUp(self):
         self.errors = []
+        self.schema = HXLSchema(
+            rules=[
+                HXLSchemaRule('#sector', minOccur=1),
+                HXLSchemaRule('#affected_num', dataType=HXLSchemaRule.TYPE_NUMBER)
+                ],
+            callback = lambda error: self.errors.append(error)
+            )
+        self.row = HXLRow(
+            columns = [
+                HXLColumn(hxlTag='#affected_num', columnNumber=0),
+                HXLColumn(hxlTag='#sector', columnNumber=1),
+                HXLColumn(hxlTag='#sector', columnNumber=2)
+            ],
+            rowNumber = 1,
+            sourceRowNumber = 2
+        )
+
 
     def test_row(self):
-        schema = HXLSchema(
-            rules=[HXLSchemaRule('#sector', minOccur=1), HXLSchemaRule('#affected_num', dataType=HXLSchemaRule.TYPE_NUMBER)]
-            )
-        row = HXLRow(
-            columns = [HXLColumn(hxlTag='#affected_num'), HXLColumn(hxlTag='#sector'), HXLColumn(hxlTag='#sector')],
-            )
+        self.try_schema(['35', 'WASH', ''])
+        self.try_schema(['35', 'WASH', 'Health'])
 
-        row.values = ['35', 'WASH', '']
-        self.assertTrue(schema.validateRow(row))
-        
-        row.values = ['35', 'WASH', 'Health']
-        self.assertTrue(schema.validateRow(row))
-        
-        row.values = ['35', '', '']
-        self.assertFalse(schema.validateRow(row))
+        self.try_schema(['35', '', ''], 1)
+        self.try_schema(['abc', 'WASH', ''], 2)
 
-        row.values = ['abc', 'WASH', '']
-        self.assertFalse(schema.validateRow(row))
+    def try_schema(self, row_values, errors_expected = 0):
+        self.row.values = row_values
+        if errors_expected == 0:
+            self.assertTrue(self.schema.validateRow(self.row))
+        else:
+            self.assertFalse(self.schema.validateRow(self.row))
+        self.assertEquals(len(self.errors), errors_expected)
         
 class TestSchemaRule(unittest.TestCase):
 
@@ -103,7 +115,14 @@ class TestSchemaRule(unittest.TestCase):
         self.try_rule('dd', 1)
 
     def test_row_restrictions(self):
-        row = HXLRow(columns=[HXLColumn(hxlTag='#x_test'), HXLColumn(hxlTag='#subsector'), HXLColumn(hxlTag='#x_test')]);
+        row = HXLRow(
+            columns=[
+                HXLColumn(hxlTag='#x_test'),
+                HXLColumn(hxlTag='#subsector'),
+                HXLColumn(hxlTag='#x_test')
+                ],
+            rowNumber = 1
+            );
         row.values = ['WASH', '', ''];
 
         self.rule.minOccur = 1

@@ -138,18 +138,24 @@ class HXLSchema(object):
     Schema against which to validate a HXL document.
     """
 
-    def __init__(self, rules=[]):
+    def __init__(self, rules=[], callback=None):
         self.rules = rules
+        self.callback = callback
 
     # TODO add support for validating columns against rules, too
     # this is where to mention impossible conditions, or columns
     # without rules
 
     def validateRow(self, row):
+        result = True
         for rule in self.rules:
+            old_callback = rule.callback
+            if self.callback:
+                rule.callback = self.callback
             if not rule.validateRow(row):
-                return False
-        return True
+                result = False
+            rule.callback = old_callback
+        return result
 
     def __str__(self):
         """String representation of a schema (for debugging)"""
