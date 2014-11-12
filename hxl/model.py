@@ -109,8 +109,8 @@ class HXLRow(object):
         s = '<HXLRow';
         s += "\n  rowNumber: " + str(self.rowNumber)
         s += "\n  sourceRowNumber: " + str(self.sourceRowNumber)
-        for value in self.values:
-            s += "\n  " + str(value)
+        for columnNumber, value in enumerate(self.values):
+            s += "\n  " + str(self.columns[columnNumber]) + "=" + str(value)
         s += "\n>"
         return s
 

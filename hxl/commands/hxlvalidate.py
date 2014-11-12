@@ -24,8 +24,6 @@ from hxl.schema import loadHXLSchema
 def hxlvalidate(input, output=sys.stdout, schema_input=None):
     parser = HXLReader(input)
     schema = loadHXLSchema(schema_input)
-    print parser
-    print schema
-    pass
+    schema.validate(parser)
 
 # end

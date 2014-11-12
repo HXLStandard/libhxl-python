@@ -7,6 +7,7 @@ License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
+import sys
 import urlparse
 import re
 from email.utils import parseaddr
@@ -24,6 +25,9 @@ class HXLValidationException(Exception):
         self.sourceRowNumber = sourceRowNumber
         self.columnNumber = columnNumber
         self.sourceColumnNumber = sourceColumnNumber
+
+    def __str__(self):
+        return "E " + self.rule.hxlTag + ": " + self.message
 
 class HXLSchemaRule(object):
     """
@@ -66,7 +70,20 @@ class HXLSchemaRule(object):
         return result
 
     def validate(self, value):
-        return self._testType(value) and self._testRange(value) and self._testPattern(value) and self._testEnumeration(value)
+        if value is None or value == '':
+            return True
+
+        result = True
+        if not self._testType(value):
+            result = False
+        if not self._testRange(value):
+            result = False
+        if not self._testPattern(value):
+            result = False
+        if not self._testEnumeration(value):
+            result = False
+
+        return result
 
     def reportError(self, message, rowNumber = -1, columnNumber = -1, sourceRowNumber = -1, sourceColumnNumber = -1):
         if self.callback != None:
@@ -140,11 +157,25 @@ class HXLSchema(object):
 
     def __init__(self, rules=[], callback=None):
         self.rules = rules
-        self.callback = callback
+        if callback is None:
+            self.callback = self.showError
+        else:
+            self.callback = callback
+
+    def showError(self, error):
+        print >> sys.stderr, error
+        
 
     # TODO add support for validating columns against rules, too
     # this is where to mention impossible conditions, or columns
     # without rules
+
+    def validate(self, parser):
+        result = True
+        for row in parser:
+            if not self.validateRow(row):
+                result = False
+        return result
 
     def validateRow(self, row):
         result = True
@@ -207,7 +238,9 @@ def loadHXLSchema(input):
         rule.minValue = toFloat(row.get('#x_minvalue_num'))
         rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
         rule.valuePattern = re.compile(row.get('#x_pattern'))
-        rule.valueEnumeration = row.get('#x_enumeration').split('|')
+        s = row.get('#x_enumeration')
+        if s:
+            rule.valueEnumeration = s.split('|')
         rule.caseSensitive = int(row.get('#x_casesensitive'))
         schema.rules.append(rule)
 
