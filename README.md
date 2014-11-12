@@ -34,6 +34,21 @@ dataset = readHXL(sys.stdin)
 writeHXL(sys.stdout, dataset)
 ```
 
+# Installation
+
+This repository includes a standard Python `setup.py` script for
+installing the library and scripts (applications) on your system. In a
+Unix-like operating system, you can install using the following
+command:
+
+```
+python setup.py install
+```
+
+Once you've installed, you will be able to include the HXL libraries
+from any Python application, and will be able to call scripts like
+_hxlvalidate_ from the command line.
+
 # Scripts
 
 There are several scripts that you can call from the command line:
