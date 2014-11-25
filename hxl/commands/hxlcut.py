@@ -18,9 +18,7 @@ Documentation: http://hxlstandard.org
 
 import sys
 import csv
-import argparse
 from hxl.parser import HXLReader
-from . import parse_tags
 
 def hxlcut(input, output, include_tags = [], exclude_tags = []):
     """

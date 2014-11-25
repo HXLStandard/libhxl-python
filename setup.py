@@ -13,6 +13,7 @@ setup(name='libhxl',
         'scripts/hxlcount',
         'scripts/hxlcut',
         'scripts/hxlfilter',
+        'scripts/hxlmerge',
         'scripts/hxlnorm',
         'scripts/hxlvalidate'
         ]
