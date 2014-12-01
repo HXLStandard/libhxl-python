@@ -17,13 +17,12 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-import argparse
 from hxl.parser import HXLReader
 from hxl.schema import loadHXLSchema
 
-def hxlvalidate(input, output=sys.stdout, schema_input=None):
+def hxlvalidate(input=sys.stdin, output=sys.stderr, schema_input=None):
     parser = HXLReader(input)
     schema = loadHXLSchema(schema_input)
-    schema.validate(parser)
+    return schema.validate(parser)
 
 # end
