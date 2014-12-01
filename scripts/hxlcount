@@ -22,6 +22,7 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 from hxl.commands import parse_tags
+from hxl.commands.hxlcount import hxlcount
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Generate aggregate counts for a HXL dataset')
@@ -49,6 +50,6 @@ parser.add_argument(
     )
 args = parser.parse_args()
 
-hxlcount(args.input, args.output, args.tags)
+hxlcount(args.infile, args.outfile, args.tags)
 
 #end
