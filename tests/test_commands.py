@@ -17,15 +17,22 @@ def open_file(name):
 class TestValidateCommand(unittest.TestCase):
 
     def setUp(self):
+        self.null = open(os.devnull, 'w')
         pass
 
     def test_pattern(self):
+
+        # data matches pattern
         self.assertTrue(hxlvalidate(
                 input=open_file('pattern-data-01a.csv'),
+                output=self.null,
                 schema_input=open_file('pattern-schema-01.csv')
             ))
+
+        # data doesn't match pattern
         self.assertFalse(hxlvalidate(
                 input=open_file('pattern-data-01b.csv'),
+                output=self.null,
                 schema_input=open_file('pattern-schema-01.csv')
             ))
 
