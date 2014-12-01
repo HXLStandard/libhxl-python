@@ -274,7 +274,7 @@ class HXLReader:
         # OK, need to go fishing ...
         try:
             rawData = self.parseSourceRow()
-            while rawData:
+            while rawData is not None:
                 tableSpec = self.parseHashtagRow(rawData)
                 if (tableSpec != None):
                     self.tableSpec = tableSpec
