@@ -250,6 +250,12 @@ def loadHXLSchema(input):
         else:
             return None
 
+    def toRegex(s):
+        if s:
+            return re.compile(s)
+        else:
+            return None
+
     parser = HXLReader(input)
     for row in parser:
         rule = HXLSchemaRule(row.get('#x_tag'))
@@ -258,11 +264,11 @@ def loadHXLSchema(input):
         rule.dataType = parseType(row.get('#x_datatype'))
         rule.minValue = toFloat(row.get('#x_minvalue_num'))
         rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
-        rule.valuePattern = re.compile(row.get('#x_pattern'))
+        rule.valuePattern = toRegex(row.get('#x_pattern'))
         s = row.get('#x_enumeration')
         if s:
             rule.valueEnumeration = s.split('|')
-        rule.caseSensitive = int(row.get('#x_casesensitive'))
+        rule.caseSensitive = toInt(row.get('#x_casesensitive'))
         schema.rules.append(rule)
 
     return schema
