@@ -21,8 +21,13 @@ from hxl.parser import HXLReader
 from hxl.schema import loadHXLSchema
 
 def hxlvalidate(input=sys.stdin, output=sys.stderr, schema_input=None):
+
+    def callback(error):
+        print >>output, error
+
     parser = HXLReader(input)
     schema = loadHXLSchema(schema_input)
+    schema.callback = callback
     return schema.validate(parser)
 
 # end
