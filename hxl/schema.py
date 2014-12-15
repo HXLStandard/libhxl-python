@@ -260,7 +260,7 @@ def loadHXLSchema(input=None):
             return None
 
     if input == None:
-        path = os.path.join(os.path.dirname(__file__), 'files', 'hxl-default-schema.csv');
+        path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
         input = open(path, 'r')
 
     parser = HXLReader(input)
