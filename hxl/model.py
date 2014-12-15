@@ -9,10 +9,14 @@ Documentation: http://hxlstandard.org
 
 class HXLDataset(object):
     """
-    In-memory HXL document.
+    In-memory HXL dataset.
     """
 
     def __init__(self, url=None):
+        """
+        Initialise a dataset.
+        @param url The dataset's URL (default: None).
+        """
         self.columns = []
         self.rows = []
         self.cachedTags = None
@@ -21,7 +25,8 @@ class HXLDataset(object):
     @property
     def headers(self):
         """
-        Get a simple list of HXL hashtags from the columns.
+        Get a simple list of plaintext headers from the columns.
+        @return An array of header strings.
         """
         if self.cachedHeaders == None:
             self.cachedHeaders = map(lambda column: column.headerText, self.columns)
@@ -31,19 +36,39 @@ class HXLDataset(object):
     def tags(self):
         """
         Get a simple list of HXL hashtags from the columns.
+        @return An array of hashtag strings.
         """
         if self.cachedTags == None:
             self.cachedTags = map(lambda column: column.hxlTag, self.columns)
         return self.cachedTags
+
+    def __str__(self):
+        """
+        Create a string representation of a dataset for debugging.
+        @return A debugging string.
+        """
+        if self.url:
+            return '<HXLDataset ' + self.url + '>'
+        else:
+            return '<HXLDataset>'
 
 class HXLColumn(object):
     """
     The definition of a logical column in the HXL data.
     """ 
 
+    # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
     __slots__ = ['columnNumber', 'sourceColumnNumber', 'hxlTag', 'languageCode', 'headerText']
 
-    def __init__(self, columnNumber=-1, sourceColumnNumber=-1, hxlTag=None, languageCode=None, headerText=None):
+    def __init__(self, columnNumber=None, sourceColumnNumber=None, hxlTag=None, languageCode=None, headerText=None):
+        """
+        Initialise a column definition.
+        @param columnNumber the logical column number (default: None)
+        @param sourceColumnNumber the raw column number in the source dataset (default: None)
+        @param hxlTag the HXL hashtag for the column (default: None)
+        @param languageCode the ISO 639- language code for the column, e.g. "es" (default: None)
+        @param headerText the original plaintext header for the column (default: None)
+        """
         self.columnNumber = columnNumber
         self.sourceColumnNumber = sourceColumnNumber
         self.hxlTag = hxlTag
@@ -51,7 +76,10 @@ class HXLColumn(object):
         self.headerText = headerText
 
     def getDisplayTag(self):
-        """Generate a display version of the column hashtag"""
+        """
+        Generate a display version of the column hashtag
+        @return the reassembled HXL hashtag string, including language code
+        """
         if (self.hxlTag):
             if (self.languageCode):
                 return self.hxlTag + '/' + self.languageCode
@@ -61,6 +89,9 @@ class HXLColumn(object):
             return None
 
     def __str__(self):
+        """
+        Create a string representation of a column header for debugging.
+        """
         tag = self.getDisplayTag()
         if tag:
             return '<HXLColumn ' + str(tag) + '>'
@@ -72,18 +103,38 @@ class HXLRow(object):
     An iterable row of values in a HXL dataset.
     """
 
+    # Predefine the slots for efficiency (may reconsider later)
     __slots__ = ['columns', 'values', 'rowNumber', 'sourceRowNumber']
 
     def __init__(self, columns, rowNumber=None, sourceRowNumber=None):
+        """
+        Set up a new row.
+        @param columns The column definitions (array of HXLColumn objects).
+        @param rowNumber The logical row number in the input dataset (default: None)
+        @param sourceRowNumber The original row number in the raw source dataset (default: None)
+        """
         self.columns = columns
         self.values = []
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
 
     def append(self, value):
+        """
+        Append a value to the row.
+        @param value The new value to append.
+        @return The new value
+        """
         self.values.append(value)
+        return value
 
     def get(self, tag, index=0, default=None):
+        """
+        Get a single value for a tag in a row.
+        @param tag The HXL tag for the value.
+        @param index The zero-based index if there are multiple values for the tag (default: 0)
+        @param default The default value if not found (default: None)
+        @return The value found, or the default value provided.
+        """
         for i, column in enumerate(self.columns):
             if column.hxlTag == tag:
                 if index == 0:
@@ -92,20 +143,37 @@ class HXLRow(object):
                     index = index - 1
         return default
 
-    def getAll(self, tag, index=0):
+    def getAll(self, tag):
+        """
+        Get all values for a specific tag in a row
+        @param tag The HXL tag for the value(s).
+        @return An array of values for the HXL hashtag.
+        """
         result = []
         for i, column in enumerate(self.columns):
             if column.hxlTag == tag:
-                result.append(self.__getitem__(i))
+                try:
+                    result.append(self.__getitem__(i))
+                except IndexError:
+                    result.append(None)
         if result:
             return result
         else:
             return False
 
     def __getitem__(self, index):
+        """
+        Array-access method to make this class iterable.
+        @param index The zero-based index of a value to look up.
+        @return The value if it exists.
+        @exception IndexError if the index is out of range.
+        """
         return self.values[index]
 
     def __str__(self):
+        """
+        Create a string representation of a row for debugging.
+        """
         s = '<HXLRow';
         s += "\n  rowNumber: " + str(self.rowNumber)
         s += "\n  sourceRowNumber: " + str(self.sourceRowNumber)
