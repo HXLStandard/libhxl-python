@@ -9,7 +9,11 @@ Can use a whitelist of HXL tags, a blacklist, or both.
 
 Usage:
 
-  hxlvalidate --schema MYSCHEMA.csv > error-list.txt
+  # with the default HXL core schema
+  hxlvalidate MYDATA.csv > error-list.txt
+
+  # with a custom schema
+  hxlvalidate --schema MYSCHEMA.csv MYDATA.csv > error-list.txt
 
 (Use -h option to get all options.)
 
@@ -40,7 +44,7 @@ parser.add_argument(
 parser.add_argument(
     '-s',
     '--schema',
-    help='Schema file for validating the HXL dataset.',
+    help='Schema file for validating the HXL dataset (if omitted, use the default core schema).',
     metavar='schema',
     type=argparse.FileType('r'),
     default=None

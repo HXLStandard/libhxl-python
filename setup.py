@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 setup(name='libhxl',
       version='0.4',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       url='http://hxlproject.org',
       packages=['hxl', 'hxl.commands'],
+      package_data={
+        '': ['*.csv']
+        },
       include_package_data=True,
       scripts=[
         'scripts/hxl2geojson',
