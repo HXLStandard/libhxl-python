@@ -1,0 +1,161 @@
+HXL hashtag,Description,Data type,Min cols,Max cols,Default value,Min value,Max value,Pattern,Allowed values,Case sensitive?,Category
+#x_tag,#x_notes/en,#x_datatype,#x_minoccur_num,#x_maxoccur_num,#x_default,#x_minvalue_num,#x_maxvalue_num,#x_pattern,#x_enumeration,#x_casesensitive,#x_category/en
+#report_date,Date reported,date,0,1,,,,,,,
+#from_date,Start date applicable,date,0,1,,,,,,,
+#to_date,End date applicable,date,0,1,,,,,,,
+#period_date,Time period applicable,date,0,1,,,,,,,
+#source,Source description,text,0,,,,,,,,
+#source_id,Source id,code,0,,,,,,,,
+#method,Methodology description,text,0,1,,,,,,,
+#method_id,Methodology code,code,0,1,,,,,,,
+#method_lnk,Methodology link,url,0,1,,,,,,,
+#datatype,Data type description,text,0,1,,,,,,,
+#datatype_id,Data type code,code,0,1,,,,,,,
+#crisis,Crisis description,text,0,1,,,,,,,
+#crisis_id,Crisis id,code,0,1,,,,,,,
+#crisis_lnk,Crisis link,url,0,1,,,,,,,
+#data_lnk,Data origin link,url,0,,,,,,,,
+#loc,Location description,text,0,,,,,,,,
+#loc_id,Location code,code,0,,,,,,,,
+#loctype,Location type,text,0,,,,,,,,
+#loctype_id,Location type code,code,0,,,,,,,,
+#country,Country description,text,0,,,,,,,,
+#country_id,Country code,code,0,,,,,,,,
+#region,Region description,text,0,,,,,,,,
+#region_id,Region code,code,0,,,,,,,,
+#adm,Full admin description,text,0,,,,,,,,
+#adm1,Admin level 1 description,text,0,1,,,,,,,
+#adm1_id,Admin level 1 code,code,0,1,,,,,,,
+#adm2,Admin level 2 description,text,0,1,,,,,,,
+#adm2_id,Admin level 2 code,code,0,1,,,,,,,
+#adm3,Admin level 3 description,text,0,1,,,,,,,
+#adm3_id,Admin level 3 code,code,0,1,,,,,,,
+#adm4,Admin level 4 description,text,0,1,,,,,,,
+#adm4_id,Admin level 4 code,code,0,1,,,,,,,
+#adm5,Admin level 5 description,text,0,1,,,,,,,
+#adm5_id,Admin level 5 code,code,0,1,,,,,,,
+#lat_deg,Latitude,number,0,1,,-90,90,,,,
+#lon_deg,Longitude,number,0,1,,-180,180,,,,
+#sex,Sex category description,text,0,1,,,,,,,
+#sex_id,Sex category code,code,0,1,,,,,,,
+#age,Age category description,text,0,1,,,,,,,
+#age_id,Age category code,code,0,1,,,,,,,
+#agesex,Age/sex category description,text,0,1,,,,,,,
+#agesex_id,Age/sex category code,code,0,1,,,,,,,
+#people_num,Number of people involved,number,0,1,,0,,,,,
+#households_num,Number of households involved,number,0,1,,0,,,,,
+#females_num,Number of females involved.,number,0,1,,0,,,,,
+#males_num,Number of males involved.,number,0,1,,0,,,,,
+#origin,Place of origin description,text,0,1,,,,,,,
+#origin_id,Place of origin code,code,0,1,,,,,,,
+#aff_num,Number of people affected,number,0,1,,0,,,,,
+#impact1,Impact type level 1 description,text,0,1,,,,,,,
+#impact1_id,Impact type level 1 code,code,0,1,,,,,,,
+#impact2,Impact type level 2 description,text,0,1,,,,,,,
+#impact2_id,Impact type level 2 code,code,0,1,,,,,,,
+#impact3,Impact type level 3 description,text,0,1,,,,,,,
+#impact3_id,Impact type level 3 code,code,0,1,,,,,,,
+#shelter1,Shelter type level 1 description,text,0,1,,,,,,,
+#shelter1_id,Shelter type level 1 code,code,0,1,,,,,,,
+#shelter2,Shelter type level 2 description,text,0,1,,,,,,,
+#shelter2_id,Shelter type level 2 code,code,0,1,,,,,,,
+#inneed_num,Number of people in need,number,0,1,,0,,,,,
+#targeted_num,Number of people targeted,number,0,1,,0,,,,,
+#reached_num,Number of people reached,number,0,1,,0,,,,,
+#injured_num,Number of people injured,number,0,1,,0,,,,,
+#idp_num,Number of internally-displaced people,number,0,1,,0,,,,,
+#refugee_num,Number of refugees.,number,0,1,,0,,,,,
+#activity,Project/activity description,text,0,1,,,,,,,
+#activity_id,Project/activity id,code,0,1,,,,,,,
+#status,Project/activity status description,text,0,1,,,,,,,
+#status_id,Project/activity status code,code,0,1,,,,,,,
+#name,Contact name,text,0,,,,,,,,
+#email,Contact email,email,0,,,,,,,,Report metadata
+#phone,Contact phone,phone,0,,,,,,,,Report metadata
+#org,Organisation description,text,0,,,,,,,,Report metadata
+#org_id,Organisation id,code,0,,,,,,,,Report metadata
+#prog,Programmer description,text,0,,,,,,,,Report metadata
+#prog_id,Programmer id,code,0,,,,,,,,Report metadata
+#impl,Implementer description,text,0,,,,,,,,Report metadata
+#impl_id,Implementer id,code,0,,,,,,,,Report metadata
+#funder,Funder/donor description.,text,0,,,,,,,,Report metadata
+#funder_id,Funder/donor id,code,0,,,,,,,,Report metadata
+#sector,Sector/Cluster description,text,0,,,,,,,,Report metadata
+#sector_id,Sector/cluster code,code,0,,,,,,,,Report metadata
+#subsector,Subsector description,text,0,,,,,,,,Report metadata
+#subsector_id,Subsector code,code,0,,,,,,,,Report metadata
+#output,Output indicator description,text,0,,,,,,,,Report metadata
+#output_id,Output indicator code,code,0,,,,,,,,Location
+#beneficiary,Beneficiary description,text,0,,,,,,,,Location
+#beneficiary_id,Beneficiary code,code,0,,,,,,,,Location
+#delivered_num,Number of items delivered.,number,0,1,,0,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Location
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Demographics
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Impact and needs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
+,,,,,,,,,,,Activities and outputs
