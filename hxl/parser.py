@@ -237,7 +237,11 @@ class HXLReader:
         # Loop through the raw CSV data
         for sourceColumnNumber, content in enumerate(self.rawData):
 
-            # grab the specificationf o
+            if sourceColumnNumber >= len(self.tableSpec.colSpecs):
+                # no more hashtags
+                break
+
+            # grab the specification
             colSpec = self.tableSpec.colSpecs[sourceColumnNumber]
 
             # We're reading only columns that have HXL tags
