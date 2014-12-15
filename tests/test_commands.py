@@ -38,13 +38,17 @@ class TestValidateCommand(unittest.TestCase):
 
     def test_default(self):
 
-        # data has correct numeric field
+        # data has correct numeric field in default schema
         self.assertTrue(hxlvalidate(
                 input=open_file('default-data-02a.csv'),
-                output=self.null,
-                schema_input=open_file('default-schema-02.csv')
+                output=self.null
                 ))
 
         # data does not have correct numeric field
+        self.assertFalse(hxlvalidate(
+                input=open_file('default-data-02b.csv'),
+                output=self.null
+                ))
+
 
 # end

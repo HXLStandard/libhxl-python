@@ -10,6 +10,7 @@ Documentation: http://hxlstandard.org
 import sys
 import urlparse
 import re
+import os
 from email.utils import parseaddr
 from parser import HXLReader
 
@@ -217,10 +218,12 @@ class HXLSchema(object):
         s += ">"
         return s
 
-def loadHXLSchema(input):
+def loadHXLSchema(input=None):
     """
-    Load a HXL schema from the provided input stream.
+    Load a HXL schema from the provided input stream, or load default schema.
+    @param input load schema from the specific stream, or default schema if None (default: None)
     """
+
     schema = HXLSchema()
 
     def parseType(typeString):
@@ -255,6 +258,10 @@ def loadHXLSchema(input):
             return re.compile(s)
         else:
             return None
+
+    if input == None:
+        path = os.path.join(os.path.dirname(__file__), 'files', 'hxl-default-schema.csv');
+        input = open(path, 'r')
 
     parser = HXLReader(input)
     for row in parser:
