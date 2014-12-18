@@ -32,7 +32,7 @@ from hxl.commands import parse_tags
 from hxl.commands.hxlbounds import hxlbounds
 
 # Command-line arguments
-parser = argparse.ArgumentParser(description = 'Normalize a HXL file.')
+parser = argparse.ArgumentParser(description = 'Perform bounds checking on a HXL dataset.')
 parser.add_argument(
     'infile',
     help='HXL file to read (if omitted, use standard input).',
