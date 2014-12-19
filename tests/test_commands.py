@@ -30,6 +30,9 @@ class TestFilterCommand(unittest.TestCase):
     def test_inverse(self):
         self.assertTrue(try_script(['hxlfilter', '-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01b.csv'))
 
+    def test_multiple(self):
+        self.assertTrue(try_script(['hxlfilter', '-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01c.csv'))
+
 
 def try_script(args, input_file, expected_output_file):
     """

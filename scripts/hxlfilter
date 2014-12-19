@@ -5,12 +5,21 @@ Script to filter rows columns from a HXL dataset.
 David Megginson
 October 2014
 
-Supply a list of tag=value pairs, and return only the rows in the HXL
-dataset that contain matches for all of them.
+Supply a list of tag=value pairs, and return the rows in the HXL
+dataset that contain matches for any of them.
 
 Usage:
 
-  hxlfilter -f country=Colombia -f sector=WASH < DATA_IN.csv > DATA_OUT.csv
+  hxlfilter -f sector=WASH DATA_IN.csv DATA_OUT.csv
+
+To get the equivalent of a boolean OR, use the -f option multiple times:
+
+  hxlfilter -f sector=WASH -f sector=Health DATA_IN.csv DATA_OUT.csv
+
+To get the equivalent of a boolean AND for the filters, use a pipeline:
+
+  hxlfilter -f country=Colombia DATA_IN.csv | hxlfilter -f sector=WASH > DATA_OUT.csv
+
 
 (Use -h option to get full usage.)
 
@@ -30,7 +39,7 @@ def parse_value(s):
         return t
 
 # Command-line arguments
-parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
+parser = argparse.ArgumentParser(description = 'Filter rows in a HXL dataset.')
 parser.add_argument(
     'infile',
     help='HXL file to read (if omitted, use standard input).',
@@ -48,7 +57,7 @@ parser.add_argument(
 parser.add_argument(
     '-f',
     '--filter',
-    help='hashtag=value pair for filtering',
+    help='hashtag=value pair for filtering (use multiple times for logical OR)',
     action='append',
     metavar='tag=value',
     default=[],
