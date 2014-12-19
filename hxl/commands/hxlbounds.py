@@ -71,7 +71,7 @@ def hxlbounds(input, output, bounds, tags=[]):
         if lat and lon:
             try:
                 seen_shape = False
-                for s in shapes:
+                for s in bounds:
                     if s.contains(Point(float(lon), float(lat))):
                         seen_shape = True
                         break;

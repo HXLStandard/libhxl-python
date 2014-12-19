@@ -8,11 +8,22 @@ License: Public Domain
 
 import unittest
 import os
+from StringIO import StringIO
+from hxl.commands.hxlfilter import hxlfilter
 from hxl.commands.hxlvalidate import hxlvalidate
 
 def open_file(name):
     path = os.path.join(os.path.dirname(__file__), 'files', 'test_commands', name);
     return open(path, 'r')
+
+class TestFilterCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.input = open_file('filter-data.csv')
+        self.output = StringIO()
+
+    def test_filter(self):
+        self.assertTrue(True)
 
 class TestValidateCommand(unittest.TestCase):
 

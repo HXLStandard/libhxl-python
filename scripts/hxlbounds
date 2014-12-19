@@ -28,6 +28,8 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
+import json
+from shapely.geometry import shape
 from hxl.commands import parse_tags
 from hxl.commands.hxlbounds import hxlbounds
 
