@@ -1,0 +1,6 @@
+Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado
+#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1
+Salud,Vacunación,OMS,Hombres,,Colombia,Cauca
+Salud,Vacunación,OMS,Mujeres,,Colombia,Cauca
+Educación,Formación de enseñadores,UNICEF,Hombres,250,Colombia,Chocó
+Educación,Formación de enseñadores,UNICEF,Mujeres,300,Colombia,Chocó

@@ -24,8 +24,11 @@ class TestFilterCommand(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_filter(self):
-        self.assertTrue(try_script(['hxlfilter', '-f', 'org=X'], 'filter-input-01.csv', 'filter-output-01a.csv'))
+    def test_equals(self):
+        self.assertTrue(try_script(['hxlfilter', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01a.csv'))
+
+    def test_inverse(self):
+        self.assertTrue(try_script(['hxlfilter', '-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01b.csv'))
 
 
 def try_script(args, input_file, expected_output_file):
