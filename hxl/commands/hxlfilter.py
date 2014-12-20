@@ -58,4 +58,51 @@ def hxlfilter(input, output, filter=[], invert=False):
         if row_matches_p(row):
             writer.writerow(row.values)
 
+
+def run(args, stdin=sys.stdin, stdout=sys.stdout):
+
+    def parse_value(s):
+        t = s.split('=', 1)
+        if not t[0].startswith('#'):
+            t[0] = '#' + t[0]
+            return t
+
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Filter rows in a HXL dataset.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?',
+        type=argparse.FileType('r'),
+        default=stdin
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?',
+        type=argparse.FileType('w'),
+        default=stdout
+        )
+    parser.add_argument(
+        '-f',
+        '--filter',
+        help='hashtag=value pair for filtering (use multiple times for logical OR)',
+        action='append',
+        metavar='tag=value',
+        default=[],
+        type=parse_value
+        )
+    parser.add_argument(
+        '-v',
+        '--invert',
+        help='Show only lines *not* matching criteria',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    # Call the command function
+    hxlfilter(args.infile, args.outfile, filter=args.filter, invert=args.invert)
+
 # end

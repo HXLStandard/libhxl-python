@@ -14,24 +14,26 @@ import filecmp
 import difflib
 import tempfile
 
+import hxl.commands.hxlfilter
+
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 class TestFilterCommand(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.function = hxl.commands.hxlfilter.run
 
     def test_equals(self):
-        self.assertTrue(try_script(['hxlfilter', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01a.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01a.csv'))
 
     def test_inverse(self):
-        self.assertTrue(try_script(['hxlfilter', '-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01b.csv'))
+        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01b.csv'))
 
     def test_multiple(self):
-        self.assertTrue(try_script(['hxlfilter', '-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01c.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01c.csv'))
 
 
-def try_script(args, input_file, expected_output_file):
+def try_script(script_function, args, input_file, expected_output_file):
     """
     Test run a script in its own subprocess.
     @param args A list of arguments, including the script name first
@@ -46,12 +48,10 @@ def try_script(args, input_file, expected_output_file):
         """
         return os.path.join(root_dir, 'tests', 'files', 'test_commands', name)
 
-    args = list(args)
-    args[0] = os.path.join(root_dir, 'scripts', args[0])
     input = open(resolve(input_file), 'r')
     output = tempfile.NamedTemporaryFile(delete=False)
     try:
-        subprocess.call(args, stdin=input, stdout=output)
+        script_function(args, stdin=input, stdout=output)
         output.close()
         result = diff(output.name, resolve(expected_output_file))
     finally:
