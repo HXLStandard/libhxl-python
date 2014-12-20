@@ -13,9 +13,6 @@ import subprocess
 import filecmp
 import difflib
 import tempfile
-from StringIO import StringIO
-from hxl.commands.hxlfilter import hxlfilter
-from hxl.commands.hxlvalidate import hxlvalidate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
