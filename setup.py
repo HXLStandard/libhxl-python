@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from setuptools import setup, find_packages
+from distutils.core import setup
 setup(name='libhxl',
       version='0.6',
       description='Python support for the Humanitarian Exchange Language (HXL).',
@@ -8,10 +8,6 @@ setup(name='libhxl',
       url='http://hxlproject.org',
       requires=['shapely'],
       packages=['hxl', 'hxl.commands'],
-      package_data={
-        '': ['*.csv']
-        },
-      include_package_data=True,
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxlbounds',
