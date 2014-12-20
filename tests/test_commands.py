@@ -32,6 +32,9 @@ class TestFilterCommand(unittest.TestCase):
     def test_multiple(self):
         self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01c.csv'))
 
+    def test_lessthan(self):
+        self.assertTrue(try_script(self.function, ['-f', 'aff_num<200'], 'filter-input-01.csv', 'filter-output-01d.csv'))
+
 
 def try_script(script_function, args, input_file, expected_output_file):
     """
