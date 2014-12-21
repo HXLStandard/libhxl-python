@@ -18,11 +18,13 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
+import re
+import operator
 import csv
 import argparse
 from hxl.parser import HXLReader
 
-def hxlfilter(input, output, filter=[], invert=False):
+def hxlfilter(input, output, filters=[], invert=False):
     """
     Filter rows from a HXL dataset
     Uses a logical OR (use multiple instances in a pipeline for logical AND).
@@ -32,20 +34,25 @@ def hxlfilter(input, output, filter=[], invert=False):
     @param invert True if the command should output lines that don't match.
     """
 
+    def try_op(op, v1, v2):
+        """Try an operator as numeric first, then string"""
+        # TODO add dates
+        # TODO use knowledge about HXL tags
+        try:
+            return op(float(v1), float(v2))
+        except ValueError:
+            return op(v1, v2)
+
     def row_matches_p(row):
         """Check if a key-value pair appears in a HXL row"""
-        for f in filter:
-            values = row.getAll(f[0])
-            if not invert:
-                if values and (f[1] in values):
-                    return True
-            else:
-                if values and (f[1] in values):
-                    return False
-        if invert:
-            return True
-        else:
-            return False
+        for filter in filters:
+            values = row.getAll(filter[0])
+            if values:
+                for value in values:
+                    op = filter[1]
+                    if value and try_op(op, value, filter[2]):
+                        return not invert
+        return invert
 
     parser = HXLReader(input)
     writer = csv.writer(output)
@@ -58,14 +65,41 @@ def hxlfilter(input, output, filter=[], invert=False):
         if row_matches_p(row):
             writer.writerow(row.values)
 
+# Map of comparison operators
+operator_map = {
+    '=': operator.eq,
+    '!=': operator.ne,
+    '<': operator.lt,
+    '<=': operator.le,
+    '>': operator.gt,
+    '>=': operator.ge
+}
 
-def run(args, stdin=sys.stdin, stdout=sys.stdout):
+
+def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlfilter with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
 
     def parse_value(s):
-        t = s.split('=', 1)
-        if not t[0].startswith('#'):
-            t[0] = '#' + t[0]
-            return t
+        """
+        Parse a filter expression
+        """
+        result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)([<>]=?|!?=)(.*)$', s)
+        if result:
+           filter = list(result.group(1, 2, 3))
+           # (re)add hash to start of tag
+           filter[0] = '#' + filter[0]
+           op = operator_map[filter[1]]
+           if op:
+               filter[1] = op
+               return filter
+        print >>stderr, "Bad filter expression: " + s
+        exit(2)
 
     # Command-line arguments
     parser = argparse.ArgumentParser(description = 'Filter rows in a HXL dataset.')
@@ -103,6 +137,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout):
     args = parser.parse_args(args)
 
     # Call the command function
-    hxlfilter(args.infile, args.outfile, filter=args.filter, invert=args.invert)
+    return hxlfilter(args.infile, args.outfile, filters=args.filter, invert=args.invert)
 
 # end
