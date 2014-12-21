@@ -3,15 +3,16 @@ Command function to filter rows columns from a HXL dataset.
 David Megginson
 October 2014
 
-Supply a list of tag=value pairs, and return the rows in the HXL
-dataset that contain matches for any of them.
+Supply a list of simple <hashtag><operator><value> pairs, and return
+the rows in the HXL dataset that contain matches for any of them.
 
 Usage:
 
   import sys
+  import operator
   from hxl.scripts.hxlfilter import hxlfilter
 
-  hxlfilter(sys.stdin, sys.stdout, [('#country', 'Colombia), ('#sector', 'WASH'_)]
+  hxlfilter(sys.stdin, sys.stdout, [('#country', operator.eq, 'Colombia'), ('#sector', operator.eq, 'WASH'_)]
 
 License: Public Domain
 Documentation: http://hxlstandard.org
@@ -120,7 +121,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-f',
         '--filter',
-        help='hashtag=value pair for filtering (use multiple times for logical OR)',
+        help='expression for filtering (use multiple times for logical OR): <hashtag><op><value>, where <op> is =, !=, <, <=, >, or >=',
         action='append',
         metavar='tag=value',
         default=[],
