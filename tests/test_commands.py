@@ -23,17 +23,20 @@ class TestFilterCommand(unittest.TestCase):
     def setUp(self):
         self.function = hxl.commands.hxlfilter.run
 
-    def test_equals(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01a.csv'))
+    def test_equal(self):
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01-eq.csv'))
 
     def test_inverse(self):
-        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01b.csv'))
+        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01-inverse.csv'))
 
-    def test_multiple(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01c.csv'))
+    def test_or(self):
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01-or.csv'))
 
     def test_lessthan(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'filter-input-01.csv', 'filter-output-01d.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'filter-input-01.csv', 'filter-output-01-lt.csv'))
+
+    def test_lessthan(self):
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>100'], 'filter-input-01.csv', 'filter-output-01-gt.csv'))
 
 
 def try_script(script_function, args, input_file, expected_output_file):
