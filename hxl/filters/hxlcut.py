@@ -17,8 +17,10 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
+import argparse
 import csv
 from hxl.parser import HXLReader
+from hxl.filters import parse_tags
 
 def hxlcut(input, output, include_tags = [], exclude_tags = []):
     """
@@ -44,5 +46,48 @@ def hxlcut(input, output, include_tags = [], exclude_tags = []):
 
     for row in parser:
         writer.writerow(restrict_tags(row.values))
+
+def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlcut with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?',
+        type=argparse.FileType('r'),
+        default=stdin
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?',
+        type=argparse.FileType('w'),
+        default=stdout
+        )
+    parser.add_argument(
+        '-c',
+        '--include-tags',
+        help='Comma-separated list of column tags to include',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    parser.add_argument(
+        '-C',
+        '--exclude-tags',
+        help='Comma-separated list of column tags to exclude',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    args = parser.parse_args(args)
+
+    # Call the command function
+    hxlcut(args.infile, args.outfile, include_tags=args.include_tags, exclude_tags=args.exclude_tags)
 
 # end

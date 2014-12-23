@@ -1,0 +1,10 @@
+Sector/Cluster,Subsector,Organización,País,Departamento/Provincia/Estado
+#sector,#subsector,#org,#country,#adm1
+WASH,Higiene,ACNUR,Panamá,Los Santos
+WASH,Higiene,ACNUR,Panamá,Los Santos
+Salud,Vacunación,OMS,Colombia,Cauca
+Salud,Vacunación,OMS,Colombia,Cauca
+Educación,Formación de enseñadores,UNICEF,Colombia,Chocó
+Educación,Formación de enseñadores,UNICEF,Colombia,Chocó
+WASH,Urbano,OMS,Venezuela,Amazonas
+WASH,Urbano,OMS,Venezuela,Amazonas

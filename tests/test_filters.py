@@ -15,6 +15,7 @@ import difflib
 import tempfile
 
 import hxl.filters.hxlcount
+import hxl.filters.hxlcut
 import hxl.filters.hxlfilter
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -26,6 +27,17 @@ class TestCount(unittest.TestCase):
 
     def test_simple(self):
         self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'sample-input.csv', 'count-output-simple.csv'))
+
+class TestCut(unittest.TestCase):
+
+    def setUp(self):
+        self.function = hxl.filters.hxlcut.run
+
+    def test_whitelist(self):
+        self.assertTrue(try_script(self.function, ['-c', 'sector,org,adm1'], 'sample-input.csv', 'cut-output-whitelist.csv'))
+
+    def test_blacklist(self):
+        self.assertTrue(try_script(self.function, ['-C', 'sex,targeted_num'], 'sample-input.csv', 'cut-output-blacklist.csv'))
 
 class TestFilter(unittest.TestCase):
 

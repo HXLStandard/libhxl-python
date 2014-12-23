@@ -30,7 +30,6 @@ Documentation: http://hxlstandard.org
 import sys
 from hxl.filters.hxlfilter import run
 
-
 if __name__ == '__main__':
     run(sys.argv[1:], sys.stdin, sys.stdout)
 
