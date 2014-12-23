@@ -27,6 +27,8 @@ Documentation: http://hxlstandard.org
 import sys
 import csv
 import json
+import argparse
+from hxl.commands import parse_tags
 from hxl.parser import HXLReader
 
 def hxlcount(input, output, tags):
@@ -64,5 +66,43 @@ def hxlcount(input, output, tags):
         data = list(aggregate[0])
         data.append(aggregate[1])
         writer.writerow(data)
+
+def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlcount with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Generate aggregate counts for a HXL dataset')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?',
+        type=argparse.FileType('r'),
+        default=stdin
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?',
+        type=argparse.FileType('w'),
+        default=stdout
+        )
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of column tags to count.',
+        metavar='tag,tag...',
+        type=parse_tags,
+        default='loc,org,sector,adm1,adm2,adm3'
+        )
+    args = parser.parse_args(args)
+
+    hxlcount(args.infile, args.outfile, args.tags)
+
 
 # end
