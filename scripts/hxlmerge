@@ -17,8 +17,8 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.commands import parse_tags
-from hxl.commands.hxlmerge import hxlmerge
+from hxl.filters import parse_tags
+from hxl.filters.hxlmerge import hxlmerge
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Merge multiple HXL datasets')

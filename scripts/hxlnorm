@@ -22,7 +22,7 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.commands.hxlnorm import hxlnorm
+from hxl.filters.hxlnorm import hxlnorm
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Normalize a HXL file.')

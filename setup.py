@@ -7,7 +7,7 @@ setup(name='libhxl',
       author='David Megginson',
       url='http://hxlproject.org',
       requires=['shapely'],
-      packages=['hxl', 'hxl.commands'],
+      packages=['hxl', 'hxl.filters'],
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxlbounds',

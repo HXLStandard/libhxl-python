@@ -28,7 +28,7 @@ import sys
 import csv
 import json
 import argparse
-from hxl.commands import parse_tags
+from hxl.filters import parse_tags
 from hxl.parser import HXLReader
 
 def hxlcount(input, output, tags):

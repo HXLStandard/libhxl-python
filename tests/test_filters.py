@@ -1,5 +1,5 @@
 """
-Unit tests for the hxl.commands module
+Unit tests for the hxl.filters module
 David Megginson
 December 2014
 
@@ -14,23 +14,23 @@ import filecmp
 import difflib
 import tempfile
 
-import hxl.commands.hxlcount
-import hxl.commands.hxlfilter
+import hxl.filters.hxlcount
+import hxl.filters.hxlfilter
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
-class TestCountCommand(unittest.TestCase):
+class TestCount(unittest.TestCase):
 
     def setUp(self):
-        self.function = hxl.commands.hxlcount.run
+        self.function = hxl.filters.hxlcount.run
 
     def test_simple(self):
         self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'sample-input.csv', 'count-output-simple.csv'))
 
-class TestFilterCommand(unittest.TestCase):
+class TestFilter(unittest.TestCase):
 
     def setUp(self):
-        self.function = hxl.commands.hxlfilter.run
+        self.function = hxl.filters.hxlfilter.run
 
     def test_eq(self):
         self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'sample-input.csv', 'filter-output-eq.csv'))
@@ -60,8 +60,8 @@ def try_script(script_function, args, input_file, expected_output_file):
     """
     Test run a script in its own subprocess.
     @param args A list of arguments, including the script name first
-    @param input_file The name of the input HXL file in ./files/test_commands/
-    @param expected_output_file The name of the expected output HXL file in ./files/test_commands
+    @param input_file The name of the input HXL file in ./files/test_filters/
+    @param expected_output_file The name of the expected output HXL file in ./files/test_filters
     @return True if the actual output matches the expected output
     """
 
@@ -69,7 +69,7 @@ def try_script(script_function, args, input_file, expected_output_file):
         """
         Resolve a file name in the test directory.
         """
-        return os.path.join(root_dir, 'tests', 'files', 'test_commands', name)
+        return os.path.join(root_dir, 'tests', 'files', 'test_filters', name)
 
     input = open(resolve(input_file), 'r')
     output = tempfile.NamedTemporaryFile(delete=False)

@@ -23,7 +23,7 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.commands.hxlvalidate import hxlvalidate
+from hxl.filters.hxlvalidate import hxlvalidate
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Validate a HXL dataset.')

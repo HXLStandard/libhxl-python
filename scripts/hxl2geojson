@@ -21,7 +21,7 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.commands.hxl2geojson import hxl2geojson
+from hxl.filters.hxl2geojson import hxl2geojson
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Convert a HXL dataset to GeoJSON points.')

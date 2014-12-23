@@ -19,8 +19,8 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.commands import parse_tags
-from hxl.commands.hxlcut import hxlcut
+from hxl.filters import parse_tags
+from hxl.filters.hxlcut import hxlcut
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')

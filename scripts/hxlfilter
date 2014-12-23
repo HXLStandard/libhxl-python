@@ -28,7 +28,7 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-from hxl.commands.hxlfilter import run
+from hxl.filters.hxlfilter import run
 
 
 if __name__ == '__main__':
