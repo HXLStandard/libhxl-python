@@ -21,61 +21,87 @@ import hxl.filters.hxlnorm
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
+
+########################################################################
+# Test classes
+########################################################################
+
 class TestCount(unittest.TestCase):
+    """
+    Test the hxlcount command-line tool.
+    """
 
     def setUp(self):
         self.function = hxl.filters.hxlcount.run
 
     def test_simple(self):
-        self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'sample-input.csv', 'count-output-simple.csv'))
+        self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'input-simple.csv', 'count-output-simple.csv'))
+
 
 class TestCut(unittest.TestCase):
+    """
+    Test the hxlcut command-line tool.
+    """
 
     def setUp(self):
         self.function = hxl.filters.hxlcut.run
 
     def test_whitelist(self):
-        self.assertTrue(try_script(self.function, ['-c', 'sector,org,adm1'], 'sample-input.csv', 'cut-output-whitelist.csv'))
+        self.assertTrue(try_script(self.function, ['-c', 'sector,org,adm1'], 'input-simple.csv', 'cut-output-whitelist.csv'))
 
     def test_blacklist(self):
-        self.assertTrue(try_script(self.function, ['-C', 'sex,targeted_num'], 'sample-input.csv', 'cut-output-blacklist.csv'))
+        self.assertTrue(try_script(self.function, ['-C', 'sex,targeted_num'], 'input-simple.csv', 'cut-output-blacklist.csv'))
+
 
 class TestFilter(unittest.TestCase):
+    """
+    Test the hxlfilter command-line tool.
+    """
 
     def setUp(self):
         self.function = hxl.filters.hxlfilter.run
 
     def test_eq(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'sample-input.csv', 'filter-output-eq.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'input-simple.csv', 'filter-output-eq.csv'))
 
     def test_ne(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector!=WASH'], 'sample-input.csv', 'filter-output-ne.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector!=WASH'], 'input-simple.csv', 'filter-output-ne.csv'))
 
     def test_lt(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'sample-input.csv', 'filter-output-lt.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'input-simple.csv', 'filter-output-lt.csv'))
 
     def test_le(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<=100'], 'sample-input.csv', 'filter-output-le.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<=100'], 'input-simple.csv', 'filter-output-le.csv'))
 
     def test_gt(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>100'], 'sample-input.csv', 'filter-output-gt.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>100'], 'input-simple.csv', 'filter-output-gt.csv'))
 
     def test_ge(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>=100'], 'sample-input.csv', 'filter-output-ge.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>=100'], 'input-simple.csv', 'filter-output-ge.csv'))
 
     def test_inverse(self):
-        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'sample-input.csv', 'filter-output-inverse.csv'))
+        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'input-simple.csv', 'filter-output-inverse.csv'))
 
     def test_multiple(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'sample-input.csv', 'filter-output-multiple.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'input-simple.csv', 'filter-output-multiple.csv'))
+
 
 class TestNorm(unittest.TestCase):
+    """
+    Test the hxlnorm command-line tool.
+    """
 
     def setUp(self):
         self.function = hxl.filters.hxlnorm.run
 
     def test_noheaders(self):
-        self.assertTrue(try_script(self.function, [], 'sample-input.csv', 'norm-output-noheaders.csv'))
+        self.assertTrue(try_script(self.function, [], 'input-simple.csv', 'norm-output-noheaders.csv'))
+
+    def test_headers(self):
+        self.assertTrue(try_script(self.function, ['-H'], 'input-simple.csv', 'norm-output-headers.csv'))
+
+    def test_compact(self):
+        self.assertTrue(try_script(self.function, [], 'input-compact.csv', 'norm-output-compact.csv'))
 
 
 ########################################################################
