@@ -14,9 +14,18 @@ import filecmp
 import difflib
 import tempfile
 
+import hxl.commands.hxlcount
 import hxl.commands.hxlfilter
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+class TestCountCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.function = hxl.commands.hxlcount.run
+
+    def test_simple(self):
+        self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'sample-input.csv', 'count-output-simple.csv'))
 
 class TestFilterCommand(unittest.TestCase):
 
@@ -24,29 +33,28 @@ class TestFilterCommand(unittest.TestCase):
         self.function = hxl.commands.hxlfilter.run
 
     def test_eq(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01-eq.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'sample-input.csv', 'filter-output-eq.csv'))
 
     def test_ne(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector!=WASH'], 'filter-input-01.csv', 'filter-output-01-ne.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'sector!=WASH'], 'sample-input.csv', 'filter-output-ne.csv'))
 
     def test_lt(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'filter-input-01.csv', 'filter-output-01-lt.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'sample-input.csv', 'filter-output-lt.csv'))
 
     def test_le(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<=100'], 'filter-input-01.csv', 'filter-output-01-le.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<=100'], 'sample-input.csv', 'filter-output-le.csv'))
 
     def test_gt(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>100'], 'filter-input-01.csv', 'filter-output-01-gt.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>100'], 'sample-input.csv', 'filter-output-gt.csv'))
 
     def test_ge(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>=100'], 'filter-input-01.csv', 'filter-output-01-ge.csv'))
+        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>=100'], 'sample-input.csv', 'filter-output-ge.csv'))
 
     def test_inverse(self):
-        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'filter-input-01.csv', 'filter-output-01-inverse.csv'))
+        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'sample-input.csv', 'filter-output-inverse.csv'))
 
     def test_multiple(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-input-01.csv', 'filter-output-01-multiple.csv'))
-
+        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'sample-input.csv', 'filter-output-multiple.csv'))
 
 def try_script(script_function, args, input_file, expected_output_file):
     """
