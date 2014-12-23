@@ -17,6 +17,7 @@ import tempfile
 import hxl.filters.hxlcount
 import hxl.filters.hxlcut
 import hxl.filters.hxlfilter
+import hxl.filters.hxlnorm
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
@@ -67,6 +68,19 @@ class TestFilter(unittest.TestCase):
 
     def test_multiple(self):
         self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'sample-input.csv', 'filter-output-multiple.csv'))
+
+class TestNorm(unittest.TestCase):
+
+    def setUp(self):
+        self.function = hxl.filters.hxlnorm.run
+
+    def test_noheaders(self):
+        self.assertTrue(try_script(self.function, [], 'sample-input.csv', 'norm-output-noheaders.csv'))
+
+
+########################################################################
+# Support functions
+########################################################################
 
 def try_script(script_function, args, input_file, expected_output_file):
     """

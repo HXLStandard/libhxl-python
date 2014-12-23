@@ -41,4 +41,42 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
     for row in parser:
         writer.writerow(row.values)
 
+def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlfilter with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Normalize a HXL file.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?',
+        type=argparse.FileType('r'),
+        default=stdin
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?',
+        type=argparse.FileType('w'),
+        default=stdout
+        )
+    parser.add_argument(
+        '-H',
+        '--headers',
+        help='Preserve text header row above HXL hashtags',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    # Call the command function
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers)
+
 # end
