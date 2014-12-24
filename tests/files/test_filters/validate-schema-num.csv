@@ -1,0 +1,8 @@
+"#x_tag",#x_minoccur_num,#x_maxoccur_num,#x_datatype,#x_minvalue_num,#x_maxvalue_num,#x_pattern,#x_enumeration,#x_casesensitive
+"#sector",1,1,text,,,,WASH|Salud|Educación,0
+"#subsector",1,2,text,,,,,0
+"#org",1,1,text,,,,,0
+"#sex",1,1,number,,,,Hombres|Mujeres,0
+"#targeted_num",0,1,number,0,1000000000,,,0
+"#country",1,1,text,,,,,0
+"#adm1",0,1,text,,,,,0

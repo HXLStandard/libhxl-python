@@ -16,7 +16,10 @@ License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
+import sys
 import csv
+import argparse
+from hxl.filters import parse_tags
 from hxl.parser import HXLReader
 
 def hxlmerge(inputs, output, tags = []):
@@ -52,5 +55,41 @@ def hxlmerge(inputs, output, tags = []):
             for tag in tagset:
                 values.append(row.get(tag))
             writer.writerow(values)
+
+def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlmerge with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Merge multiple HXL datasets')
+    parser.add_argument(
+        'infile',
+        help='HXL files to read.',
+        nargs='+',
+        type=argparse.FileType('r')
+        )
+    parser.add_argument(
+        '-o',
+        '--outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        metavar='filename',
+        type=argparse.FileType('w'),
+        default=stdout
+        )
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of column tags to include',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    args = parser.parse_args(args)
+
+    # Call the command function
+    hxlmerge(args.infile, args.outfile, tags=args.tags)
 
 # end

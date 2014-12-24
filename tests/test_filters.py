@@ -17,6 +17,7 @@ import tempfile
 import hxl.filters.hxlcount
 import hxl.filters.hxlcut
 import hxl.filters.hxlfilter
+import hxl.filters.hxlmerge
 import hxl.filters.hxlnorm
 import hxl.filters.hxlvalidate
 
@@ -88,6 +89,25 @@ class TestFilter(unittest.TestCase):
         self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'input-simple.csv', 'filter-output-multiple.csv'))
 
 
+class TestMerge(unittest.TestCase):
+    """
+    Test the hxlmerge command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.hxlmerge.run
+
+    def test_basic(self):
+        self.assertTrue(
+            try_script(
+                self.function,
+                ['-t', 'org,sector', resolve_file('input-simple.csv'), resolve_file('input-simple.csv')],
+                'input-simple.csv',
+                'merge-output-basic.csv'
+                )
+            )
+
+
 class TestNorm(unittest.TestCase):
     """
     Test the hxlnorm command-line tool.
@@ -115,8 +135,24 @@ class TestValidate(unittest.TestCase):
         self.function = hxl.filters.hxlvalidate.run
 
     def test_valid(self):
-        self.assertTrue(try_script(self.function, ['-s', resolve_file('validate-schema-valid.csv')], 'input-simple.csv', 'validate-output-valid.txt'))
+        self.assertTrue(
+            try_script(
+                self.function,
+                ['-s', resolve_file('validate-schema-valid.csv')],
+                'input-simple.csv',
+                'validate-output-valid.txt'
+                )
+            )
 
+    def test_number(self):
+        self.assertTrue(
+            try_script(
+                self.function,
+                ['-s', resolve_file('validate-schema-num.csv')],
+                'input-simple.csv',
+                'validate-output-num.txt'
+                )
+            )
 
 
 ########################################################################
