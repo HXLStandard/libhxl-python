@@ -72,14 +72,14 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         default=stdout
         )
     parser.add_argument(
-        '-I',
+        '-i',
         '--include',
         help='Comma-separated list of column tags to include',
         metavar='tag,tag...',
         type=parse_tags
         )
     parser.add_argument(
-        '-X',
+        '-x',
         '--exclude',
         help='Comma-separated list of column tags to exclude',
         metavar='tag,tag...',
