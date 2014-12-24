@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 setup(name='libhxl',
-      version='0.6',
+      version='0.8',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       url='http://hxlproject.org',
