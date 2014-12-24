@@ -28,156 +28,147 @@ root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 # Test classes
 ########################################################################
 
+class BaseTest(unittest.TestCase):
+    """
+    Base for test classes
+    """
 
-class TestCount(unittest.TestCase):
+    def assertOutput(self, options, output_file, input_file=None):
+        if not input_file:
+            input_file = self.input_file
+        self.assertTrue(
+            try_script(
+                self.function,
+                options,
+                input_file,
+                output_file
+                )
+            )
+
+
+class TestCount(BaseTest):
     """
     Test the hxlcount command-line tool.
     """
 
     def setUp(self):
         self.function = hxl.filters.hxlcount.run
+        self.input_file = 'input-simple.csv'
 
     def test_simple(self):
-        self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'input-simple.csv', 'count-output-simple.csv'))
-        self.assertTrue(try_script(self.function, ['--tags', 'org,adm1'], 'input-simple.csv', 'count-output-simple.csv'))
+        self.assertOutput(['-t', 'org,adm1'], 'count-output-simple.csv')
+        self.assertOutput(['--tags', 'org,adm1'], 'count-output-simple.csv')
 
     def test_aggregated(self):
-        self.assertTrue(try_script(self.function, ['-t', 'org,adm1', '-a', 'targeted_num'], 'input-simple.csv', 'count-output-aggregated.csv'))
+        self.assertOutput(['-t', 'org,adm1', '-a', 'targeted_num'], 'count-output-aggregated.csv')
 
 
-class TestCut(unittest.TestCase):
+class TestCut(BaseTest):
     """
     Test the hxlcut command-line tool.
     """
 
     def setUp(self):
         self.function = hxl.filters.hxlcut.run
+        self.input_file = 'input-simple.csv'
 
     def test_whitelist(self):
-        self.assertTrue(try_script(self.function, ['-i', 'sector,org,adm1'], 'input-simple.csv', 'cut-output-whitelist.csv'))
-        self.assertTrue(try_script(self.function, ['--include', 'sector,org,adm1'], 'input-simple.csv', 'cut-output-whitelist.csv'))
+        self.assertOutput(['-i', 'sector,org,adm1'], 'cut-output-whitelist.csv')
+        self.assertOutput(['--include', 'sector,org,adm1'], 'cut-output-whitelist.csv')
 
     def test_blacklist(self):
-        self.assertTrue(try_script(self.function, ['-x', 'sex,targeted_num'], 'input-simple.csv', 'cut-output-blacklist.csv'))
-        self.assertTrue(try_script(self.function, ['--exclude', 'sex,targeted_num'], 'input-simple.csv', 'cut-output-blacklist.csv'))
+        self.assertOutput(['-x', 'sex,targeted_num'], 'cut-output-blacklist.csv')
+        self.assertOutput(['--exclude', 'sex,targeted_num'], 'cut-output-blacklist.csv')
 
 
-class TestFilter(unittest.TestCase):
+class TestFilter(BaseTest):
     """
     Test the hxlfilter command-line tool.
     """
 
     def setUp(self):
         self.function = hxl.filters.hxlfilter.run
+        self.input_file = 'input-simple.csv'
 
     def test_eq(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'input-simple.csv', 'filter-output-eq.csv'))
-        self.assertTrue(try_script(self.function, ['--filter', 'sector=WASH'], 'input-simple.csv', 'filter-output-eq.csv'))
+        self.assertOutput(['-f', 'sector=WASH'], 'filter-output-eq.csv')
+        self.assertOutput(['--filter', 'sector=WASH'], 'filter-output-eq.csv')
 
     def test_ne(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector!=WASH'], 'input-simple.csv', 'filter-output-ne.csv'))
+        self.assertOutput(['-f', 'sector!=WASH'], 'filter-output-ne.csv')
 
     def test_lt(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<200'], 'input-simple.csv', 'filter-output-lt.csv'))
+        self.assertOutput(['-f', 'targeted_num<200'], 'filter-output-lt.csv')
 
     def test_le(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num<=100'], 'input-simple.csv', 'filter-output-le.csv'))
+        self.assertOutput(['-f', 'targeted_num<=100'], 'filter-output-le.csv')
 
     def test_gt(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>100'], 'input-simple.csv', 'filter-output-gt.csv'))
+        self.assertOutput(['-f', 'targeted_num>100'], 'filter-output-gt.csv')
 
     def test_ge(self):
-        self.assertTrue(try_script(self.function, ['-f', 'targeted_num>=100'], 'input-simple.csv', 'filter-output-ge.csv'))
+        self.assertOutput(['-f', 'targeted_num>=100'], 'filter-output-ge.csv')
 
     def test_inverse(self):
-        self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'input-simple.csv', 'filter-output-inverse.csv'))
-        self.assertTrue(try_script(self.function, ['--invert', '--filter', 'sector=WASH'], 'input-simple.csv', 'filter-output-inverse.csv'))
+        self.assertOutput(['-v', '-f', 'sector=WASH'], 'filter-output-inverse.csv')
+        self.assertOutput(['--invert', '--filter', 'sector=WASH'], 'filter-output-inverse.csv')
 
     def test_multiple(self):
-        self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'input-simple.csv', 'filter-output-multiple.csv'))
+        self.assertOutput(['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-output-multiple.csv')
 
 
-class TestMerge(unittest.TestCase):
+class TestMerge(BaseTest):
     """
     Test the hxlmerge command-line tool.
     """
 
     def setUp(self):
         self.function = hxl.filters.hxlmerge.run
+        self.input_file = 'input-simple.csv'
 
     def test_basic(self):
-        self.assertTrue(
-            try_script(
-                self.function,
-                ['-t', 'org,sector', resolve_file('input-simple.csv'), resolve_file('input-simple.csv')],
-                'input-simple.csv',
-                'merge-output-basic.csv'
-                )
-            )
-        self.assertTrue(
-            try_script(
-                self.function,
-                ['--tags', 'org,sector', resolve_file('input-simple.csv'), resolve_file('input-simple.csv')],
-                'input-simple.csv',
-                'merge-output-basic.csv'
-                )
-            )
+        file = resolve_file('input-simple.csv')
+        self.assertOutput(['-t', 'org,sector', file, file], 'merge-output-basic.csv')
+        self.assertOutput(['--tags', 'org,sector', file, file], 'merge-output-basic.csv')
 
 
-class TestNorm(unittest.TestCase):
+class TestNorm(BaseTest):
     """
     Test the hxlnorm command-line tool.
     """
 
     def setUp(self):
         self.function = hxl.filters.hxlnorm.run
+        self.input_file = 'input-simple.csv'
 
     def test_noheaders(self):
-        self.assertTrue(try_script(self.function, [], 'input-simple.csv', 'norm-output-noheaders.csv'))
+        self.assertOutput([], 'norm-output-noheaders.csv')
 
     def test_headers(self):
-        self.assertTrue(try_script(self.function, ['-H'], 'input-simple.csv', 'norm-output-headers.csv'))
-        self.assertTrue(try_script(self.function, ['--headers'], 'input-simple.csv', 'norm-output-headers.csv'))
+        self.assertOutput(['-H'], 'norm-output-headers.csv')
+        self.assertOutput(['--headers'], 'norm-output-headers.csv')
 
     def test_compact(self):
-        self.assertTrue(try_script(self.function, [], 'input-compact.csv', 'norm-output-compact.csv'))
+        self.assertOutput([], 'norm-output-compact.csv')
 
 
-class TestValidate(unittest.TestCase):
+class TestValidate(BaseTest):
     """
     Test the hxlvalidate command-line tool.
     """
 
     def setUp(self):
         self.function = hxl.filters.hxlvalidate.run
+        self.input_file = 'input-simple.csv'
 
     def test_valid(self):
-        self.assertTrue(
-            try_script(
-                self.function,
-                ['-s', resolve_file('validate-schema-valid.csv')],
-                'input-simple.csv',
-                'validate-output-valid.txt'
-                )
-            )
-        self.assertTrue(
-            try_script(
-                self.function,
-                ['--schema', resolve_file('validate-schema-valid.csv')],
-                'input-simple.csv',
-                'validate-output-valid.txt'
-                )
-            )
+        schema = resolve_file('validate-schema-valid.csv')
+        self.assertOutput(['-s', schema], 'validate-output-valid.txt')
+        self.assertOutput(['--schema', schema], 'validate-output-valid.txt')
 
     def test_number(self):
-        self.assertTrue(
-            try_script(
-                self.function,
-                ['-s', resolve_file('validate-schema-num.csv')],
-                'input-simple.csv',
-                'validate-output-num.txt'
-                )
-            )
+        schema = resolve_file('validate-schema-num.csv')
+        self.assertOutput(['-s', schema], 'validate-output-num.txt')
 
 
 ########################################################################
