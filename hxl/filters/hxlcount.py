@@ -31,6 +31,26 @@ import argparse
 from hxl.filters import parse_tags
 from hxl.parser import HXLReader
 
+class Aggregator:
+
+    def __init__(self, tag):
+        self.tag = tag
+        self.count = 0
+        self.sum = 0.0
+        self.average = 0.0
+        self.seen_numbers = False
+
+    def add(self, row):
+        self.count += 1
+        if self.tag:
+            value = row.get(self.tag)
+            try:
+                self.sum += float(value)
+                self.average = self.sum / self.count
+                self.seen_numbers = True
+            except TypeError:
+                pass
+
 def hxlcount(input, output, tags):
     """
     Count occurances of value combinations for a set of tags.
@@ -39,7 +59,8 @@ def hxlcount(input, output, tags):
     parser = HXLReader(input)
     writer = csv.writer(output)
 
-    stats = {}
+    seen_numbers = False
+    aggregators = {}
 
     # Add up the value combinations in the rows
     for row in parser:
@@ -52,19 +73,20 @@ def hxlcount(input, output, tags):
         if values:
             # need to use a tuple as a key
             key = tuple(values)
-            if stats.get(key):
-                stats[key] += 1
-            else:
-                stats[key] = 1
+            if not aggregators.get(key):
+                aggregators[key] = Aggregator(None)
+            aggregators[key].add(row)
+            if aggregators[key].seen_numbers:
+                seen_numbers = True
 
     # Write the HXL hashtag row
     tags.append('#x_total_num')
     writer.writerow(tags)
 
     # Write the stats, sorted in value order
-    for aggregate in sorted(stats.items()):
+    for aggregate in sorted(aggregators.items()):
         data = list(aggregate[0])
-        data.append(aggregate[1])
+        data.append(aggregate[1].count)
         writer.writerow(data)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
