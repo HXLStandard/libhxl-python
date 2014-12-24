@@ -66,6 +66,15 @@ def hxlfilter(input, output, filters=[], invert=False):
         if row_matches_p(row):
             writer.writerow(row.values)
 
+def operator_re(s, pattern):
+    """Regular-expression comparison operator."""
+    return re.match(pattern, s)
+
+def operator_nre(s, pattern):
+    """Regular-expression negative comparison operator."""
+    return not re.match(pattern, s)
+
+
 # Map of comparison operators
 operator_map = {
     '=': operator.eq,
@@ -73,9 +82,10 @@ operator_map = {
     '<': operator.lt,
     '<=': operator.le,
     '>': operator.gt,
-    '>=': operator.ge
+    '>=': operator.ge,
+    '~': operator_re,
+    '!~': operator_nre
 }
-
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -90,7 +100,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         """
         Parse a filter expression
         """
-        result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)([<>]=?|!?=)(.*)$', s)
+        result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)([<>]=?|!?=|!?~)(.*)$', s)
         if result:
            filter = list(result.group(1, 2, 3))
            # (re)add hash to start of tag
@@ -121,7 +131,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-f',
         '--filter',
-        help='expression for filtering (use multiple times for logical OR): <hashtag><op><value>, where <op> is =, !=, <, <=, >, or >=',
+        help='expression for filtering (use multiple times for logical OR): <hashtag><op><value>, where <op> is =, !=, <, <=, >, >=, ~, or !~',
         action='append',
         metavar='tag=value',
         default=[],

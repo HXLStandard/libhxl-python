@@ -109,6 +109,12 @@ class TestFilter(BaseTest):
     def test_ge(self):
         self.assertOutput(['-f', 'targeted_num>=100'], 'filter-output-ge.csv')
 
+    def test_re(self):
+        self.assertOutput(['-f', 'sector~^W..H'], 'filter-output-re.csv')
+
+    def test_nre(self):
+        self.assertOutput(['-f', 'sector!~^W..H'], 'filter-output-nre.csv')
+
     def test_inverse(self):
         self.assertOutput(['-v', '-f', 'sector=WASH'], 'filter-output-inverse.csv')
         self.assertOutput(['--invert', '--filter', 'sector=WASH'], 'filter-output-inverse.csv')
