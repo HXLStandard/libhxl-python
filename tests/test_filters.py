@@ -40,6 +40,9 @@ class TestCount(unittest.TestCase):
     def test_simple(self):
         self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'input-simple.csv', 'count-output-simple.csv'))
 
+    def test_aggregated(self):
+        self.assertTrue(try_script(self.function, ['-t', 'org,adm1', '-a', 'targeted_num'], 'input-simple.csv', 'count-output-aggregated.csv'))
+
 
 class TestCut(unittest.TestCase):
     """

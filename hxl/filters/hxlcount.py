@@ -28,7 +28,7 @@ import sys
 import csv
 import json
 import argparse
-from hxl.filters import parse_tags
+from hxl.filters import parse_tags, fix_tag
 from hxl.parser import HXLReader
 
 class Aggregator:
@@ -48,10 +48,10 @@ class Aggregator:
                 self.sum += float(value)
                 self.average = self.sum / self.count
                 self.seen_numbers = True
-            except TypeError:
+            except ValueError:
                 pass
 
-def hxlcount(input, output, tags):
+def hxlcount(input, output, tags, aggregate_tag = None):
     """
     Count occurances of value combinations for a set of tags.
     """
@@ -74,19 +74,28 @@ def hxlcount(input, output, tags):
             # need to use a tuple as a key
             key = tuple(values)
             if not aggregators.get(key):
-                aggregators[key] = Aggregator(None)
+                aggregators[key] = Aggregator(aggregate_tag)
             aggregators[key].add(row)
             if aggregators[key].seen_numbers:
                 seen_numbers = True
 
     # Write the HXL hashtag row
-    tags.append('#x_total_num')
+    tags.append('#x_count_num')
+    if seen_numbers:
+        tags.append('#x_sum_num')
+        tags.append('#x_average_num')
     writer.writerow(tags)
 
     # Write the stats, sorted in value order
     for aggregate in sorted(aggregators.items()):
         data = list(aggregate[0])
         data.append(aggregate[1].count)
+        if aggregate[1].seen_numbers:
+            data.append(aggregate[1].sum)
+            data.append(aggregate[1].average)
+        elif seen_numbers:
+            data.append('')
+            data.append('')
         writer.writerow(data)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -122,9 +131,16 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=parse_tags,
         default='loc,org,sector,adm1,adm2,adm3'
         )
+    parser.add_argument(
+        '-a',
+        '--aggregate',
+        help='Hashtag to aggregate.',
+        metavar='tag',
+        type=fix_tag
+        )
     args = parser.parse_args(args)
 
-    hxlcount(args.infile, args.outfile, args.tags)
+    hxlcount(args.infile, args.outfile, args.tags, args.aggregate)
 
 
 # end
