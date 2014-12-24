@@ -224,7 +224,8 @@ def loadHXLSchema(input=None):
     @param input load schema from the specific stream, or default schema if None (default: None)
     """
 
-    schema = HXLSchema()
+    # FIXME why do I need to specify an empty rule list?
+    schema = HXLSchema(rules=[])
 
     def parseType(typeString):
         if typeString == 'text':
@@ -281,6 +282,3 @@ def loadHXLSchema(input=None):
     return schema
 
 # end
-
-
-

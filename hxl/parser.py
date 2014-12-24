@@ -287,7 +287,7 @@ class HXLReader:
                     self.lastHeaderRow = rawData
                     rawData = self.parseSourceRow()
         except StopIteration:
-            Pass
+            pass
         raise HXLParseException("HXL hashtag row not found", self.sourceRowNumber)
     
     def parseHashtagRow(self, rawDataRow):
