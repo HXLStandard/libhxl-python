@@ -18,6 +18,7 @@ import hxl.filters.hxlcount
 import hxl.filters.hxlcut
 import hxl.filters.hxlfilter
 import hxl.filters.hxlnorm
+import hxl.filters.hxlvalidate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
@@ -25,6 +26,7 @@ root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 ########################################################################
 # Test classes
 ########################################################################
+
 
 class TestCount(unittest.TestCase):
     """
@@ -104,9 +106,28 @@ class TestNorm(unittest.TestCase):
         self.assertTrue(try_script(self.function, [], 'input-compact.csv', 'norm-output-compact.csv'))
 
 
+class TestValidate(unittest.TestCase):
+    """
+    Test the hxlvalidate command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.hxlvalidate.run
+
+    def test_valid(self):
+        self.assertTrue(try_script(self.function, ['-s', resolve_file('validate-schema-valid.csv')], 'input-simple.csv', 'validate-output-valid.txt'))
+
+
+
 ########################################################################
 # Support functions
 ########################################################################
+
+def resolve_file(name):
+    """
+    Resolve a file name in the test directory.
+    """
+    return os.path.join(root_dir, 'tests', 'files', 'test_filters', name)
 
 def try_script(script_function, args, input_file, expected_output_file):
     """
@@ -117,18 +138,12 @@ def try_script(script_function, args, input_file, expected_output_file):
     @return True if the actual output matches the expected output
     """
 
-    def resolve(name):
-        """
-        Resolve a file name in the test directory.
-        """
-        return os.path.join(root_dir, 'tests', 'files', 'test_filters', name)
-
-    input = open(resolve(input_file), 'r')
+    input = open(resolve_file(input_file), 'r')
     output = tempfile.NamedTemporaryFile(delete=False)
     try:
         script_function(args, stdin=input, stdout=output)
         output.close()
-        result = diff(output.name, resolve(expected_output_file))
+        result = diff(output.name, resolve_file(expected_output_file))
     finally:
         # Not using with, because Windows won't allow file to be opened twice
         os.remove(output.name)
