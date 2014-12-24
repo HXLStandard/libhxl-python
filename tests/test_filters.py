@@ -39,6 +39,7 @@ class TestCount(unittest.TestCase):
 
     def test_simple(self):
         self.assertTrue(try_script(self.function, ['-t', 'org,adm1'], 'input-simple.csv', 'count-output-simple.csv'))
+        self.assertTrue(try_script(self.function, ['--tags', 'org,adm1'], 'input-simple.csv', 'count-output-simple.csv'))
 
     def test_aggregated(self):
         self.assertTrue(try_script(self.function, ['-t', 'org,adm1', '-a', 'targeted_num'], 'input-simple.csv', 'count-output-aggregated.csv'))
@@ -71,6 +72,7 @@ class TestFilter(unittest.TestCase):
 
     def test_eq(self):
         self.assertTrue(try_script(self.function, ['-f', 'sector=WASH'], 'input-simple.csv', 'filter-output-eq.csv'))
+        self.assertTrue(try_script(self.function, ['--filter', 'sector=WASH'], 'input-simple.csv', 'filter-output-eq.csv'))
 
     def test_ne(self):
         self.assertTrue(try_script(self.function, ['-f', 'sector!=WASH'], 'input-simple.csv', 'filter-output-ne.csv'))
@@ -89,6 +91,7 @@ class TestFilter(unittest.TestCase):
 
     def test_inverse(self):
         self.assertTrue(try_script(self.function, ['-v', '-f', 'sector=WASH'], 'input-simple.csv', 'filter-output-inverse.csv'))
+        self.assertTrue(try_script(self.function, ['--invert', '--filter', 'sector=WASH'], 'input-simple.csv', 'filter-output-inverse.csv'))
 
     def test_multiple(self):
         self.assertTrue(try_script(self.function, ['-f', 'sector=WASH', '-f', 'sector=Salud'], 'input-simple.csv', 'filter-output-multiple.csv'))
@@ -111,6 +114,14 @@ class TestMerge(unittest.TestCase):
                 'merge-output-basic.csv'
                 )
             )
+        self.assertTrue(
+            try_script(
+                self.function,
+                ['--tags', 'org,sector', resolve_file('input-simple.csv'), resolve_file('input-simple.csv')],
+                'input-simple.csv',
+                'merge-output-basic.csv'
+                )
+            )
 
 
 class TestNorm(unittest.TestCase):
@@ -126,6 +137,7 @@ class TestNorm(unittest.TestCase):
 
     def test_headers(self):
         self.assertTrue(try_script(self.function, ['-H'], 'input-simple.csv', 'norm-output-headers.csv'))
+        self.assertTrue(try_script(self.function, ['--headers'], 'input-simple.csv', 'norm-output-headers.csv'))
 
     def test_compact(self):
         self.assertTrue(try_script(self.function, [], 'input-compact.csv', 'norm-output-compact.csv'))
@@ -144,6 +156,14 @@ class TestValidate(unittest.TestCase):
             try_script(
                 self.function,
                 ['-s', resolve_file('validate-schema-valid.csv')],
+                'input-simple.csv',
+                'validate-output-valid.txt'
+                )
+            )
+        self.assertTrue(
+            try_script(
+                self.function,
+                ['--schema', resolve_file('validate-schema-valid.csv')],
                 'input-simple.csv',
                 'validate-output-valid.txt'
                 )
