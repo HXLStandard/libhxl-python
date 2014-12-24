@@ -72,15 +72,15 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         default=stdout
         )
     parser.add_argument(
-        '-c',
-        '--include-tags',
+        '-I',
+        '--include',
         help='Comma-separated list of column tags to include',
         metavar='tag,tag...',
         type=parse_tags
         )
     parser.add_argument(
-        '-C',
-        '--exclude-tags',
+        '-X',
+        '--exclude',
         help='Comma-separated list of column tags to exclude',
         metavar='tag,tag...',
         type=parse_tags
@@ -88,6 +88,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     # Call the command function
-    hxlcut(args.infile, args.outfile, include_tags=args.include_tags, exclude_tags=args.exclude_tags)
+    hxlcut(args.infile, args.outfile, include_tags=args.include, exclude_tags=args.exclude)
 
 # end

@@ -53,10 +53,12 @@ class TestCut(unittest.TestCase):
         self.function = hxl.filters.hxlcut.run
 
     def test_whitelist(self):
-        self.assertTrue(try_script(self.function, ['-c', 'sector,org,adm1'], 'input-simple.csv', 'cut-output-whitelist.csv'))
+        self.assertTrue(try_script(self.function, ['-I', 'sector,org,adm1'], 'input-simple.csv', 'cut-output-whitelist.csv'))
+        self.assertTrue(try_script(self.function, ['--include', 'sector,org,adm1'], 'input-simple.csv', 'cut-output-whitelist.csv'))
 
     def test_blacklist(self):
-        self.assertTrue(try_script(self.function, ['-C', 'sex,targeted_num'], 'input-simple.csv', 'cut-output-blacklist.csv'))
+        self.assertTrue(try_script(self.function, ['-X', 'sex,targeted_num'], 'input-simple.csv', 'cut-output-blacklist.csv'))
+        self.assertTrue(try_script(self.function, ['--exclude', 'sex,targeted_num'], 'input-simple.csv', 'cut-output-blacklist.csv'))
 
 
 class TestFilter(unittest.TestCase):
