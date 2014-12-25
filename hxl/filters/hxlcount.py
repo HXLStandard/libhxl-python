@@ -38,6 +38,8 @@ class Aggregator:
         self.count = 0
         self.sum = 0.0
         self.average = 0.0
+        self.min = None
+        self.max = None
         self.seen_numbers = False
 
     def add(self, row):
@@ -45,8 +47,13 @@ class Aggregator:
         if self.tag:
             value = row.get(self.tag)
             try:
-                self.sum += float(value)
+                n = float(value)
+                self.sum += n
                 self.average = self.sum / self.count
+                if self.min is None or self.min < n:
+                    self.min = n
+                if self.max is None or self.max > n:
+                    self.max = n
                 self.seen_numbers = True
             except ValueError:
                 pass
@@ -84,6 +91,8 @@ def hxlcount(input, output, tags, aggregate_tag = None):
     if seen_numbers:
         tags.append('#x_sum_num')
         tags.append('#x_average_num')
+        tags.append('#x_min_num')
+        tags.append('#x_max_num')
     writer.writerow(tags)
 
     # Write the stats, sorted in value order
@@ -93,7 +102,11 @@ def hxlcount(input, output, tags, aggregate_tag = None):
         if aggregate[1].seen_numbers:
             data.append(aggregate[1].sum)
             data.append(aggregate[1].average)
+            data.append(aggregate[1].min)
+            data.append(aggregate[1].max)
         elif seen_numbers:
+            data.append('')
+            data.append('')
             data.append('')
             data.append('')
         writer.writerow(data)
