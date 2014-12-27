@@ -17,6 +17,7 @@ class HXLDataset(object):
         Initialise a dataset.
         @param url The dataset's URL (default: None).
         """
+        self.url = url
         self.columns = []
         self.rows = []
         self.cachedTags = None
