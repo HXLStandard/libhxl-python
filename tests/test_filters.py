@@ -19,6 +19,7 @@ import hxl.filters.hxlcut
 import hxl.filters.hxlfilter
 import hxl.filters.hxlmerge
 import hxl.filters.hxlnorm
+import hxl.filters.hxlrename
 import hxl.filters.hxlvalidate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -156,6 +157,19 @@ class TestNorm(BaseTest):
 
     def test_compact(self):
         self.assertOutput([], 'norm-output-compact.csv')
+
+class TestRename(BaseTest):
+    """
+    Test the hxlrename command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.hxlrename.run
+        self.input_file = 'input-simple.csv'
+
+    def test_single(self):
+        self.assertOutput(['-r', 'targeted_num:affected_num'], 'rename-output-single.csv')
+        self.assertOutput(['--rename', 'targeted_num:affected_num'], 'rename-output-single.csv')
 
 
 class TestValidate(BaseTest):
