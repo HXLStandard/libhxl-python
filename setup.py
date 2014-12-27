@@ -16,6 +16,7 @@ setup(name='libhxl',
         'scripts/hxlfilter',
         'scripts/hxlmerge',
         'scripts/hxlnorm',
+        'scripts/hxlrename',
         'scripts/hxlvalidate'
         ]
       )

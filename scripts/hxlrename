@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+"""
+Script to rename columns in a HXL dataset.
+David Megginson
+December 2014
+
+Usage:
+
+  hxlrename -r targeted_num:affected_num < DATA_IN.csv > DATA_OUT.csv
+
+(Use -h option to get all options.)
+
+License: Public Domain
+Documentation: http://hxlstandard.org
+"""
+
+import sys
+from hxl.filters.hxlrename import run
+
+if __name__ == '__main__':
+    run(sys.argv[1:], sys.stdin, sys.stdout)
+
+# end

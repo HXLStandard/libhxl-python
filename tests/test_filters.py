@@ -171,6 +171,9 @@ class TestRename(BaseTest):
         self.assertOutput(['-r', 'targeted_num:affected_num'], 'rename-output-single.csv')
         self.assertOutput(['--rename', 'targeted_num:affected_num'], 'rename-output-single.csv')
 
+    def test_multiple(self):
+        self.assertOutput(['-r', 'targeted_num:affected_num', '-r', 'org:funding'], 'rename-output-multiple.csv')
+
 
 class TestValidate(BaseTest):
     """

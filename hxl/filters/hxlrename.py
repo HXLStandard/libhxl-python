@@ -71,10 +71,10 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '-r',
         '--rename',
         help='Rename an old tag to a new one',
-        metavar='original_tag:new_tag',
-        type=parse_rename,
         action='append',
-        default=[]
+        metavar='original_tag:new_tag',
+        default=[],
+        type=parse_rename
         )
     args = parser.parse_args(args)
 
