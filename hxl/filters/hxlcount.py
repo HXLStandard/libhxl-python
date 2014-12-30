@@ -50,9 +50,9 @@ class Aggregator:
                 n = float(value)
                 self.sum += n
                 self.average = self.sum / self.count
-                if self.min is None or self.min < n:
+                if self.min is None or n < self.min:
                     self.min = n
-                if self.max is None or self.max > n:
+                if self.max is None or n > self.max:
                     self.max = n
                 self.seen_numbers = True
             except ValueError:
