@@ -22,11 +22,12 @@ Documentation: http://hxlstandard.org
 import sys
 import csv
 import re
+import dateutil.parser
 import argparse
 from hxl.parser import HXLReader
 from hxl.filters import parse_tags
 
-def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False, upper=[], lower=[]):
+def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False, upper=[], lower=[], date=[]):
     """
     Normalize a HXL dataset
     """
@@ -50,6 +51,10 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
                 value = re.sub('\s+$', '', value)
                 value = re.sub('\s+', ' ', value)
 
+        # Date (-d)
+        if value and date and (column.hxlTag in date):
+            value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+
         # Uppercase (-u)
         if upper and column.hxlTag in upper:
             value = value.decode('utf8').upper().encode('utf8')
@@ -57,6 +62,7 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
         # Lowercase (-l)
         if lower and column.hxlTag in lower:
             value = value.decode('utf8').lower().encode('utf8')
+
 
         return value
 
@@ -118,6 +124,13 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=parse_tags
         )
     parser.add_argument(
+        '-d',
+        '--date',
+        help='Comma-separated list of tags for date normalisation.',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    parser.add_argument(
         '-H',
         '--headers',
         help='Preserve text header row above HXL hashtags',
@@ -133,6 +146,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     else:
         whitespace_arg = args.whitespace
 
-    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=whitespace_arg, upper=args.upper, lower=args.lower)
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=args.date)
 
 # end
