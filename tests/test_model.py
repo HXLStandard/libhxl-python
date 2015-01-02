@@ -76,4 +76,15 @@ class TestRow(unittest.TestCase):
         self.assertTrue(type(result) is list)
         self.assertEquals(1, len(result))
 
+    def test_map(self):
+
+        def tolower(value, column):
+            """Function to map over the row"""
+            if column.hxlTag == '#org':
+                value = value.lower()
+            return value
+
+        values = self.row.map(tolower)
+        self.assertEquals(['Health', 'wfp', 'Liberia'], values)
+
 # end
