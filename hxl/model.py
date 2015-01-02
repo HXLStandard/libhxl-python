@@ -162,6 +162,21 @@ class HXLRow(object):
         else:
             return False
 
+    def map(self, function):
+        """
+        Map a function over a row and return the result.
+        
+        The function returns a new list constructed from the return
+        values of the mapping function, which must take two arguments
+        (the value, and the HXLColumn object).
+        @param function The mapping function.
+        @return A new array of values, after the mapping
+        """
+        values = []
+        for index, value in enumerate(self.values):
+            values.append(function(value, self.columns[index]))
+        return values
+
     def __getitem__(self, index):
         """
         Array-access method to make this class iterable.

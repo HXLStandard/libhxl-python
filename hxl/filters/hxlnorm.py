@@ -24,8 +24,9 @@ import csv
 import re
 import argparse
 from hxl.parser import HXLReader
+from hxl.filters import parse_tags
 
-def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = True):
+def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False):
     """
     Normalize a HXL dataset
     """
@@ -39,11 +40,20 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
         writer.writerow(parser.headers)
     writer.writerow(parser.tags)
 
+    def norm_whitespace_tags(value, column):
+        if whitespace is True or column.hxlTag in whitespace:
+            value = re.sub('^\s+', '', value)
+            value = re.sub('\s+$', '', value)
+            value = re.sub('\s+', ' ', value)
+        return value
+
     for row in parser:
-        values = row.values
-        if whitespace is True:
-            values = map(norm_whitespace, values)
-        writer.writerow(values)
+
+        # Normalise whitespacee
+        if whitespace:
+            row.values = row.map(norm_whitespace_tags)
+
+        writer.writerow(row.values)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -71,14 +81,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         default=stdout
         )
     parser.add_argument(
-        '-H',
-        '--headers',
-        help='Preserve text header row above HXL hashtags',
-        action='store_const',
-        const=True,
-        default=False
-        )
-    parser.add_argument(
         '-W',
         '--whitespace-all',
         help='Normalise whitespace in all columns',
@@ -86,21 +88,28 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
         )
+    parser.add_argument(
+        '-w',
+        '--whitespace',
+        help='Comma-separated list of tags for normalised whitespace.',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    parser.add_argument(
+        '-H',
+        '--headers',
+        help='Preserve text header row above HXL hashtags',
+        action='store_const',
+        const=True,
+        default=False
+        )
     args = parser.parse_args(args)
 
     # Call the command function
-    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=args.whitespace_all)
-
-
-def norm_whitespace(s):
-    """
-    Normalise whitespace in a string.
-
-    Remove all leading and trailing space, and reduce internal whitespace.
-    """
-    s = re.sub('^\s+', '', s)
-    s = re.sub('\s+$', '', s)
-    s = re.sub('\s+', ' ', s)
-    return s
+    if args.whitespace_all:
+        whitespace_arg = True
+    else:
+        whitespace_arg = args.whitespace
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=whitespace_arg)
 
 # end
