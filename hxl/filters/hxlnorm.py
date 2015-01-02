@@ -26,7 +26,7 @@ import argparse
 from hxl.parser import HXLReader
 from hxl.filters import parse_tags
 
-def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False):
+def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False, upper=[], lower=[]):
     """
     Normalize a HXL dataset
     """
@@ -40,20 +40,28 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
         writer.writerow(parser.headers)
     writer.writerow(parser.tags)
 
-    def norm_whitespace_tags(value, column):
-        if whitespace is True or column.hxlTag in whitespace:
-            value = re.sub('^\s+', '', value)
-            value = re.sub('\s+$', '', value)
-            value = re.sub('\s+', ' ', value)
+    def do_norm(value, column):
+        """Closure: normalise values in a row of HXL data."""
+
+        # Whitespace (-w or -W)
+        if whitespace:
+            if whitespace is True or column.hxlTag in whitespace:
+                value = re.sub('^\s+', '', value)
+                value = re.sub('\s+$', '', value)
+                value = re.sub('\s+', ' ', value)
+
+        # Uppercase (-u)
+        if upper and column.hxlTag in upper:
+            value = value.decode('utf8').upper().encode('utf8')
+
+        # Lowercase (-l)
+        if lower and column.hxlTag in lower:
+            value = value.decode('utf8').lower().encode('utf8')
+
         return value
 
     for row in parser:
-
-        # Normalise whitespacee
-        if whitespace:
-            row.values = row.map(norm_whitespace_tags)
-
-        writer.writerow(row.values)
+        writer.writerow(row.map(do_norm))
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -96,6 +104,20 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=parse_tags
         )
     parser.add_argument(
+        '-u',
+        '--upper',
+        help='Comma-separated list of tags to convert to uppercase.',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    parser.add_argument(
+        '-l',
+        '--lower',
+        help='Comma-separated list of tags to convert to lowercase.',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    parser.add_argument(
         '-H',
         '--headers',
         help='Preserve text header row above HXL hashtags',
@@ -110,6 +132,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         whitespace_arg = True
     else:
         whitespace_arg = args.whitespace
-    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=whitespace_arg)
+
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=whitespace_arg, upper=args.upper, lower=args.lower)
 
 # end

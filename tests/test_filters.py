@@ -162,6 +162,10 @@ class TestNorm(BaseTest):
         self.assertOutput(['-W'], 'norm-output-whitespace-all.csv', 'input-whitespace.csv')
         self.assertOutput(['-w', 'subsector'], 'norm-output-whitespace-tags.csv', 'input-whitespace.csv')
 
+    def test_case(self):
+        self.assertOutput(['-u', 'sector,subsector'], 'norm-output-upper.csv')
+        self.assertOutput(['-l', 'sector,subsector'], 'norm-output-lower.csv')
+
 class TestRename(BaseTest):
     """
     Test the hxlrename command-line tool.

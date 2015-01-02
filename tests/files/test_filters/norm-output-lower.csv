@@ -1,0 +1,9 @@
+#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1
+wash,higiene,ACNUR,Hombres,100,Panamá,Los Santos
+wash,higiene,ACNUR,Mujeres,100,Panamá,Los Santos
+salud,vacunación,OMS,Hombres,,Colombia,Cauca
+salud,vacunación,OMS,Mujeres,,Colombia,Cauca
+educación,formación de enseñadores,UNICEF,Hombres,250,Colombia,Chocó
+educación,formación de enseñadores,UNICEF,Mujeres,300,Colombia,Chocó
+wash,urbano,OMS,Hombres,80,Venezuela,Amazonas
+wash,urbano,OMS,Mujeres,95,Venezuela,Amazonas
