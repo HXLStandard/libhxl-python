@@ -158,6 +158,9 @@ class TestNorm(BaseTest):
     def test_compact(self):
         self.assertOutput([], 'norm-output-compact.csv')
 
+    def test_whitespace(self):
+        self.assertOutput(['-W'], 'norm-output-whitespace-all.csv', 'input-whitespace.csv')
+
 class TestRename(BaseTest):
     """
     Test the hxlrename command-line tool.

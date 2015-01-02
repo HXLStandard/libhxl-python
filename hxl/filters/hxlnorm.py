@@ -21,10 +21,11 @@ Documentation: http://hxlstandard.org
 
 import sys
 import csv
+import re
 import argparse
 from hxl.parser import HXLReader
 
-def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = []):
+def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = True):
     """
     Normalize a HXL dataset
     """
@@ -39,7 +40,10 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
     writer.writerow(parser.tags)
 
     for row in parser:
-        writer.writerow(row.values)
+        values = row.values
+        if whitespace is True:
+            values = map(norm_whitespace, values)
+        writer.writerow(values)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -74,9 +78,29 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
         )
+    parser.add_argument(
+        '-W',
+        '--whitespace-all',
+        help='Normalise whitespace in all columns',
+        action='store_const',
+        const=True,
+        default=False
+        )
     args = parser.parse_args(args)
 
     # Call the command function
-    hxlnorm(args.infile, args.outfile, show_headers=args.headers)
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=args.whitespace_all)
+
+
+def norm_whitespace(s):
+    """
+    Normalise whitespace in a string.
+
+    Remove all leading and trailing space, and reduce internal whitespace.
+    """
+    s = re.sub('^\s+', '', s)
+    s = re.sub('\s+$', '', s)
+    s = re.sub('\s+', ' ', s)
+    return s
 
 # end
