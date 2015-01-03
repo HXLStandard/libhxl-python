@@ -166,6 +166,8 @@ class TestNorm(BaseTest):
         self.assertOutput(['-u', 'sector,subsector'], 'norm-output-upper.csv')
         self.assertOutput(['-l', 'sector,subsector'], 'norm-output-lower.csv')
 
+    # TODO: test dates and numbers
+
 class TestRename(BaseTest):
     """
     Test the hxlrename command-line tool.
