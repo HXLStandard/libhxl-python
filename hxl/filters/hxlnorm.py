@@ -67,7 +67,8 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
         if number and column.hxlTag in number and re.match('\d', value):
             value = re.sub('[^\d.]', '', value)
             value = re.sub('^0+', '', value)
-            value = re.sub('\.0+$', '', value)
+            value = re.sub('(\..*)0+$', '\g<1>', value)
+            value = re.sub('\.$', '', value)
 
         return value
 
