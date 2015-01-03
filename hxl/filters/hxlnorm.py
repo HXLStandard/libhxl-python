@@ -27,7 +27,7 @@ import argparse
 from hxl.parser import HXLReader
 from hxl.filters import parse_tags
 
-def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False, upper=[], lower=[], date=[]):
+def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False, upper=[], lower=[], date=[], number=[]):
     """
     Normalize a HXL dataset
     """
@@ -63,6 +63,11 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
         if lower and column.hxlTag in lower:
             value = value.decode('utf8').lower().encode('utf8')
 
+        # Number (-n)
+        if number and column.hxlTag in number and re.match('\d', value):
+            value = re.sub('[^\d.]', '', value)
+            value = re.sub('^0+', '', value)
+            value = re.sub('\.0+$', '', value)
 
         return value
 
@@ -131,6 +136,13 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=parse_tags
         )
     parser.add_argument(
+        '-n',
+        '--number',
+        help='Comma-separated list of tags for number normalisation.',
+        metavar='tag,tag...',
+        type=parse_tags
+        )
+    parser.add_argument(
         '-H',
         '--headers',
         help='Preserve text header row above HXL hashtags',
@@ -146,6 +158,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     else:
         whitespace_arg = args.whitespace
 
-    hxlnorm(args.infile, args.outfile, show_headers=args.headers, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=args.date)
+    hxlnorm(args.infile, args.outfile, show_headers=args.headers,
+            whitespace=whitespace_arg, upper=args.upper, lower=args.lower,
+            date=args.date, number=args.number)
 
 # end
