@@ -51,10 +51,6 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
                 value = re.sub('\s+$', '', value)
                 value = re.sub('\s+', ' ', value)
 
-        # Date (-d)
-        if value and date and (column.hxlTag in date):
-            value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
-
         # Uppercase (-u)
         if upper and column.hxlTag in upper:
             value = value.decode('utf8').upper().encode('utf8')
@@ -63,12 +59,18 @@ def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags
         if lower and column.hxlTag in lower:
             value = value.decode('utf8').lower().encode('utf8')
 
-        # Number (-n)
-        if number and column.hxlTag in number and re.match('\d', value):
-            value = re.sub('[^\d.]', '', value)
-            value = re.sub('^0+', '', value)
-            value = re.sub('(\..*)0+$', '\g<1>', value)
-            value = re.sub('\.$', '', value)
+        # Date (-d or -D)
+        if date and value:
+            if (date is True and column.hxlTag.endswith('_date')) or (date is not True and column.hxlTag in date):
+                value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+
+        # Number (-n or -N)
+        if number and re.match('\d', value):
+            if (number is True and column.hxlTag.endswith('_num')) or (number is not True and column.hxlTag in Number):
+                value = re.sub('[^\d.]', '', value)
+                value = re.sub('^0+', '', value)
+                value = re.sub('(\..*)0+$', '\g<1>', value)
+                value = re.sub('\.$', '', value)
 
         return value
 
@@ -130,11 +132,27 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=parse_tags
         )
     parser.add_argument(
+        '-D',
+        '--date-all',
+        help='Normalise all dates.',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    parser.add_argument(
         '-d',
         '--date',
         help='Comma-separated list of tags for date normalisation.',
         metavar='tag,tag...',
         type=parse_tags
+        )
+    parser.add_argument(
+        '-N',
+        '--number-all',
+        help='Normalise all numbers.',
+        action='store_const',
+        const=True,
+        default=False
         )
     parser.add_argument(
         '-n',
@@ -159,8 +177,18 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     else:
         whitespace_arg = args.whitespace
 
+    if args.date_all:
+        date_arg = True
+    else:
+        date_arg = args.date
+
+    if args.number_all:
+        number_arg = True
+    else:
+        number_arg = args.number
+
     hxlnorm(args.infile, args.outfile, show_headers=args.headers,
             whitespace=whitespace_arg, upper=args.upper, lower=args.lower,
-            date=args.date, number=args.number)
+            date=date_arg, number=number_arg)
 
 # end
