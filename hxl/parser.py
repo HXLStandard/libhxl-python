@@ -359,7 +359,7 @@ def writeHXL(output, dataset):
     if (dataset.headers):
         writer.writerow(dataset.headers)
     writer.writerow(dataset.tags)
-    for row in dataset.rows:
+    for row in dataset:
         writer.writerow(row.values)
 
 # end

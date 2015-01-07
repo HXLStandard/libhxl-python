@@ -17,31 +17,33 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 import csv
+import copy
+from hxl.model import HXLSource
 from hxl.filters import fix_tag
-from hxl.parser import HXLReader
+from hxl.parser import HXLReader, writeHXL
 
-def hxlrename(input, output, rename_map={}):
-    """
-    Cut columns from a HXL dataset
-    """
+class HXLRenameFilter(HXLSource):
 
-    parser = HXLReader(input)
-    writer = csv.writer(output)
+    def __init__(self, source, rename_map={}):
+        """
+        Set up a column-rename filter.
+        @param source the HXLSource for the data.
+        @param rename_map map of tags to rename
+        """
+        self.source = source
+        self.rename_map = rename_map
 
-    def rename_tags(tag):
-        if tag in rename_map:
-            return rename_map[tag]
-        else:
-            return tag
+    @property
+    def columns(self):
+        def rename_tags(column):
+            if column.hxlTag in self.rename_map:
+                column = copy.copy(column)
+                column.hxlTag = self.rename_map[column.hxlTag]
+            return column
+        return map(rename_tags, self.source.columns)
 
-    tags = map(rename_tags, parser.tags)
-
-    if parser.hasHeaders:
-        writer.writerow(parser.headers)
-    writer.writerow(tags)
-
-    for row in parser:
-        writer.writerow(row.values)
+    def next(self):
+        return self.source.next()
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -79,7 +81,9 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     # Call the command function
-    hxlrename(args.infile, args.outfile, rename_map=dict(args.rename))
+    source = HXLReader(args.infile)
+    filter = HXLRenameFilter(source, dict(args.rename))
+    writeHXL(args.outfile, filter)
 
 def parse_rename(s):
     return map(fix_tag, s.split(':'))
