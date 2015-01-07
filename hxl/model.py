@@ -13,6 +13,12 @@ class HXLSource(object):
     """
     Abstract base class for a HXL data source.
 
+    Any source of parsed HXL data inherits from this class: that
+    includes HXLDataset, HXLReader, and the various filters in the
+    hxl.filters package.  The contract of a HXLSource is that it will
+    provide a columns property and a next() method to read through the
+    rows.
+
     The child class must implement the columns() method as a property
     and the next() method to iterate through rows of data.
     """
@@ -21,7 +27,7 @@ class HXLSource(object):
 
     def __iter__(self):
         """
-        The class is an iterator.
+        The object itself is an iterator.
         """
         return self
 
