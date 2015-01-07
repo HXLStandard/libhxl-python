@@ -7,6 +7,73 @@ License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
+import abc
+
+class HXLSource:
+    """
+    Abstract base class for a HXL data source.
+
+    The child class must implement the columns() method as a property
+    and the next() method to iterate through rows of data.
+    """
+
+    __metaclass__ = abc.ABCMeta
+
+    def __iter__(self):
+        """
+        The class is an iterator.
+        """
+        return self
+
+    @property
+    @abc.abstractmethod
+    def columns(self):
+        """
+        Get the column definitions for the dataset.
+        @return a list of HXLColumn objects.
+        """
+        return
+
+    @abc.abstractmethod
+    def next(self):
+        """
+        Iterable function to return the next row of HXL values.
+        @return an iterable HXLRow
+        @exception StopIteration exception at end of the rows.
+        """
+        return
+
+    @property
+    def headers(self):
+        """
+        Return a list of header strings (for a spreadsheet row).
+        """
+        return map(lambda column: column.headerText, self.columns)
+
+    @property
+    def tags(self):
+        """
+        Return a list of tags.
+        """
+        return map(lambda column: column.hxlTag, self.columns)
+
+    @property
+    def displayTags(self):
+        """
+        Return a list of display tags.
+        """
+        return map(lambda column: column.displayTag, self.columns)
+
+    @property
+    def hasHeaders(self):
+        """
+        Report whether any non-empty header strings exist.
+        """
+        for header in self.headers:
+            if header:
+                return True
+        return False
+
 class HXLDataset(object):
     """
     In-memory HXL dataset.

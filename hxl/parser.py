@@ -9,8 +9,7 @@ Documentation: http://hxlstandard.org
 
 import csv
 import re
-
-from model import HXLDataset, HXLColumn, HXLRow
+from model import HXLSource, HXLDataset, HXLColumn, HXLRow
 
 class HXLParseException(Exception):
     """
@@ -156,7 +155,7 @@ class HXLColSpec:
         s += "\n>"
         return s
 
-class HXLReader:
+class HXLReader(HXLSource):
     """
     Read HXL data from a file
     """
@@ -171,25 +170,6 @@ class HXLReader:
         self.rawData = None
         self.disaggregationPosition = 0
 
-    def __iter__(self):
-        return self;
-
-    @property
-    def headers(self):
-        """
-        Return a list of header strings (for a spreadsheet row).
-        """
-        self.setupTableSpec()
-        return self.tableSpec.headers
-
-    @property
-    def tags(self):
-        """
-        Return a list of HXL hashtag strings (for a spreadsheet row).
-        """
-        self.setupTableSpec()
-        return self.tableSpec.tags
-
     @property
     def columns(self):
         """
@@ -197,16 +177,6 @@ class HXLReader:
         """
         self.setupTableSpec()
         return self.tableSpec.columns
-
-    @property
-    def hasHeaders(self):
-        """
-        Report whether any non-empty header strings exist.
-        """
-        for header in self.headers:
-            if header:
-                return True
-        return False
 
     def next(self):
         """
