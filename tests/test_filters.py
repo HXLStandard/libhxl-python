@@ -129,15 +129,7 @@ class TestMerge(BaseTest):
     Test the hxlmerge command-line tool.
     """
 
-    def setUp(self):
-        self.function = hxl.filters.hxlmerge.run
-        self.input_file = 'input-simple.csv'
-
-    def test_basic(self):
-        file = resolve_file('input-simple.csv')
-        self.assertOutput(['-t', 'org,sector', file, file], 'merge-output-basic.csv')
-        self.assertOutput(['--tags', 'org,sector', file, file], 'merge-output-basic.csv')
-
+    # TODO
 
 class TestNorm(BaseTest):
     """
