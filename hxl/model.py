@@ -9,7 +9,7 @@ Documentation: http://hxlstandard.org
 
 import abc
 
-class HXLSource:
+class HXLSource(object):
     """
     Abstract base class for a HXL data source.
 
@@ -74,7 +74,7 @@ class HXLSource:
                 return True
         return False
 
-class HXLDataset(object):
+class HXLDataset(HXLSource):
     """
     In-memory HXL dataset.
     """
@@ -87,28 +87,6 @@ class HXLDataset(object):
         self.url = url
         self.columns = []
         self.rows = []
-        self.cachedTags = None
-        self.cachedHeaders = None
-
-    @property
-    def headers(self):
-        """
-        Get a simple list of plaintext headers from the columns.
-        @return An array of header strings.
-        """
-        if self.cachedHeaders == None:
-            self.cachedHeaders = map(lambda column: column.headerText, self.columns)
-        return self.cachedHeaders
-
-    @property
-    def tags(self):
-        """
-        Get a simple list of HXL hashtags from the columns.
-        @return An array of hashtag strings.
-        """
-        if self.cachedTags == None:
-            self.cachedTags = map(lambda column: column.hxlTag, self.columns)
-        return self.cachedTags
 
     def __str__(self):
         """
