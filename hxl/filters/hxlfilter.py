@@ -21,21 +21,28 @@ Documentation: http://hxlstandard.org
 import sys
 import re
 import operator
-import csv
 import argparse
-from hxl.parser import HXLReader
+from hxl.model import HXLSource
+from hxl.parser import HXLReader, writeHXL
 
-def hxlfilter(input, output, filters=[], invert=False):
-    """
-    Filter rows from a HXL dataset
-    Uses a logical OR (use multiple instances in a pipeline for logical AND).
-    @param input The input stream
-    @param output The output stream
-    @param filter A list of filter expressions
-    @param invert True if the command should output lines that don't match.
-    """
+class HXLFilterFilter(HXLSource):
 
-    def try_op(op, v1, v2):
+    def __init__(self, source, filters=[], invert=False):
+        self.source = source
+        self.filters = filters
+        self.invert = invert
+
+    @property
+    def columns(self):
+        return self.source.columns
+
+    def next(self):
+        row = self.source.next()
+        while not self._row_matches_p(row):
+            row = self.source.next()
+        return row
+
+    def _try_op(self, op, v1, v2):
         """Try an operator as numeric first, then string"""
         # TODO add dates
         # TODO use knowledge about HXL tags
@@ -44,27 +51,16 @@ def hxlfilter(input, output, filters=[], invert=False):
         except ValueError:
             return op(v1, v2)
 
-    def row_matches_p(row):
+    def _row_matches_p(self, row):
         """Check if a key-value pair appears in a HXL row"""
-        for filter in filters:
+        for filter in self.filters:
             values = row.getAll(filter[0])
             if values:
                 for value in values:
                     op = filter[1]
-                    if value and try_op(op, value, filter[2]):
-                        return not invert
-        return invert
-
-    parser = HXLReader(input)
-    writer = csv.writer(output)
-
-    if parser.hasHeaders:
-        writer.writerow(parser.headers)
-    writer.writerow(parser.tags)
-
-    for row in parser:
-        if row_matches_p(row):
-            writer.writerow(row.values)
+                    if value and self._try_op(op, value, filter[2]):
+                        return not self.invert
+        return self.invert
 
 def operator_re(s, pattern):
     """Regular-expression comparison operator."""
@@ -148,6 +144,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     # Call the command function
-    return hxlfilter(args.infile, args.outfile, filters=args.filter, invert=args.invert)
+    source = HXLReader(args.infile)
+    filter = HXLFilterFilter(source, args.filter, args.invert)
+    writeHXL(args.outfile, filter)
 
 # end
