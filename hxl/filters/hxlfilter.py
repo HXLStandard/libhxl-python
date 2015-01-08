@@ -1,18 +1,10 @@
 """
-Command function to filter rows columns from a HXL dataset.
+Filter rows from a HXL dataset.
 David Megginson
 October 2014
 
 Supply a list of simple <hashtag><operator><value> pairs, and return
 the rows in the HXL dataset that contain matches for any of them.
-
-Usage:
-
-  import sys
-  import operator
-  from hxl.scripts.hxlfilter import hxlfilter
-
-  hxlfilter(sys.stdin, sys.stdout, [('#country', operator.eq, 'Colombia'), ('#sector', operator.eq, 'WASH'_)]
 
 License: Public Domain
 Documentation: http://hxlstandard.org
@@ -26,8 +18,31 @@ from hxl.model import HXLSource
 from hxl.parser import HXLReader, writeHXL
 
 class HXLFilterFilter(HXLSource):
+    """
+    Composable filter class to filter rows from a HXL dataset.
+
+    This is the class supporting the hxlfilter command-line utility.
+
+    Because this class is a {@link hxl.model.HXLSource}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, single-threaded processing pipeline.
+
+    Usage:
+
+    <pre>
+    source = HXLReader(sys.stdin)
+    filter = HXLFilterFilter(source, filters=[('#org', operator.eq, 'OXFAM')])
+    writeHXL(sys.stdout, filter)
+    </pre>
+    """
 
     def __init__(self, source, filters=[], invert=False):
+        """
+        Constructor
+        @param source the HXL data source
+        @param filters a series for parsed filters
+        @param invert True to invert the sense of the filter
+        """
         self.source = source
         self.filters = filters
         self.invert = invert
@@ -37,6 +52,9 @@ class HXLFilterFilter(HXLSource):
         return self.source.columns
 
     def next(self):
+        """
+        Return the next row that matches the filter.
+        """
         row = self.source.next()
         while not self._row_matches_p(row):
             row = self.source.next()
@@ -70,7 +88,6 @@ def operator_nre(s, pattern):
     """Regular-expression negative comparison operator."""
     return not re.match(pattern, s)
 
-
 # Map of comparison operators
 operator_map = {
     '=': operator.eq,
@@ -82,6 +99,10 @@ operator_map = {
     '~': operator_re,
     '!~': operator_nre
 }
+
+#
+# Command-line support
+#
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
