@@ -16,7 +16,6 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-import csv
 import copy
 from hxl.model import HXLSource
 from hxl.filters import fix_tag
