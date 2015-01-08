@@ -3,13 +3,6 @@ Command function to rename columns in a HXL dataset.
 David Megginson
 October 2014
 
-Usage:
-
-  import sys
-  from hxl.scripts.hxlrename import hxlrename
-
-  hxlrename(sys.stdin, sys.stdout, rename={'#oldtag1': '#newtag1', '#oldtag2', '#newtag2'})
-
 License: Public Domain
 Documentation: http://hxlstandard.org
 """
@@ -22,10 +15,27 @@ from hxl.filters import fix_tag
 from hxl.parser import HXLReader, writeHXL
 
 class HXLRenameFilter(HXLSource):
+    """
+    Composable filter class to rename columns in a HXL dataset.
+
+    This is the class supporting the hxlrename command-line utility.
+
+    Because this class is a {@link hxl.model.HXLSource}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, single-threaded processing pipeline.
+
+    Usage:
+
+    <pre>
+    source = HXLReader(sys.stdin)
+    filter = HXLRenameFilter(source, rename_map={'#x_district': '#adm1'})
+    writeHXL(sys.stdout, filter)
+    </pre>
+    """
 
     def __init__(self, source, rename_map={}):
         """
-        Set up a column-rename filter.
+        Constructor
         @param source the HXLSource for the data.
         @param rename_map map of tags to rename
         """
@@ -34,6 +44,9 @@ class HXLRenameFilter(HXLSource):
 
     @property
     def columns(self):
+        """
+        Return the renamed columns.
+        """
         def rename_tags(column):
             if column.hxlTag in self.rename_map:
                 column = copy.copy(column)
@@ -43,6 +56,10 @@ class HXLRenameFilter(HXLSource):
 
     def next(self):
         return self.source.next()
+
+#
+# Command-line support.
+#
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
