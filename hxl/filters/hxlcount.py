@@ -9,17 +9,6 @@ to avoid the need to quote them.
 
 Only the *first* column with each hashtag is currently used.
 
-Command-line usage:
-
-  python -m hxl.scripts.count <tag> <tag...> < DATA_IN.csv > DATA_OUT.csv
-
-Program usage:
-
-  import sys
-  from hxl.scripts.hxlcount import hxlcount
-
-  hxlcount(sys.stdin, sys.stdout, tags)
-
 License: Public Domain
 Documentation: http://hxlstandard.org
 """
@@ -28,8 +17,9 @@ import sys
 import csv
 import json
 import argparse
+from hxl.model import HXLSource, HXLColumn, HXLRow
 from hxl.filters import parse_tags, fix_tag
-from hxl.parser import HXLReader
+from hxl.parser import HXLReader, writeHXL
 
 class Aggregator:
 
@@ -58,58 +48,68 @@ class Aggregator:
             except ValueError:
                 pass
 
-def hxlcount(input, output, tags, aggregate_tag = None):
-    """
-    Count occurances of value combinations for a set of tags.
-    """
+class HXLCountFilter(HXLSource):
 
-    parser = HXLReader(input)
-    writer = csv.writer(output)
+    def __init__(self, source, tags, aggregate_tag=None):
+        self.source = source
+        self.count_tags = tags
+        self.aggregate_tag = aggregate_tag
+        self.saved_columns = None
+        self.aggregator_iter = None
 
-    seen_numbers = False
-    aggregators = {}
+    @property
+    def columns(self):
+        if self.saved_columns is None:
+            cols = []
+            for tag in self.count_tags:
+                cols.append(HXLColumn(hxlTag=tag))
+            cols.append(HXLColumn(hxlTag='#x_count_num'))
+            if self.aggregate_tag is not None:
+                cols.append(HXLColumn(hxlTag='#x_sum_num'))
+                cols.append(HXLColumn(hxlTag='#x_average_num'))
+                cols.append(HXLColumn(hxlTag='#x_min_num'))
+                cols.append(HXLColumn(hxlTag='#x_max_num'))
+            self.saved_columns = cols
+        return self.saved_columns
 
-    # Add up the value combinations in the rows
-    for row in parser:
-        values = []
-        for tag in tags:
-            value = row.get(tag)
-            if value is not False:
-                values.append(value)
+    def next(self):
+        if self.aggregator_iter is None:
+            self._aggregate()
+        # Write the stats, sorted in value order
+        aggregate = self.aggregator_iter.next()
+        values = list(aggregate[0])
+        values.append(aggregate[1].count)
+        if self.aggregate_tag:
+            if aggregate[1].seen_numbers:
+                values.append(aggregate[1].sum)
+                values.append(aggregate[1].average)
+                values.append(aggregate[1].min)
+                values.append(aggregate[1].max)
+            else:
+                values = values + ([''] * 4)
 
-        if values:
-            # need to use a tuple as a key
-            key = tuple(values)
-            if not aggregators.get(key):
-                aggregators[key] = Aggregator(aggregate_tag)
-            aggregators[key].add(row)
-            if aggregators[key].seen_numbers:
-                seen_numbers = True
+        row = HXLRow(self.columns)
+        row.values = values
+        return row
 
-    # Write the HXL hashtag row
-    tags.append('#x_count_num')
-    if seen_numbers:
-        tags.append('#x_sum_num')
-        tags.append('#x_average_num')
-        tags.append('#x_min_num')
-        tags.append('#x_max_num')
-    writer.writerow(tags)
+    def _aggregate(self):
+        aggregators = {}
+        for row in self.source:
+            values = []
+            for tag in self.count_tags:
+                value = row.get(tag)
+                if value is not False:
+                    values.append(value)
+            if values:
+                key = tuple(values)
+                if not key in aggregators:
+                    aggregators[key] = Aggregator(self.aggregate_tag)
+                aggregators[key].add(row)
+        self.aggregator_iter = iter(sorted(aggregators.items()))
 
-    # Write the stats, sorted in value order
-    for aggregate in sorted(aggregators.items()):
-        data = list(aggregate[0])
-        data.append(aggregate[1].count)
-        if aggregate[1].seen_numbers:
-            data.append(aggregate[1].sum)
-            data.append(aggregate[1].average)
-            data.append(aggregate[1].min)
-            data.append(aggregate[1].max)
-        elif seen_numbers:
-            data.append('')
-            data.append('')
-            data.append('')
-            data.append('')
-        writer.writerow(data)
+#
+# Command-line support
+#
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -152,8 +152,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=fix_tag
         )
     args = parser.parse_args(args)
-
-    hxlcount(args.infile, args.outfile, args.tags, args.aggregate)
-
+    source = HXLReader(args.infile)
+    filter = HXLCountFilter(source, args.tags, args.aggregate)
+    writeHXL(args.outfile, filter)
 
 # end

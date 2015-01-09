@@ -75,8 +75,8 @@ class HXLSource(object):
         """
         Report whether any non-empty header strings exist.
         """
-        for header in self.headers:
-            if header:
+        for column in self.columns:
+            if column.headerText:
                 return True
         return False
 
