@@ -3,79 +3,73 @@ Command function to normalise a HXL dataset.
 David Megginson
 October 2014
 
-Expand all compact-disaggregated columns.
-Strip columns without hashtags.
-Strip leading and trailing whitespace from values.
-Strip all but one pre-tag header row.
-
-Usage:
-
-  import sys
-  from hxl.scripts.hxlnorm import hxlnorm
-
-  hxlnorm(sys.stdin, sys.stdout, show_headers = true)
-
 License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
 import sys
-import csv
 import re
 import dateutil.parser
 import argparse
-from hxl.parser import HXLReader
+from copy import copy
+from hxl.model import HXLSource
+from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
-def hxlnorm(input, output, show_headers = False, include_tags = [], exclude_tags = [], whitespace = False, upper=[], lower=[], date=[], number=[]):
-    """
-    Normalize a HXL dataset
-    """
+class HXLNormFilter(HXLSource):
 
-    parser = HXLReader(input)
-    writer = csv.writer(output)
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[]):
+        self.source = source
+        self.whitespace = whitespace
+        self.upper = upper
+        self.lower = lower
+        self.date = date
+        self.number = number
 
-    tags = parser.tags
+    @property
+    def columns(self):
+        return self.source.columns
 
-    if (show_headers):
-        writer.writerow(parser.headers)
-    writer.writerow(parser.tags)
+    def next(self):
 
-    def do_norm(value, column):
-        """Closure: normalise values in a row of HXL data."""
+        def normalise(value, column):
+            """
+            Normalise a single HXL value.
+            """
 
-        # Whitespace (-w or -W)
-        if whitespace:
-            if whitespace is True or column.hxlTag in whitespace:
-                value = re.sub('^\s+', '', value)
-                value = re.sub('\s+$', '', value)
-                value = re.sub('\s+', ' ', value)
+            # Whitespace (-w or -W)
+            if self.whitespace:
+                if (self.whitespace is True) or (column.hxlTag in self.whitespace):
+                    value = re.sub('^\s+', '', value)
+                    value = re.sub('\s+$', '', value)
+                    value = re.sub('\s+', ' ', value)
 
-        # Uppercase (-u)
-        if upper and column.hxlTag in upper:
-            value = value.decode('utf8').upper().encode('utf8')
+            # Uppercase (-u)
+            if self.upper and column.hxlTag in self.upper:
+                value = value.decode('utf8').upper().encode('utf8')
 
-        # Lowercase (-l)
-        if lower and column.hxlTag in lower:
-            value = value.decode('utf8').lower().encode('utf8')
+            # Lowercase (-l)
+            if self.lower and column.hxlTag in self.lower:
+                value = value.decode('utf8').lower().encode('utf8')
 
-        # Date (-d or -D)
-        if date and value:
-            if (date is True and column.hxlTag.endswith('_date')) or (date is not True and column.hxlTag in date):
-                value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+            # Date (-d or -D)
+            if self.date and value:
+                if (self.date is True and column.hxlTag.endswith('_date')) or (self.date is not True and column.hxlTag in self.date):
+                    value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
 
-        # Number (-n or -N)
-        if number and re.match('\d', value):
-            if (number is True and column.hxlTag.endswith('_num')) or (number is not True and column.hxlTag in Number):
-                value = re.sub('[^\d.]', '', value)
-                value = re.sub('^0+', '', value)
-                value = re.sub('(\..*)0+$', '\g<1>', value)
-                value = re.sub('\.$', '', value)
+            # Number (-n or -N)
+            if self.number and re.match('\d', value):
+                if (self.number is True and column.hxlTag.endswith('_num')) or (self.number is not True and column.hxlTag in self.number):
+                    value = re.sub('[^\d.]', '', value)
+                    value = re.sub('^0+', '', value)
+                    value = re.sub('(\..*)0+$', '\g<1>', value)
+                    value = re.sub('\.$', '', value)
 
-        return value
+            return value
 
-    for row in parser:
-        writer.writerow(row.map(do_norm))
+        row = copy(self.source.next())
+        row.values = row.map(normalise)
+        return row
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -187,8 +181,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     else:
         number_arg = args.number
 
-    hxlnorm(args.infile, args.outfile, show_headers=args.headers,
-            whitespace=whitespace_arg, upper=args.upper, lower=args.lower,
-            date=date_arg, number=number_arg)
+    source = HXLReader(args.infile)
+    filter = HXLNormFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
+    writeHXL(args.outfile, filter, args.headers)
 
 # end

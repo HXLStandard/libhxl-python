@@ -353,10 +353,10 @@ def readHXL(input, url=None):
 
     return dataset
 
-def writeHXL(output, dataset):
+def writeHXL(output, dataset, show_headers=True):
     """Serialize a HXL dataset to an output stream."""
     writer = csv.writer(output)
-    if (dataset.headers):
+    if (show_headers and dataset.headers):
         writer.writerow(dataset.headers)
     writer.writerow(dataset.tags)
     for row in dataset:
