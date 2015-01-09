@@ -5,7 +5,8 @@ October 2014
 
 Counts all combinations of the tags specified on the command line. In
 the command-line version, you may omit the initial '#' from tag names
-to avoid the need to quote them.
+to avoid the need to quote them.  Also optionally calculates sum,
+average (mean), min, and max for a numeric tag.
 
 Only the *first* column with each hashtag is currently used.
 
@@ -14,51 +15,52 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-import csv
-import json
 import argparse
 from hxl.model import HXLSource, HXLColumn, HXLRow
 from hxl.filters import parse_tags, fix_tag
 from hxl.parser import HXLReader, writeHXL
 
-class Aggregator:
-
-    def __init__(self, tag):
-        self.tag = tag
-        self.count = 0
-        self.sum = 0.0
-        self.average = 0.0
-        self.min = None
-        self.max = None
-        self.seen_numbers = False
-
-    def add(self, row):
-        self.count += 1
-        if self.tag:
-            value = row.get(self.tag)
-            try:
-                n = float(value)
-                self.sum += n
-                self.average = self.sum / self.count
-                if self.min is None or n < self.min:
-                    self.min = n
-                if self.max is None or n > self.max:
-                    self.max = n
-                self.seen_numbers = True
-            except ValueError:
-                pass
-
 class HXLCountFilter(HXLSource):
+    """
+    Composable filter class to aggregate rows in a HXL dataset.
+
+    This is the class supporting the hxlcount command-line utility.
+
+    Because this class is a {@link hxl.model.HXLSource}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, single-threaded processing pipeline.
+
+    WARNING: this filter reads the entire source dataset before
+    producing output, and may need to hold a large amount of data in
+    memory, depending on the number of unique combinations counted.
+
+    Usage:
+
+    <pre>
+    source = HXLReader(sys.stdin)
+    filter = HXLCountFilter(source, tags=['#org', '#sector', '#adm1'])
+    writeHXL(sys.stdout, filter)
+    </pre>
+    """
 
     def __init__(self, source, tags, aggregate_tag=None):
+        """
+        Constructor
+        @param source the HXL data source
+        @param tags a list of HXL tags that form a unique key together (what combinations are you counting?)
+        @param aggregate_tag an optional numeric tag for calculating aggregate values.
+        """
         self.source = source
         self.count_tags = tags
         self.aggregate_tag = aggregate_tag
         self.saved_columns = None
-        self.aggregator_iter = None
+        self.aggregate_iter = None
 
     @property
     def columns(self):
+        """
+        @return the column definitions used in the aggregation report
+        """
         if self.saved_columns is None:
             cols = []
             for tag in self.count_tags:
@@ -73,10 +75,13 @@ class HXLCountFilter(HXLSource):
         return self.saved_columns
 
     def next(self):
-        if self.aggregator_iter is None:
+        """
+        @return the next row of aggregated data.
+        """
+        if self.aggregate_iter is None:
             self._aggregate()
         # Write the stats, sorted in value order
-        aggregate = self.aggregator_iter.next()
+        aggregate = self.aggregate_iter.next()
         values = list(aggregate[0])
         values.append(aggregate[1].count)
         if self.aggregate_tag:
@@ -93,6 +98,9 @@ class HXLCountFilter(HXLSource):
         return row
 
     def _aggregate(self):
+        """
+        Read the entire source dataset and produce saved aggregate data.
+        """
         aggregators = {}
         for row in self.source:
             values = []
@@ -105,7 +113,46 @@ class HXLCountFilter(HXLSource):
                 if not key in aggregators:
                     aggregators[key] = Aggregator(self.aggregate_tag)
                 aggregators[key].add(row)
-        self.aggregator_iter = iter(sorted(aggregators.items()))
+        self.aggregate_iter = iter(sorted(aggregators.items()))
+
+class Aggregator:
+    """
+    Class to collect aggregates for a single combination.
+
+    Currently calculates count, sum, average, min, and max
+    """
+
+    def __init__(self, tag):
+        """
+        Constructor
+        @param tag the HXL tag being counted in the row.
+        """
+        self.tag = tag
+        self.count = 0
+        self.sum = 0.0
+        self.average = 0.0
+        self.min = None
+        self.max = None
+        self.seen_numbers = False
+
+    def add(self, row):
+        """
+        Add a new row of data to the aggregator.
+        """
+        self.count += 1
+        if self.tag:
+            value = row.get(self.tag)
+            try:
+                n = float(value)
+                self.sum += n
+                self.average = self.sum / self.count
+                if self.min is None or n < self.min:
+                    self.min = n
+                if self.max is None or n > self.max:
+                    self.max = n
+                self.seen_numbers = True
+            except ValueError:
+                pass
 
 #
 # Command-line support
