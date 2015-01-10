@@ -1,12 +1,16 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
 setup(name='libhxl',
-      version='0.8',
+      version='0.9',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       url='http://hxlproject.org',
-      requires=['shapely'],
+      install_requires=['shapely', 'python-dateutil'],
       packages=['hxl', 'hxl.filters'],
       scripts=[
         'scripts/hxl2geojson',
