@@ -5,67 +5,65 @@ November 2014
 
 Can use a whitelist of HXL tags, a blacklist, or both.
 
-Usage:
-
-  import sys
-  from hxl.scripts.hxlmerge import hxlmerge
-
-  hxlmerge(sys.stdin, sys.stdout, merge=open('mergefile.csv', 'r'), keys=['#sector_id'], tags=['#sector'])
-
 License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
 import sys
-import csv
 import argparse
+from copy import copy
+from hxl.model import HXLSource, HXLColumn
+from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
-from hxl.parser import HXLReader
 
-def hxlmerge(input, output, merge, keys, tags):
-    """
-    Merge multiple HXL datasets
-    @input Input stream for the primary HXL file.
-    @output Output stream for writing HXL.
-    @merge Input stream for the HXL merge file.
-    @keys Shared keys for merging HXL files.
-    @tags Tags to include from the merge file.
-    """
+class HXLMergeFilter(HXLSource):
 
-    def make_key(row):
+    def __init__(self, source, merge_source, keys, tags):
+        self.source = source
+        self.merge_source = merge_source
+        self.keys = keys
+        self.merge_tags = tags
+        self.saved_columns = None
+        self.merge_map = None
+        self.empty_result = [''] * len(tags)
+
+    @property
+    def columns(self):
+        if self.saved_columns is None:
+            self.saved_columns = self.source.columns + map(lambda tag: HXLColumn(hxlTag=tag), self.merge_tags)
+        return self.saved_columns
+
+    def next(self):
+        if self.merge_map is None:
+            self.merge_map = self._read_merge()
+        row = copy(self.source.next())
+        merge_values = self.merge_map.get(self._make_key(row))
+        if not merge_values:
+            merge_values = self.empty_result
+        row.values = row.values + merge_values
+        return row
+
+    def _make_key(self, row):
         """
         Make a tuple key for a row.
         """
         values = []
-        for key in keys:
+        for key in self.keys:
             values.append(row.get(key))
         return tuple(values)
 
-    def get_values(row):
-        """
-        Get the values to merge from a row.
-        """
-        values = []
-        for tag in tags:
-            values.append(row.get(tag))
-        return values
+    def _read_merge(self):
+        merge_map = {}
+        for row in self.merge_source:
+            values = []
+            for tag in self.merge_tags:
+                values.append(row.get(tag))
+            merge_map[self._make_key(row)] = values
+        return merge_map
 
-    # Load the merge file first.
-    merge_map = {}
-    parser = HXLReader(merge)
-    for row in parser:
-        merge_map[make_key(row)] = get_values(row)
-
-    # Now process the main file
-    parser = HXLReader(input)
-    writer = csv.writer(output)
-    writer.writerow(parser.tags + tags)
-    empty_result = [''] * len(tags)
-    for row in parser:
-        merge_values = merge_map.get(make_key(row))
-        if not merge_values:
-            merge_values = empty_result
-        writer.writerow(row.values + merge_values)
+#
+# Command-line support
+#
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -117,7 +115,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    # Call the command function
-    hxlmerge(args.infile, args.outfile, merge=args.merge, keys=args.keys, tags=args.tags)
+    source = HXLReader(args.infile)
+    filter = HXLMergeFilter(source, HXLReader(args.merge), args.keys, args.tags)
+    writeHXL(args.outfile, filter)
 
 # end
