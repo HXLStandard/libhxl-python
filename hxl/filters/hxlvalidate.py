@@ -51,10 +51,10 @@ class HXLValidateFilter(HXLSource):
         """
         if self._saved_columns is None:
             # append error columns
-            err_col = HXLColumn(hxlTag='#x_error', headerText='Error messages')
-            tag_col = HXLColumn(hxlTag='#x_tag', headerText='Error tag')
-            row_col = HXLColumn(hxlTag='#x_row_num', headerText='Error row number (source)')
-            col_col = HXLColumn(hxlTag='#x_col_num', headerText='Error column number (source)')
+            err_col = HXLColumn(hxlTag='#x_errors', headerText='Error messages')
+            tag_col = HXLColumn(hxlTag='#x_tags', headerText='Error tag')
+            row_col = HXLColumn(hxlTag='#x_rows', headerText='Error row number (source)')
+            col_col = HXLColumn(hxlTag='#x_cols', headerText='Error column number (source)')
             self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 
