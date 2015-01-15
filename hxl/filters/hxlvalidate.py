@@ -18,8 +18,38 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
+from copy import copy
+from hxl.model import HXLSource
 from hxl.parser import HXLReader
 from hxl.schema import loadHXLSchema
+
+def HXLValidateFilter(HXLSource):
+
+    def __init__(self, source, schema):
+        self.source = source
+        self.schema = schema
+        self._saved_columns = None
+
+    @property
+    def columns(self):
+        if self._saved_columns is None:
+            new_cols = [HXLColumn('#x_error'), HXLColumn('#x_row_num'), HXLColumn('#x_col_num'), HXLColumn('#x_tag')]
+            self._saved_columns = self.source.columns + new_cols
+        return self._saved_columns
+
+    def next(self):
+        validation_errors = []
+        def callback(error):
+            validation_errors.append(error)
+        for row in self.source:
+            if not self.schema.validate(row, callback):
+                error_row = copy(row)
+                messages = "\n".join(map(lambda e: e.message, validation_errors))
+                rows = "\n".join(map(lambda e: e.message, validation_errors))
+                columns = "\n".join(map(lambda e: e.message, validation_errors))
+                tags = "\n".join(map(lambda e: e.message, validation_errors))
+                error_row.values = error_value.values + [messages, rows, columns, tags]
+                return error_row
 
 def hxlvalidate(input=sys.stdin, output=sys.stderr, schema_input=None):
 
