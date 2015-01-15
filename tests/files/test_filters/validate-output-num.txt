@@ -1,8 +1,0 @@
-E (3,1) #sex "Hombres": Expected a number
-E (4,1) #sex "Mujeres": Expected a number
-E (5,1) #sex "Hombres": Expected a number
-E (6,1) #sex "Mujeres": Expected a number
-E (7,1) #sex "Hombres": Expected a number
-E (8,1) #sex "Mujeres": Expected a number
-E (9,1) #sex "Hombres": Expected a number
-E (10,1) #sex "Mujeres": Expected a number

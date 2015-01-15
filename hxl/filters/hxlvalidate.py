@@ -3,15 +3,6 @@ Command function to schema-validate a HXL dataset.
 David Megginson
 November 2014
 
-Can use a whitelist of HXL tags, a blacklist, or both.
-
-Usage:
-
-  import sys
-  from hxl.scripts.hxlvalidate import hxlvalidate
-
-  hxlvalidate(sys.stdin, sys.stdout, open('MySchema.csv', 'r'))
-
 License: Public Domain
 Documentation: http://hxlstandard.org
 """
@@ -19,47 +10,82 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 from copy import copy
-from hxl.model import HXLSource
-from hxl.parser import HXLReader
+from hxl.model import HXLSource, HXLColumn
+from hxl.parser import HXLReader, writeHXL
 from hxl.schema import loadHXLSchema
 
-def HXLValidateFilter(HXLSource):
+class HXLValidateFilter(HXLSource):
+    """Composable filter class to validate a HXL dataset against a schema.
 
-    def __init__(self, source, schema):
+    This is the class supporting the hxlvalidate command-line utility.
+
+    Because this class is a {@link hxl.model.HXLSource}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, singled-threaded processing pipeline.
+
+    Usage:
+
+    <pre>
+    source = HXLReader(sys.stdin)
+    schema = loadHXLSchema(open('my-schema.csv', 'r'))
+    filter = HXLValidateFilter(source, schema)
+    writeHXL(sys.stdout, filter)
+    </pre>
+    """
+
+    def __init__(self, source, schema, show_all=False):
+        """
+        @param source a HXL data source
+        @param schema a HXLSchema object
+        @param show_all boolean flag to report all lines (including those without errors).
+        """
         self.source = source
         self.schema = schema
+        self.show_all = show_all
         self._saved_columns = None
 
     @property
     def columns(self):
+        """
+        Add columns for the error reporting.
+        """
         if self._saved_columns is None:
-            new_cols = [HXLColumn('#x_error'), HXLColumn('#x_row_num'), HXLColumn('#x_col_num'), HXLColumn('#x_tag')]
-            self._saved_columns = self.source.columns + new_cols
+            # append error columns
+            err_col = HXLColumn(hxlTag='#x_error', headerText='Error messages')
+            tag_col = HXLColumn(hxlTag='#x_tag', headerText='Error tag')
+            row_col = HXLColumn(hxlTag='#x_row_num', headerText='Error row number (source)')
+            col_col = HXLColumn(hxlTag='#x_col_num', headerText='Error column number (source)')
+            self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 
     def next(self):
+        """
+        Report rows with error information.
+        """
         validation_errors = []
         def callback(error):
+            """
+            Collect validation errors
+            """
             validation_errors.append(error)
-        for row in self.source:
-            if not self.schema.validate(row, callback):
+        self.schema.callback = callback
+
+        """
+        Read rows until we find an error (unless we're printing all rows)
+        """
+        row = self.source.next()
+        while row:
+            if self.show_all or not self.schema.validateRow(row):
+                # append error data to row
                 error_row = copy(row)
                 messages = "\n".join(map(lambda e: e.message, validation_errors))
-                rows = "\n".join(map(lambda e: e.message, validation_errors))
-                columns = "\n".join(map(lambda e: e.message, validation_errors))
-                tags = "\n".join(map(lambda e: e.message, validation_errors))
-                error_row.values = error_value.values + [messages, rows, columns, tags]
+                tags = "\n".join(map(lambda e: e.rule.hxlTag if e.rule else '', validation_errors))
+                rows = "\n".join(map(lambda e: str(e.row.sourceRowNumber) if e.row else '', validation_errors))
+                columns = "\n".join(map(lambda e: str(e.column.sourceColumnNumber) if e.column else '', validation_errors))
+                error_row.values = error_row.values + [messages, tags, rows, columns]
                 return error_row
-
-def hxlvalidate(input=sys.stdin, output=sys.stderr, schema_input=None):
-
-    def callback(error):
-        print >>output, error
-
-    parser = HXLReader(input)
-    schema = loadHXLSchema(schema_input)
-    schema.callback = callback
-    return schema.validate(parser)
+            else:
+                row = self.source.next()
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -93,9 +119,19 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=argparse.FileType('r'),
         default=None
         )
+    parser.add_argument(
+        '-a',
+        '--all',
+        help='Include all rows in the output, including those without errors',
+        action='store_const',
+        const=True,
+        default=False
+        )
     args = parser.parse_args(args)
 
-    # Call the command function
-    hxlvalidate(input=args.infile, output=args.outfile, schema_input=args.schema)
+    source = HXLReader(args.infile)
+    schema = loadHXLSchema(args.schema)
+    filter = HXLValidateFilter(source, schema, args.all)
+    writeHXL(args.outfile, filter)
 
 # end

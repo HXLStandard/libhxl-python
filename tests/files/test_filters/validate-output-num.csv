@@ -1,0 +1,10 @@
+Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado,Error messages,Error tag,Error row number (source),Error column number (source)
+#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1,#x_error,#x_tag,#x_row_num,#x_col_num
+WASH,Higiene,ACNUR,Hombres,100,Panamá,Los Santos,Expected a number,#sex,2,0
+WASH,Higiene,ACNUR,Mujeres,100,Panamá,Los Santos,Expected a number,#sex,3,0
+Salud,Vacunación,OMS,Hombres,,Colombia,Cauca,Expected a number,#sex,4,0
+Salud,Vacunación,OMS,Mujeres,,Colombia,Cauca,Expected a number,#sex,5,0
+Educación,Formación de enseñadores,UNICEF,Hombres,250,Colombia,Chocó,Expected a number,#sex,6,0
+Educación,Formación de enseñadores,UNICEF,Mujeres,300,Colombia,Chocó,Expected a number,#sex,7,0
+WASH,Urbano,OMS,Hombres,80,Venezuela,Amazonas,Expected a number,#sex,8,0
+WASH,Urbano,OMS,Mujeres,95,Venezuela,Amazonas,Expected a number,#sex,9,0

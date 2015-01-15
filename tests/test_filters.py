@@ -193,12 +193,17 @@ class TestValidate(BaseTest):
 
     def test_valid(self):
         schema = resolve_file('validate-schema-valid.csv')
-        self.assertOutput(['-s', schema], 'validate-output-valid.txt')
-        self.assertOutput(['--schema', schema], 'validate-output-valid.txt')
+        self.assertOutput(['-s', schema], 'validate-output-valid.csv')
+        self.assertOutput(['--schema', schema], 'validate-output-valid.csv')
+
+    def test_all(self):
+        schema = resolve_file('validate-schema-valid.csv')
+        self.assertOutput(['-s', schema, '-a'], 'validate-output-all.csv')
+        self.assertOutput(['-s', schema, '--all'], 'validate-output-all.csv')
 
     def test_number(self):
         schema = resolve_file('validate-schema-num.csv')
-        self.assertOutput(['-s', schema], 'validate-output-num.txt')
+        self.assertOutput(['-s', schema], 'validate-output-num.csv')
 
 
 ########################################################################
