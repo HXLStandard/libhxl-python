@@ -6,7 +6,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='libhxl',
-      version='0.9',
+      version='0.10',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       url='http://hxlproject.org',
