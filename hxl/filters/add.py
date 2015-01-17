@@ -34,34 +34,40 @@ class HXLAddFilter(HXLSource):
     </pre>
     """
 
-    def __init__(self, source, values):
+    def __init__(self, source, values, before=False):
         """
         @param source a HXL data source
-        @param include_tags a whitelist list of hashtags to include
-        @param exclude_tags a blacklist of hashtags to exclude
+        @param values a dictionary of tags and constant values
+        @param before True to add new columns before existing ones
         """
         self.source = source
         self.values = values
-        self.columns_out = None
+        self.before = before
+        self._columns_out = None
+        self._const_values = [self.values[tag] for tag in self.values]
 
     @property
     def columns(self):
         """
         Add the constant columns to the end.
         """
-        if self.columns_out is None:
-            self.columns_out = copy(self.source.columns)
-            for tag in self.values:
-                self.columns_out.append(HXLColumn(hxlTag=tag))
-        return self.columns_out
+        if self._columns_out is None:
+            new_columns = [HXLColumn(hxlTag=tag) for tag in self.values]
+            if self.before:
+                self._columns_out = new_columns + self.source.columns
+            else:
+                self._columns_out = self.source.columns + new_columns
+        return self._columns_out
 
     def next(self):
         """
         Return the next row, with constant values added.
         """
         row = copy(self.source.next())
-        for tag in self.values:
-            row.values.append(self.values[tag])
+        if self.before:
+            row.values = self._const_values + row.values
+        else:
+            row.values = row.values + self._const_values
         return row
 
 #
@@ -114,11 +120,20 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         required=True,
         type=parse_value
         )
+    parser.add_argument(
+        '-b',
+        '--before',
+        help='Add new columns before existing ones rather than after them.',
+        action='store_const',
+        const=True,
+        default=False
+    )
+        
     args = parser.parse_args(args)
 
     # Call the command function
     source = HXLReader(args.infile)
-    filter = HXLAddFilter(source, values=dict(args.value))
+    filter = HXLAddFilter(source, values=dict(args.value), before=args.before)
     writeHXL(args.outfile, filter)
 
 # end
