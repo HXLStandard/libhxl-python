@@ -20,6 +20,7 @@ import hxl.filters.hxlfilter
 import hxl.filters.hxlmerge
 import hxl.filters.hxlnorm
 import hxl.filters.hxlrename
+import hxl.filters.hxlsort
 import hxl.filters.hxlvalidate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -180,6 +181,26 @@ class TestRename(BaseTest):
 
     def test_multiple(self):
         self.assertOutput(['-r', 'targeted_num:affected_num', '-r', 'org:funding'], 'rename-output-multiple.csv')
+
+class TestSort(BaseTest):
+    """
+    Test the hxlsort command-line tool,.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.hxlsort.run
+        self.input_file = 'input-simple.csv'
+
+    def test_default(self):
+        self.assertOutput([], 'sort-output-default.csv')
+
+    def test_tags(self):
+        self.assertOutput(['-t', 'country'], 'sort-output-tags.csv')
+        self.assertOutput(['--tags', 'country'], 'sort-output-tags.csv')
+
+    def test_reverse(self):
+        self.assertOutput(['-r'], 'sort-output-reverse.csv')
+        self.assertOutput(['--reverse'], 'sort-output-reverse.csv')
 
 
 class TestValidate(BaseTest):

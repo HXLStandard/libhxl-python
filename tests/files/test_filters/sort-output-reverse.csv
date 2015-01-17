@@ -1,0 +1,10 @@
+Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado
+#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1
+WASH,Urbano,OMS,Mujeres,95,Venezuela,Amazonas
+WASH,Urbano,OMS,Hombres,80,Venezuela,Amazonas
+WASH,Higiene,ACNUR,Mujeres,100,Panamá,Los Santos
+WASH,Higiene,ACNUR,Hombres,100,Panamá,Los Santos
+Salud,Vacunación,OMS,Mujeres,,Colombia,Cauca
+Salud,Vacunación,OMS,Hombres,,Colombia,Cauca
+Educación,Formación de enseñadores,UNICEF,Mujeres,300,Colombia,Chocó
+Educación,Formación de enseñadores,UNICEF,Hombres,250,Colombia,Chocó
