@@ -31,7 +31,7 @@ import argparse
 import json
 from shapely.geometry import shape
 from hxl.filters import parse_tags
-from hxl.filters.hxlbounds import hxlbounds
+from hxl.filters.bounds import hxlbounds
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description = 'Perform bounds checking on a HXL dataset.')

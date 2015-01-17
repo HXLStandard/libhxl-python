@@ -14,14 +14,14 @@ import filecmp
 import difflib
 import tempfile
 
-import hxl.filters.hxlcount
-import hxl.filters.hxlcut
-import hxl.filters.hxlfilter
-import hxl.filters.hxlmerge
-import hxl.filters.hxlnorm
-import hxl.filters.hxlrename
-import hxl.filters.hxlsort
-import hxl.filters.hxlvalidate
+import hxl.filters.count
+import hxl.filters.cut
+import hxl.filters.filter
+import hxl.filters.merge
+import hxl.filters.norm
+import hxl.filters.rename
+import hxl.filters.sort
+import hxl.filters.validate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
@@ -54,7 +54,7 @@ class TestCount(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlcount.run
+        self.function = hxl.filters.count.run
         self.input_file = 'input-simple.csv'
 
     def test_simple(self):
@@ -71,7 +71,7 @@ class TestCut(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlcut.run
+        self.function = hxl.filters.cut.run
         self.input_file = 'input-simple.csv'
 
     def test_whitelist(self):
@@ -89,7 +89,7 @@ class TestFilter(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlfilter.run
+        self.function = hxl.filters.filter.run
         self.input_file = 'input-simple.csv'
 
     def test_eq(self):
@@ -131,7 +131,7 @@ class TestMerge(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlmerge.run
+        self.function = hxl.filters.merge.run
         self.input_file = 'input-simple.csv'
 
     def test_merge(self):
@@ -143,7 +143,7 @@ class TestNorm(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlnorm.run
+        self.function = hxl.filters.norm.run
         self.input_file = 'input-simple.csv'
 
     def test_noheaders(self):
@@ -172,7 +172,7 @@ class TestRename(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlrename.run
+        self.function = hxl.filters.rename.run
         self.input_file = 'input-simple.csv'
 
     def test_single(self):
@@ -188,7 +188,7 @@ class TestSort(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlsort.run
+        self.function = hxl.filters.sort.run
         self.input_file = 'input-simple.csv'
 
     def test_default(self):
@@ -209,7 +209,7 @@ class TestValidate(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.hxlvalidate.run
+        self.function = hxl.filters.validate.run
         self.input_file = 'input-simple.csv'
 
     def test_valid(self):

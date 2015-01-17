@@ -21,7 +21,7 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-from hxl.filters.hxlnorm import run
+from hxl.filters.norm import run
 
 if __name__ == '__main__':
     run(sys.argv[1:], sys.stdin, sys.stdout)

@@ -20,7 +20,7 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-from hxl.filters.hxlcount import run
+from hxl.filters.count import run
 
 if __name__ == '__main__':
     run(sys.argv[1:], sys.stdin, sys.stdout)

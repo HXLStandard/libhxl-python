@@ -22,7 +22,7 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-from hxl.filters.hxlvalidate import run
+from hxl.filters.validate import run
 
 if __name__ == '__main__':
     run(sys.argv[1:], sys.stdin, sys.stdout)
