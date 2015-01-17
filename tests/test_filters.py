@@ -14,6 +14,7 @@ import filecmp
 import difflib
 import tempfile
 
+import hxl.filters.add
 import hxl.filters.count
 import hxl.filters.cut
 import hxl.filters.merge
@@ -47,6 +48,22 @@ class BaseTest(unittest.TestCase):
                 )
             )
 
+class TestAdd(BaseTest):
+    """
+    Test the hxladd command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.add.run
+        self.input_file = 'input-simple.csv'
+
+    def test_default(self):
+        self.assertOutput(['-v', 'report_date=2015-03-31'], 'add-output-default.csv')
+        self.assertOutput(['--value', 'report_date=2015-03-31'], 'add-output-default.csv')
+
+    def test_before(self):
+        self.assertOutput(['-b', '-v', 'report_date=2015-03-31'], 'add-output-before.csv')
+        self.assertOutput(['--before', '--value', 'report_date=2015-03-31'], 'add-output-before.csv')
 
 class TestCount(BaseTest):
     """
@@ -94,6 +111,11 @@ class TestMerge(BaseTest):
 
     def test_merge(self):
         self.assertOutput(['-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
+        self.assertOutput(['--keys', 'sector', '--tags', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
+
+    def test_before(self):
+        self.assertOutput(['-b', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-before.csv')
+        self.assertOutput(['--before', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-before.csv')
 
 class TestNorm(BaseTest):
     """
