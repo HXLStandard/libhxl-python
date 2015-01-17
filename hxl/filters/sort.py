@@ -3,6 +3,10 @@ Sort a HXL dataset.
 David Megginson
 January 2015
 
+The HXLSortFilter class will use numeric sorting for hashtags ending
+in _num or _deg, and date-normalised sorting for hashtags ending in
+_date.
+
 Warning: this filter reads the entire source dataset into memory
 before sorting it.
 
@@ -59,19 +63,21 @@ class HXLSortFilter(HXLSource):
         Sort the dataset first, then return it row by row.
         """
 
+        # Closures
         def make_key(row):
-            """
-            Use the requested tags as keys (if provided).
-            """
+            """Closure: use the requested tags as keys (if provided). """
 
             def get_value(tag):
+                """Closure: extract a sort key"""
                 raw_value = row.get(tag)
                 if tag.endswith('_num') or tag.endswith('_deg'):
+                    # left-pad numbers with zeros
                     try:
                         raw_value = str(float(raw_value)).zfill(15)
                     except ValueError:
                         pass
                 elif tag.endswith('_date'):
+                    # normalise dates for sorting
                     raw_value = dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
                 return raw_value
 
@@ -80,6 +86,7 @@ class HXLSortFilter(HXLSource):
             else:
                 return row.values
 
+        # Main method
         if self._iter is None:
             self._iter = iter(sorted(self.source, key=make_key, reverse=self.reverse))
         return self._iter.next()
