@@ -14,6 +14,7 @@ setup(name='libhxl',
       packages=['hxl', 'hxl.filters'],
       scripts=[
         'scripts/hxl2geojson',
+        'scripts/hxladd',
         'scripts/hxlbounds',
         'scripts/hxlcount',
         'scripts/hxlcut',
