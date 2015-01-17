@@ -198,6 +198,13 @@ class TestSort(BaseTest):
         self.assertOutput(['-t', 'country'], 'sort-output-tags.csv')
         self.assertOutput(['--tags', 'country'], 'sort-output-tags.csv')
 
+    def test_numeric(self):
+        self.assertOutput(['-t', 'targeted_num'], 'sort-output-numeric.csv')
+
+    def test_date(self):
+        self.input_file = 'input-date.csv'
+        self.assertOutput(['-t', 'report_date'], 'sort-output-date.csv')
+
     def test_reverse(self):
         self.assertOutput(['-r'], 'sort-output-reverse.csv')
         self.assertOutput(['--reverse'], 'sort-output-reverse.csv')

@@ -12,6 +12,7 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
+import dateutil.parser
 from hxl.model import HXLSource
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
@@ -38,8 +39,8 @@ class HXLSortFilter(HXLSource):
     def __init__(self, source, tags=[], reverse=False):
         """
         @param source a HXL data source
-        @param include_tags a whitelist list of hashtags to include
-        @param exclude_tags a blacklist of hashtags to exclude
+        @param tags tags for sorting
+        @param reverse True to reverse the sort order
         """
         self.source = source
         self.sort_tags = tags
@@ -57,14 +58,28 @@ class HXLSortFilter(HXLSource):
         """
         Sort the dataset first, then return it row by row.
         """
+
         def make_key(row):
             """
             Use the requested tags as keys (if provided).
             """
+
+            def get_value(tag):
+                raw_value = row.get(tag)
+                if tag.endswith('_num') or tag.endswith('_deg'):
+                    try:
+                        raw_value = str(float(raw_value)).zfill(15)
+                    except ValueError:
+                        pass
+                elif tag.endswith('_date'):
+                    raw_value = dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
+                return raw_value
+
             if self.sort_tags:
-                return map(lambda tag: row.get(tag), self.sort_tags)
+                return map(get_value, self.sort_tags)
             else:
                 return row.values
+
         if self._iter is None:
             self._iter = iter(sorted(self.source, key=make_key, reverse=self.reverse))
         return self._iter.next()
