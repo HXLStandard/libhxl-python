@@ -79,7 +79,7 @@ class HXLSortFilter(HXLSource):
                 elif tag.endswith('_date'):
                     # normalise dates for sorting
                     raw_value = dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
-                return raw_value
+                return raw_value.upper()
 
             if self.sort_tags:
                 return map(get_value, self.sort_tags)
