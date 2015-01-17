@@ -38,18 +38,20 @@ class HXLMergeFilter(HXLSource):
     </pre>
     """
 
-    def __init__(self, source, merge_source, keys, tags):
+    def __init__(self, source, merge_source, keys, tags, before=False):
         """
         Constructor.
         @param source the HXL data source.
         @param merge_source a second HXL data source to merge into the first.
         @param keys the shared key hashtags to use for the merge
         @param tags the tags to include from the second dataset
+        @param before if True, add new columns before existing ones
         """
         self.source = source
         self.merge_source = merge_source
         self.keys = keys
         self.merge_tags = tags
+        self.before = before
         self.saved_columns = None
         self.merge_map = None
         self.empty_result = [''] * len(tags)
@@ -60,7 +62,11 @@ class HXLMergeFilter(HXLSource):
         @return column definitions for the merged dataset
         """
         if self.saved_columns is None:
-            self.saved_columns = self.source.columns + map(lambda tag: HXLColumn(hxlTag=tag), self.merge_tags)
+            new_columns = [HXLColumn(hxlTag=tag) for tag in self.merge_tags]
+            if self.before:
+                self.saved_columns =  new_columns + self.source.columns
+            else:
+                self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 
     def next(self):
@@ -73,7 +79,10 @@ class HXLMergeFilter(HXLSource):
         merge_values = self.merge_map.get(self._make_key(row))
         if not merge_values:
             merge_values = self.empty_result
-        row.values = row.values + merge_values
+        if self.before:
+            row.values = merge_values + row.values
+        else:
+            row.values = row.values + merge_values
         return row
 
     def _make_key(self, row):
@@ -151,10 +160,18 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         required=True,
         type=parse_tags
         )
+    parser.add_argument(
+        '-b',
+        '--before',
+        help='Add new columns before existing ones rather than after them.',
+        action='store_const',
+        const=True,
+        default=False
+    )
     args = parser.parse_args(args)
 
     source = HXLReader(args.infile)
-    filter = HXLMergeFilter(source, HXLReader(args.merge), args.keys, args.tags)
+    filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge), keys=args.keys, tags=args.tags, before=args.before)
     writeHXL(args.outfile, filter)
 
 # end
