@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+"""
+Script to sort a HXL dataset
+David Megginson
+January 2015
+
+Sort a HXL dataset based on one or more columns.
+
+Usage:
+
+  hxlcut --tags org,country,sector < DATA_IN.csv > DATA_OUT.csv
+
+(Use -h option to get all options.)
+
+License: Public Domain
+Documentation: http://hxlstandard.org
+"""
+
+import sys
+from hxl.filters.hxlsort import run
+
+if __name__ == '__main__':
+    run(sys.argv[1:], sys.stdin, sys.stdout)
+
+# end

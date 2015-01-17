@@ -21,6 +21,7 @@ setup(name='libhxl',
         'scripts/hxlmerge',
         'scripts/hxlnorm',
         'scripts/hxlrename',
+        'scripts/hxlsort',
         'scripts/hxlvalidate'
         ]
       )
