@@ -73,7 +73,7 @@ class HXLNormFilter(HXLSource):
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
-    Run hxlfilter with command-line arguments.
+    Run hxlnorm with command-line arguments.
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script

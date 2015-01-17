@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Script to filter rows columns from a HXL dataset.
+Script to select rows columns from a HXL dataset.
 David Megginson
 October 2014
 
@@ -10,15 +10,15 @@ dataset that contain matches for any of them.
 
 Usage:
 
-  hxlfilter -f sector=WASH DATA_IN.csv DATA_OUT.csv
+  hxlselect -q sector=WASH DATA_IN.csv DATA_OUT.csv
 
-To get the equivalent of a boolean OR, use the -f option multiple times:
+To get the equivalent of a boolean OR, use the -q option multiple times:
 
-  hxlfilter -f sector=WASH -f sector=Health DATA_IN.csv DATA_OUT.csv
+  hxlselect -q sector=WASH -q sector=Health DATA_IN.csv DATA_OUT.csv
 
 To get the equivalent of a boolean AND for the filters, use a pipeline:
 
-  hxlfilter -f country=Colombia DATA_IN.csv | hxlfilter -f sector=WASH > DATA_OUT.csv
+  hxlselect -q country=Colombia DATA_IN.csv | hxlselect -q sector=WASH > DATA_OUT.csv
 
 
 (Use -h option to get full usage.)
@@ -28,7 +28,7 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-from hxl.filters.filter import run
+from hxl.filters.select import run
 
 if __name__ == '__main__':
     run(sys.argv[1:], sys.stdin, sys.stdout)

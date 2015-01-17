@@ -17,10 +17,10 @@ setup(name='libhxl',
         'scripts/hxlbounds',
         'scripts/hxlcount',
         'scripts/hxlcut',
-        'scripts/hxlfilter',
         'scripts/hxlmerge',
         'scripts/hxlnorm',
         'scripts/hxlrename',
+        'scripts/hxlselect',
         'scripts/hxlsort',
         'scripts/hxlvalidate'
         ]

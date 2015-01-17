@@ -16,10 +16,10 @@ import tempfile
 
 import hxl.filters.count
 import hxl.filters.cut
-import hxl.filters.filter
 import hxl.filters.merge
 import hxl.filters.norm
 import hxl.filters.rename
+import hxl.filters.select
 import hxl.filters.sort
 import hxl.filters.validate
 
@@ -83,48 +83,6 @@ class TestCut(BaseTest):
         self.assertOutput(['--exclude', 'sex,targeted_num'], 'cut-output-blacklist.csv')
 
 
-class TestFilter(BaseTest):
-    """
-    Test the hxlfilter command-line tool.
-    """
-
-    def setUp(self):
-        self.function = hxl.filters.filter.run
-        self.input_file = 'input-simple.csv'
-
-    def test_eq(self):
-        self.assertOutput(['-f', 'sector=WASH'], 'filter-output-eq.csv')
-        self.assertOutput(['--filter', 'sector=WASH'], 'filter-output-eq.csv')
-
-    def test_ne(self):
-        self.assertOutput(['-f', 'sector!=WASH'], 'filter-output-ne.csv')
-
-    def test_lt(self):
-        self.assertOutput(['-f', 'targeted_num<200'], 'filter-output-lt.csv')
-
-    def test_le(self):
-        self.assertOutput(['-f', 'targeted_num<=100'], 'filter-output-le.csv')
-
-    def test_gt(self):
-        self.assertOutput(['-f', 'targeted_num>100'], 'filter-output-gt.csv')
-
-    def test_ge(self):
-        self.assertOutput(['-f', 'targeted_num>=100'], 'filter-output-ge.csv')
-
-    def test_re(self):
-        self.assertOutput(['-f', 'sector~^W..H'], 'filter-output-re.csv')
-
-    def test_nre(self):
-        self.assertOutput(['-f', 'sector!~^W..H'], 'filter-output-nre.csv')
-
-    def test_inverse(self):
-        self.assertOutput(['-v', '-f', 'sector=WASH'], 'filter-output-inverse.csv')
-        self.assertOutput(['--invert', '--filter', 'sector=WASH'], 'filter-output-inverse.csv')
-
-    def test_multiple(self):
-        self.assertOutput(['-f', 'sector=WASH', '-f', 'sector=Salud'], 'filter-output-multiple.csv')
-
-
 class TestMerge(BaseTest):
     """
     Test the hxlmerge command-line tool.
@@ -181,6 +139,49 @@ class TestRename(BaseTest):
 
     def test_multiple(self):
         self.assertOutput(['-r', 'targeted_num:affected_num', '-r', 'org:funding'], 'rename-output-multiple.csv')
+
+
+class TestSelect(BaseTest):
+    """
+    Test the hxlselect command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.select.run
+        self.input_file = 'input-simple.csv'
+
+    def test_eq(self):
+        self.assertOutput(['-q', 'sector=WASH'], 'select-output-eq.csv')
+        self.assertOutput(['--query', 'sector=WASH'], 'select-output-eq.csv')
+
+    def test_ne(self):
+        self.assertOutput(['-q', 'sector!=WASH'], 'select-output-ne.csv')
+
+    def test_lt(self):
+        self.assertOutput(['-q', 'targeted_num<200'], 'select-output-lt.csv')
+
+    def test_le(self):
+        self.assertOutput(['-q', 'targeted_num<=100'], 'select-output-le.csv')
+
+    def test_gt(self):
+        self.assertOutput(['-q', 'targeted_num>100'], 'select-output-gt.csv')
+
+    def test_ge(self):
+        self.assertOutput(['-q', 'targeted_num>=100'], 'select-output-ge.csv')
+
+    def test_re(self):
+        self.assertOutput(['-q', 'sector~^W..H'], 'select-output-re.csv')
+
+    def test_nre(self):
+        self.assertOutput(['-q', 'sector!~^W..H'], 'select-output-nre.csv')
+
+    def test_reverse(self):
+        self.assertOutput(['-r', '-q', 'sector=WASH'], 'select-output-reverse.csv')
+        self.assertOutput(['--reverse', '--query', 'sector=WASH'], 'select-output-reverse.csv')
+
+    def test_multiple(self):
+        self.assertOutput(['-q', 'sector=WASH', '-q', 'sector=Salud'], 'select-output-multiple.csv')
+
 
 class TestSort(BaseTest):
     """
