@@ -1,9 +1,6 @@
 #!/usr/bin/python
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
 
 setup(name='libhxl',
       version='0.10',
@@ -12,6 +9,7 @@ setup(name='libhxl',
       url='http://hxlproject.org',
       install_requires=['shapely', 'python-dateutil'],
       packages=['hxl', 'hxl.filters'],
+      test_suite='tests',
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxladd',
