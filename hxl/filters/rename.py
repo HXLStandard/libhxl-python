@@ -54,8 +54,11 @@ class HXLRenameFilter(HXLSource):
             return column
         return map(rename_tags, self.source.columns)
 
-    def next(self):
-        return self.source.next()
+    def __next__(self):
+        return next(self.source)
+
+    next = __next__
+
 
 #
 # Command-line support.

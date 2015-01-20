@@ -51,14 +51,16 @@ class HXLSelectFilter(HXLSource):
     def columns(self):
         return self.source.columns
 
-    def next(self):
+    def __next__(self):
         """
         Return the next row that matches the select.
         """
-        row = self.source.next()
+        row = next(self.source)
         while not self._row_matches_p(row):
-            row = self.source.next()
+            row = next(self.source)
         return row
+
+    next = __next__
 
     def _try_op(self, op, v1, v2):
         """Try an operator as numeric first, then string"""

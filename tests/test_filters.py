@@ -5,6 +5,7 @@ December 2014
 
 License: Public Domain
 """
+from __future__ import print_function
 
 import unittest
 import os
@@ -276,16 +277,19 @@ def try_script(script_function, args, input_file, expected_output_file):
     @return True if the actual output matches the expected output
     """
 
-    input = open(resolve_file(input_file), 'r')
-    output = tempfile.NamedTemporaryFile(delete=False)
-    try:
-        script_function(args, stdin=input, stdout=output)
-        output.close()
-        result = diff(output.name, resolve_file(expected_output_file))
-    finally:
-        # Not using with, because Windows won't allow file to be opened twice
-        os.remove(output.name)
-    return result
+    with open(resolve_file(input_file), 'r') as input:
+        if sys.version_info[0] > 2:
+            output = tempfile.NamedTemporaryFile(mode='w', newline='', delete=False)
+        else:
+            output = tempfile.NamedTemporaryFile(delete=False)
+        try:
+            script_function(args, stdin=input, stdout=output)
+            output.close()
+            result = diff(output.name, resolve_file(expected_output_file))
+        finally:
+            # Not using with, because Windows won't allow file to be opened twice
+            os.remove(output.name)
+        return result
 
 def diff(file1, file2):
     """
@@ -297,8 +301,8 @@ def diff(file1, file2):
     @param file2 The full pathname of the second file to compare
     @return True if the files are the same, o
     """
-    with open(file1, 'rt') as input1:
-        with open(file2, 'rt') as input2:
+    with open(file1, 'r') as input1:
+        with open(file2, 'r') as input2:
             diffs = difflib.unified_diff(
                 input1.read().splitlines(),
                 input2.read().splitlines()
@@ -306,7 +310,7 @@ def diff(file1, file2):
     no_diffs = True
     for diff in diffs:
         no_diffs = False
-        print >>sys.stderr, diff
+        print(diff, file=sys.stderr)
     return no_diffs
 
 # end

@@ -41,7 +41,7 @@ class HXLSource(object):
         return
 
     @abc.abstractmethod
-    def next(self):
+    def __next__(self):
         """
         Iterable function to return the next row of HXL values.
         @return an iterable HXLRow
@@ -54,21 +54,21 @@ class HXLSource(object):
         """
         Return a list of header strings (for a spreadsheet row).
         """
-        return map(lambda column: column.headerText, self.columns)
+        return list(map(lambda column: column.headerText, self.columns))
 
     @property
     def tags(self):
         """
         Return a list of tags.
         """
-        return map(lambda column: column.hxlTag, self.columns)
+        return list(map(lambda column: column.hxlTag, self.columns))
 
     @property
     def displayTags(self):
         """
         Return a list of display tags.
         """
-        return map(lambda column: column.displayTag, self.columns)
+        return list(map(lambda column: column.displayTag, self.columns))
 
     @property
     def hasHeaders(self):

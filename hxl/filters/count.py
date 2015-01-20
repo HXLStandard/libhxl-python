@@ -74,14 +74,14 @@ class HXLCountFilter(HXLSource):
             self.saved_columns = cols
         return self.saved_columns
 
-    def next(self):
+    def __next__(self):
         """
         @return the next row of aggregated data.
         """
         if self.aggregate_iter is None:
             self._aggregate()
         # Write the stats, sorted in value order
-        aggregate = self.aggregate_iter.next()
+        aggregate = next(self.aggregate_iter)
         values = list(aggregate[0])
         values.append(aggregate[1].count)
         if self.aggregate_tag:
@@ -96,6 +96,8 @@ class HXLCountFilter(HXLSource):
         row = HXLRow(self.columns)
         row.values = values
         return row
+
+    next = __next__
 
     def _aggregate(self):
         """
