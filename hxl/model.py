@@ -8,6 +8,7 @@ Documentation: http://hxlstandard.org
 """
 
 import abc
+from copy import copy
 
 class HXLSource(object):
     """
@@ -158,7 +159,7 @@ class HXLRow(object):
     # Predefine the slots for efficiency (may reconsider later)
     __slots__ = ['columns', 'values', 'rowNumber', 'sourceRowNumber']
 
-    def __init__(self, columns, rowNumber=None, sourceRowNumber=None):
+    def __init__(self, columns, rowNumber=None, sourceRowNumber=None, values=[]):
         """
         Set up a new row.
         @param columns The column definitions (array of HXLColumn objects).
@@ -166,7 +167,7 @@ class HXLRow(object):
         @param sourceRowNumber The original row number in the raw source dataset (default: None)
         """
         self.columns = columns
-        self.values = []
+        self.values = copy(values)
         self.rowNumber = rowNumber
         self.sourceRowNumber = sourceRowNumber
 
