@@ -11,6 +11,7 @@ import sys
 import urlparse
 import re
 import os
+from copy import copy
 from email.utils import parseaddr
 from parser import HXLReader
 
@@ -178,7 +179,7 @@ class HXLSchema(object):
     """
 
     def __init__(self, rules=[], callback=None):
-        self.rules = rules
+        self.rules = copy(rules)
         if callback is None:
             self.callback = self.showError
         else:
@@ -218,14 +219,13 @@ class HXLSchema(object):
         s += ">"
         return s
 
-def loadHXLSchema(input=None):
+def readHXLSchema(source=None):
     """
     Load a HXL schema from the provided input stream, or load default schema.
-    @param input load schema from the specific stream, or default schema if None (default: None)
+    @param source HXL data source for the scheme (e.g. a HXLReader or filter)
     """
 
-    # FIXME why do I need to specify an empty rule list?
-    schema = HXLSchema(rules=[])
+    schema = HXLSchema()
 
     def parseType(typeString):
         if typeString == 'text':
@@ -260,12 +260,12 @@ def loadHXLSchema(input=None):
         else:
             return None
 
-    if input == None:
+    if source is None:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
         input = open(path, 'r')
+        source = HXLReader(input)
 
-    parser = HXLReader(input)
-    for row in parser:
+    for row in source:
         rule = HXLSchemaRule(row.get('#x_tag'))
         rule.minOccur = toInt(row.get('#x_minoccur_num'))
         rule.maxOccur = toInt(row.get('#x_maxoccur_num'))
