@@ -1,0 +1,12 @@
+Código,Localização,Código pai,Nível,Tipo
+#term_id,#title/pt,#parent_id,#level_num,#level/pt
+ST,São Tomé e Principe,,0,País
+ST-P,Principe,ST,1,Província
+ST-S,São Tomé,ST-2,1,Província
+ST-1,Água Grande,ST-S,2,Distrito
+ST-2,Cantagalo,ST-1,2,Distrito
+ST-3,Caué,ST-S,2,Distrito
+ST-4,Lembá,ST-S,2,Distrito
+ST-5,Lobata,ST-S,2,Distrito
+ST-6,Mé-Zóchi,ST-S,2,Distrito
+ST-7,Pagué,ST-P,2,Distrito
