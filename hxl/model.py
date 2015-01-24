@@ -10,13 +10,13 @@ Documentation: http://hxlstandard.org
 import abc
 from copy import copy
 
-class HXLSource(object):
+class HXLDataProvider(object):
     """
     Abstract base class for a HXL data source.
 
     Any source of parsed HXL data inherits from this class: that
     includes HXLDataset, HXLReader, and the various filters in the
-    hxl.filters package.  The contract of a HXLSource is that it will
+    hxl.filters package.  The contract of a HXLDataProvider is that it will
     provide a columns property and a next() method to read through the
     rows.
 
@@ -81,7 +81,8 @@ class HXLSource(object):
                 return True
         return False
 
-class HXLDataset(HXLSource):
+
+class HXLDataset(HXLDataProvider):
     """
     In-memory HXL dataset.
     """
@@ -104,6 +105,7 @@ class HXLDataset(HXLSource):
             return '<HXLDataset ' + self.url + '>'
         else:
             return '<HXLDataset>'
+
 
 class HXLColumn(object):
     """
@@ -150,6 +152,7 @@ class HXLColumn(object):
             return '<HXLColumn ' + str(tag) + '>'
         else:
             return '<HXLColumn>'
+
 
 class HXLRow(object):
     """

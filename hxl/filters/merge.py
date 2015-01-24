@@ -12,11 +12,11 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 from copy import copy
-from hxl.model import HXLSource, HXLColumn
+from hxl.model import HXLDataProvider, HXLColumn
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
-class HXLMergeFilter(HXLSource):
+class HXLMergeFilter(HXLDataProvider):
     """
     Composable filter class to merge values from two HXL datasets.
 
@@ -24,7 +24,7 @@ class HXLMergeFilter(HXLSource):
 
     Warning: this filter may store a large amount of data in memory, depending on the merge.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 

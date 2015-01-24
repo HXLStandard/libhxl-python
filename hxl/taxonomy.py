@@ -99,7 +99,7 @@ def readTaxonomy(source):
     """
     Read a taxonomy from a HXL data source.
     Throws a HXLTaxonomyException for duplicate terms.
-    @param a HXLSource
+    @param a HXLDataProvider
     @return a HXLTaxonomy
     """
 

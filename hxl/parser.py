@@ -9,7 +9,7 @@ Documentation: http://hxlstandard.org
 
 import csv
 import re
-from model import HXLSource, HXLDataset, HXLColumn, HXLRow
+from model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
 class HXLParseException(Exception):
     """
@@ -155,7 +155,7 @@ class HXLColSpec:
         s += "\n>"
         return s
 
-class HXLReader(HXLSource):
+class HXLReader(HXLDataProvider):
     """
     Read HXL data from a file
     """

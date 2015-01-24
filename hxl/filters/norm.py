@@ -12,11 +12,11 @@ import re
 import dateutil.parser
 import argparse
 from copy import copy
-from hxl.model import HXLSource
+from hxl.model import HXLDataProvider
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
-class HXLNormFilter(HXLSource):
+class HXLNormFilter(HXLDataProvider):
 
     def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[]):
         self.source = source

@@ -11,17 +11,17 @@ import sys
 import argparse
 import re
 from copy import copy
-from hxl.model import HXLSource, HXLColumn
+from hxl.model import HXLDataProvider, HXLColumn
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
-class HXLAddFilter(HXLSource):
+class HXLAddFilter(HXLDataProvider):
     """
     Composable filter class to add constant values to every row of a HXL dataset.
 
     This is the class supporting the hxladd command-line utility.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
