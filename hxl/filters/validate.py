@@ -58,7 +58,7 @@ class HXLValidateFilter(HXLSource):
             self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 
-    def next(self):
+    def __next__(self):
         """
         Report rows with error information.
         """
@@ -73,7 +73,7 @@ class HXLValidateFilter(HXLSource):
         """
         Read rows until we find an error (unless we're printing all rows)
         """
-        row = self.source.next()
+        row = next(self.source)
         while row:
             if self.show_all or not self.schema.validateRow(row):
                 # append error data to row
@@ -85,7 +85,10 @@ class HXLValidateFilter(HXLSource):
                 error_row.values = error_row.values + [messages, tags, rows, columns]
                 return error_row
             else:
-                row = self.source.next()
+                row = next(self.source)
+
+    next = __next__
+
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """

@@ -32,7 +32,11 @@ class TestParser(unittest.TestCase):
 
     def setUp(self):
         self.filename = os.path.join(os.path.dirname(__file__), TestParser.SAMPLE_FILE)
-        self.reader = HXLReader(open(self.filename, 'rb'))
+        self.input_file = open(self.filename, 'r')
+        self.reader = HXLReader(self.input_file)
+
+    def tearDown(self):
+        self.input_file.close()
 
     def test_row_count(self):
         # logical row count

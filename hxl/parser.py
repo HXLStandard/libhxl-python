@@ -9,7 +9,8 @@ Documentation: http://hxlstandard.org
 
 import csv
 import re
-from model import HXLSource, HXLDataset, HXLColumn, HXLRow
+
+from .model import HXLSource, HXLDataset, HXLColumn, HXLRow
 
 class HXLParseException(Exception):
     """
@@ -75,7 +76,7 @@ class HXLTableSpec:
         Get a simple list of header strings from the columns.
         """
         if self.cachedHeaders == None:
-            self.cachedHeaders = map(lambda column: column.headerText, self.columns)
+            self.cachedHeaders = list(map(lambda column: column.headerText, self.columns))
         return self.cachedHeaders
 
     @property
@@ -84,7 +85,7 @@ class HXLTableSpec:
         Get a simple list of HXL hashtags from the columns.
         """
         if self.cachedTags == None:
-            self.cachedTags = map(lambda column: column.hxlTag, self.columns)
+            self.cachedTags = list(map(lambda column: column.hxlTag, self.columns))
         return self.cachedTags
 
     @property
@@ -178,7 +179,7 @@ class HXLReader(HXLSource):
         self.setupTableSpec()
         return self.tableSpec.columns
 
-    def next(self):
+    def __next__(self):
         """
         Iterable function to return the next row of HXL values.
         Returns a HXLRow, or raises StopIteration exception at end
@@ -234,6 +235,8 @@ class HXLReader(HXLSource):
                 row.append(self.rawData[sourceColumnNumber])
 
         return row
+
+    next = __next__
 
     def setupTableSpec(self):
         """
@@ -331,7 +334,7 @@ class HXLReader(HXLSource):
         Returns an array of strings.
         """
         self.sourceRowNumber += 1
-        return self.csvreader.next()
+        return next(self.csvreader)
 
     def prettyTag(self, hxlTag):
         """

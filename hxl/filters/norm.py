@@ -30,7 +30,7 @@ class HXLNormFilter(HXLSource):
     def columns(self):
         return self.source.columns
 
-    def next(self):
+    def __next__(self):
 
         def normalise(value, column):
             """
@@ -46,11 +46,17 @@ class HXLNormFilter(HXLSource):
 
             # Uppercase (-u)
             if self.upper and column.hxlTag in self.upper:
-                value = value.decode('utf8').upper().encode('utf8')
+                if sys.version_info[0] > 2:
+                    value = value.upper()
+                else:
+                    value = value.decode('utf8').upper().encode('utf8')
 
             # Lowercase (-l)
             if self.lower and column.hxlTag in self.lower:
-                value = value.decode('utf8').lower().encode('utf8')
+                if sys.version_info[0] > 2:
+                    value = value.lower()
+                else:
+                    value = value.decode('utf8').lower().encode('utf8')
 
             # Date (-d or -D)
             if self.date and value:
@@ -67,9 +73,12 @@ class HXLNormFilter(HXLSource):
 
             return value
 
-        row = copy(self.source.next())
+        row = copy(next(self.source))
         row.values = row.map(normalise)
         return row
+
+    next = __next__
+
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """

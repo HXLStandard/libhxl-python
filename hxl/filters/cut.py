@@ -57,11 +57,11 @@ class HXLCutFilter(HXLSource):
                     self.columns_out.append(column)
         return self.columns_out
 
-    def next(self):
+    def __next__(self):
         """
         Return the next row, with appropriate columns filtered out.
         """
-        row = self.source.next()
+        row = next(self.source)
         values_out = []
         for pos, value in enumerate(row):
             if self._test_column(row.columns[pos]):
@@ -69,6 +69,8 @@ class HXLCutFilter(HXLSource):
         row_out = HXLRow(self.columns)
         row_out.values = values_out
         return row_out
+
+    next = __next__
 
     def _test_column(self, column):
         """

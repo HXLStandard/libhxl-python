@@ -58,7 +58,7 @@ class HXLSortFilter(HXLSource):
         """
         return self.source.columns
 
-    def next(self):
+    def __next__(self):
         """
         Sort the dataset first, then return it row by row.
         """
@@ -82,14 +82,17 @@ class HXLSortFilter(HXLSource):
                 return raw_value.upper()
 
             if self.sort_tags:
-                return map(get_value, self.sort_tags)
+                return list(map(get_value, self.sort_tags))
             else:
                 return row.values
 
         # Main method
         if self._iter is None:
             self._iter = iter(sorted(self.source, key=make_key, reverse=self.reverse))
-        return self._iter.next()
+        return next(self._iter)
+
+    next = __next__
+
             
 #
 # Command-line support

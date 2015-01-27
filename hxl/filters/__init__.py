@@ -7,4 +7,4 @@ def fix_tag(t):
 
 def parse_tags(s):
     '''Parse tags out from a comma-separated list'''
-    return map(fix_tag, s.split(','))
+    return list(map(fix_tag, s.split(',')))

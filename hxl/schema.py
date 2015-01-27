@@ -8,12 +8,17 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
-import urlparse
 import re
 import os
 from copy import copy
 from email.utils import parseaddr
-from parser import HXLReader
+from .parser import HXLReader
+
+if sys.version_info[0] > 2:
+    from urllib.parse import urlparse
+else:
+    from urlparse import urlparse
+
 
 class HXLValidationException(Exception):
     """
@@ -124,7 +129,7 @@ class HXLSchemaRule(object):
             except ValueError:
                 return self.reportError("Expected a number", value, row, column)
         elif self.dataType == self.TYPE_URL:
-            pieces = urlparse.urlparse(value)
+            pieces = urlparse(value)
             if not (pieces.scheme and pieces.netloc):
                 return self.reportError("Expected a URL", value, row, column)
         elif self.dataType == self.TYPE_EMAIL:

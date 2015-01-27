@@ -59,16 +59,19 @@ class HXLAddFilter(HXLSource):
                 self._columns_out = self.source.columns + new_columns
         return self._columns_out
 
-    def next(self):
+    def __next__(self):
         """
         Return the next row, with constant values added.
         """
-        row = copy(self.source.next())
+        row = copy(next(self.source))
         if self.before:
             row.values = self._const_values + row.values
         else:
             row.values = row.values + self._const_values
         return row
+
+    next = __next__
+
 
 #
 # Command-line support

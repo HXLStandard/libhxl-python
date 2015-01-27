@@ -69,13 +69,13 @@ class HXLMergeFilter(HXLSource):
                 self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 
-    def next(self):
+    def __next__(self):
         """
         @return the next merged row of data
         """
         if self.merge_map is None:
             self.merge_map = self._read_merge()
-        row = copy(self.source.next())
+        row = copy(next(self.source))
         merge_values = self.merge_map.get(self._make_key(row))
         if not merge_values:
             merge_values = self.empty_result
@@ -84,6 +84,8 @@ class HXLMergeFilter(HXLSource):
         else:
             row.values = row.values + merge_values
         return row
+
+    next = __next__
 
     def _make_key(self, row):
         """
