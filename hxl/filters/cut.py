@@ -11,17 +11,17 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.model import HXLSource, HXLRow
+from hxl.model import HXLDataProvider, HXLRow
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
-class HXLCutFilter(HXLSource):
+class HXLCutFilter(HXLDataProvider):
     """
     Composable filter class to cut columns from a HXL dataset.
 
     This is the class supporting the hxlcut command-line utility.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 

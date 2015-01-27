@@ -14,16 +14,16 @@ import sys
 import re
 import operator
 import argparse
-from hxl.model import HXLSource
+from hxl.model import HXLDataProvider
 from hxl.parser import HXLReader, writeHXL
 
-class HXLSelectFilter(HXLSource):
+class HXLSelectFilter(HXLDataProvider):
     """
     Composable filter class to select rows from a HXL dataset.
 
     This is the class supporting the hxlselect command-line utility.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 

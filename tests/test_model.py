@@ -29,9 +29,9 @@ class TestColumn(unittest.TestCase):
         self.assertEquals(TestColumn.HEADER_TEXT, self.column.headerText)
 
     def test_display_tag(self):
-        self.assertEquals(TestColumn.HXL_TAG + '/' + TestColumn.LANGUAGE_CODE, self.column.getDisplayTag())
+        self.assertEquals(TestColumn.HXL_TAG + '/' + TestColumn.LANGUAGE_CODE, self.column.displayTag)
         self.column.languageCode = None
-        self.assertEquals(TestColumn.HXL_TAG, self.column.getDisplayTag())
+        self.assertEquals(TestColumn.HXL_TAG, self.column.displayTag)
 
 class TestRow(unittest.TestCase):
 

@@ -16,17 +16,17 @@ Documentation: http://hxlstandard.org
 
 import sys
 import argparse
-from hxl.model import HXLSource, HXLColumn, HXLRow
+from hxl.model import HXLDataProvider, HXLColumn, HXLRow
 from hxl.filters import parse_tags, fix_tag
 from hxl.parser import HXLReader, writeHXL
 
-class HXLCountFilter(HXLSource):
+class HXLCountFilter(HXLDataProvider):
     """
     Composable filter class to aggregate rows in a HXL dataset.
 
     This is the class supporting the hxlcount command-line utility.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 

@@ -10,13 +10,13 @@ Documentation: http://hxlstandard.org
 import abc
 from copy import copy
 
-class HXLSource(object):
+class HXLDataProvider(object):
     """
     Abstract base class for a HXL data source.
 
     Any source of parsed HXL data inherits from this class: that
     includes HXLDataset, HXLReader, and the various filters in the
-    hxl.filters package.  The contract of a HXLSource is that it will
+    hxl.filters package.  The contract of a HXLDataProvider is that it will
     provide a columns property and a next() method to read through the
     rows.
 
@@ -81,19 +81,20 @@ class HXLSource(object):
                 return True
         return False
 
-class HXLDataset(HXLSource):
+
+class HXLDataset(HXLDataProvider):
     """
     In-memory HXL dataset.
     """
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, columns=[], rows=[]):
         """
         Initialise a dataset.
         @param url The dataset's URL (default: None).
         """
         self.url = url
-        self.columns = []
-        self.rows = []
+        self.columns = copy(columns)
+        self.rows = copy(rows)
 
     def __str__(self):
         """
@@ -104,6 +105,7 @@ class HXLDataset(HXLSource):
             return '<HXLDataset ' + self.url + '>'
         else:
             return '<HXLDataset>'
+
 
 class HXLColumn(object):
     """
@@ -128,7 +130,8 @@ class HXLColumn(object):
         self.languageCode = languageCode
         self.headerText = headerText
 
-    def getDisplayTag(self):
+    @property
+    def displayTag(self):
         """
         Generate a display version of the column hashtag
         @return the reassembled HXL hashtag string, including language code
@@ -145,11 +148,12 @@ class HXLColumn(object):
         """
         Create a string representation of a column header for debugging.
         """
-        tag = self.getDisplayTag()
+        tag = self.displayTag
         if tag:
             return '<HXLColumn ' + str(tag) + '>'
         else:
             return '<HXLColumn>'
+
 
 class HXLRow(object):
     """

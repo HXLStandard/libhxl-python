@@ -10,17 +10,17 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 import copy
-from hxl.model import HXLSource
+from hxl.model import HXLDataProvider
 from hxl.filters import fix_tag
 from hxl.parser import HXLReader, writeHXL
 
-class HXLRenameFilter(HXLSource):
+class HXLRenameFilter(HXLDataProvider):
     """
     Composable filter class to rename columns in a HXL dataset.
 
     This is the class supporting the hxlrename command-line utility.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -36,7 +36,7 @@ class HXLRenameFilter(HXLSource):
     def __init__(self, source, rename_map={}):
         """
         Constructor
-        @param source the HXLSource for the data.
+        @param source the HXLDataProvider for the data.
         @param rename_map map of tags to rename
         """
         self.source = source

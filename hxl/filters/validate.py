@@ -10,16 +10,16 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 from copy import copy
-from hxl.model import HXLSource, HXLColumn
+from hxl.model import HXLDataProvider, HXLColumn
 from hxl.parser import HXLReader, writeHXL
 from hxl.schema import readHXLSchema
 
-class HXLValidateFilter(HXLSource):
+class HXLValidateFilter(HXLDataProvider):
     """Composable filter class to validate a HXL dataset against a schema.
 
     This is the class supporting the hxlvalidate command-line utility.
 
-    Because this class is a {@link hxl.model.HXLSource}, you can use
+    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, singled-threaded processing pipeline.
 
