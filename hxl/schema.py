@@ -57,7 +57,8 @@ class HXLSchemaRule(object):
     TYPE_PHONE = 5
 
     def __init__(self, hxlTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
-                 valuePattern=None, valueEnumeration=None, caseSensitive=True, callback=None):
+                 valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
+                 callback=None):
         self.hxlTag = hxlTag
         self.minOccur = minOccur
         self.maxOccur = maxOccur
@@ -67,11 +68,22 @@ class HXLSchemaRule(object):
         self.valuePattern = valuePattern
         self.valueEnumeration = valueEnumeration
         self.caseSensitive = caseSensitive
+        self.taxonomy = taxonomy
+        self.taxonomyLevel = taxonomyLevel
         self.callback = callback
 
+
     def validateRow(self, row):
+        """
+        Apply the rule to an entire HXLRow
+        @param row the HXLRow to validate
+        @return True if all matching values in the row are valid
+        """
+
         numberSeen = 0
         result = True
+
+        # Look up only the values that apply to this rule
         values = row.getAll(self.hxlTag)
         if values:
             for columnNumber, value in enumerate(values):
@@ -80,34 +92,46 @@ class HXLSchemaRule(object):
                 if value:
                     numberSeen += 1
         if self.minOccur is not None and numberSeen < self.minOccur:
-            result = self.reportError(
+            result = self._report_error(
                 "Expected at least " + str(self.minOccur) + " instance(s) but found " + str(numberSeen),
                 row = row
                 )
         if self.maxOccur is not None and numberSeen > self.maxOccur:
-            result = self.reportError(
+            result = self._report_error(
                 "Expected at most " + str(self.maxOccur) + " instance(s) but found " + str(numberSeen),
                 row = row
                 )
         return result
 
+
     def validate(self, value, row = None, column = None):
+        """
+        Apply the rule to a single value.
+        @param value the value to validate
+        @param row (optional) the HXLRow being validated
+        @param column (optional) the HXLColumn being validated
+        @return True if valid; false otherwise
+        """
+
         if value is None or value == '':
             return True
 
         result = True
-        if not self._testType(value, row, column):
+        if not self._test_type(value, row, column):
             result = False
-        if not self._testRange(value, row, column):
+        if not self._test_range(value, row, column):
             result = False
-        if not self._testPattern(value, row, column):
+        if not self._test_pattern(value, row, column):
             result = False
-        if not self._testEnumeration(value, row, column):
+        if not self._test_enumeration(value, row, column):
+            result = False
+        if not self._test_taxonomy(value, row, column):
             result = False
 
         return result
 
-    def reportError(self, message, value=None, row=None, column=None):
+    def _report_error(self, message, value=None, row=None, column=None):
+        """Report an error to the callback."""
         if self.callback != None:
             self.callback(
                 HXLValidationException(
@@ -120,58 +144,71 @@ class HXLSchemaRule(object):
                 )
         return False
 
-    def _testType(self, value, row, column):
+    def _test_type(self, value, row, column):
         """Check the datatype."""
         if self.dataType == self.TYPE_NUMBER:
             try:
                 float(value)
                 return True
             except ValueError:
-                return self.reportError("Expected a number", value, row, column)
+                return self._report_error("Expected a number", value, row, column)
         elif self.dataType == self.TYPE_URL:
             pieces = urlparse(value)
             if not (pieces.scheme and pieces.netloc):
-                return self.reportError("Expected a URL", value, row, column)
+                return self._report_error("Expected a URL", value, row, column)
         elif self.dataType == self.TYPE_EMAIL:
             if not re.match('^[^@]+@[^@]+$', value):
-                return self.reportError("Expected an email address", value, row, column)
+                return self._report_error("Expected an email address", value, row, column)
         elif self.dataType == self.TYPE_PHONE:
             if not re.match('^\+?[0-9xX()\s-]{5,}$', value):
-                return self.reportError("Expected a phone number", value, row, column)
+                return self._report_error("Expected a phone number", value, row, column)
         
         return True
 
-    def _testRange(self, value, row, column):
+    def _test_range(self, value, row, column):
+        """Test against a numeric range (if specified)."""
         result = True
         try:
             if self.minValue is not None:
                 if float(value) < float(self.minValue):
-                    result = self.reportError("Value is less than " + str(self.minValue), value, row, column)
+                    result = self._report_error("Value is less than " + str(self.minValue), value, row, column)
             if self.maxValue is not None:
                 if float(value) > float(self.maxValue):
-                    result = self.reportError("Value is great than " + str(self.maxValue), value, row, column)
+                    result = self._report_error("Value is great than " + str(self.maxValue), value, row, column)
         except ValueError:
             result = False
         return result
 
-    def _testPattern(self, value, row, column):
+    def _test_pattern(self, value, row, column):
+        """Test against a regular expression pattern (if specified)."""
         if self.valuePattern:
             flags = 0
             if self.caseSensitive:
                 flags = re.IGNORECASE
             if not re.match(self.valuePattern, value, flags):
-                self.reportError("Failed to match pattern " + str(self.valuePattern), value, row, column)
+                self._report_error("Failed to match pattern " + str(self.valuePattern), value, row, column)
                 return False
         return True
 
-    def _testEnumeration(self, value, row, column):
+    def _test_enumeration(self, value, row, column):
+        """Test against an enumerated set of values (if specified)."""
         if self.valueEnumeration is not None:
             if self.caseSensitive:
                 if value not in self.valueEnumeration:
-                    return self.reportError("Must be one of " + str(self.valueEnumeration), value, row, column)
+                    return self._report_error("Must be one of " + str(self.valueEnumeration), value, row, column)
             else:
                 if value.upper() not in map(lambda item: item.upper(), self.valueEnumeration):
-                    return self.reportError("Must be one of " + str(self.valueEnumeration) + " (case-insensitive)", value, row, column)
+                    return self._report_error("Must be one of " + str(self.valueEnumeration) + " (case-insensitive)", value, row, column)
+        return True
+
+    def _test_taxonomy(self, value, row, column):
+        """Test against a taxonomy (if specified)."""
+        if self.taxonomy is not None:
+            if not self.taxonomy.contains(value, self.taxonomyLevel):
+                if self.taxonomyLevel is None:
+                    return self._report_error("Not in taxonomy", value, row, column)
+                else:
+                    return self._report_error("Not in taxonomy at level " + str(self.taxonomyLevel), value, row, column)
         return True
 
     def __str__(self):

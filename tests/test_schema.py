@@ -9,6 +9,7 @@ License: Public Domain
 import unittest
 from hxl.model import HXLColumn, HXLRow
 from hxl.schema import HXLSchema, HXLSchemaRule
+from hxl.taxonomy import HXLTaxonomy, HXLTerm
 
 class TestSchema(unittest.TestCase):
 
@@ -87,6 +88,19 @@ class TestSchemaRule(unittest.TestCase):
         self.try_rule('123', 1)
         self.try_rule('123456789abc', 1)
 
+    def test_type_taxonomy(self):
+        # No level specified
+        self.rule.taxonomy = make_taxonomy()
+        self.try_rule('AAA') # level 1
+        self.try_rule('BBB') # level 2
+        self.try_rule('CCC', 1) # not defined
+
+        # Explicit level
+        self.rule.taxonomyLevel = 1
+        self.try_rule('AAA') # level 1
+        self.try_rule('BBB', 1) # level 2
+        self.try_rule('CCC', 1) # not defined
+
     def test_value_range(self):
         self.rule.minValue = 3.5
         self.rule.maxValue = 4.5
@@ -153,5 +167,11 @@ class TestSchemaRule(unittest.TestCase):
             self.assertFalse(result)
         self.assertEqual(len(self.errors), errors_expected)
         self.errors = [] # clear errors for the next run
+
+def make_taxonomy():
+    return HXLTaxonomy(terms={
+        'AAA': HXLTerm('AAA', level=1),
+        'BBB': HXLTerm('BBB', level=2)
+        })
 
 # end
