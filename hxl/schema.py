@@ -13,6 +13,7 @@ import os
 from copy import copy
 from email.utils import parseaddr
 from .parser import HXLReader
+from .taxonomy import readTaxonomy
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
@@ -302,6 +303,12 @@ def readHXLSchema(source=None):
         else:
             return None
 
+    def toTaxonomy(s):
+        if s:
+            return readTaxonomy(HXLReader(s))
+        else:
+            return None
+
     if source is None:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
         input = open(path, 'r')
@@ -315,6 +322,8 @@ def readHXLSchema(source=None):
         rule.minValue = toFloat(row.get('#x_minvalue_num'))
         rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
         rule.valuePattern = toRegex(row.get('#x_pattern'))
+        rule.taxonomy = toRegex(row.get('#x_taxonomy'))
+        rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel'))
         s = row.get('#x_enumeration')
         if s:
             rule.valueEnumeration = s.split('|')

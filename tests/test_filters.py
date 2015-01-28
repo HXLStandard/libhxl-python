@@ -257,6 +257,10 @@ class TestValidate(BaseTest):
         schema = resolve_file('validate-schema-num.csv')
         self.assertOutput(['-s', schema], 'validate-output-num.csv')
 
+#    def test_taxonomy(self):
+#        schema = resolve_file('validate-schema-taxonomy.csv')
+#        self.assertOutput(['-s', schema], 'validate-output-taxonomy.csv')
+
 
 ########################################################################
 # Support functions

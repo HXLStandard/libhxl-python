@@ -1,0 +1,2 @@
+Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado,Error messages,Error tag,Error row number (source),Error column number (source)
+#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1,#x_errors,#x_tags,#x_rows,#x_cols
