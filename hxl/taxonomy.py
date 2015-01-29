@@ -44,7 +44,7 @@ class HXLTaxonomy:
         @return True if found, False otherwise
         """
         term = self.get(code)
-        return True if term and (level is None or term.level==level) else False
+        return True if term and (level is None or int(term.level)==int(level)) else False
 
     def is_valid(self, callback=None):
         """
@@ -106,10 +106,15 @@ def readTaxonomy(source):
     taxonomy = HXLTaxonomy()
 
     for row in source:
+        # skip empty rows
+        if len(row.values) == 0:
+            continue
+
+        # get the code
         code = row.get('#term_id')
-        parent_code = row.get('#parent_id')
-        level = row.get('#level_num')
         if code:
+            parent_code = row.get('#parent_id')
+            level = row.get('#level_num')
             term = HXLTerm(code, parent_code, level)
             old_term = taxonomy.add(term)
             if old_term is not None:

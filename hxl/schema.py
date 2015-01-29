@@ -262,7 +262,7 @@ class HXLSchema(object):
         s += ">"
         return s
 
-def readHXLSchema(source=None):
+def readHXLSchema(source=None, baseDir=None):
     """
     Load a HXL schema from the provided input stream, or load default schema.
     @param source HXL data source for the scheme (e.g. a HXLReader or filter)
@@ -305,7 +305,11 @@ def readHXLSchema(source=None):
 
     def toTaxonomy(s):
         if s:
-            return readTaxonomy(HXLReader(s))
+            if baseDir:
+                path = os.path.join(baseDir, s)
+            else:
+                path = s
+            return readTaxonomy(HXLReader(open(path, 'r')))
         else:
             return None
 
@@ -322,7 +326,7 @@ def readHXLSchema(source=None):
         rule.minValue = toFloat(row.get('#x_minvalue_num'))
         rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
         rule.valuePattern = toRegex(row.get('#x_pattern'))
-        rule.taxonomy = toRegex(row.get('#x_taxonomy'))
+        rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
         rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel'))
         s = row.get('#x_enumeration')
         if s:

@@ -172,6 +172,12 @@ class TestSchemaRule(unittest.TestCase):
         dataset = HXLReader(open(resolve_file('data-bad.csv'), 'r'))
         self.assertFalse(schema.validate(dataset))
 
+    def test_load_taxonomy(self):
+        schema = readHXLSchema(HXLReader(open(resolve_file('schema-taxonomy.csv'), 'r')), baseDir=file_dir)
+        # schema.callback = lambda e: True # to avoid seeing error messages
+        dataset = HXLReader(open(resolve_file('data-taxonomy-good.csv'), 'r'))
+        self.assertTrue(schema.validate(dataset))
+
     def _try_rule(self, value, errors_expected = 0):
         """
         Validate a single value with a HXLSchemaRule
@@ -192,12 +198,13 @@ class TestSchemaRule(unittest.TestCase):
 ########################################################################
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
+file_dir = os.path.join(root_dir, 'tests', 'files', 'test_schema')
 
 def resolve_file(name):
     """
     Resolve a file name in the test directory.
     """
-    return os.path.join(root_dir, 'tests', 'files', 'test_schema', name)
+    return os.path.join(file_dir, name)
 
 def make_taxonomy():
     return HXLTaxonomy(terms={
