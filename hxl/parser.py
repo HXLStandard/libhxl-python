@@ -9,7 +9,7 @@ Documentation: http://hxlstandard.org
 
 import csv
 import re
-from model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
+from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
 class HXLParseException(Exception):
     """
