@@ -8,6 +8,7 @@ Documentation: http://hxlstandard.org
 """
 
 import sys
+import os
 import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
@@ -134,7 +135,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     source = HXLReader(args.infile)
     if args.schema:
-        schema = readHXLSchema(HXLReader(args.schema))
+        schema = readHXLSchema(HXLReader(args.schema), baseDir=os.path.dirname(args.schema.name))
     else:
         schema = readHXLSchema()
     filter = HXLValidateFilter(source, schema, args.all)

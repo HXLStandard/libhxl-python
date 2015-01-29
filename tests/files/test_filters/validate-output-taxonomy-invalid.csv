@@ -1,0 +1,6 @@
+Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado,Error messages,Error tag,Error row number (source),Error column number (source)
+#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1,#x_errors,#x_tags,#x_rows,#x_cols
+Salud,Vacunación,OMS,Hombres,,Colombia,Cauca,Not in taxonomy,#country,4,0
+Salud,Vacunación,OMS,Mujeres,,Colombia,Cauca,Not in taxonomy,#country,5,0
+Educación,Formación de enseñadores,UNICEF,Hombres,250,Colombia,Chocó,Not in taxonomy,#country,6,0
+Educación,Formación de enseñadores,UNICEF,Mujeres,300,Colombia,Chocó,Not in taxonomy,#country,7,0

@@ -327,7 +327,7 @@ def readHXLSchema(source=None, baseDir=None):
         rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
         rule.valuePattern = toRegex(row.get('#x_pattern'))
         rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
-        rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel'))
+        rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
         s = row.get('#x_enumeration')
         if s:
             rule.valueEnumeration = s.split('|')

@@ -4,5 +4,5 @@
 "#org",1,1,text,,,,,0,,
 "#sex",1,1,text,,,,Hombres|Mujeres,0,,
 "#targeted_num",0,1,number,0,1000000000,,,0,,
-"#country",1,1,text,,,,,0,validate-taxonomy.csv,1
-"#adm1",0,1,text,,,,,0,validate-taxonomy.csv,2
+"#country",1,1,text,,,,,0,validate-taxonomy-invalid.csv,1
+"#adm1",0,1,text,,,,,0,validate-taxonomy-invalid.csv,2
