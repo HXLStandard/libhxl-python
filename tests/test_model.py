@@ -76,6 +76,12 @@ class TestRow(unittest.TestCase):
         self.assertTrue(type(result) is list)
         self.assertEquals(1, len(result))
 
+    def test_outofrange(self):
+        # what happens when a row is too short?
+        self.row.values = self.CONTENT[0:1]
+        self.assertEquals(None, self.row.get('#country'))
+        self.assertEquals([], self.row.getAll('#country'))
+
     def test_map(self):
 
         def tolower(value, column):

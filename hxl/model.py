@@ -193,9 +193,11 @@ class HXLRow(object):
         @return The value found, or the default value provided.
         """
         for i, column in enumerate(self.columns):
+            if i >= len(self.values):
+                break
             if column.hxlTag == tag:
                 if index == 0:
-                    return self.__getitem__(i)
+                    return self.values[i]
                 else:
                     index = index - 1
         return default
@@ -208,15 +210,11 @@ class HXLRow(object):
         """
         result = []
         for i, column in enumerate(self.columns):
+            if i >= len(self.values):
+                break
             if column.hxlTag == tag:
-                try:
-                    result.append(self.__getitem__(i))
-                except IndexError:
-                    result.append(None)
-        if result:
-            return result
-        else:
-            return False
+                result.append(self.values[i])
+        return result
 
     def map(self, function):
         """
