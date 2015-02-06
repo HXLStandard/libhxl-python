@@ -8,6 +8,8 @@ Documentation: http://hxlstandard.org
 """
 
 import csv
+import cgi
+import json
 import re
 from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
@@ -360,11 +362,96 @@ def readHXL(input, url=None):
 
 def writeHXL(output, source, showHeaders=True):
     """Serialize a HXL dataset to an output stream."""
+    for line in genHXL(source, showHeaders):
+        output.write(line)
+
+def writeJSON(output, source, showHeaders=True):
+    """Serialize a dataset to JSON."""
+    for line in genJSON(source, showHeaders):
+        output.write(line)
+
+def writeHTML(output, source, showHeaders=True):
+    """Serialize a dataset to HTML."""
+    for line in genHTML(source, showHeaders):
+        output.write(line)
+
+def genHXL(source, showHeaders=True):
+    """
+    Generate HXL output one row at a time.
+    """
+    class TextOut:
+        """Simple string output source to capture CSV"""
+        def __init__(self):
+            self.data = ''
+        def write(self, s):
+            self.data += s
+        def get(self):
+            data = self.data
+            self.data = ''
+            return data
+    output = TextOut()
     writer = csv.writer(output)
-    if (showHeaders and source.hasHeaders):
+    if showHeaders and source.hasHeaders:
         writer.writerow(source.headers)
+        yield output.get()
     writer.writerow(source.tags)
+    yield output.get()
     for row in source:
         writer.writerow(row.values)
+        yield output.get()
+
+def genJSON(source, showHeaders=True):
+    """
+    Generate JSON output, one line at a time.
+    """
+    yield "{\n"
+    if showHeaders and source.hasHeaders:
+        yield "  \"headers\": " + json.dumps(source.headers) + ",\n"
+    yield "  \"tags\": " + json.dumps(source.tags) + ",\n"
+    yield "  \"data\": [\n"
+    is_first = True
+    for row in source:
+        if is_first:
+            yield "    "
+            is_first = False
+        else:
+            yield ",\n    "
+        yield json.dumps(row.values)
+    yield "\n  ]\n"
+    yield "}\n"
+
+def genHTML(source, showHeaders=True):
+    """
+    Generate HTML output, one line at a time.
+    """
+    yield "<table class=\"hxl\">\n"
+    yield "  <thead>\n"
+    if (showHeaders and source.hasHeaders):
+        yield "    <tr class=\"headers\">\n"
+        for s in source.headers:
+            yield "      <th>" + cgi.escape(s) + "</th>\n"
+        yield "    </tr>\n"
+    yield "    <tr class=\"tags\">\n"
+    for s in source.tags:
+        yield "      <th>" + cgi.escape(s) + "</th>\n"
+    yield "    </tr>\n"
+    yield "  </thead>\n"
+    yield "  <tbody>\n"
+    type = 'odd'
+    for row in source:
+        yield "    <tr class=\"data " + type + "\">\n"
+        if type == 'odd':
+            type = 'even'
+        else:
+            type = 'odd'
+        for s in row:
+            yield "      <td>" + cgi.escape(s) + "</td>\n"
+        yield "    </tr>\n"
+    yield "  </tbody>\n"
+    yield "</table>\n"
 
 # end
+
+
+
+
