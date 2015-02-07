@@ -106,6 +106,22 @@ operator_map = {
 # Command-line support
 #
 
+def parse_query(s):
+    """
+    Parse a filter expression
+    """
+    result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)([<>]=?|!?=|!?~)(.*)$', s)
+    if result:
+       filter = list(result.group(1, 2, 3))
+       # (re)add hash to start of tag
+       filter[0] = '#' + filter[0]
+       op = operator_map[filter[1]]
+       if op:
+           filter[1] = op
+           return filter
+    print >>stderr, "Bad filter expression: " + s
+    exit(2)
+
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlselect with command-line arguments.
@@ -114,22 +130,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     """
-
-    def parse_query(s):
-        """
-        Parse a filter expression
-        """
-        result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)([<>]=?|!?=|!?~)(.*)$', s)
-        if result:
-           filter = list(result.group(1, 2, 3))
-           # (re)add hash to start of tag
-           filter[0] = '#' + filter[0]
-           op = operator_map[filter[1]]
-           if op:
-               filter[1] = op
-               return filter
-        print >>stderr, "Bad filter expression: " + s
-        exit(2)
 
     # Command-line arguments
     parser = argparse.ArgumentParser(description = 'Filter rows in a HXL dataset.')
