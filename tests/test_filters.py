@@ -62,6 +62,10 @@ class TestAdd(BaseTest):
         self.assertOutput(['-v', 'report_date=2015-03-31'], 'add-output-default.csv')
         self.assertOutput(['--value', 'report_date=2015-03-31'], 'add-output-default.csv')
 
+    def test_headers(self):
+        self.assertOutput(['-v', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
+        self.assertOutput(['--value', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
+
     def test_before(self):
         self.assertOutput(['-b', '-v', 'report_date=2015-03-31'], 'add-output-before.csv')
         self.assertOutput(['--before', '--value', 'report_date=2015-03-31'], 'add-output-before.csv')

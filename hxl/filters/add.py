@@ -44,7 +44,7 @@ class HXLAddFilter(HXLDataProvider):
         self.values = values
         self.before = before
         self._columns_out = None
-        self._const_values = [self.values[tag] for tag in self.values]
+        self._const_values = [self.values[tag][0] for tag in self.values]
 
     @property
     def columns(self):
@@ -52,7 +52,9 @@ class HXLAddFilter(HXLDataProvider):
         Add the constant columns to the end.
         """
         if self._columns_out is None:
-            new_columns = [HXLColumn(hxlTag=tag) for tag in self.values]
+            new_columns = []
+            for tag in self.values:
+                new_columns.append(HXLColumn(hxlTag=tag, headerText=self.values[tag][1]))
             if self.before:
                 self._columns_out = new_columns + self.source.columns
             else:
@@ -79,9 +81,9 @@ class HXLAddFilter(HXLDataProvider):
 
 def parse_value(s):
     """Parse a tag=value statement."""
-    result = re.match('^((?:.*)#)?([a-zA-Z][a-zA-Z0-9_]*)=(.*)$', s)
+    result = re.match('^(?:(.*)#)?([a-zA-Z][a-zA-Z0-9_]*)=(.*)$', s)
     if result:
-        items = list(result.group(2,3))
+        items = [result.group(2), result.group(3, 1)]
         # make sure the tag starts with '#'
         if not items[0].startswith('#'):
             items[0] = '#' + items[0]
@@ -117,7 +119,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '-v',
         '--value',
         help='Constant value to add to each row',
-        metavar='tag=value',
+        metavar='[Header#]tag=value',
         action='append',
         required=True,
         type=parse_value
