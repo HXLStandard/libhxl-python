@@ -87,8 +87,7 @@ def parse_value(s):
             items[0] = '#' + items[0]
         return items
     else:
-        print >>stderr, "Bad value expression: " + s
-        exit(2)
+        raise Exception("Bad value expression: " + s)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
