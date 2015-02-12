@@ -77,7 +77,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
+    parser = argparse.ArgumentParser(description = 'Rename and retag columns in a HXL dataset')
     parser.add_argument(
         'infile',
         help='HXL file to read (if omitted, use standard input).',
