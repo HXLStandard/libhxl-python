@@ -132,11 +132,11 @@ class TestNorm(BaseTest):
         self.input_file = 'input-simple.csv'
 
     def test_noheaders(self):
-        self.assertOutput([], 'norm-output-noheaders.csv')
+        self.assertOutput(['-r'], 'norm-output-noheaders.csv')
+        self.assertOutput(['--remove-headers'], 'norm-output-noheaders.csv')
 
     def test_headers(self):
-        self.assertOutput(['-H'], 'norm-output-headers.csv')
-        self.assertOutput(['--headers'], 'norm-output-headers.csv')
+        self.assertOutput([], 'norm-output-headers.csv')
 
     def test_compact(self):
         self.assertOutput([], 'norm-output-compact.csv')

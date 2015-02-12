@@ -165,12 +165,12 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         type=parse_tags
         )
     parser.add_argument(
-        '-H',
-        '--headers',
-        help='Preserve text header row above HXL hashtags',
+        '-r',
+        '--remove-headers',
+        help='Remove text header row above HXL hashtags',
         action='store_const',
-        const=True,
-        default=False
+        const=False,
+        default=True
         )
     args = parser.parse_args(args)
 
@@ -192,6 +192,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     source = HXLReader(args.infile)
     filter = HXLNormFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
-    writeHXL(args.outfile, filter, args.headers)
+    writeHXL(args.outfile, filter, args.remove_headers)
 
 # end
