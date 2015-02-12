@@ -79,9 +79,9 @@ class HXLAddFilter(HXLDataProvider):
 
 def parse_value(s):
     """Parse a tag=value statement."""
-    result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)=(.*)$', s)
+    result = re.match('^((?:.*)#)?([a-zA-Z][a-zA-Z0-9_]*)=(.*)$', s)
     if result:
-        items = list(result.group(1,2))
+        items = list(result.group(2,3))
         # make sure the tag starts with '#'
         if not items[0].startswith('#'):
             items[0] = '#' + items[0]
