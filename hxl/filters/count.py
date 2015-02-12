@@ -17,7 +17,7 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLColumn, HXLRow
-from hxl.filters import parse_tags, fix_tag
+from hxl.filters import parse_tags, fix_tag, find_column
 from hxl.parser import HXLReader, writeHXL
 
 class HXLCountFilter(HXLDataProvider):
@@ -64,13 +64,18 @@ class HXLCountFilter(HXLDataProvider):
         if self.saved_columns is None:
             cols = []
             for tag in self.count_tags:
-                cols.append(HXLColumn(hxlTag=tag))
-            cols.append(HXLColumn(hxlTag='#x_count_num'))
+                column = find_column(tag, self.source.columns)
+                if column:
+                    headerText = column.headerText
+                else:
+                    headerText = None
+                cols.append(HXLColumn(hxlTag=tag, headerText=headerText))
+            cols.append(HXLColumn(hxlTag='#x_count_num', headerText='Count'))
             if self.aggregate_tag is not None:
-                cols.append(HXLColumn(hxlTag='#x_sum_num'))
-                cols.append(HXLColumn(hxlTag='#x_average_num'))
-                cols.append(HXLColumn(hxlTag='#x_min_num'))
-                cols.append(HXLColumn(hxlTag='#x_max_num'))
+                cols.append(HXLColumn(hxlTag='#x_sum_num', headerText='Sum'))
+                cols.append(HXLColumn(hxlTag='#x_average_num', headerText='Average (mean)'))
+                cols.append(HXLColumn(hxlTag='#x_min_num', headerText='Minimum value'))
+                cols.append(HXLColumn(hxlTag='#x_max_num', headerText='Maximum value'))
             self.saved_columns = cols
         return self.saved_columns
 
