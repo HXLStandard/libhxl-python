@@ -119,7 +119,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '-v',
         '--value',
         help='Constant value to add to each row',
-        metavar='[Header#]tag=value',
+        metavar='[[Text header]#]<tag>=<value>',
         action='append',
         required=True,
         type=parse_value

@@ -10,6 +10,7 @@ Documentation: http://hxlstandard.org
 import sys
 import argparse
 import copy
+import re
 from hxl.model import HXLDataProvider
 from hxl.filters import fix_tag
 from hxl.parser import HXLReader, writeHXL
@@ -48,9 +49,12 @@ class HXLRenameFilter(HXLDataProvider):
         Return the renamed columns.
         """
         def rename_tags(column):
-            if column.hxlTag in self.rename_map:
+            tag = column.hxlTag
+            if tag in self.rename_map:
                 column = copy.copy(column)
-                column.hxlTag = self.rename_map[column.hxlTag]
+                column.hxlTag = self.rename_map[tag][0]
+                if self.rename_map[tag][1]:
+                    column.headerText = self.rename_map[tag][1]
             return column
         return map(rename_tags, self.source.columns)
 
@@ -91,9 +95,9 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-r',
         '--rename',
-        help='Rename an old tag to a new one',
+        help='Rename an old tag to a new one (with an optional new text header).',
         action='append',
-        metavar='original_tag:new_tag',
+        metavar='[#]<original_tag>:[[Text header]#]<new_tag>',
         default=[],
         type=parse_rename
         )
@@ -105,6 +109,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     writeHXL(args.outfile, filter)
 
 def parse_rename(s):
-    return map(fix_tag, s.split(':'))
+    result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*):(?:(.*)#)?([a-zA-Z][a-zA-Z0-9_]*)', s)
+    return ['#' + result.group(1), ['#' + result.group(3), result.group(2)]]
 
 # end
