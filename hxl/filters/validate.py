@@ -76,13 +76,14 @@ class HXLValidateFilter(HXLDataProvider):
         """
         row = next(self.source)
         while row:
-            if self.show_all or not self.schema.validateRow(row):
+            if not self.schema.validateRow(row) or self.show_all:
                 # append error data to row
                 error_row = copy(row)
                 messages = "\n".join(map(lambda e: e.message, validation_errors))
                 tags = "\n".join(map(lambda e: e.rule.hxlTag if e.rule else '', validation_errors))
                 rows = "\n".join(map(lambda e: str(e.row.sourceRowNumber) if e.row else '', validation_errors))
                 columns = "\n".join(map(lambda e: str(e.column.sourceColumnNumber) if e.column else '', validation_errors))
+                error_row.columns = self.columns
                 error_row.values = error_row.values + [messages, tags, rows, columns]
                 return error_row
             else:
