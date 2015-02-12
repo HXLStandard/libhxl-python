@@ -14,7 +14,7 @@ import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
 from hxl.parser import HXLReader, writeHXL
-from hxl.filters import parse_tags
+from hxl.filters import parse_tags, find_column
 
 class HXLMergeFilter(HXLDataProvider):
     """
@@ -62,7 +62,14 @@ class HXLMergeFilter(HXLDataProvider):
         @return column definitions for the merged dataset
         """
         if self.saved_columns is None:
-            new_columns = [HXLColumn(hxlTag=tag) for tag in self.merge_tags]
+            new_columns = []
+            for tag in self.merge_tags:
+                column = find_column(tag, self.merge_source.columns)
+                if column:
+                    headerText = column.headerText
+                else:
+                    headerText = None
+                new_columns.append(HXLColumn(hxlTag=tag, headerText=headerText))
             if self.before:
                 self.saved_columns =  new_columns + self.source.columns
             else:
