@@ -97,7 +97,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--rename',
         help='Rename an old tag to a new one (with an optional new text header).',
         action='append',
-        metavar='[#]<original_tag>:[[Text header]#]<new_tag>',
+        metavar='#?<original_tag>:<Text header>?#?<new_tag>',
         default=[],
         type=parse_rename
         )
