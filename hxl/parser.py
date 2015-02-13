@@ -14,6 +14,10 @@ import re
 from . import HXLException
 from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
+# Cut off for fuzzy detection of a hashtag row
+# At least this percentage of cells must parse as HXL hashtags
+FUZZY_HASHTAG_PERCENTAGE = 0.5
+
 class HXLParseException(HXLException):
     """
     A parsing error in a HXL dataset.
@@ -245,7 +249,7 @@ class HXLReader(HXLDataProvider):
 
     def _setup_table_spec(self):
         """
-        Go fishing for the HXL hashtag row.
+        Go fishing for the HXL hashtag row in the first 25 rows.
         Returns a _TableSpec on success. Throws an exception on failure.
         """
 
@@ -256,7 +260,9 @@ class HXLReader(HXLDataProvider):
         # OK, need to go fishing ...
         try:
             _raw_data = self._parse_source_row()
-            while _raw_data is not None:
+            for n in range(0,25):
+                if _raw_data is None:
+                    break;
                 _table_spec = self._parse_hashtag_row(_raw_data)
                 if (_table_spec != None):
                     self._table_spec = _table_spec
@@ -266,39 +272,59 @@ class HXLReader(HXLDataProvider):
                     _raw_data = self._parse_source_row()
         except StopIteration:
             pass
-        raise HXLParseException("HXL hashtag row not found", self._source_row_number)
+        raise HXLParseException("HXL hashtags not found in first 25 rows")
     
     def _parse_hashtag_row(self, rawDataRow):
         """
         Try parsing the current raw CSV data row as a HXL hashtag row.
-        Returns a _TableSpec on success, or None on failure
+
+        Go fuzzy here. If over half of the non-empty cells start with '#', assume that it is meant to be a hashtag row.
+        Ref: Postel's Principle.
+
+        @param rawDataRow A raw CSV row as an array.
+        @return a _TableSpec on success, or None on failure
         """
         _table_spec = _TableSpec()
-        seenHeader = 0
+
+        # how many tags we've seen
+        tagCount = 0
+        nonEmptyCount = 0
+
+        # the logical column number
         columnNumber = 0
+
         for sourceColumnNumber, rawString in enumerate(rawDataRow):
+            # Iterate through the array of raw cell values
             rawString = rawString.strip()
             if rawString:
+                # If the cell isn't empty, then it should hold a hashtag ...
                 colSpec = self._parse_hashtag(columnNumber,sourceColumnNumber, rawString)
+                nonEmptyCount += 1
                 if (colSpec):
-                    seenHeader = 1
+                    # we've seen a tag
+                    tagCount += 1
                     if (colSpec.fixedColumn):
+                        # special case: compact-disaggregated syntax
                         colSpec.fixedColumn.headerText = self._pretty_tag(colSpec.fixedColumn.hxlTag)
                         colSpec.column.headerText = self._pretty_tag(colSpec.column.hxlTag)
                         colSpec.fixedValue = self._last_header_row[sourceColumnNumber]
                         columnNumber += 1
                     else:
+                        # normal case
                         if self._last_header_row and sourceColumnNumber < len(self._last_header_row):
                             colSpec.column.headerText = self._last_header_row[sourceColumnNumber]
                 else:
-                    return None
+                    colSpec = _ColSpec(sourceColumnNumber)
+                    colSpec.column = HXLColumn(columnNumber, sourceColumnNumber)
             else:
                 colSpec = _ColSpec(sourceColumnNumber)
                 colSpec.column = HXLColumn(columnNumber, sourceColumnNumber)
+
             columnNumber += 1
             _table_spec.append(colSpec)
 
-        if seenHeader:
+        # Have we seen at least FUZZY_HASHTAG_PERCENTAGE
+        if (tagCount/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE:
             return _table_spec
         else:
             return None
