@@ -12,6 +12,7 @@ import re
 import os
 from copy import copy
 from email.utils import parseaddr
+from . import HXLException
 from .parser import HXLReader
 from .taxonomy import readTaxonomy
 
@@ -21,13 +22,13 @@ else:
     from urlparse import urlparse
 
 
-class HXLValidationException(Exception):
+class HXLValidationException(HXLException):
     """
     Data structure to hold a HXL validation error.
     """
 
     def __init__(self, message, rule = None, value = None, row = None, column = None):
-        self.message = message
+        super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row

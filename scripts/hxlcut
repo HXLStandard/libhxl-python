@@ -1,26 +1,12 @@
 #!/usr/bin/python
-
 """
-Script to cut columns from a HXL dataset.
+Run hxl.filters.cut from the command line.
 David Megginson
-October 2014
-
-Can use a whitelist of HXL tags, a blacklist, or both.
-
-Usage:
-
-  hxlcut -c org,country,sector < DATA_IN.csv > DATA_OUT.csv
-
-(Use -h option to get all options.)
-
-License: Public Domain
-Documentation: http://hxlstandard.org
+Started October 2014
 """
 
-import sys
-from hxl.filters.cut import run
+from hxl.filters import run_script
+import hxl.filters.cut
 
 if __name__ == '__main__':
-    run(sys.argv[1:], sys.stdin, sys.stdout)
-
-# end
+    run_script(hxl.filters.cut.run)

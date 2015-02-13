@@ -1,36 +1,12 @@
 #!/usr/bin/python
-
 """
-Script to select rows columns from a HXL dataset.
+Run hxl.filters.select from the command line.
 David Megginson
-October 2014
-
-Supply a list of tag=value pairs, and return the rows in the HXL
-dataset that contain matches for any of them.
-
-Usage:
-
-  hxlselect -q sector=WASH DATA_IN.csv DATA_OUT.csv
-
-To get the equivalent of a boolean OR, use the -q option multiple times:
-
-  hxlselect -q sector=WASH -q sector=Health DATA_IN.csv DATA_OUT.csv
-
-To get the equivalent of a boolean AND for the filters, use a pipeline:
-
-  hxlselect -q country=Colombia DATA_IN.csv | hxlselect -q sector=WASH > DATA_OUT.csv
-
-
-(Use -h option to get full usage.)
-
-License: Public Domain
-Documentation: http://hxlstandard.org
+Started October 2014
 """
 
-import sys
-from hxl.filters.select import run
+from hxl.filters import run_script
+import hxl.filters.select
 
 if __name__ == '__main__':
-    run(sys.argv[1:], sys.stdin, sys.stdout)
-
-# end
+    run_script(hxl.filters.select.run)

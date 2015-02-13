@@ -11,15 +11,16 @@ import csv
 import cgi
 import json
 import re
+from . import HXLException
 from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
-class HXLParseException(Exception):
+class HXLParseException(HXLException):
     """
     A parsing error in a HXL dataset.
     """
 
     def __init__(self, message, sourceRowNumber=None, sourceColumnNumber=None):
-        super(Exception, self).__init__(message)
+        super(HXLParseException, self).__init__(message)
         self.sourceRowNumber = sourceRowNumber
         self.sourceColumnNumber = sourceColumnNumber
 

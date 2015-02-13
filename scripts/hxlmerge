@@ -1,24 +1,12 @@
 #!/usr/bin/python
-
 """
-Script to merge multiple HXL datasets
+Run hxl.filters.merge from the command line.
 David Megginson
-November 2014
-
-Usage:
-
-  hxlmerge --tags org,country,sector DATASET01.csv DATASET02.csv > DATA_OUT.csv
-
-(Use -h option to get all options.)
-
-License: Public Domain
-Documentation: http://hxlstandard.org
+Started November 2014
 """
 
-import sys
-from hxl.filters.merge import run
+from hxl.filters import run_script
+import hxl.filters.merge
 
 if __name__ == '__main__':
-    run(sys.argv[1:], sys.stdin, sys.stdout)
-
-# end
+    run_script(hxl.filters.merge.run)

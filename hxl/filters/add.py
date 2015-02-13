@@ -11,6 +11,8 @@ import sys
 import argparse
 import re
 from copy import copy
+
+from . import HXLFilterException
 from hxl.model import HXLDataProvider, HXLColumn
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
@@ -89,7 +91,7 @@ def parse_value(s):
             items[0] = '#' + items[0]
         return items
     else:
-        raise Exception("Bad value expression: " + s)
+        raise HXLFilterException("Bad value expression: " + s)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """

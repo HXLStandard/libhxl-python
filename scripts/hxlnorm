@@ -1,29 +1,12 @@
 #!/usr/bin/python
-
 """
-Script to normalise a HXL dataset.
+Run hxl.filters.norm from the command line.
 David Megginson
-October 2014
-
-Expand all compact-disaggregated columns.
-Strip columns without hashtags.
-Strip leading and trailing whitespace from values.
-Strip all but one pre-tag header row.
-
-Usage:
-
-  hxlnorm < DATA_IN.csv > DATA_OUT.csv
-
-(Use -h option to get full usage.)
-
-License: Public Domain
-Documentation: http://hxlstandard.org
+Started October 2014
 """
 
-import sys
-from hxl.filters.norm import run
+from hxl.filters import run_script
+import hxl.filters.norm
 
 if __name__ == '__main__':
-    run(sys.argv[1:], sys.stdin, sys.stdout)
-
-# end
+    run_script(hxl.filters.norm.run)

@@ -1,28 +1,12 @@
 #!/usr/bin/python
-
 """
-Script to count distinct values in a HXL dataset.
+Run hxl.filters.count from the command line.
 David Megginson
-October 2014
-
-Counts all combinations of the tags specified on the command line. In
-the command-line version, you may omit the initial '#' from tag names
-to avoid the need to quote them.
-
-Only the *first* column with each hashtag is currently used.
-
-Usage:
-
-  hxlcount --tags tag1,tag2... < DATA_IN.csv > DATA_OUT.csv
-
-License: Public Domain
-Documentation: http://hxlstandard.org
+Started October 2014
 """
 
-import sys
-from hxl.filters.count import run
+from hxl.filters import run_script
+import hxl.filters.count
 
 if __name__ == '__main__':
-    run(sys.argv[1:], sys.stdin, sys.stdout)
-
-#end
+    run_script(hxl.filters.count.run)

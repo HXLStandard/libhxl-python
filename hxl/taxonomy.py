@@ -7,10 +7,12 @@ License: Public Domain
 Documentation: http://hxlstandard.org
 """
 
-class HXLTaxonomyException(Exception):
+from . import HXLException
+
+class HXLTaxonomyException(HXLException):
 
     def __init__(self, message):
-        self.message = message
+        super(HXLTaxonomyException, self).__init__(message)
 
 class HXLTaxonomy:
 

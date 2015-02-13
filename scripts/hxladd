@@ -1,24 +1,12 @@
 #!/usr/bin/python
-
 """
-Script to add constant values to a HXL dataset.
+Run hxl.filters.add from the command line.
 David Megginson
-January 2015
-
-Usage:
-
-  hxladd -v country=Kenya < DATA_IN.csv > DATA_OUT.csv
-
-(Use -h option to get all options.)
-
-License: Public Domain
-Documentation: http://hxlstandard.org
+Started January 2015
 """
 
-import sys
-from hxl.filters.add import run
+from hxl.filters import run_script
+import hxl.filters.add
 
 if __name__ == '__main__':
-    run(sys.argv[1:], sys.stdin, sys.stdout)
-
-# end
+    run_script(hxl.filters.add.run)
