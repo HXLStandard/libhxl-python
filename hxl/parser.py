@@ -295,6 +295,7 @@ class HXLReader(HXLDataProvider):
 
         for sourceColumnNumber, rawString in enumerate(rawDataRow):
             # Iterate through the array of raw cell values
+            colSpec = None
             rawString = rawString.strip()
             if rawString:
                 # If the cell isn't empty, then it should hold a hashtag ...
@@ -313,10 +314,9 @@ class HXLReader(HXLDataProvider):
                         # normal case
                         if self._last_header_row and sourceColumnNumber < len(self._last_header_row):
                             colSpec.column.headerText = self._last_header_row[sourceColumnNumber]
-                else:
-                    colSpec = _ColSpec(sourceColumnNumber)
-                    colSpec.column = HXLColumn(columnNumber, sourceColumnNumber)
-            else:
+
+            if colSpec is None:
+                # either empty or not a HXL hashtag
                 colSpec = _ColSpec(sourceColumnNumber)
                 colSpec.column = HXLColumn(columnNumber, sourceColumnNumber)
 
