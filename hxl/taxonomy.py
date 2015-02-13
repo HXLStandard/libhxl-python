@@ -4,7 +4,7 @@ David Megginson
 Started January 2015
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 from . import HXLException

@@ -33,7 +33,7 @@ Program usage:
   hxlbounds(sys.stdin, sys.stdout, bounds)
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys

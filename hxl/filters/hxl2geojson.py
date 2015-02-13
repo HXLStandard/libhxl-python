@@ -15,7 +15,7 @@ datasets, because it does not try to hold the entire dataset in memory
 at once.
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys

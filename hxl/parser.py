@@ -4,7 +4,7 @@ David Megginson
 October 2014
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import csv

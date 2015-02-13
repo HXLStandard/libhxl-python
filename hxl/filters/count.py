@@ -11,7 +11,7 @@ average (mean), min, and max for a numeric tag.
 Only the *first* column with each hashtag is currently used.
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys

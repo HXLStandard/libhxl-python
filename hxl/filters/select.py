@@ -7,7 +7,7 @@ Supply a list of simple <hashtag><operator><value> pairs, and return
 the rows in the HXL dataset that contain matches for any of them.
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys

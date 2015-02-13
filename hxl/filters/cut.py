@@ -6,7 +6,7 @@ October 2014
 Can use a whitelist of HXL tags, a blacklist, or both.
 
 License: Public Domain
-Documentation: http://hxlstandard.org
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys
