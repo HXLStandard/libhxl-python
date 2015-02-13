@@ -14,7 +14,7 @@ from hxl.parser import HXLReader
 
 class TestParser(unittest.TestCase):
 
-    SAMPLE_FILE = './files/test_parser/input-simple.csv'
+    SAMPLE_FILE_GOOD = './files/test_parser/input-simple.csv'
     EXPECTED_ROW_COUNT = 8
     EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organización','Sex','Targeted','País','Departamento/Provincia/Estado']
     EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#sex', '#targeted_num', '#country', '#adm1']
@@ -31,43 +31,56 @@ class TestParser(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.filename = os.path.join(os.path.dirname(__file__), TestParser.SAMPLE_FILE)
-        self.input_file = open(self.filename, 'r')
-        self.reader = HXLReader(self.input_file)
+        pass
 
     def tearDown(self):
-        self.input_file.close()
+        pass
 
     def test_row_count(self):
+        source = _read_file()
         # logical row count
         row_count = 0
-        for row in self.reader:
+        for row in source:
             row_count += 1
         self.assertEquals(TestParser.EXPECTED_ROW_COUNT, row_count)
 
     def test_headers(self):
-        headers = self.reader.headers
+        source = _read_file()
+        headers = source.headers
         self.assertEquals(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
-        tags = self.reader.tags
+        source = _read_file()
+        tags = source.tags
         self.assertEquals(TestParser.EXPECTED_TAGS, tags)
 
     def test_languages(self):
-        for row in self.reader:
+        source = _read_file()
+        for row in source:
             for columnNumber, column in enumerate(row.columns):
                 self.assertEquals(TestParser.EXPECTED_LANGUAGES[columnNumber], column.languageCode)
 
     def test_column_count(self):
-        for row in self.reader:
+        source = _read_file()
+        for row in source:
             self.assertEquals(len(TestParser.EXPECTED_TAGS), len(row.values))
 
     def test_columns(self):
-        for row in self.reader:
+        source = _read_file()
+        for row in source:
             for columnNumber, column in enumerate(row.columns):
                 self.assertEquals(TestParser.EXPECTED_TAGS[columnNumber], column.hxlTag)
 
     def test_content(self):
-        for i, row in enumerate(self.reader):
+        source = _read_file()
+        for i, row in enumerate(source):
             for j, value in enumerate(row):
                 self.assertEquals(TestParser.EXPECTED_CONTENT[i][j], value)
+
+def _read_file(filename=None):
+    if not filename:
+        filename = TestParser.SAMPLE_FILE_GOOD
+    absolute_filename = os.path.join(os.path.dirname(__file__), filename)
+    input = open(absolute_filename, 'r')
+    return HXLReader(input)
+
