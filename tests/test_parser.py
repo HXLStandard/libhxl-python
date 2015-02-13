@@ -80,8 +80,18 @@ class TestParser(unittest.TestCase):
             for j, value in enumerate(row):
                 self.assertEquals(TestParser.EXPECTED_CONTENT[i][j], value)
 
+    def test_fuzzy(self):
+        """Imperfect hashtag row should still work."""
+        seen_exception = False
+        try:
+            source = _read_file(TestParser.FILE_FUZZY)
+            source.tags
+        except HXLParseException:
+            seen_exception = True
+        self.assertFalse(seen_exception)
+
     def test_invalid(self):
-        """No hashtag row should raise an exception."""
+        """Missing hashtag row should raise an exception."""
         seen_exception = False
         try:
             source = _read_file(TestParser.FILE_INVALID)
@@ -92,6 +102,7 @@ class TestParser(unittest.TestCase):
             
 
 def _read_file(filename=None):
+    """Open a file containing a HXL dataset."""
     if not filename:
         filename = TestParser.FILE_VALID
     absolute_filename = os.path.join(os.path.dirname(__file__), filename)
