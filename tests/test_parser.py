@@ -10,11 +10,14 @@ License: Public Domain
 import unittest
 import os
 import codecs
-from hxl.parser import HXLReader
+from hxl.parser import HXLParseException, HXLReader
 
 class TestParser(unittest.TestCase):
 
-    SAMPLE_FILE_GOOD = './files/test_parser/input-simple.csv'
+    FILE_VALID = './files/test_parser/input-valid.csv'
+    FILE_FUZZY = './files/test_parser/input-fuzzy.csv'
+    FILE_INVALID = './files/test_parser/input-invalid.csv'
+
     EXPECTED_ROW_COUNT = 8
     EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organización','Sex','Targeted','País','Departamento/Provincia/Estado']
     EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#sex', '#targeted_num', '#country', '#adm1']
@@ -77,9 +80,20 @@ class TestParser(unittest.TestCase):
             for j, value in enumerate(row):
                 self.assertEquals(TestParser.EXPECTED_CONTENT[i][j], value)
 
+    def test_invalid(self):
+        """No hashtag row should raise an exception."""
+        seen_exception = False
+        try:
+            source = _read_file(TestParser.FILE_INVALID)
+            source.tags
+        except HXLParseException:
+            seen_exception = True
+        self.assertTrue(seen_exception)
+            
+
 def _read_file(filename=None):
     if not filename:
-        filename = TestParser.SAMPLE_FILE_GOOD
+        filename = TestParser.FILE_VALID
     absolute_filename = os.path.join(os.path.dirname(__file__), filename)
     input = open(absolute_filename, 'r')
     return HXLReader(input)
