@@ -69,17 +69,12 @@ def try_valid(name):
     taxonomy = read_taxonomy(name)
     return taxonomy.is_valid()
 
+root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
+file_dir = os.path.join(root_dir, 'tests', 'files', 'test_taxonomy')
+
 def read_taxonomy(name):
     """
     Read a taxonomy test file
     """
-    return readTaxonomy(HXLReader(open(resolve_file(name), 'r')))
-
-root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-def resolve_file(name):
-    """
-    Resolve a file name in the test directory.
-    """
-    return os.path.join(root_dir, 'tests', 'files', 'test_taxonomy', name)
-    
+    with open(os.path.join(file_dir, name), 'r') as input:
+        return readTaxonomy(HXLReader(input))
