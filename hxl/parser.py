@@ -11,6 +11,7 @@ import csv
 import cgi
 import json
 import re
+import urllib
 from . import HXLException
 from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
@@ -170,9 +171,14 @@ class HXLReader(HXLDataProvider):
     Read HXL data from a file
     """
 
-    def __init__(self, source):
+    def __init__(self, input=None, rawData=None, url=None):
         # all internal properties
-        self._csv_reader = csv.reader(source)
+        if rawData is None:
+            if not input:
+                input = urllib.urlopen(url, 'r')
+            self.rawData = csv.reader(input)
+        else:
+            self.rawData = rawData
         self._table_spec = None
         self._source_row_number = -1
         self._row_number = -1
@@ -365,7 +371,7 @@ class HXLReader(HXLDataProvider):
         Returns an array of strings.
         """
         self._source_row_number += 1
-        return next(self._csv_reader)
+        return next(self.rawData)
 
     def _pretty_tag(self, hxlTag):
         """
