@@ -15,7 +15,7 @@ class HXLException(Exception):
         self.message = message
 
     def __str__(self):
-        return "<HXException: " + self.message + ">"
+        return "<HXException: " + str(self.message) + ">"
 
 # end
 
