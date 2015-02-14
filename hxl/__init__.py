@@ -9,6 +9,15 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 class HXLException(Exception):
     """Base class for all HXL-related exceptions."""
-    pass
-        
+
+    def __init__(self, message):
+        super(Exception, self).__init__(message)
+        self.message = message
+
+    def __str__(self):
+        return "<HXException: " + self.message + ">"
+
+# end
+
+
         
