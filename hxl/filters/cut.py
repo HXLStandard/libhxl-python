@@ -123,9 +123,9 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    # Call the command function
-    source = HXLReader(args.infile)
-    filter = HXLCutFilter(source, args.include, args.exclude)
-    writeHXL(args.outfile, filter)
+    with args.infile, args.outfile:
+        source = HXLReader(args.infile)
+        filter = HXLCutFilter(source, args.include, args.exclude)
+        writeHXL(args.outfile, filter)
 
 # end

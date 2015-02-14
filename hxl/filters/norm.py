@@ -173,25 +173,26 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         default=True
         )
     args = parser.parse_args(args)
+    
+    with args.infile, args.outfile:
 
-    # Call the command function
-    if args.whitespace_all:
-        whitespace_arg = True
-    else:
-        whitespace_arg = args.whitespace
+        if args.whitespace_all:
+            whitespace_arg = True
+        else:
+            whitespace_arg = args.whitespace
 
-    if args.date_all:
-        date_arg = True
-    else:
-        date_arg = args.date
+        if args.date_all:
+            date_arg = True
+        else:
+            date_arg = args.date
 
-    if args.number_all:
-        number_arg = True
-    else:
-        number_arg = args.number
+        if args.number_all:
+            number_arg = True
+        else:
+            number_arg = args.number
 
-    source = HXLReader(args.infile)
-    filter = HXLNormFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
-    writeHXL(args.outfile, filter, args.remove_headers)
+        source = HXLReader(args.infile)
+        filter = HXLNormFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
+        writeHXL(args.outfile, filter, args.remove_headers)
 
 # end

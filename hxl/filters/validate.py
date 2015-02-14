@@ -134,12 +134,13 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    source = HXLReader(args.infile)
-    if args.schema:
-        schema = readHXLSchema(HXLReader(args.schema), baseDir=os.path.dirname(args.schema.name))
-    else:
-        schema = readHXLSchema()
-    filter = HXLValidateFilter(source, schema, args.all)
-    writeHXL(args.outfile, filter)
+    with args.infile, args.outfile, args.schema:
+        source = HXLReader(args.infile)
+        if args.schema:
+            schema = readHXLSchema(HXLReader(args.schema), baseDir=os.path.dirname(args.schema.name))
+        else:
+            schema = readHXLSchema()
+        filter = HXLValidateFilter(source, schema, args.all)
+        writeHXL(args.outfile, filter)
 
 # end

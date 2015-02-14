@@ -103,10 +103,10 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    # Call the command function
-    source = HXLReader(args.infile)
-    filter = HXLRenameFilter(source, dict(args.rename))
-    writeHXL(args.outfile, filter)
+    with args.infile, args.outfile:
+        source = HXLReader(args.infile)
+        filter = HXLRenameFilter(source, dict(args.rename))
+        writeHXL(args.outfile, filter)
 
 def parse_rename(s):
     result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*):(?:(.*)#)?([a-zA-Z][a-zA-Z0-9_]*)', s)

@@ -205,9 +205,11 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag',
         type=fix_tag
         )
+
     args = parser.parse_args(args)
-    source = HXLReader(args.infile)
-    filter = HXLCountFilter(source, args.tags, args.aggregate)
-    writeHXL(args.outfile, filter)
+    with args.infile, args.outfile:
+        source = HXLReader(args.infile)
+        filter = HXLCountFilter(source, args.tags, args.aggregate)
+        writeHXL(args.outfile, filter)
 
 # end

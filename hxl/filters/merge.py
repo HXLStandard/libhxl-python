@@ -179,8 +179,10 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    source = HXLReader(args.infile)
-    filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge), keys=args.keys, tags=args.tags, before=args.before)
-    writeHXL(args.outfile, filter)
+    # FIXME - will this be OK with stdin/stdout?
+    with args.infile, args.outfile, args.merge:
+        source = HXLReader(args.infile)
+        filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge), keys=args.keys, tags=args.tags, before=args.before)
+        writeHXL(args.outfile, filter)
 
 # end
