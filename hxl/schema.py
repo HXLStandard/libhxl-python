@@ -264,6 +264,14 @@ class HXLSchema(object):
         return s
 
 def readHXLSchema(source=None, baseDir=None):
+    if source is None:
+        path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
+        with open(path, 'r') as input:
+            return _read_hxl_schema(HXLReader(input), baseDir)
+    else:
+        return _read_hxl_schema(source, baseDir)
+
+def _read_hxl_schema(source, baseDir):
     """
     Load a HXL schema from the provided input stream, or load default schema.
     @param source HXL data source for the scheme (e.g. a HXLReader or filter)
@@ -310,14 +318,10 @@ def readHXLSchema(source=None, baseDir=None):
                 path = os.path.join(baseDir, s)
             else:
                 path = s
-            return readTaxonomy(HXLReader(open(path, 'r')))
+            with open(path, 'r') as input:
+                return readTaxonomy(HXLReader(input))
         else:
             return None
-
-    if source is None:
-        path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
-        input = open(path, 'r')
-        source = HXLReader(input)
 
     for row in source:
         rule = HXLSchemaRule(row.get('#x_tag'))
