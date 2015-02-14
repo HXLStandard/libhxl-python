@@ -92,7 +92,7 @@ class TestSchemaRule(unittest.TestCase):
 
     def test_type_taxonomy(self):
         # No level specified
-        self.rule.taxonomy = make_taxonomy()
+        self.rule.taxonomy = _make_taxonomy()
         self._try_rule('AAA') # level 1
         self._try_rule('BBB') # level 2
         self._try_rule('CCC', 1) # not defined
@@ -158,25 +158,31 @@ class TestSchemaRule(unittest.TestCase):
     def test_load_default(self):
         schema = readHXLSchema()
         self.assertTrue(0 < len(schema.rules))
-        dataset = HXLReader(open(resolve_file('data-good.csv'), 'r'))
-        self.assertTrue(schema.validate(dataset))
+        with _read_file('data-good.csv') as input:
+            dataset = HXLReader(input)
+            self.assertTrue(schema.validate(dataset))
 
     def test_load_good(self):
-        schema = readHXLSchema(HXLReader(open(resolve_file('schema-basic.csv'), 'r')))
-        dataset = HXLReader(open(resolve_file('data-good.csv'), 'r'))
-        self.assertTrue(schema.validate(dataset))
+        with _read_file('schema-basic.csv') as schema_input:
+            schema = readHXLSchema(HXLReader(schema_input))
+            with _read_file('data-good.csv') as input:
+                dataset = HXLReader(input)
+                self.assertTrue(schema.validate(dataset))
 
     def test_load_bad(self):
-        schema = readHXLSchema(HXLReader(open(resolve_file('schema-basic.csv'), 'r')))
-        schema.callback = lambda e: True # to avoid seeing error messages
-        dataset = HXLReader(open(resolve_file('data-bad.csv'), 'r'))
-        self.assertFalse(schema.validate(dataset))
+        with _read_file('schema-basic.csv') as schema_input:
+            schema = readHXLSchema(HXLReader(schema_input))
+            schema.callback = lambda e: True # to avoid seeing error messages
+            with _read_file('data-bad.csv') as input:
+                dataset = HXLReader(input)
+                self.assertFalse(schema.validate(dataset))
 
     def test_load_taxonomy(self):
-        schema = readHXLSchema(HXLReader(open(resolve_file('schema-taxonomy.csv'), 'r')), baseDir=file_dir)
-        # schema.callback = lambda e: True # to avoid seeing error messages
-        dataset = HXLReader(open(resolve_file('data-taxonomy-good.csv'), 'r'))
-        self.assertTrue(schema.validate(dataset))
+        with _read_file('schema-taxonomy.csv') as schema_input:
+            with _read_file('data-taxonomy-good.csv') as input:
+                schema = readHXLSchema(HXLReader(schema_input), baseDir=file_dir)
+                dataset = HXLReader(input)
+                self.assertTrue(schema.validate(dataset))
 
     def _try_rule(self, value, errors_expected = 0):
         """
@@ -200,13 +206,10 @@ class TestSchemaRule(unittest.TestCase):
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 file_dir = os.path.join(root_dir, 'tests', 'files', 'test_schema')
 
-def resolve_file(name):
-    """
-    Resolve a file name in the test directory.
-    """
-    return os.path.join(file_dir, name)
+def _read_file(name):
+    return open(os.path.join(file_dir, name), 'r')
 
-def make_taxonomy():
+def _make_taxonomy():
     return HXLTaxonomy(terms={
         'AAA': HXLTerm('AAA', level=1),
         'BBB': HXLTerm('BBB', level=2)
