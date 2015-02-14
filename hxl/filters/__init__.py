@@ -17,7 +17,7 @@ class HXLFilterException(HXLException):
 def run_script(func):
     try:
         func(sys.argv[1:], sys.stdin, sys.stdout)
-    except BaseException, e:
+    except BaseException as e:
         print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + e.message
         print >>sys.stderr, "Exiting ..."
         sys.exit(2)
