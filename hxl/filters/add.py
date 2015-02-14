@@ -14,7 +14,7 @@ from copy import copy
 
 from . import HXLFilterException
 from hxl.model import HXLDataProvider, HXLColumn
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
 class HXLAddFilter(HXLDataProvider):

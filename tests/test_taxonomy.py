@@ -8,7 +8,7 @@ License: Public Domain
 
 import os
 import unittest
-from hxl.parser import HXLReader
+from hxl.io import HXLReader
 from hxl.taxonomy import HXLTaxonomyException, HXLTaxonomy, HXLTerm, readTaxonomy
 
 class TestTaxonomy(unittest.TestCase):

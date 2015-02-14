@@ -13,8 +13,8 @@ import os
 from copy import copy
 from email.utils import parseaddr
 from . import HXLException
-from .parser import HXLReader
-from .taxonomy import readTaxonomy
+from hxl.io import HXLReader
+from hxl.taxonomy import readTaxonomy
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse

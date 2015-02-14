@@ -12,7 +12,7 @@ import os
 import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 from hxl.schema import readHXLSchema
 
 class HXLValidateFilter(HXLDataProvider):

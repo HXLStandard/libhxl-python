@@ -18,7 +18,7 @@ import sys
 import argparse
 import dateutil.parser
 from hxl.model import HXLDataProvider
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
 class HXLSortFilter(HXLDataProvider):

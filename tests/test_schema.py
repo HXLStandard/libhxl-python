@@ -9,7 +9,7 @@ License: Public Domain
 import unittest
 import os
 from hxl.model import HXLColumn, HXLRow
-from hxl.parser import HXLReader
+from hxl.io import HXLReader
 from hxl.schema import HXLSchema, HXLSchemaRule, readHXLSchema
 from hxl.taxonomy import HXLTaxonomy, HXLTerm
 

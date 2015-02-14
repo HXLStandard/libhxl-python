@@ -18,7 +18,7 @@ import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLColumn, HXLRow
 from hxl.filters import parse_tags, fix_tag, find_column
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 
 class HXLCountFilter(HXLDataProvider):
     """

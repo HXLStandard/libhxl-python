@@ -21,7 +21,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import re
 import json
-from hxl.parser import HXLReader
+from hxl.io import HXLReader
 
 def hxl2geojson(input, output):
     """

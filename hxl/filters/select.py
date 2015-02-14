@@ -15,7 +15,7 @@ import re
 import operator
 import argparse
 from hxl.model import HXLDataProvider
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 
 class HXLSelectFilter(HXLDataProvider):
     """

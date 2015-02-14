@@ -13,7 +13,7 @@ import sys
 import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 from hxl.filters import parse_tags, find_column
 
 class HXLMergeFilter(HXLDataProvider):

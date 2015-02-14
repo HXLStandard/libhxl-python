@@ -1,14 +1,13 @@
 """
-Parsing library for the Humanitarian Exchange Language (HXL) v1.0
+Input/output library for the Humanitarian Exchange Language (HXL) v1.0
 David Megginson
-October 2014
+Started October 2014
 
 License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import csv
-import cgi
 import json
 import re
 import urllib
@@ -167,15 +166,38 @@ class _ColSpec:
 
 
 class HXLReader(HXLDataProvider):
-    """
-    Read HXL data from a file
+    """Read HXL data from a file
+
+    This class acts as both an iterator and a context manager. If
+    you're planning to pass a url or filename via the constructor's
+    url parameter, it's best to use it in a Python with statement to
+    make sure that the file gets closed again.
+
     """
 
-    def __init__(self, input=None, rawData=None, url=None):
-        # all internal properties
+    def __init__(self, input=None, url=None, rawData=None):
+        """Constructor
+
+        The order of preference is to use rawData if supplied; then
+        fall back to input (an already-open file object); then fall
+        back to opening the resource specified by url (URL or
+        filename) if all else fails. In the last case, the object can
+        serve as a context manager, and will close the opened file
+        resource in its __exit__ method.
+
+        @param input a Python file object.
+        @param rawData an iterable over a series of string arrays.
+        @param url the URL or filename to open.
+
+        """
+
+        if input is None and url is None and rawData is None:
+            raise HXLException("At least one of rawData, input, or url must be supplied.")
+
+        self._opened_file = None
         if rawData is None:
             if not input:
-                input = urllib.urlopen(url, 'r')
+                input = self._opened_file = urllib.urlopen(url, 'r')
             self.rawData = csv.reader(input)
         else:
             self.rawData = rawData
@@ -366,32 +388,52 @@ class HXLReader(HXLDataProvider):
             return None
 
     def _parse_source_row(self):
-        """
-        Parse a row of raw CSV data.
-        Returns an array of strings.
-        """
+        """Parse a row of raw CSV data.  Returns an array of strings."""
         self._source_row_number += 1
         return next(self.rawData)
 
     def _pretty_tag(self, hxlTag):
-        """
-        Hack a human-readable heading from a HXL tag name.
+        """Hack a human-readable heading from a HXL tag name.
+
+        @param hxlTag the HXL hashtag name 
+        @return A hacked-up presentation string.
+
         """
         hxlTag = re.sub('^#', '', hxlTag)
         hxlTag = re.sub('_(date|deg|id|link|num)$', '', hxlTag)
         hxlTag = re.sub('_', ' ', hxlTag)
         return hxlTag.capitalize()
 
-def readHXL(input, url=None):
-    """Load an in-memory HXL dataset."""
+    def __enter__(self):
+        """Context-start support."""
+        return self
+
+    def __exit__(self):
+        """Context-end support."""
+        if self._opened_input:
+            self._opened_input.close()
+
+def readHXL(input=None, url=None, rawData=None):
+    """Load an in-memory HXL dataset.
+
+    At least one of input, url, and rawData must be provided. Order of
+    preference is as with HXLReader.
+
+    @param input a Python file object
+    @param url a URL or filename to open
+    @param rawData an iterator over a sequence of string arrays.
+    @return an in-memory HXLDataset
+
+    """
     dataset = HXLDataset(url)
 
-    parser = HXLReader(input)
+    parser = HXLReader(input, url, rawData)
     dataset.columns = parser.columns
     for row in parser:
         dataset.rows.append(row)
 
     return dataset
+
 
 def writeHXL(output, source, showHeaders=True):
     """Serialize a HXL dataset to an output stream."""
@@ -401,11 +443,6 @@ def writeHXL(output, source, showHeaders=True):
 def writeJSON(output, source, showHeaders=True):
     """Serialize a dataset to JSON."""
     for line in genJSON(source, showHeaders):
-        output.write(line)
-
-def writeHTML(output, source, showHeaders=True):
-    """Serialize a dataset to HTML."""
-    for line in genHTML(source, showHeaders):
         output.write(line)
 
 def genHXL(source, showHeaders=True):
@@ -452,36 +489,6 @@ def genJSON(source, showHeaders=True):
         yield json.dumps(row.values)
     yield "\n  ]\n"
     yield "}\n"
-
-def genHTML(source, showHeaders=True):
-    """
-    Generate HTML output, one line at a time.
-    """
-    yield "<table class=\"hxl\">\n"
-    yield "  <thead>\n"
-    if (showHeaders and source.hasHeaders):
-        yield "    <tr class=\"headers\">\n"
-        for s in source.headers:
-            yield "      <th>" + cgi.escape(s) + "</th>\n"
-        yield "    </tr>\n"
-    yield "    <tr class=\"tags\">\n"
-    for s in source.tags:
-        yield "      <th>" + cgi.escape(s) + "</th>\n"
-    yield "    </tr>\n"
-    yield "  </thead>\n"
-    yield "  <tbody>\n"
-    type = 'odd'
-    for row in source:
-        yield "    <tr class=\"data " + type + "\">\n"
-        if type == 'odd':
-            type = 'even'
-        else:
-            type = 'odd'
-        for s in row:
-            yield "      <td>" + cgi.escape(s) + "</td>\n"
-        yield "    </tr>\n"
-    yield "  </tbody>\n"
-    yield "</table>\n"
 
 # end
 

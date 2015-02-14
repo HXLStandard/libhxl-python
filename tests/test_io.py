@@ -1,6 +1,6 @@
 #coding=UTF8
 """
-Unit tests for the hxl.parser module
+Unit tests for the hxl.io module
 David Megginson
 October 2014
 
@@ -10,7 +10,7 @@ License: Public Domain
 import unittest
 import os
 import codecs
-from hxl.parser import HXLParseException, HXLReader
+from hxl.io import HXLParseException, HXLReader
 
 class TestParser(unittest.TestCase):
 

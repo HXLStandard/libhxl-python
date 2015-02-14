@@ -13,7 +13,7 @@ import copy
 import re
 from hxl.model import HXLDataProvider
 from hxl.filters import fix_tag
-from hxl.parser import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL
 
 class HXLRenameFilter(HXLDataProvider):
     """
