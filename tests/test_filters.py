@@ -19,7 +19,7 @@ import hxl.filters.add
 import hxl.filters.count
 import hxl.filters.cut
 import hxl.filters.merge
-import hxl.filters.norm
+import hxl.filters.clean
 import hxl.filters.rename
 import hxl.filters.select
 import hxl.filters.sort
@@ -122,32 +122,32 @@ class TestMerge(BaseTest):
         self.assertOutput(['-b', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-before.csv')
         self.assertOutput(['--before', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-before.csv')
 
-class TestNorm(BaseTest):
+class TestClean(BaseTest):
     """
-    Test the hxlnorm command-line tool.
+    Test the hxlclean command-line tool.
     """
 
     def setUp(self):
-        self.function = hxl.filters.norm.run
+        self.function = hxl.filters.clean.run
         self.input_file = 'input-simple.csv'
 
     def test_noheaders(self):
-        self.assertOutput(['-r'], 'norm-output-noheaders.csv')
-        self.assertOutput(['--remove-headers'], 'norm-output-noheaders.csv')
+        self.assertOutput(['-r'], 'clean-output-noheaders.csv')
+        self.assertOutput(['--remove-headers'], 'clean-output-noheaders.csv')
 
     def test_headers(self):
-        self.assertOutput([], 'norm-output-headers.csv')
+        self.assertOutput([], 'clean-output-headers.csv')
 
     def test_compact(self):
-        self.assertOutput([], 'norm-output-compact.csv')
+        self.assertOutput([], 'clean-output-compact.csv')
 
     def test_whitespace(self):
-        self.assertOutput(['-W'], 'norm-output-whitespace-all.csv', 'input-whitespace.csv')
-        self.assertOutput(['-w', 'subsector'], 'norm-output-whitespace-tags.csv', 'input-whitespace.csv')
+        self.assertOutput(['-W'], 'clean-output-whitespace-all.csv', 'input-whitespace.csv')
+        self.assertOutput(['-w', 'subsector'], 'clean-output-whitespace-tags.csv', 'input-whitespace.csv')
 
     def test_case(self):
-        self.assertOutput(['-u', 'sector,subsector'], 'norm-output-upper.csv')
-        self.assertOutput(['-l', 'sector,subsector'], 'norm-output-lower.csv')
+        self.assertOutput(['-u', 'sector,subsector'], 'clean-output-upper.csv')
+        self.assertOutput(['-l', 'sector,subsector'], 'clean-output-lower.csv')
 
     # TODO: test dates and numbers
 

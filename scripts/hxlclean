@@ -1,12 +1,12 @@
 #!/usr/bin/python
 """
-Run hxl.filters.norm from the command line.
+Run hxl.filters.clean from the command line.
 David Megginson
 Started October 2014
 """
 
 from hxl.filters import run_script
-import hxl.filters.norm
+import hxl.filters.clean
 
 if __name__ == '__main__':
-    run_script(hxl.filters.norm.run)
+    run_script(hxl.filters.clean.run)

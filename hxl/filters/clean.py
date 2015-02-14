@@ -16,7 +16,7 @@ from hxl.model import HXLDataProvider
 from hxl.parser import HXLReader, writeHXL
 from hxl.filters import parse_tags
 
-class HXLNormFilter(HXLDataProvider):
+class HXLCleanFilter(HXLDataProvider):
 
     def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[]):
         self.source = source
@@ -82,7 +82,7 @@ class HXLNormFilter(HXLDataProvider):
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
-    Run hxlnorm with command-line arguments.
+    Run hxlclean with command-line arguments.
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -90,7 +90,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
 
     # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Normalize a HXL file.')
+    parser = argparse.ArgumentParser(description = 'Clean data in a HXL file.')
     parser.add_argument(
         'infile',
         help='HXL file to read (if omitted, use standard input).',
@@ -192,7 +192,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
             number_arg = args.number
 
         source = HXLReader(args.infile)
-        filter = HXLNormFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
+        filter = HXLCleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
         writeHXL(args.outfile, filter, args.remove_headers)
 
 # end

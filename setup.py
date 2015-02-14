@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from setuptools import setup
+
 dependency_links=[
     'git+https://github.com/Toblerity/Shapely.git@maint#egg=Shapely',
 ]
