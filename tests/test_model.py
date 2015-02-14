@@ -22,16 +22,16 @@ class TestColumn(unittest.TestCase):
                                 TestColumn.HXL_TAG, TestColumn.LANGUAGE_CODE, TestColumn.HEADER_TEXT)
 
     def test_variables(self):
-        self.assertEquals(TestColumn.COLUMN_NUMBER, self.column.columnNumber)
-        self.assertEquals(TestColumn.SOURCE_COLUMN_NUMBER, self.column.sourceColumnNumber)
-        self.assertEquals(TestColumn.HXL_TAG, self.column.hxlTag)
-        self.assertEquals(TestColumn.LANGUAGE_CODE, self.column.languageCode)
-        self.assertEquals(TestColumn.HEADER_TEXT, self.column.headerText)
+        self.assertEqual(TestColumn.COLUMN_NUMBER, self.column.columnNumber)
+        self.assertEqual(TestColumn.SOURCE_COLUMN_NUMBER, self.column.sourceColumnNumber)
+        self.assertEqual(TestColumn.HXL_TAG, self.column.hxlTag)
+        self.assertEqual(TestColumn.LANGUAGE_CODE, self.column.languageCode)
+        self.assertEqual(TestColumn.HEADER_TEXT, self.column.headerText)
 
     def test_display_tag(self):
-        self.assertEquals(TestColumn.HXL_TAG + '/' + TestColumn.LANGUAGE_CODE, self.column.displayTag)
+        self.assertEqual(TestColumn.HXL_TAG + '/' + TestColumn.LANGUAGE_CODE, self.column.displayTag)
         self.column.languageCode = None
-        self.assertEquals(TestColumn.HXL_TAG, self.column.displayTag)
+        self.assertEqual(TestColumn.HXL_TAG, self.column.displayTag)
 
 class TestRow(unittest.TestCase):
 
@@ -49,38 +49,38 @@ class TestRow(unittest.TestCase):
             self.row.append(content)
 
     def test_data(self):
-        self.assertEquals(TestRow.CONTENT, self.row.values)
+        self.assertEqual(TestRow.CONTENT, self.row.values)
 
     def test_variables(self):
-        self.assertEquals(TestRow.ROW_NUMBER, self.row.rowNumber)
-        self.assertEquals(TestRow.SOURCE_ROW_NUMBER, self.row.sourceRowNumber)
+        self.assertEqual(TestRow.ROW_NUMBER, self.row.rowNumber)
+        self.assertEqual(TestRow.SOURCE_ROW_NUMBER, self.row.sourceRowNumber)
 
     def test_iteration(self):
         expectedLength = len(TestRow.TAGS)
         actualLength = 0;
         for value in self.row:
             actualLength = actualLength + 1
-        self.assertEquals(expectedLength, actualLength)
+        self.assertEqual(expectedLength, actualLength)
 
     def test_append(self):
         columnNumber = len(TestRow.TAGS)
         oldLength = len(self.row.values)
         self.row.append('Lofa County')
-        self.assertEquals(oldLength + 1, len(self.row.values))
+        self.assertEqual(oldLength + 1, len(self.row.values))
 
     def test_get(self):
-        self.assertEquals('WFP', self.row.get('#org'))
+        self.assertEqual('WFP', self.row.get('#org'))
 
     def test_getAll(self):
         result = self.row.getAll('#org')
         self.assertTrue(type(result) is list)
-        self.assertEquals(1, len(result))
+        self.assertEqual(1, len(result))
 
     def test_outofrange(self):
         # what happens when a row is too short?
         self.row.values = self.CONTENT[0:1]
-        self.assertEquals(None, self.row.get('#country'))
-        self.assertEquals([], self.row.getAll('#country'))
+        self.assertEqual(None, self.row.get('#country'))
+        self.assertEqual([], self.row.getAll('#country'))
 
     def test_map(self):
 
@@ -91,6 +91,6 @@ class TestRow(unittest.TestCase):
             return value
 
         values = self.row.map(tolower)
-        self.assertEquals(['Health', 'wfp', 'Liberia'], values)
+        self.assertEqual(['Health', 'wfp', 'Liberia'], values)
 
 # end

@@ -45,40 +45,40 @@ class TestParser(unittest.TestCase):
         row_count = 0
         for row in source:
             row_count += 1
-        self.assertEquals(TestParser.EXPECTED_ROW_COUNT, row_count)
+        self.assertEqual(TestParser.EXPECTED_ROW_COUNT, row_count)
 
     def test_headers(self):
         source = _read_file()
         headers = source.headers
-        self.assertEquals(TestParser.EXPECTED_HEADERS, headers)
+        self.assertEqual(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
         source = _read_file()
         tags = source.tags
-        self.assertEquals(TestParser.EXPECTED_TAGS, tags)
+        self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
     def test_languages(self):
         source = _read_file()
         for row in source:
             for columnNumber, column in enumerate(row.columns):
-                self.assertEquals(TestParser.EXPECTED_LANGUAGES[columnNumber], column.languageCode)
+                self.assertEqual(TestParser.EXPECTED_LANGUAGES[columnNumber], column.languageCode)
 
     def test_column_count(self):
         source = _read_file()
         for row in source:
-            self.assertEquals(len(TestParser.EXPECTED_TAGS), len(row.values))
+            self.assertEqual(len(TestParser.EXPECTED_TAGS), len(row.values))
 
     def test_columns(self):
         source = _read_file()
         for row in source:
             for columnNumber, column in enumerate(row.columns):
-                self.assertEquals(TestParser.EXPECTED_TAGS[columnNumber], column.hxlTag)
+                self.assertEqual(TestParser.EXPECTED_TAGS[columnNumber], column.hxlTag)
 
     def test_content(self):
         source = _read_file()
         for i, row in enumerate(source):
             for j, value in enumerate(row):
-                self.assertEquals(TestParser.EXPECTED_CONTENT[i][j], value)
+                self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
 
     def test_fuzzy(self):
         """Imperfect hashtag row should still work."""

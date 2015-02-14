@@ -18,7 +18,7 @@ class TestTaxonomy(unittest.TestCase):
         """A normal taxonomy should load correctly"""
         taxonomy = read_taxonomy("taxonomy_good.csv")
         self.assertTrue(taxonomy.is_valid())
-        self.assertEquals(10, len(taxonomy.terms))
+        self.assertEqual(10, len(taxonomy.terms))
 
     def test_nocode(self):
         """Reading should fail with a missing #term_id"""
@@ -42,9 +42,9 @@ class TestTerm(unittest.TestCase):
 
     def test_properties(self):
         term = HXLTerm('XXX', 'YYY', 3)
-        self.assertEquals('XXX', term.code)
-        self.assertEquals('YYY', term.parent_code)
-        self.assertEquals(3, term.level)
+        self.assertEqual('XXX', term.code)
+        self.assertEqual('YYY', term.parent_code)
+        self.assertEqual(3, term.level)
 
 
 #

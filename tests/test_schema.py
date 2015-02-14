@@ -48,7 +48,7 @@ class TestSchema(unittest.TestCase):
             self.assertTrue(self.schema.validateRow(self.row))
         else:
             self.assertFalse(self.schema.validateRow(self.row))
-        self.assertEquals(len(self.errors), errors_expected)
+        self.assertEqual(len(self.errors), errors_expected)
         
 class TestSchemaRule(unittest.TestCase):
 
