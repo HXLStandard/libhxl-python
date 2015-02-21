@@ -33,9 +33,19 @@ def parse_tags(s):
     """Parse tags out from a comma-separated list"""
     return list(map(fix_tag, s.split(',')))
 
-def find_column(tag, columns):
+def find_column_index(tag, columns):
     """Find the first column in a list with tag"""
+    index = 0
     for column in columns:
         if column.hxlTag == tag:
-            return column
+            return index
+        index += 1
     return None
+
+def find_column(tag, columns):
+    """Find the first column in a list with tag"""
+    index = find_column_index(tag, columns)
+    if index is not None:
+        return columns[index]
+    else:
+        return None

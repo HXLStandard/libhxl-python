@@ -64,12 +64,16 @@ class HXLMergeFilter(HXLDataProvider):
         if self.saved_columns is None:
             new_columns = []
             for tag in self.merge_tags:
-                column = find_column(tag, self.merge_source.columns)
-                if column:
-                    headerText = column.headerText
+                if self.replace and find_column(tag, self.source.columns):
+                    # will use existing column
+                    continue
                 else:
-                    headerText = None
-                new_columns.append(HXLColumn(hxlTag=tag, headerText=headerText))
+                    column = find_column(tag, self.merge_source.columns)
+                    if column:
+                        headerText = column.headerText
+                    else:
+                        headerText = None
+                    new_columns.append(HXLColumn(hxlTag=tag, headerText=headerText))
             self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 
@@ -81,9 +85,16 @@ class HXLMergeFilter(HXLDataProvider):
             self.merge_map = self._read_merge()
         row = copy(next(self.source))
         merge_values = self.merge_map.get(self._make_key(row))
-        if not merge_values:
-            merge_values = self.empty_result
-        row.values = row.values + merge_values
+        for tag in self.merge_tags:
+            if self.replace:
+                index = find_column_index(tag, self.source.columns)
+                if index is not None:
+                    while len(row) < index:
+                        row.extend(None)
+                    row[index] = merge_values.get(tag)
+                    continue
+            # fall through ...
+            row.append(merge_values.get(tag))
         return row
 
     next = __next__
@@ -105,9 +116,9 @@ class HXLMergeFilter(HXLDataProvider):
         """
         merge_map = {}
         for row in self.merge_source:
-            values = []
+            values = {}
             for tag in self.merge_tags:
-                values.append(row.get(tag))
+                values[tag] = row.get(tag)
             merge_map[self._make_key(row)] = values
         return merge_map
 

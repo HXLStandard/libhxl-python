@@ -2,7 +2,7 @@ Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia
 #sector,#subsector,#org,#sex,#targeted_num,#country,#adm1,#status
 WASH,Higiene,ACNUR,Hombres,100,Panamá,Los Santos,
 WASH,Higiene,ACNUR,Mujeres,100,Panamá,Los Santos,
-Salud,Vacunación,OMS,Hombres,,Colombia,Cauca,active
+Salud,Vacunación,OMS,Hombres,,Colombia,Cauca,activo
 Salud,Vacunación,OMS,Mujeres,,Colombia,Cauca,activo
 Educación,Formación de enseñadores,UNICEF,Hombres,250,Colombia,Chocó,inactivo
 Educación,Formación de enseñadores,UNICEF,Mujeres,300,Colombia,Chocó,inactivo
