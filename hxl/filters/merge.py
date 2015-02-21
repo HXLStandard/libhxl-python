@@ -14,7 +14,7 @@ import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
 from hxl.io import HXLReader, writeHXL
-from hxl.filters import parse_tags, find_column
+from hxl.filters import parse_tags, find_column, find_column_index
 
 class HXLMergeFilter(HXLDataProvider):
     """
@@ -89,9 +89,8 @@ class HXLMergeFilter(HXLDataProvider):
             if self.replace:
                 index = find_column_index(tag, self.source.columns)
                 if index is not None:
-                    while len(row) < index:
-                        row.extend(None)
-                    row[index] = merge_values.get(tag)
+                    if not row.values[index]:
+                        row.values[index] = merge_values.get(tag)
                     continue
             # fall through ...
             row.append(merge_values.get(tag))

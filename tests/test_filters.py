@@ -118,10 +118,10 @@ class TestMerge(BaseTest):
         self.assertOutput(['-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
         self.assertOutput(['--keys', 'sector', '--tags', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
 
-    #def test_replace(self):
-    #    self.input_file = 'input-status.csv'
-    #    self.assertOutput(['-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
-    #    self.assertOutput(['--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
+    def test_replace(self):
+        self.input_file = 'input-status.csv'
+        self.assertOutput(['-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
+        self.assertOutput(['--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
 
 class TestClean(BaseTest):
     """
