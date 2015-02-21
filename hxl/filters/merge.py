@@ -38,7 +38,7 @@ class HXLMergeFilter(HXLDataProvider):
     </pre>
     """
 
-    def __init__(self, source, merge_source, keys, tags):
+    def __init__(self, source, merge_source, keys, tags, replace):
         """
         Constructor.
         @param source the HXL data source.
@@ -50,6 +50,7 @@ class HXLMergeFilter(HXLDataProvider):
         self.merge_source = merge_source
         self.keys = keys
         self.merge_tags = tags
+        self.replace = replace
 
         self.saved_columns = None
         self.merge_map = None
@@ -162,12 +163,20 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         required=True,
         type=parse_tags
         )
+    parser.add_argument(
+        '-r',
+        '--replace',
+        help='Replace empty values in existing columns (when available) instead of adding new ones.',
+        action='store_const',
+        const=True,
+        default=False
+    )
     args = parser.parse_args(args)
 
     # FIXME - will this be OK with stdin/stdout?
     with args.infile, args.outfile, args.merge:
         source = HXLReader(args.infile)
-        filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge), keys=args.keys, tags=args.tags)
+        filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge), keys=args.keys, tags=args.tags, replace=args.replace)
         writeHXL(args.outfile, filter)
 
 # end
