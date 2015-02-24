@@ -38,7 +38,7 @@ class HXLMergeFilter(HXLDataProvider):
     </pre>
     """
 
-    def __init__(self, source, merge_source, keys, tags, replace):
+    def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False):
         """
         Constructor.
         @param source the HXL data source.
@@ -51,10 +51,10 @@ class HXLMergeFilter(HXLDataProvider):
         self.keys = keys
         self.merge_tags = tags
         self.replace = replace
+        self.overwrite = overwrite
 
         self.saved_columns = None
         self.merge_map = None
-        self.empty_result = [''] * len(tags)
 
     @property
     def columns(self):
@@ -81,18 +81,31 @@ class HXLMergeFilter(HXLDataProvider):
         """
         @return the next merged row of data
         """
+
+        # First, check if we already have the merge map, and read it if not
         if self.merge_map is None:
             self.merge_map = self._read_merge()
+
+        # Make a copy of the next row from the source
         row = copy(next(self.source))
+
+        # Look up the merge values, based on the --keys
         merge_values = self.merge_map.get(self._make_key(row))
+
+        # Go through the --tags
         for tag in self.merge_tags:
+            # Try to substitute in place?
             if self.replace:
+                # the column must actually exist in the source
                 index = find_column_index(tag, self.source.columns)
                 if index is not None:
-                    if not row.values[index]:
+                    # --overwrite means replace an existing value
+                    if self.overwrite or not row.values[index]:
                         row.values[index] = merge_values.get(tag)
+                    # go to next tag if we made it here
                     continue
-            # fall through ...
+
+            # otherwise, fall through
             row.append(merge_values.get(tag))
         return row
 
@@ -181,12 +194,21 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
+    parser.add_argument(
+        '-O',
+        '--overwrite',
+        help='Used with --replace, overwrite existing values.',
+        action='store_const',
+        const=True,
+        default=False
+    )
     args = parser.parse_args(args)
 
     # FIXME - will this be OK with stdin/stdout?
     with args.infile, args.outfile, args.merge:
         source = HXLReader(args.infile)
-        filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge), keys=args.keys, tags=args.tags, replace=args.replace)
+        filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge),
+                                keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         writeHXL(args.outfile, filter)
 
 # end

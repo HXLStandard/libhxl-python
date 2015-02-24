@@ -123,6 +123,11 @@ class TestMerge(BaseTest):
         self.assertOutput(['-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
         self.assertOutput(['--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
 
+    def test_overwrite (self):
+        self.input_file = 'input-status.csv'
+        self.assertOutput(['-O', '-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-overwrite.csv')
+        self.assertOutput(['--overwrite', '--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-overwrite.csv')
+
 class TestClean(BaseTest):
     """
     Test the hxlclean command-line tool.
