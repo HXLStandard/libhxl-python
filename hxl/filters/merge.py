@@ -90,7 +90,7 @@ class HXLMergeFilter(HXLDataProvider):
         row = copy(next(self.source))
 
         # Look up the merge values, based on the --keys
-        merge_values = self.merge_map.get(self._make_key(row))
+        merge_values = self.merge_map.get(self._make_key(row), {})
 
         # Go through the --tags
         for tag in self.merge_tags:
