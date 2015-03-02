@@ -60,8 +60,8 @@ class TestParser(unittest.TestCase):
     def test_languages(self):
         with _read_file() as input:
             for row in HXLReader(input):
-                for columnNumber, column in enumerate(row.columns):
-                    self.assertEqual(TestParser.EXPECTED_LANGUAGES[columnNumber], column.languageCode)
+                for column_number, column in enumerate(row.columns):
+                    self.assertEqual(TestParser.EXPECTED_LANGUAGES[column_number], column.lang)
 
     def test_column_count(self):
         with _read_file() as input:
@@ -71,8 +71,8 @@ class TestParser(unittest.TestCase):
     def test_columns(self):
         with _read_file() as input:
             for row in HXLReader(input):
-                for columnNumber, column in enumerate(row.columns):
-                    self.assertEqual(TestParser.EXPECTED_TAGS[columnNumber], column.hxlTag)
+                for column_number, column in enumerate(row.columns):
+                    self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
 
     def test_content(self):
         with _read_file() as input:

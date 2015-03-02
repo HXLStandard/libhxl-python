@@ -77,7 +77,7 @@ class HXLCutFilter(HXLDataProvider):
         Test whether a column should be included in the output.
         If there is a whitelist, it must be in the whitelist; if there is a blacklist, it must not be in the blacklist.
         """
-        return ((not self.include_tags) or (column.hxlTag in self.include_tags)) and ((not self.exclude_tags) or (column.hxlTag not in self.exclude_tags))
+        return ((not self.include_tags) or (column.tag in self.include_tags)) and ((not self.exclude_tags) or (column.tag not in self.exclude_tags))
 
 #
 # Command-line support

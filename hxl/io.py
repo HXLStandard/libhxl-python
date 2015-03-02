@@ -23,13 +23,13 @@ class HXLParseException(HXLException):
     A parsing error in a HXL dataset.
     """
 
-    def __init__(self, message, sourceRowNumber=None, sourceColumnNumber=None):
+    def __init__(self, message, source_row_number=None, source_column_number=None):
         super(HXLParseException, self).__init__(message)
-        self.sourceRowNumber = sourceRowNumber
-        self.sourceColumnNumber = sourceColumnNumber
+        self.source_row_number = source_row_number
+        self.source_column_number = source_column_number
 
     def __str__(self):
-        return '<HXLException: ' + str(self.message) + ' @ ' + str(self.sourceRowNumber) + ', ' + str(self.sourceColumnNumber) + '>'
+        return '<HXLException: ' + str(self.message) + ' @ ' + str(self.source_row_number) + ', ' + str(self.source_column_number) + '>'
 
 
 class _TableSpec:
@@ -69,7 +69,7 @@ class _TableSpec:
             self.cachedColumns = []
             seenFixed = False
             for colSpec in self.colSpecs:
-                if not colSpec.column.hxlTag or (colSpec.fixedColumn and seenFixed):
+                if not colSpec.column.tag or (colSpec.fixedColumn and seenFixed):
                     continue
                 if colSpec.fixedColumn:
                     self.cachedColumns.append(colSpec.fixedColumn)
@@ -83,7 +83,7 @@ class _TableSpec:
         Get a simple list of header strings from the columns.
         """
         if self.cachedHeaders == None:
-            self.cachedHeaders = list(map(lambda column: column.headerText, self.columns))
+            self.cachedHeaders = list(map(lambda column: column.header, self.columns))
         return self.cachedHeaders
 
     @property
@@ -92,7 +92,7 @@ class _TableSpec:
         Get a simple list of HXL hashtags from the columns.
         """
         if self.cachedTags == None:
-            self.cachedTags = list(map(lambda column: column.hxlTag, self.columns))
+            self.cachedTags = list(map(lambda column: column.tag, self.columns))
         return self.cachedTags
 
     @property
@@ -148,8 +148,8 @@ class _ColSpec:
     HXL data. Used only during parsing.
     """
 
-    def __init__(self, sourceColumnNumber, column=None, fixedColumn=None, fixedValue=None):
-        self.sourceColumnNumber = sourceColumnNumber
+    def __init__(self, source_column_number, column=None, fixedColumn=None, fixedValue=None):
+        self.source_column_number = source_column_number
         self.column = column
         self.fixedColumn = fixedColumn
         self.fixedValue = fixedValue
@@ -160,7 +160,7 @@ class _ColSpec:
         if (self.fixedColumn):
             s += "\n  fixedColumn: " + str(self.fixedColumn)
             s += "\n  fixedValue: " + str(self.fixedValue)
-        s += "\n  sourceColumnNumberumber: " + str(self.sourceColumnNumber)
+        s += "\n  source_column_numberumber: " + str(self.source_column_number)
         s += "\n>"
         return s
 
@@ -237,39 +237,39 @@ class HXLReader(HXLDataProvider):
         self._row_number += 1
 
         # The row we're going to populate
-        row = HXLRow(self._table_spec.columns, rowNumber=self._row_number, sourceRowNumber=self._source_row_number)
+        row = HXLRow(self._table_spec.columns, row_number=self._row_number, source_row_number=self._source_row_number)
 
-        columnNumber = -1
+        column_number = -1
         seenFixed = False
 
         # Loop through the raw CSV data
-        for sourceColumnNumber, content in enumerate(self._raw_data):
+        for source_column_number, content in enumerate(self._raw_data):
 
-            if sourceColumnNumber >= len(self._table_spec.colSpecs):
+            if source_column_number >= len(self._table_spec.colSpecs):
                 # no more hashtags
                 break
 
             # grab the specification
-            colSpec = self._table_spec.colSpecs[sourceColumnNumber]
+            colSpec = self._table_spec.colSpecs[source_column_number]
 
             # We're reading only columns that have HXL tags
-            if not colSpec.column.hxlTag:
+            if not colSpec.column.tag:
                 continue
 
             if colSpec.fixedColumn:
                 # There's a fixed column involved
                 if not seenFixed:
-                    columnNumber += 1
+                    column_number += 1
                     disaggregatedSourceColumnNumber = self._table_spec.getDisaggregatedSourceColumnNumber(self._disaggregation_pos)
                     row.append(self._table_spec.colSpecs[disaggregatedSourceColumnNumber].fixedValue)
-                    columnNumber += 1
+                    column_number += 1
                     row.append(self._raw_data[disaggregatedSourceColumnNumber])
                     seenFixed = True
                     self._disaggregation_pos += 1
             else:
                 # regular column
-                columnNumber += 1
-                row.append(self._raw_data[sourceColumnNumber])
+                column_number += 1
+                row.append(self._raw_data[source_column_number])
 
         return row
 
@@ -319,36 +319,36 @@ class HXLReader(HXLDataProvider):
         nonEmptyCount = 0
 
         # the logical column number
-        columnNumber = 0
+        column_number = 0
 
-        for sourceColumnNumber, rawString in enumerate(rawDataRow):
+        for source_column_number, rawString in enumerate(rawDataRow):
             # Iterate through the array of raw cell values
             colSpec = None
             rawString = rawString.strip()
             if rawString:
                 # If the cell isn't empty, then it should hold a hashtag ...
-                colSpec = self._parse_hashtag(columnNumber,sourceColumnNumber, rawString)
+                colSpec = self._parse_hashtag(column_number,source_column_number, rawString)
                 nonEmptyCount += 1
                 if (colSpec):
                     # we've seen a tag
                     tagCount += 1
                     if (colSpec.fixedColumn):
                         # special case: compact-disaggregated syntax
-                        colSpec.fixedColumn.headerText = self._pretty_tag(colSpec.fixedColumn.hxlTag)
-                        colSpec.column.headerText = self._pretty_tag(colSpec.column.hxlTag)
-                        colSpec.fixedValue = self._last_header_row[sourceColumnNumber]
-                        columnNumber += 1
+                        colSpec.fixedColumn.header = self._pretty_tag(colSpec.fixedColumn.tag)
+                        colSpec.column.header = self._pretty_tag(colSpec.column.tag)
+                        colSpec.fixedValue = self._last_header_row[source_column_number]
+                        column_number += 1
                     else:
                         # normal case
-                        if self._last_header_row and sourceColumnNumber < len(self._last_header_row):
-                            colSpec.column.headerText = self._last_header_row[sourceColumnNumber]
+                        if self._last_header_row and source_column_number < len(self._last_header_row):
+                            colSpec.column.header = self._last_header_row[source_column_number]
 
             if colSpec is None:
                 # either empty or not a HXL hashtag
-                colSpec = _ColSpec(sourceColumnNumber)
-                colSpec.column = HXLColumn(columnNumber, sourceColumnNumber)
+                colSpec = _ColSpec(source_column_number)
+                colSpec.column = HXLColumn(column_number, source_column_number)
 
-            columnNumber += 1
+            column_number += 1
             _table_spec.append(colSpec)
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE
@@ -357,7 +357,7 @@ class HXLReader(HXLDataProvider):
         else:
             return None
 
-    def _parse_hashtag(self, columnNumber, sourceColumnNumber, rawString):
+    def _parse_hashtag(self, column_number, source_column_number, rawString):
         """
         Attempt to parse a full hashtag specification.
         May include compact disaggregated syntax
@@ -373,16 +373,16 @@ class HXLReader(HXLDataProvider):
         # Try a match
         result = re.match(fullRegexp, rawString)
         if result:
-            col1 = HXLColumn(columnNumber, sourceColumnNumber, result.group(1), result.group(2))
+            col1 = HXLColumn(column_number, source_column_number, result.group(1), result.group(2))
             col2 = None
 
             if result.group(3):
                 # There were two tags
-                col2 = HXLColumn(columnNumber, sourceColumnNumber, result.group(3), result.group(4))
-                colSpec = _ColSpec(sourceColumnNumber, col2, col1)
+                col2 = HXLColumn(column_number, source_column_number, result.group(3), result.group(4))
+                colSpec = _ColSpec(source_column_number, col2, col1)
             else:
                 # There was just one tag
-                colSpec = _ColSpec(sourceColumnNumber, col1)
+                colSpec = _ColSpec(source_column_number, col1)
             return colSpec
         else:
             return None
@@ -392,17 +392,17 @@ class HXLReader(HXLDataProvider):
         self._source_row_number += 1
         return next(self.rawData)
 
-    def _pretty_tag(self, hxlTag):
+    def _pretty_tag(self, tag):
         """Hack a human-readable heading from a HXL tag name.
 
-        @param hxlTag the HXL hashtag name 
+        @param tag the HXL hashtag name 
         @return A hacked-up presentation string.
 
         """
-        hxlTag = re.sub('^#', '', hxlTag)
-        hxlTag = re.sub('_(date|deg|id|link|num)$', '', hxlTag)
-        hxlTag = re.sub('_', ' ', hxlTag)
-        return hxlTag.capitalize()
+        tag = re.sub('^#', '', tag)
+        tag = re.sub('_(date|deg|id|link|num)$', '', tag)
+        tag = re.sub('_', ' ', tag)
+        return tag.capitalize()
 
     def __enter__(self):
         """Context-start support."""

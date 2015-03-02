@@ -70,10 +70,10 @@ class HXLMergeFilter(HXLDataProvider):
                 else:
                     column = find_column(tag, self.merge_source.columns)
                     if column:
-                        headerText = column.headerText
+                        header = column.header
                     else:
-                        headerText = None
-                    new_columns.append(HXLColumn(hxlTag=tag, headerText=headerText))
+                        header = None
+                    new_columns.append(HXLColumn(tag=tag, header=header))
             self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 

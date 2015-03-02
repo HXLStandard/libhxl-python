@@ -122,7 +122,7 @@ def readTaxonomy(source):
             if old_term is not None:
                 raise HXLTaxonomyException("Duplicate term: " + old_term.code)
         else:
-            raise HXLTaxonomyException("Missing #term_id in row " + str(row.sourceRowNumber))
+            raise HXLTaxonomyException("Missing #term_id in row " + str(row.source_row_number))
 
     return taxonomy
                 

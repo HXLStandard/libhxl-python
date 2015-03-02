@@ -61,7 +61,7 @@ def hxlbounds(input, output, bounds, tags=[]):
                 value = row.get(tag)
                 if value:
                     context.append(tag + '=' + value)
-        report = str(message) + ' (row ' + str(row.sourceRowNumber) + ') ' + str(context)
+        report = str(message) + ' (row ' + str(row.source_row_number) + ') ' + str(context)
         print >>output, report
 
     reader = HXLReader(input)

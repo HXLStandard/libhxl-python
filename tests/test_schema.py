@@ -26,12 +26,12 @@ class TestSchema(unittest.TestCase):
             )
         self.row = HXLRow(
             columns = [
-                HXLColumn(hxlTag='#affected_num', columnNumber=0),
-                HXLColumn(hxlTag='#sector', columnNumber=1),
-                HXLColumn(hxlTag='#sector', columnNumber=2)
+                HXLColumn(tag='#affected_num', column_number=0),
+                HXLColumn(tag='#sector', column_number=1),
+                HXLColumn(tag='#sector', column_number=2)
             ],
-            rowNumber = 1,
-            sourceRowNumber = 2
+            row_number = 1,
+            source_row_number = 2
         )
 
 
@@ -133,11 +133,11 @@ class TestSchemaRule(unittest.TestCase):
     def test_row_restrictions(self):
         row = HXLRow(
             columns=[
-                HXLColumn(hxlTag='#x_test'),
-                HXLColumn(hxlTag='#subsector'),
-                HXLColumn(hxlTag='#x_test')
+                HXLColumn(tag='#x_test'),
+                HXLColumn(tag='#subsector'),
+                HXLColumn(tag='#x_test')
                 ],
-            rowNumber = 1
+            row_number = 1
             );
         row.values = ['WASH', '', ''];
 

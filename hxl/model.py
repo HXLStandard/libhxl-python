@@ -8,7 +8,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import abc
-from copy import copy
+import copy
 
 class HXLDataProvider(object):
     """
@@ -50,19 +50,21 @@ class HXLDataProvider(object):
         """
         return
 
+    next = __next__
+
     @property
     def headers(self):
         """
         Return a list of header strings (for a spreadsheet row).
         """
-        return list(map(lambda column: column.headerText, self.columns))
+        return list(map(lambda column: column.header, self.columns))
 
     @property
     def tags(self):
         """
         Return a list of tags.
         """
-        return list(map(lambda column: column.hxlTag, self.columns))
+        return list(map(lambda column: column.tag, self.columns))
 
     @property
     def displayTags(self):
@@ -77,7 +79,7 @@ class HXLDataProvider(object):
         Report whether any non-empty header strings exist.
         """
         for column in self.columns:
-            if column.headerText:
+            if column.header:
                 return True
         return False
 
@@ -93,8 +95,8 @@ class HXLDataset(HXLDataProvider):
         @param url The dataset's URL (default: None).
         """
         self.url = url
-        self.columns = copy(columns)
-        self.rows = copy(rows)
+        self.columns = copy.copy(columns)
+        self.rows = copy.copy(rows)
 
     def __str__(self):
         """
@@ -113,22 +115,22 @@ class HXLColumn(object):
     """ 
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
-    __slots__ = ['columnNumber', 'sourceColumnNumber', 'hxlTag', 'languageCode', 'headerText']
+    __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header']
 
-    def __init__(self, columnNumber=None, sourceColumnNumber=None, hxlTag=None, languageCode=None, headerText=None):
+    def __init__(self, column_number=None, source_column_number=None, tag=None, lang=None, header=None):
         """
         Initialise a column definition.
-        @param columnNumber the logical column number (default: None)
-        @param sourceColumnNumber the raw column number in the source dataset (default: None)
-        @param hxlTag the HXL hashtag for the column (default: None)
-        @param languageCode the ISO 639- language code for the column, e.g. "es" (default: None)
-        @param headerText the original plaintext header for the column (default: None)
+        @param column_number the logical column number (default: None)
+        @param source_column_number the raw column number in the source dataset (default: None)
+        @param tag the HXL hashtag for the column (default: None)
+        @param lang the ISO 639- language code for the column, e.g. "es" (default: None)
+        @param header the original plaintext header for the column (default: None)
         """
-        self.columnNumber = columnNumber
-        self.sourceColumnNumber = sourceColumnNumber
-        self.hxlTag = hxlTag
-        self.languageCode = languageCode
-        self.headerText = headerText
+        self.column_number = column_number
+        self.source_column_number = source_column_number
+        self.tag = tag
+        self.lang = lang
+        self.header = header
 
     @property
     def displayTag(self):
@@ -136,11 +138,11 @@ class HXLColumn(object):
         Generate a display version of the column hashtag
         @return the reassembled HXL hashtag string, including language code
         """
-        if (self.hxlTag):
-            if (self.languageCode):
-                return self.hxlTag + '/' + self.languageCode
+        if (self.tag):
+            if (self.lang):
+                return self.tag + '/' + self.lang
             else:
-                return self.hxlTag
+                return self.tag
         else:
             return None
 
@@ -161,19 +163,19 @@ class HXLRow(object):
     """
 
     # Predefine the slots for efficiency (may reconsider later)
-    __slots__ = ['columns', 'values', 'rowNumber', 'sourceRowNumber']
+    __slots__ = ['columns', 'values', 'row_number', 'source_row_number']
 
-    def __init__(self, columns, rowNumber=None, sourceRowNumber=None, values=[]):
+    def __init__(self, columns, row_number=None, source_row_number=None, values=[]):
         """
         Set up a new row.
         @param columns The column definitions (array of HXLColumn objects).
-        @param rowNumber The logical row number in the input dataset (default: None)
-        @param sourceRowNumber The original row number in the raw source dataset (default: None)
+        @param row_number The logical row number in the input dataset (default: None)
+        @param source_row_number The original row number in the raw source dataset (default: None)
         """
         self.columns = columns
-        self.values = copy(values)
-        self.rowNumber = rowNumber
-        self.sourceRowNumber = sourceRowNumber
+        self.values = copy.copy(values)
+        self.row_number = row_number
+        self.source_row_number = source_row_number
 
     def append(self, value):
         """
@@ -195,7 +197,7 @@ class HXLRow(object):
         for i, column in enumerate(self.columns):
             if i >= len(self.values):
                 break
-            if column.hxlTag == tag:
+            if column.tag == tag:
                 if index == 0:
                     return self.values[i]
                 else:
@@ -212,7 +214,7 @@ class HXLRow(object):
         for i, column in enumerate(self.columns):
             if i >= len(self.values):
                 break
-            if column.hxlTag == tag:
+            if column.tag == tag:
                 result.append(self.values[i])
         return result
 
@@ -245,10 +247,10 @@ class HXLRow(object):
         Create a string representation of a row for debugging.
         """
         s = '<HXLRow';
-        s += "\n  rowNumber: " + str(self.rowNumber)
-        s += "\n  sourceRowNumber: " + str(self.sourceRowNumber)
-        for columnNumber, value in enumerate(self.values):
-            s += "\n  " + str(self.columns[columnNumber]) + "=" + str(value)
+        s += "\n  row_number: " + str(self.row_number)
+        s += "\n  source_row_number: " + str(self.source_row_number)
+        for column_number, value in enumerate(self.values):
+            s += "\n  " + str(self.columns[column_number]) + "=" + str(value)
         s += "\n>"
         return s
 

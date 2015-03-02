@@ -39,20 +39,20 @@ class HXLCleanFilter(HXLDataProvider):
 
             # Whitespace (-w or -W)
             if self.whitespace:
-                if (self.whitespace is True) or (column.hxlTag in self.whitespace):
+                if (self.whitespace is True) or (column.tag in self.whitespace):
                     value = re.sub('^\s+', '', value)
                     value = re.sub('\s+$', '', value)
                     value = re.sub('\s+', ' ', value)
 
             # Uppercase (-u)
-            if self.upper and column.hxlTag in self.upper:
+            if self.upper and column.tag in self.upper:
                 if sys.version_info[0] > 2:
                     value = value.upper()
                 else:
                     value = value.decode('utf8').upper().encode('utf8')
 
             # Lowercase (-l)
-            if self.lower and column.hxlTag in self.lower:
+            if self.lower and column.tag in self.lower:
                 if sys.version_info[0] > 2:
                     value = value.lower()
                 else:
@@ -60,12 +60,12 @@ class HXLCleanFilter(HXLDataProvider):
 
             # Date (-d or -D)
             if self.date and value:
-                if (self.date is True and column.hxlTag.endswith('_date')) or (self.date is not True and column.hxlTag in self.date):
+                if (self.date is True and column.tag.endswith('_date')) or (self.date is not True and column.tag in self.date):
                     value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
 
             # Number (-n or -N)
             if self.number and re.match('\d', value):
-                if (self.number is True and column.hxlTag.endswith('_num')) or (self.number is not True and column.hxlTag in self.number):
+                if (self.number is True and column.tag.endswith('_num')) or (self.number is not True and column.tag in self.number):
                     value = re.sub('[^\d.]', '', value)
                     value = re.sub('^0+', '', value)
                     value = re.sub('(\..*)0+$', '\g<1>', value)

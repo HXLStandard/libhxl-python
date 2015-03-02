@@ -39,13 +39,13 @@ class HXLValidationException(HXLException):
         if self.value:
             value = str(re.sub('\s+', ' ', self.value))
             value = '"' + value[:10] + (value[10:] and '...') + '"'
-        sourceRowNumber = "?"
+        source_row_number = "?"
         if self.row:
-            sourceRowNumber = str(self.row.sourceRowNumber + 1)
-        sourceColumnNumber = "?"
+            source_row_number = str(self.row.source_row_number + 1)
+        source_column_number = "?"
         if self.column:
-            sourceColumnNumber = str(self.column.sourceColumnNumber + 1)
-        return "E " + "(" + sourceRowNumber + "," + sourceColumnNumber + ") " + self.rule.hxlTag + " " + value + ": " + self.message
+            source_column_number = str(self.column.source_column_number + 1)
+        return "E " + "(" + source_row_number + "," + source_column_number + ") " + self.rule.tag + " " + value + ": " + self.message
 
 class HXLSchemaRule(object):
     """
@@ -58,10 +58,10 @@ class HXLSchemaRule(object):
     TYPE_EMAIL = 4
     TYPE_PHONE = 5
 
-    def __init__(self, hxlTag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
+    def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
                  callback=None):
-        self.hxlTag = hxlTag
+        self.tag = tag
         self.minOccur = minOccur
         self.maxOccur = maxOccur
         self.dataType = dataType
@@ -86,10 +86,10 @@ class HXLSchemaRule(object):
         result = True
 
         # Look up only the values that apply to this rule
-        values = row.getAll(self.hxlTag)
+        values = row.getAll(self.tag)
         if values:
-            for columnNumber, value in enumerate(values):
-                if not self.validate(value, row, row.columns[columnNumber]):
+            for column_number, value in enumerate(values):
+                if not self.validate(value, row, row.columns[column_number]):
                     result = False
                 if value:
                     numberSeen += 1
@@ -215,7 +215,7 @@ class HXLSchemaRule(object):
 
     def __str__(self):
         """String representation of a rule (for debugging)"""
-        return "<HXL schema rule: " + self.hxlTag + ">"
+        return "<HXL schema rule: " + self.tag + ">"
                 
 class HXLSchema(object):
     """

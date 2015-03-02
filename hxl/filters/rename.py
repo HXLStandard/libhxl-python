@@ -49,12 +49,12 @@ class HXLRenameFilter(HXLDataProvider):
         Return the renamed columns.
         """
         def rename_tags(column):
-            tag = column.hxlTag
+            tag = column.tag
             if tag in self.rename_map:
                 column = copy.copy(column)
-                column.hxlTag = self.rename_map[tag][0]
+                column.tag = self.rename_map[tag][0]
                 if self.rename_map[tag][1]:
-                    column.headerText = self.rename_map[tag][1]
+                    column.header = self.rename_map[tag][1]
             return column
         return map(rename_tags, self.source.columns)
 

@@ -37,7 +37,7 @@ def find_column_index(tag, columns):
     """Find the first column in a list with tag"""
     index = 0
     for column in columns:
-        if column.hxlTag == tag:
+        if column.tag == tag:
             return index
         index += 1
     return None

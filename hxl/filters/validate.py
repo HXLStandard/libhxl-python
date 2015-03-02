@@ -52,10 +52,10 @@ class HXLValidateFilter(HXLDataProvider):
         """
         if self._saved_columns is None:
             # append error columns
-            err_col = HXLColumn(hxlTag='#x_errors', headerText='Error messages')
-            tag_col = HXLColumn(hxlTag='#x_tags', headerText='Error tag')
-            row_col = HXLColumn(hxlTag='#x_rows', headerText='Error row number (source)')
-            col_col = HXLColumn(hxlTag='#x_cols', headerText='Error column number (source)')
+            err_col = HXLColumn(tag='#x_errors', header='Error messages')
+            tag_col = HXLColumn(tag='#x_tags', header='Error tag')
+            row_col = HXLColumn(tag='#x_rows', header='Error row number (source)')
+            col_col = HXLColumn(tag='#x_cols', header='Error column number (source)')
             self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 
@@ -80,9 +80,9 @@ class HXLValidateFilter(HXLDataProvider):
                 # append error data to row
                 error_row = copy(row)
                 messages = "\n".join(map(lambda e: e.message, validation_errors))
-                tags = "\n".join(map(lambda e: e.rule.hxlTag if e.rule else '', validation_errors))
-                rows = "\n".join(map(lambda e: str(e.row.sourceRowNumber) if e.row else '', validation_errors))
-                columns = "\n".join(map(lambda e: str(e.column.sourceColumnNumber) if e.column else '', validation_errors))
+                tags = "\n".join(map(lambda e: e.rule.tag if e.rule else '', validation_errors))
+                rows = "\n".join(map(lambda e: str(e.row.source_row_number) if e.row else '', validation_errors))
+                columns = "\n".join(map(lambda e: str(e.column.source_column_number) if e.column else '', validation_errors))
                 error_row.columns = self.columns
                 error_row.values = error_row.values + [messages, tags, rows, columns]
                 return error_row

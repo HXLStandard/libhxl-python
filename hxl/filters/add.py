@@ -56,7 +56,7 @@ class HXLAddFilter(HXLDataProvider):
         if self._columns_out is None:
             new_columns = []
             for tag in self.values:
-                new_columns.append(HXLColumn(hxlTag=tag, headerText=self.values[tag][1]))
+                new_columns.append(HXLColumn(tag=tag, header=self.values[tag][1]))
             if self.before:
                 self._columns_out = new_columns + self.source.columns
             else:

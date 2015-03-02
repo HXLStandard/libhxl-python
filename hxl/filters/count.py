@@ -66,16 +66,16 @@ class HXLCountFilter(HXLDataProvider):
             for tag in self.count_tags:
                 column = find_column(tag, self.source.columns)
                 if column:
-                    headerText = column.headerText
+                    header = column.header
                 else:
-                    headerText = None
-                cols.append(HXLColumn(hxlTag=tag, headerText=headerText))
-            cols.append(HXLColumn(hxlTag='#x_count_num', headerText='Count'))
+                    header = None
+                cols.append(HXLColumn(tag=tag, header=header))
+            cols.append(HXLColumn(tag='#x_count_num', header='Count'))
             if self.aggregate_tag is not None:
-                cols.append(HXLColumn(hxlTag='#x_sum_num', headerText='Sum'))
-                cols.append(HXLColumn(hxlTag='#x_average_num', headerText='Average (mean)'))
-                cols.append(HXLColumn(hxlTag='#x_min_num', headerText='Minimum value'))
-                cols.append(HXLColumn(hxlTag='#x_max_num', headerText='Maximum value'))
+                cols.append(HXLColumn(tag='#x_sum_num', header='Sum'))
+                cols.append(HXLColumn(tag='#x_average_num', header='Average (mean)'))
+                cols.append(HXLColumn(tag='#x_min_num', header='Minimum value'))
+                cols.append(HXLColumn(tag='#x_max_num', header='Maximum value'))
             self.saved_columns = cols
         return self.saved_columns
 
