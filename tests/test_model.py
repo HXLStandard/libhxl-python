@@ -18,20 +18,18 @@ class TestColumn(unittest.TestCase):
     SOURCE_COLUMN_NUMBER = 7
 
     def setUp(self):
-        self.column = HXLColumn(TestColumn.COLUMN_NUMBER, TestColumn.SOURCE_COLUMN_NUMBER,
-                                TestColumn.HXL_TAG, TestColumn.LANGUAGE_CODE, TestColumn.HEADER_TEXT)
+        self.column = HXLColumn(column_number=TestColumn.COLUMN_NUMBER, source_column_number=TestColumn.SOURCE_COLUMN_NUMBER,
+                                tag=TestColumn.HXL_TAG, attributes={'lang': TestColumn.LANGUAGE_CODE}, header=TestColumn.HEADER_TEXT)
 
     def test_variables(self):
         self.assertEqual(TestColumn.COLUMN_NUMBER, self.column.column_number)
         self.assertEqual(TestColumn.SOURCE_COLUMN_NUMBER, self.column.source_column_number)
         self.assertEqual(TestColumn.HXL_TAG, self.column.tag)
-        self.assertEqual(TestColumn.LANGUAGE_CODE, self.column.lang)
+        self.assertEqual(TestColumn.LANGUAGE_CODE, self.column.attributes['lang'])
         self.assertEqual(TestColumn.HEADER_TEXT, self.column.header)
 
     def test_display_tag(self):
-        self.assertEqual(TestColumn.HXL_TAG + '/' + TestColumn.LANGUAGE_CODE, self.column.displayTag)
-        self.column.lang = None
-        self.assertEqual(TestColumn.HXL_TAG, self.column.displayTag)
+        self.assertEqual(TestColumn.HXL_TAG + '@lang=' + TestColumn.LANGUAGE_CODE, self.column.displayTag)
 
 class TestRow(unittest.TestCase):
 
