@@ -13,7 +13,7 @@ import dateutil.parser
 import argparse
 from copy import copy
 from hxl.model import HXLDataProvider
-from hxl.io import HXLReader, writeHXL
+from hxl.io import HXLReader, writeHXL, StreamInput
 from hxl.filters import parse_tags
 
 class HXLCleanFilter(HXLDataProvider):
@@ -191,7 +191,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         else:
             number_arg = args.number
 
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         filter = HXLCleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
         writeHXL(args.outfile, filter, args.remove_headers)
 

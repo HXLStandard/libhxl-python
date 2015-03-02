@@ -7,6 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
+import abc
 import csv
 import json
 import re
@@ -31,6 +32,65 @@ class HXLParseException(HXLException):
     def __str__(self):
         return '<HXLException: ' + str(self.message) + ' @ ' + str(self.source_row_number) + ', ' + str(self.source_column_number) + '>'
 
+class AbstractInput(object):
+    """Abstract base class for input classes."""
+
+    __metaclass__ = abc.ABCMeta
+
+    def __iter__(self):
+        return self
+
+    @abc.abstractmethod
+    def __next__(self):
+        return
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self):
+        pass
+
+
+class StreamInput(AbstractInput):
+    """Read raw input from a file object."""
+
+    def __init__(self, input):
+        self._reader = csv.reader(input)
+
+    def __next__(self):
+        return self._reader.next()
+
+    next = __next__
+
+
+class URLInput(AbstractInput):
+    """Read raw input from a URL or filename."""
+
+    def __init__(self, url):
+        self._input = urllib.urlopen(url)
+        self._reader = csv.reader(self._input)
+
+    def __next__(self):
+        return self._reader.next()
+
+    next = __next__
+
+    def __exit__(self, value, type, traceback):
+        self._input.close()
+
+
+class ArrayInput(AbstractInput):
+    """Read raw input from an array."""
+
+    def __init__(self, data):
+        self._reader = csv.reader(data)
+
+    def __next__(self):
+        return next(self._reader)
+
+    next = __next__
+
+
 class HXLReader(HXLDataProvider):
     """Read HXL data from a file
 
@@ -41,7 +101,7 @@ class HXLReader(HXLDataProvider):
 
     """
 
-    def __init__(self, input=None, url=None, rawData=None):
+    def __init__(self, input):
         """Constructor
 
         The order of preference is to use rawData if supplied; then
@@ -56,22 +116,11 @@ class HXLReader(HXLDataProvider):
         @param url the URL or filename to open.
 
         """
-
-        if input is None and url is None and rawData is None:
-            raise HXLException("At least one of rawData, input, or url must be supplied.")
-
-        self._opened_file = None
-        if rawData is None:
-            if not input:
-                input = self._opened_file = urllib.urlopen(url, 'r')
-            self.rawData = csv.reader(input)
-        else:
-            self.rawData = rawData
-
+        
+        self._input = input
         self._columns = None
         self._source_row_number = -1
         self._row_number = -1
-        self._last_header_row = None
         self._raw_data = None
 
     @property
@@ -80,7 +129,7 @@ class HXLReader(HXLDataProvider):
         Return a list of HXLColumn objects.
         """
         if self._columns is None:
-            self._columns = self._setup_table_spec()
+            self._columns = self._find_tags()
         return self._columns
 
     def __next__(self):
@@ -89,28 +138,30 @@ class HXLReader(HXLDataProvider):
         Returns a HXLRow, or raises StopIteration exception at end
         """
         columns = self.columns
-        values = self._parse_source_row()
+        values = self._get_row()
         self._row_number += 1
         return HXLRow(columns=columns, values=values, source_row_number=self._source_row_number, row_number=self._row_number)
 
+    # for compatibility
     next = __next__
 
-    def _setup_table_spec(self):
+    def _find_tags(self):
         """
         Go fishing for the HXL hashtag row in the first 25 rows.
-        Returns a _TableSpec on success. Throws an exception on failure.
         """
+        previous_row = []
         try:
             for n in range(0,25):
-                values = self._parse_source_row()
-                columns = self._parse_hashtag_row(values)
+                raw_row = self._get_row()
+                columns = self._parse_tags(raw_row, previous_row)
                 if columns is not None:
                     return columns
+                previous_row = raw_row
         except StopIteration:
             pass
         raise HXLParseException("HXL hashtags not found in first 25 rows")
     
-    def _parse_hashtag_row(self, rawDataRow):
+    def _parse_tags(self, raw_row, previous_row):
         """
         Try parsing the current raw CSV data row as a HXL hashtag row.
         """
@@ -122,11 +173,15 @@ class HXLReader(HXLDataProvider):
 
         columns = []
 
-        for source_column_number, rawString in enumerate(rawDataRow):
+        for source_column_number, rawString in enumerate(raw_row):
             rawString = rawString.strip()
             if rawString:
                 nonEmptyCount += 1
-                column = self._parse_hashtag(column_number, source_column_number, rawString)
+                if source_column_number < len(previous_row):
+                    header = previous_row[source_column_number]
+                else:
+                    header = None
+                column = self._parse_tag(column_number, source_column_number, rawString, header)
                 if column:
                     columns.append(column)
                     column_number += 1
@@ -137,7 +192,7 @@ class HXLReader(HXLDataProvider):
         else:
             return None
 
-    def _parse_hashtag(self, column_number, source_column_number, rawString):
+    def _parse_tag(self, column_number, source_column_number, rawString, header):
         """
         Attempt to parse a full hashtag specification.
         May include compact disaggregated syntax
@@ -153,13 +208,23 @@ class HXLReader(HXLDataProvider):
         # Try a match
         result = re.match(fullRegexp, rawString)
         if result:
-            # FIXME - support old compact-disaggregated, plus new attributes
-            return HXLColumn(column_number, source_column_number, result.group(1), result.group(2))
+            attributes = {}
+            if result.group(3):
+                tag = result.group(3)
+                if result.group(4):
+                    attributes['lang'] = result.group(4)
+                name = re.sub(r'^#', '', result.group(1))
+                attributes[name] = header
+            else:
+                tag = result.group(1)
+                if result.group(2):
+                    attributes['lang'] = result.group(2)
+            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
 
-    def _parse_source_row(self):
+    def _get_row(self):
         """Parse a row of raw CSV data.  Returns an array of strings."""
         self._source_row_number += 1
-        return next(self.rawData)
+        return next(self._input)
 
     def __enter__(self):
         """Context-start support."""
@@ -170,7 +235,7 @@ class HXLReader(HXLDataProvider):
         if self._opened_input:
             self._opened_input.close()
 
-def readHXL(input=None, url=None, rawData=None):
+def readHXL(input):
     """Load an in-memory HXL dataset.
 
     At least one of input, url, and rawData must be provided. Order of
@@ -184,7 +249,7 @@ def readHXL(input=None, url=None, rawData=None):
     """
     dataset = HXLDataset(url)
 
-    parser = HXLReader(input, url, rawData)
+    parser = HXLReader(input)
     dataset.columns = parser.columns
     for row in parser:
         dataset.rows.append(row)
@@ -221,7 +286,7 @@ def genHXL(source, showHeaders=True):
     if showHeaders and source.hasHeaders:
         writer.writerow(source.headers)
         yield output.get()
-    writer.writerow(source.tags)
+    writer.writerow(source.displayTags)
     yield output.get()
     for row in source:
         writer.writerow(row.values)

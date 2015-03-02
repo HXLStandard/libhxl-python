@@ -21,7 +21,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import re
 import json
-from hxl.io import HXLReader
+from hxl.io import StreamInput, HXLReader
 
 def hxl2geojson(input, output):
     """
@@ -31,7 +31,7 @@ def hxl2geojson(input, output):
     output.write('{"type": "FeatureCollection",\n')
     output.write(' "features": [\n')
 
-    parser = HXLReader(input)
+    parser = HXLReader(StreamInput(input))
 
     pattern = re.compile('^', re.MULTILINE)
     isFirst = True

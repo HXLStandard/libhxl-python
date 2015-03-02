@@ -13,7 +13,7 @@ import sys
 import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.filters import parse_tags, find_column, find_column_index
 
 class HXLMergeFilter(HXLDataProvider):
@@ -206,8 +206,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     # FIXME - will this be OK with stdin/stdout?
     with args.infile, args.outfile, args.merge:
-        source = HXLReader(args.infile)
-        filter = HXLMergeFilter(source, merge_source=HXLReader(args.merge),
+        source = HXLReader(StreamInput(args.infile))
+        filter = HXLMergeFilter(source, merge_source=HXLReader(StreamInput(args.merge)),
                                 keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         writeHXL(args.outfile, filter)
 

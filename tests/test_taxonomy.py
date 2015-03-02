@@ -8,7 +8,7 @@ License: Public Domain
 
 import os
 import unittest
-from hxl.io import HXLReader
+from hxl.io import StreamInput, HXLReader
 from hxl.taxonomy import HXLTaxonomyException, HXLTaxonomy, HXLTerm, readTaxonomy
 
 class TestTaxonomy(unittest.TestCase):
@@ -77,4 +77,4 @@ def read_taxonomy(name):
     Read a taxonomy test file
     """
     with open(os.path.join(file_dir, name), 'r') as input:
-        return readTaxonomy(HXLReader(input))
+        return readTaxonomy(HXLReader(StreamInput(input)))

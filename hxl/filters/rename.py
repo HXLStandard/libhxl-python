@@ -13,7 +13,7 @@ import copy
 import re
 from hxl.model import HXLDataProvider
 from hxl.filters import fix_tag
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLRenameFilter(HXLDataProvider):
     """
@@ -104,7 +104,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with args.infile, args.outfile:
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         filter = HXLRenameFilter(source, dict(args.rename))
         writeHXL(args.outfile, filter)
 

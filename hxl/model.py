@@ -115,22 +115,21 @@ class HXLColumn(object):
     """ 
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
-    __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header']
+    __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header', 'attributes']
 
-    def __init__(self, column_number=None, source_column_number=None, tag=None, lang=None, header=None):
+    def __init__(self, column_number=None, source_column_number=None, tag=None, header=None, attributes={}):
         """
         Initialise a column definition.
         @param column_number the logical column number (default: None)
         @param source_column_number the raw column number in the source dataset (default: None)
         @param tag the HXL hashtag for the column (default: None)
-        @param lang the ISO 639- language code for the column, e.g. "es" (default: None)
         @param header the original plaintext header for the column (default: None)
         """
         self.column_number = column_number
         self.source_column_number = source_column_number
         self.tag = tag
-        self.lang = lang
         self.header = header
+        self.attributes = copy.copy(attributes)
 
     @property
     def displayTag(self):
@@ -138,11 +137,11 @@ class HXLColumn(object):
         Generate a display version of the column hashtag
         @return the reassembled HXL hashtag string, including language code
         """
-        if (self.tag):
-            if (self.lang):
-                return self.tag + '/' + self.lang
-            else:
-                return self.tag
+        if self.tag:
+            s = self.tag
+            for name in self.attributes:
+                s += '@' + name + '=' + self.attributes[name]
+            return s
         else:
             return None
 

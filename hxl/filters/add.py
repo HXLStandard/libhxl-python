@@ -14,7 +14,7 @@ from copy import copy
 
 from . import HXLFilterException
 from hxl.model import HXLDataProvider, HXLColumn
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.filters import parse_tags
 
 class HXLAddFilter(HXLDataProvider):
@@ -138,7 +138,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with args.infile, args.outfile:
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         filter = HXLAddFilter(source, values=dict(args.value), before=args.before)
         writeHXL(args.outfile, filter)
 

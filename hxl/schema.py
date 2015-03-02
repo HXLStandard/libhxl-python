@@ -13,7 +13,7 @@ import os
 from copy import copy
 from email.utils import parseaddr
 from . import HXLException
-from hxl.io import HXLReader
+from hxl.io import StreamInput, HXLReader
 from hxl.taxonomy import readTaxonomy
 
 if sys.version_info[0] > 2:
@@ -267,7 +267,7 @@ def readHXLSchema(source=None, baseDir=None):
     if source is None:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
         with open(path, 'r') as input:
-            return _read_hxl_schema(HXLReader(input), baseDir)
+            return _read_hxl_schema(HXLReader(StreamInput(input)), baseDir)
     else:
         return _read_hxl_schema(source, baseDir)
 
@@ -319,7 +319,7 @@ def _read_hxl_schema(source, baseDir):
             else:
                 path = s
             with open(path, 'r') as input:
-                return readTaxonomy(HXLReader(input))
+                return readTaxonomy(HXLReader(StreamInput(input)))
         else:
             return None
 

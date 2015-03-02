@@ -12,7 +12,7 @@ import os
 import argparse
 from copy import copy
 from hxl.model import HXLDataProvider, HXLColumn
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.schema import readHXLSchema
 
 class HXLValidateFilter(HXLDataProvider):
@@ -135,9 +135,9 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with args.infile, args.outfile, args.schema:
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         if args.schema:
-            schema = readHXLSchema(HXLReader(args.schema), baseDir=os.path.dirname(args.schema.name))
+            schema = readHXLSchema(HXLReader(StreamInput(args.schema)), baseDir=os.path.dirname(args.schema.name))
         else:
             schema = readHXLSchema()
         filter = HXLValidateFilter(source, schema, args.all)

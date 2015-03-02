@@ -12,7 +12,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLRow
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.filters import parse_tags
 
 class HXLCutFilter(HXLDataProvider):
@@ -124,7 +124,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with args.infile, args.outfile:
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         filter = HXLCutFilter(source, args.include, args.exclude)
         writeHXL(args.outfile, filter)
 

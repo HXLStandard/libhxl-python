@@ -18,7 +18,7 @@ import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLColumn, HXLRow
 from hxl.filters import parse_tags, fix_tag, find_column
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLCountFilter(HXLDataProvider):
     """
@@ -208,7 +208,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     args = parser.parse_args(args)
     with args.infile, args.outfile:
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         filter = HXLCountFilter(source, args.tags, args.aggregate)
         writeHXL(args.outfile, filter)
 

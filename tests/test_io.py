@@ -10,7 +10,7 @@ License: Public Domain
 import unittest
 import os
 import codecs
-from hxl.io import HXLParseException, HXLReader
+from hxl.io import StreamInput, HXLParseException, HXLReader
 
 class TestParser(unittest.TestCase):
 
@@ -43,40 +43,40 @@ class TestParser(unittest.TestCase):
         row_count = 0
         with _read_file() as input:
             # logical row count
-            for row in HXLReader(input):
+            for row in HXLReader(StreamInput(input)):
                 row_count += 1
         self.assertEqual(TestParser.EXPECTED_ROW_COUNT, row_count)
 
     def test_headers(self):
         with _read_file() as input:
-            headers = HXLReader(input).headers
+            headers = HXLReader(StreamInput(input)).headers
         self.assertEqual(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
         with _read_file() as input:
-            tags = HXLReader(input).tags
+            tags = HXLReader(StreamInput(input)).tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
     def test_languages(self):
         with _read_file() as input:
-            for row in HXLReader(input):
+            for row in HXLReader(StreamInput(input)):
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(TestParser.EXPECTED_LANGUAGES[column_number], column.lang)
 
     def test_column_count(self):
         with _read_file() as input:
-            for row in HXLReader(input):
+            for row in HXLReader(StreamInput(input)):
                 self.assertEqual(len(TestParser.EXPECTED_TAGS), len(row.values))
 
     def test_columns(self):
         with _read_file() as input:
-            for row in HXLReader(input):
+            for row in HXLReader(StreamInput(input)):
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
 
     def test_content(self):
         with _read_file() as input:
-            for i, row in enumerate(HXLReader(input)):
+            for i, row in enumerate(HXLReader(StreamInput(input))):
                 for j, value in enumerate(row):
                     self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
 
@@ -85,7 +85,7 @@ class TestParser(unittest.TestCase):
         seen_exception = False
         with _read_file(TestParser.FILE_FUZZY) as input:
             try:
-                HXLReader(input).tags
+                HXLReader(StreamInput(input)).tags
             except HXLParseException:
                 seen_exception = True
         self.assertFalse(seen_exception)
@@ -95,7 +95,7 @@ class TestParser(unittest.TestCase):
         seen_exception = False
         with _read_file(TestParser.FILE_INVALID) as input:
             try:
-                HXLReader(TestParser.FILE_INVALID).tags
+                HXLReader(StreamInput(input)).tags
             except HXLParseException:
                 seen_exception = True
         self.assertTrue(seen_exception)
