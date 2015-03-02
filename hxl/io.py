@@ -352,7 +352,7 @@ class HXLReader(HXLDataProvider):
             _table_spec.append(colSpec)
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE
-        if (tagCount/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE:
+        if (tagCount/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
             return _table_spec
         else:
             return None

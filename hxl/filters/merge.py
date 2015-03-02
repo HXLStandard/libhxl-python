@@ -106,7 +106,7 @@ class HXLMergeFilter(HXLDataProvider):
                     continue
 
             # otherwise, fall through
-            row.append(merge_values.get(tag))
+            row.append(merge_values.get(tag, ''))
         return row
 
     next = __next__
