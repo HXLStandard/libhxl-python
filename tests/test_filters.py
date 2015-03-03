@@ -15,6 +15,9 @@ import filecmp
 import difflib
 import tempfile
 
+from hxl.model import HXLColumn
+from hxl.filters import TagPattern
+
 import hxl.filters.add
 import hxl.filters.count
 import hxl.filters.cut
@@ -48,6 +51,45 @@ class BaseTest(unittest.TestCase):
                 output_file
                 )
             )
+
+class TestPattern(BaseTest):
+    """Test the TagPattern class."""
+
+    def setUp(self):
+        self.column = HXLColumn(tag='#tag', attributes=['foo', 'bar'])
+
+    def test_simple(self):
+        pattern = TagPattern('#tag')
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tagx')
+        self.assertFalse(pattern.match(self.column))
+
+    def test_include(self):
+        pattern = TagPattern('#tag', include_attributes=['foo'])
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tag', include_attributes=['xxx'])
+        self.assertFalse(pattern.match(self.column))
+
+    def test_exclude(self):
+        pattern = TagPattern('#tag', exclude_attributes=['xxx'])
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tag', exclude_attributes=['foo'])
+        self.assertFalse(pattern.match(self.column))
+
+    def test_parse(self):
+        pattern = TagPattern.parse('#tag+foo-xxx')
+        self.assertEqual(pattern.tag, '#tag')
+        self.assertTrue('foo' in pattern.include_attributes)
+        pattern = TagPattern.parse('tag+foo-xxx')
+        self.assertEqual(pattern.tag, '#tag')
+
+    def test_parse_list(self):
+        patterns = TagPattern.parse_list('tag+foo,tag-xxx')
+        for pattern in patterns:
+            self.assertTrue(pattern.match(self.column))
+        patterns = TagPattern.parse_list('tag-foo,tag+xxx')
+        for pattern in patterns:
+            self.assertFalse(pattern.match(self.column))
 
 class TestAdd(BaseTest):
     """
