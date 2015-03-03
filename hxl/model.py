@@ -9,6 +9,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import abc
 import copy
+import re
 
 class HXLDataProvider(object):
     """
@@ -83,7 +84,6 @@ class HXLDataProvider(object):
                 return True
         return False
 
-
 class HXLDataset(HXLDataProvider):
     """
     In-memory HXL dataset.
@@ -107,6 +107,57 @@ class HXLDataset(HXLDataProvider):
             return '<HXLDataset ' + self.url + '>'
         else:
             return '<HXLDataset>'
+
+
+class HXLTagSpec(object):
+
+    __slots__ = ['tag', 'attributes']
+
+    def __init__(self, tag, attributes=None):
+        """Create a new tagspec."""
+        self.tag = tag
+        if attributes:
+            self.attributes = set(attributes)
+        else:
+            self.attributes = {}
+
+    def matches(self, tagspec):
+        """Test whether another tagspec is a subset of this one."""
+        if self.tag == tagspec.tag:
+            for attribute in tagspec.attributes:
+                if attribute not in self.attributes:
+                    return False
+            return True
+        else:
+            return False
+
+    def __repr__(self):
+        """Create a string representation of the tag and its attributes."""
+        s = self.tag
+        for attribute in self.attributes:
+            s += '+' + attribute
+        return s
+
+    __str__ = __repr__
+
+    def __eq__(self, other):
+        return self.tag == other.tag and self.attributes == other.attributes
+
+    @staticmethod
+    def parse(str):
+        """Static method: try parsing a string to make a tagspec."""
+        pattern = r'^\s*(#[A-Za-z][_0-9A-Za-z]*)((?:\+[A-Za-z][_0-9A-Za-z]*)*)\s*$'
+        result = re.match(pattern, str)
+        if result:
+            tag = result.group(1)
+            if result.group(2):
+                attributes = result.group(2).split('+')
+                attributes = attributes[1:]
+            else:
+                attributes = []
+            return HXLTagSpec(tag=tag, attributes=attributes)
+        else:
+            return None
 
 
 class HXLColumn(object):

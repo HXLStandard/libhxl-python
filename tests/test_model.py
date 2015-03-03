@@ -7,7 +7,44 @@ License: Public Domain
 """
 
 import unittest
-from hxl.model import HXLColumn, HXLRow
+from hxl.model import HXLTagSpec, HXLColumn, HXLRow
+
+class TestTagSpec(unittest.TestCase):
+    
+    TAG = '#foo'
+    ATTRIBUTES = {'en', 'bar'}
+
+    def setUp(self):
+        self.tagspec = HXLTagSpec(self.TAG, self.ATTRIBUTES)
+
+    def test_basic(self):
+        self.assertEqual(self.TAG, self.tagspec.tag)
+        self.assertEqual(self.ATTRIBUTES, self.tagspec.attributes)
+
+    def test_contains(self):
+        for attribute in self.ATTRIBUTES:
+            self.assertTrue(attribute in self.tagspec.attributes)
+
+    def test_matches(self):
+        # Match #foo
+        self.assertTrue(self.tagspec.matches(HXLTagSpec(self.TAG)))
+        # Match #foo+bar
+        self.assertTrue(self.tagspec.matches(HXLTagSpec(self.TAG, ['bar'])))
+        # Match #foo+en+bar
+        self.assertTrue(self.tagspec.matches(HXLTagSpec(self.TAG, self.ATTRIBUTES)))
+
+        # Don't match #xxx
+        self.assertFalse(self.tagspec.matches(HXLTagSpec('#xxx')))
+        # Don't match #foo+xxx
+        self.assertFalse(self.tagspec.matches(HXLTagSpec(self.TAG, ['xxx'])))
+
+    def test_str(self):
+        name = self.TAG + '+' + '+'.join(self.ATTRIBUTES)
+        self.assertEqual(name, str(self.tagspec))
+
+    def test_parse(self):
+        self.assertEqual(HXLTagSpec.parse("#foo+en+bar"), self.tagspec)
+        
 
 class TestColumn(unittest.TestCase):
 
