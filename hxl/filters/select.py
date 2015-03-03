@@ -15,7 +15,7 @@ import re
 import operator
 import argparse
 from hxl.model import HXLDataProvider
-from hxl.io import HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLSelectFilter(HXLDataProvider):
     """
@@ -167,7 +167,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with args.infile, args.outfile:
-        source = HXLReader(args.infile)
+        source = HXLReader(StreamInput(args.infile))
         filter = HXLSelectFilter(source, queries=args.query, reverse=args.reverse)
         writeHXL(args.outfile, filter)
 
