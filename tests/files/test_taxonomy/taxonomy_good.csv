@@ -1,5 +1,5 @@
 Código,Localização,Código pai,Nível,Tipo
-#term_id,#title/pt,#parent_id,#level_num,#level/pt
+#term_id,#title+pt,#parent_id,#level_num,#level+pt
 ST,São Tomé e Principe,,0,País
 ST-P,Principe,ST,1,Província
 ST-S,São Tomé,ST,1,Província
