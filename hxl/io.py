@@ -58,7 +58,7 @@ class StreamInput(AbstractInput):
         self._reader = csv.reader(input)
 
     def __next__(self):
-        return self._reader.next()
+        return next(self._reader)
 
     next = __next__
 
@@ -71,7 +71,7 @@ class URLInput(AbstractInput):
         self._reader = csv.reader(self._input)
 
     def __next__(self):
-        return self._reader.next()
+        return next(self._reader)
 
     next = __next__
 
