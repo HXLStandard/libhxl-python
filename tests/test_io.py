@@ -21,7 +21,7 @@ class TestParser(unittest.TestCase):
     EXPECTED_ROW_COUNT = 4
     EXPECTED_HEADERS = ['Registro', 'Sector/Cluster','Subsector','Organización','Hombres','Mujeres','País','Departamento/Provincia/Estado', None]
     EXPECTED_TAGS = [None, '#sector', '#subsector', '#org', '#targeted_num', '#targeted_num', '#country', '#adm1', '#report_date']
-    EXPECTED_MODIFIERS = [[], ['es'], ['es'], ['es'], ['f'], ['m'], [], [], []]
+    EXPECTED_ATTRIBUTES = [[], ['es'], ['es'], ['es'], ['f'], ['m'], [], [], []]
     EXPECTED_CONTENT = [
         ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos', '1 March 2015'],
         ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca', ''],
@@ -53,11 +53,11 @@ class TestParser(unittest.TestCase):
             tags = HXLReader(StreamInput(input)).tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
-    def test_modifiers(self):
+    def test_attributes(self):
         with _read_file() as input:
             for row in HXLReader(StreamInput(input)):
                 for column_number, column in enumerate(row.columns):
-                    self.assertEqual(TestParser.EXPECTED_MODIFIERS[column_number], column.modifiers)
+                    self.assertEqual(TestParser.EXPECTED_ATTRIBUTES[column_number], column.attributes)
 
     def test_column_count(self):
         with _read_file() as input:

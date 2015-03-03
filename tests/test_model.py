@@ -12,24 +12,24 @@ from hxl.model import HXLColumn, HXLRow
 class TestColumn(unittest.TestCase):
 
     HXL_TAG = '#foo'
-    MODIFIERS = ['en', 'bar']
+    ATTRIBUTES = ['en', 'bar']
     HEADER_TEXT = 'Foo header'
     COLUMN_NUMBER = 5
     SOURCE_COLUMN_NUMBER = 7
 
     def setUp(self):
         self.column = HXLColumn(column_number=TestColumn.COLUMN_NUMBER, source_column_number=TestColumn.SOURCE_COLUMN_NUMBER,
-                                tag=TestColumn.HXL_TAG, modifiers=TestColumn.MODIFIERS, header=TestColumn.HEADER_TEXT)
+                                tag=TestColumn.HXL_TAG, attributes=TestColumn.ATTRIBUTES, header=TestColumn.HEADER_TEXT)
 
     def test_variables(self):
         self.assertEqual(TestColumn.COLUMN_NUMBER, self.column.column_number)
         self.assertEqual(TestColumn.SOURCE_COLUMN_NUMBER, self.column.source_column_number)
         self.assertEqual(TestColumn.HXL_TAG, self.column.tag)
-        self.assertEqual(TestColumn.MODIFIERS, self.column.modifiers)
+        self.assertEqual(TestColumn.ATTRIBUTES, self.column.attributes)
         self.assertEqual(TestColumn.HEADER_TEXT, self.column.header)
 
     def test_display_tag(self):
-        self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.MODIFIERS), self.column.displayTag)
+        self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.displayTag)
 
 class TestRow(unittest.TestCase):
 

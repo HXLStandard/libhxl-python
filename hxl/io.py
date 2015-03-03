@@ -204,12 +204,12 @@ class HXLReader(HXLDataProvider):
         result = re.match(pattern, rawString)
         if result:
             tag = result.group(1)
-            modifier_string = result.group(2)
-            if modifier_string:
-                modifiers = modifier_string[1:].split('+')
+            attribute_string = result.group(2)
+            if attribute_string:
+                attributes = attribute_string[1:].split('+')
             else:
-                modifiers = []
-            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, modifiers=modifiers, header=header)
+                attributes = []
+            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
         else:
             return None
 
