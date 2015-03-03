@@ -175,16 +175,18 @@ class HXLReader(HXLDataProvider):
 
         for source_column_number, rawString in enumerate(raw_row):
             rawString = rawString.strip()
+            if source_column_number < len(previous_row):
+                header = previous_row[source_column_number]
+            else:
+                header = None
             if rawString:
                 nonEmptyCount += 1
-                if source_column_number < len(previous_row):
-                    header = previous_row[source_column_number]
-                else:
-                    header = None
                 column = self._parse_tag(column_number, source_column_number, rawString, header)
                 if column:
                     columns.append(column)
                     column_number += 1
+            else:
+                columns.append(HXLColumn(column_number, source_column_number, header=header))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:

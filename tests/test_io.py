@@ -18,19 +18,15 @@ class TestParser(unittest.TestCase):
     FILE_FUZZY = './files/test_parser/input-fuzzy.csv'
     FILE_INVALID = './files/test_parser/input-invalid.csv'
 
-    EXPECTED_ROW_COUNT = 8
-    EXPECTED_HEADERS = ['Sector/Cluster','Subsector','Organización','Sex','Targeted','País','Departamento/Provincia/Estado']
-    EXPECTED_TAGS = ['#sector', '#subsector', '#org', '#sex', '#targeted_num', '#country', '#adm1']
-    EXPECTED_LANGUAGES = ['es', 'es', 'es', None, None, None, None]
+    EXPECTED_ROW_COUNT = 4
+    EXPECTED_HEADERS = ['Registro', 'Sector/Cluster','Subsector','Organización','Hombres','Mujeres','País','Departamento/Provincia/Estado', None]
+    EXPECTED_TAGS = [None, '#sector', '#subsector', '#org', '#targeted_num', '#targeted_num', '#country', '#adm1', '#report_date']
+    EXPECTED_MODIFIERS = [[], ['es'], ['es'], ['es'], ['f'], ['m'], [], [], []]
     EXPECTED_CONTENT = [
-        ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
-        ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
-        ['Salud', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
-        ['Salud', 'Vacunación', 'OMS', 'Mujeres', '', 'Colombia', 'Cauca'],
-        ['Educación', 'Formación de enseñadores', 'UNICEF', 'Hombres', '250', 'Colombia', 'Chocó'],
-        ['Educación', 'Formación de enseñadores', 'UNICEF', 'Mujeres', '300', 'Colombia', 'Chocó'],
-        ['WASH', 'Urbano', 'OMS', 'Hombres', '80', 'Venezuela', 'Amazonas'],
-        ['WASH', 'Urbano', 'OMS', 'Mujeres', '95', 'Venezuela', 'Amazonas']
+        ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos', '1 March 2015'],
+        ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca', ''],
+        ['003', 'Educación', 'Formación de enseñadores', 'UNICEF', '250', '300', 'Colombia', 'Chocó', ''],
+        ['004', 'WASH', 'Urbano', 'OMS', '80', '95', 'Venezuela', 'Amazonas', '']
     ]
 
     def setUp(self):
@@ -57,11 +53,11 @@ class TestParser(unittest.TestCase):
             tags = HXLReader(StreamInput(input)).tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
-    def test_languages(self):
+    def test_modifiers(self):
         with _read_file() as input:
             for row in HXLReader(StreamInput(input)):
                 for column_number, column in enumerate(row.columns):
-                    self.assertEqual(TestParser.EXPECTED_LANGUAGES[column_number], column.lang)
+                    self.assertEqual(TestParser.EXPECTED_MODIFIERS[column_number], column.modifiers)
 
     def test_column_count(self):
         with _read_file() as input:
