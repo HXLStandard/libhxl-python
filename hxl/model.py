@@ -148,15 +148,10 @@ class HXLColumn(object):
         else:
             return None
 
-    def __str__(self):
-        """
-        Create a string representation of a column header for debugging.
-        """
-        tag = self.displayTag
-        if tag:
-            return '<HXLColumn ' + str(tag) + '>'
-        else:
-            return '<HXLColumn>'
+    def __repr__(self):
+        return self.displayTag
+
+    __str__ = __repr__
 
 
 class HXLRow(object):

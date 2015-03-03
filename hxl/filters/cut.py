@@ -13,7 +13,7 @@ import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLRow
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import parse_tags
+from hxl.filters import TagPattern
 
 class HXLCutFilter(HXLDataProvider):
     """
@@ -43,6 +43,7 @@ class HXLCutFilter(HXLDataProvider):
         self.source = source
         self.include_tags = include_tags
         self.exclude_tags = exclude_tags
+        self.indices = [] # saved indices for columns to include
         self.columns_out = None
 
     @property
@@ -52,21 +53,23 @@ class HXLCutFilter(HXLDataProvider):
         """
         if self.columns_out is None:
             self.columns_out = []
-            for column in self.source.columns:
+            columns = self.source.columns
+            for i in range(len(columns)):
+                column = columns[i]
                 if self._test_column(column):
                     self.columns_out.append(column)
+                    self.indices.append(i) # save index to avoid retesting for data
         return self.columns_out
 
     def __next__(self):
         """
         Return the next row, with appropriate columns filtered out.
         """
-        row = next(self.source)
+        row_in = next(self.source)
+        row_out = HXLRow(columns=self.columns)
         values_out = []
-        for pos, value in enumerate(row):
-            if self._test_column(row.columns[pos]):
-                values_out.append(value)
-        row_out = HXLRow(self.columns)
+        for i in self.indices:
+            values_out.append(row_in.values[i])
         row_out.values = values_out
         return row_out
 
@@ -77,7 +80,24 @@ class HXLCutFilter(HXLDataProvider):
         Test whether a column should be included in the output.
         If there is a whitelist, it must be in the whitelist; if there is a blacklist, it must not be in the blacklist.
         """
-        return ((not self.include_tags) or (column.tag in self.include_tags)) and ((not self.exclude_tags) or (column.tag not in self.exclude_tags))
+        if self.exclude_tags:
+            # blacklist
+            for pattern in self.exclude_tags:
+                if pattern.match(column):
+                    # fail as soon as we match an excluded pattern
+                    return False
+
+        if self.include_tags:
+            # whitelist
+            for pattern in self.include_tags:
+                if pattern.match(column):
+                    # succeed as soon as we match an included pattern
+                    return True
+            # fail if there was a whitelist and we didn't match
+            return False
+        else:
+            # no whitelist
+            return True
 
 #
 # Command-line support
@@ -112,14 +132,14 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--include',
         help='Comma-separated list of column tags to include',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-x',
         '--exclude',
         help='Comma-separated list of column tags to exclude',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     args = parser.parse_args(args)
 
