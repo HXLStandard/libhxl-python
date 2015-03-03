@@ -1,5 +1,5 @@
 HXL hashtag,Description,Data type,Min cols,Max cols,Default value,Min value,Max value,Pattern,Allowed values,Case sensitive?,Category
-#x_tag,#x_notes/en,#x_datatype,#x_minoccur_num,#x_maxoccur_num,#x_default,#x_minvalue_num,#x_maxvalue_num,#x_pattern,#x_enumeration,#x_casesensitive,#x_category/en
+#x_tag,#x_notes+en,#x_datatype,#x_minoccur_num,#x_maxoccur_num,#x_default,#x_minvalue_num,#x_maxvalue_num,#x_pattern,#x_enumeration,#x_casesensitive,#x_category+en
 #report_date,Date reported,date,0,1,,,,,,,
 #from_date,Start date applicable,date,0,1,,,,,,,
 #to_date,End date applicable,date,0,1,,,,,,,
@@ -89,73 +89,3 @@ HXL hashtag,Description,Data type,Min cols,Max cols,Default value,Min value,Max 
 #beneficiary,Beneficiary description,text,0,,,,,,,,Location
 #beneficiary_id,Beneficiary code,code,0,,,,,,,,Location
 #delivered_num,Number of items delivered.,number,0,1,,0,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Location
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Demographics
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Impact and needs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
-,,,,,,,,,,,Activities and outputs
