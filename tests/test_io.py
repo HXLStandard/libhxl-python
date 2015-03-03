@@ -21,7 +21,7 @@ class TestParser(unittest.TestCase):
     EXPECTED_ROW_COUNT = 4
     EXPECTED_HEADERS = ['Registro', 'Sector/Cluster','Subsector','Organización','Hombres','Mujeres','País','Departamento/Provincia/Estado', None]
     EXPECTED_TAGS = [None, '#sector', '#subsector', '#org', '#targeted_num', '#targeted_num', '#country', '#adm1', '#report_date']
-    EXPECTED_ATTRIBUTES = [[], ['es'], ['es'], ['es'], ['f'], ['m'], [], [], []]
+    EXPECTED_ATTRIBUTES = [{}, {'es'}, {'es'}, {'es'}, {'f'}, {'m'}, {}, {}, {}]
     EXPECTED_CONTENT = [
         ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos', '1 March 2015'],
         ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca', ''],
