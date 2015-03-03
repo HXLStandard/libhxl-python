@@ -115,9 +115,9 @@ class HXLColumn(object):
     """ 
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
-    __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header', 'attributes']
+    __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header', 'modifiers']
 
-    def __init__(self, column_number=None, source_column_number=None, tag=None, header=None, attributes={}):
+    def __init__(self, column_number=None, source_column_number=None, tag=None, header=None, modifiers=[]):
         """
         Initialise a column definition.
         @param column_number the logical column number (default: None)
@@ -129,7 +129,7 @@ class HXLColumn(object):
         self.source_column_number = source_column_number
         self.tag = tag
         self.header = header
-        self.attributes = copy.copy(attributes)
+        self.modifiers = copy.copy(modifiers)
 
     @property
     def displayTag(self):
@@ -139,8 +139,8 @@ class HXLColumn(object):
         """
         if self.tag:
             s = self.tag
-            for name in self.attributes:
-                s += '@' + name + '=' + self.attributes[name]
+            for modifier in self.modifiers:
+                s += '+' + modifier
             return s
         else:
             return None

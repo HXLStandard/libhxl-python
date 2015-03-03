@@ -195,31 +195,21 @@ class HXLReader(HXLDataProvider):
     def _parse_tag(self, column_number, source_column_number, rawString, header):
         """
         Attempt to parse a full hashtag specification.
-        May include compact disaggregated syntax
-        Returns a colspec or None
         """
 
         # Pattern for a single tag
-        tagRegexp = '(#[a-zA-Z0-9_]+)(?:\/([a-zA-Z]{2}))?'
-
-        # Pattern for full tag spec (optional second tag following '+')
-        fullRegexp = '^\s*' + tagRegexp + '(?:\s*\+\s*' + tagRegexp + ')?$';
-
-        # Try a match
-        result = re.match(fullRegexp, rawString)
+        pattern = r'^\s*(#[a-zA-Z0-9_]+)((?:\+[a-zA-Z][a-zA-Z0-9_]*)*)\s*$'
+        result = re.match(pattern, rawString)
         if result:
-            attributes = {}
-            if result.group(3):
-                tag = result.group(3)
-                if result.group(4):
-                    attributes['lang'] = result.group(4)
-                name = re.sub(r'^#', '', result.group(1))
-                attributes[name] = header
+            tag = result.group(1)
+            modifier_string = result.group(2)
+            if modifier_string:
+                modifiers = modifier_string[1:].split('+')
             else:
-                tag = result.group(1)
-                if result.group(2):
-                    attributes['lang'] = result.group(2)
-            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
+                modifiers = []
+            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, modifiers=modifiers, header=header)
+        else:
+            return None
 
     def _get_row(self):
         """Parse a row of raw CSV data.  Returns an array of strings."""
