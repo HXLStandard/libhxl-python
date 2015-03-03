@@ -31,7 +31,10 @@ def fix_tag(t):
 
 def parse_tags(s):
     """Parse tags out from a comma-separated list"""
-    return list(map(fix_tag, s.split(',')))
+    if s:
+        return list(map(fix_tag, s.split(',')))
+    else:
+        return None
 
 def find_column_index(tag, columns):
     """Find the first column in a list with tag"""
