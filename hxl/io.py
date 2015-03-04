@@ -74,7 +74,11 @@ class URLInput(AbstractInput):
         if sys.version_info < (3,):
             self._input = urllib.urlopen(url)
         else:
-            self._input = urllib.request.urlopen(url)
+            try:
+                self._input = urllib.request.urlopen(url)
+            except:
+                # kludge for local files
+                self._input = open(url, 'r')
         self._reader = csv.reader(self._input)
 
     def __next__(self):
