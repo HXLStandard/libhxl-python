@@ -11,8 +11,8 @@ import sys
 import argparse
 import copy
 import re
-from hxl.model import HXLDataProvider
-from hxl.filters import fix_tag
+from hxl.model import HXLDataProvider, HXLColumn
+from hxl.filters import TagPattern
 from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLRenameFilter(HXLDataProvider):
@@ -29,34 +29,38 @@ class HXLRenameFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLRenameFilter(source, rename_map={'#x_district': '#adm1'})
+    filter = HXLRenameFilter(source, rename=[[TagPattern.parse('#foo'), HXLColumn.parse('#bar')]])
     writeHXL(sys.stdout, filter)
     </pre>
     """
 
-    def __init__(self, source, rename_map={}):
+    def __init__(self, source, rename=[]):
         """
         Constructor
         @param source the HXLDataProvider for the data.
         @param rename_map map of tags to rename
         """
         self.source = source
-        self.rename_map = rename_map
+        self.rename = rename
+        self._saved_columns = None
 
     @property
     def columns(self):
         """
         Return the renamed columns.
         """
-        def rename_tags(column):
-            tag = column.tag
-            if tag in self.rename_map:
-                column = copy.copy(column)
-                column.tag = self.rename_map[tag][0]
-                if self.rename_map[tag][1]:
-                    column.header = self.rename_map[tag][1]
-            return column
-        return map(rename_tags, self.source.columns)
+
+        if self._saved_columns is None:
+            def rename_column(column):
+                for spec in self.rename:
+                    if spec[0].match(column):
+                        new_column = copy.copy(spec[1])
+                        if new_column.header is None:
+                            new_column.header = column.header
+                        return new_column
+                return column
+            self._saved_columns = [rename_column(column) for column in self.source.columns]
+        return self._saved_columns
 
     def __next__(self):
         return next(self.source)
@@ -105,11 +109,16 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with args.infile, args.outfile:
         source = HXLReader(StreamInput(args.infile))
-        filter = HXLRenameFilter(source, dict(args.rename))
+        filter = HXLRenameFilter(source, args.rename)
         writeHXL(args.outfile, filter)
 
 def parse_rename(s):
-    result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*):(?:(.*)#)?([a-zA-Z][a-zA-Z0-9_]*)', s)
-    return ['#' + result.group(1), ['#' + result.group(3), result.group(2)]]
+    result = re.match(r'^\s*#?([^:]+):(?:([^#]*)#)?([^#]+)\s*$', s)
+    if result:
+        pattern = TagPattern.parse(result.group(1))
+        column = HXLColumn.parse('#' + result.group(3), header=result.group(2), use_exception=True)
+        return (pattern, column)
+    else:
+        raise HXLFilterException("Bad rename expression: " + s)
 
 # end

@@ -153,6 +153,27 @@ class HXLColumn(object):
 
     __str__ = __repr__
 
+    @staticmethod
+    def parse(rawString, header=None, column_number=None, source_column_number=None, use_exception=False):
+        """
+        Attempt to parse a full hashtag specification.
+        """
+        # Pattern for a single tag
+        pattern = r'^\s*(#[a-zA-Z0-9_]+)((?:\+[a-zA-Z][a-zA-Z0-9_]*)*)\s*$'
+        result = re.match(pattern, rawString)
+        if result:
+            tag = result.group(1)
+            attribute_string = result.group(2)
+            if attribute_string:
+                attributes = attribute_string[1:].split('+')
+            else:
+                attributes = []
+            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
+        else:
+            if use_exception:
+                raise HXLException("Malformed tag expression: " + rawString)
+            else:
+                return None
 
 class HXLRow(object):
     """
