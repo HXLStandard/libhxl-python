@@ -47,7 +47,7 @@ class AbstractInput(object):
     def __enter__(self):
         return self
 
-    def __exit__(self):
+    def __exit__(self, value, type, traceback):
         pass
 
 
