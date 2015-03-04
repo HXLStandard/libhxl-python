@@ -11,14 +11,28 @@ import sys
 import re
 import dateutil.parser
 import argparse
-from copy import copy
+import copy
 from hxl.model import HXLDataProvider
 from hxl.io import HXLReader, writeHXL, StreamInput
-from hxl.filters import parse_tags
+from hxl.filters import TagPattern
 
 class HXLCleanFilter(HXLDataProvider):
+    """
+    Filter for cleaning values in HXL data.
+    Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.
+    TODO: clean up lat/lon coordinates
+    """
 
     def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[]):
+        """
+        Construct a new data-cleaning filter.
+        @param source the HXLDataSource
+        @param whitespace list of TagPatterns for normalising whitespace, or True to normalise all.
+        @param upper list of TagPatterns for converting to uppercase, or True to convert all.
+        @param lower list of TagPatterns for converting to lowercase, or True to convert all.
+        @param lower list of TagPatterns for normalising dates, or True to normalise all ending in "_date"
+        @param lower list of TagPatterns for normalising numbers, or True to normalise all ending in "_num"
+        """
         self.source = source
         self.whitespace = whitespace
         self.upper = upper
@@ -28,56 +42,71 @@ class HXLCleanFilter(HXLDataProvider):
 
     @property
     def columns(self):
+        """Pass on the source columns unmodified."""
         return self.source.columns
 
     def __next__(self):
-
-        def normalise(value, column):
-            """
-            Normalise a single HXL value.
-            """
-
-            # Whitespace (-w or -W)
-            if self.whitespace:
-                if (self.whitespace is True) or (column.tag in self.whitespace):
-                    value = re.sub('^\s+', '', value)
-                    value = re.sub('\s+$', '', value)
-                    value = re.sub('\s+', ' ', value)
-
-            # Uppercase (-u)
-            if self.upper and column.tag in self.upper:
-                if sys.version_info[0] > 2:
-                    value = value.upper()
-                else:
-                    value = value.decode('utf8').upper().encode('utf8')
-
-            # Lowercase (-l)
-            if self.lower and column.tag in self.lower:
-                if sys.version_info[0] > 2:
-                    value = value.lower()
-                else:
-                    value = value.decode('utf8').lower().encode('utf8')
-
-            # Date (-d or -D)
-            if self.date and value:
-                if (self.date is True and column.tag.endswith('_date')) or (self.date is not True and column.tag in self.date):
-                    value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
-
-            # Number (-n or -N)
-            if self.number and re.match('\d', value):
-                if (self.number is True and column.tag.endswith('_num')) or (self.number is not True and column.tag in self.number):
-                    value = re.sub('[^\d.]', '', value)
-                    value = re.sub('^0+', '', value)
-                    value = re.sub('(\..*)0+$', '\g<1>', value)
-                    value = re.sub('\.$', '', value)
-
-            return value
-
-        row = copy(next(self.source))
-        row.values = row.map(normalise)
+        """Return the next row, with values cleaned as needed."""
+        # TODO implement a lazy copy
+        row = copy.copy(next(self.source))
+        for i in range(min(len(row.values), len(row.columns))):
+            row.values[i] = self._clean_value(row.values[i], row.columns[i])
         return row
 
     next = __next__
+
+    def _clean_value(self, value, column):
+        """Clean a single HXL value."""
+
+        # TODO prescan columns at start for matches
+
+        # Whitespace (-w or -W)
+        if self._match_patterns(self.whitespace, column):
+            value = re.sub('^\s+', '', value)
+            value = re.sub('\s+$', '', value)
+            value = re.sub('\s+', ' ', value)
+
+        # Uppercase (-u)
+        if self._match_patterns(self.upper, column):
+            if sys.version_info[0] > 2:
+                value = value.upper()
+            else:
+                value = value.decode('utf8').upper().encode('utf8')
+
+        # Lowercase (-l)
+        if self._match_patterns(self.lower, column):
+            if sys.version_info[0] > 2:
+                value = value.lower()
+            else:
+                value = value.decode('utf8').lower().encode('utf8')
+
+        # Date (-d or -D)
+        if self._match_patterns(self.date, column, '_date'):
+            value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+
+        # Number (-n or -N)
+        if self._match_patterns(self.number, column, '_num') and re.match('\d', value):
+            value = re.sub('[^\d.]', '', value)
+            value = re.sub('^0+', '', value)
+            value = re.sub('(\..*)0+$', '\g<1>', value)
+            value = re.sub('\.$', '', value)
+
+        return value
+
+    
+
+    def _match_patterns(self, patterns, column, extension=None):
+        """Test if a column matches a list of patterns."""
+        if not patterns:
+            return False
+        elif patterns is True:
+            # if there's an extension specific like "_date", must match it
+            return (not extension or column.tag.endswith(extension))
+        else:
+            for pattern in patterns:
+                if pattern.match(column):
+                    return True
+            return False
 
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -118,21 +147,21 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--whitespace',
         help='Comma-separated list of tags for normalised whitespace.',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-u',
         '--upper',
         help='Comma-separated list of tags to convert to uppercase.',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-l',
         '--lower',
         help='Comma-separated list of tags to convert to lowercase.',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-D',
@@ -147,7 +176,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--date',
         help='Comma-separated list of tags for date normalisation.',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-N',
@@ -162,7 +191,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--number',
         help='Comma-separated list of tags for number normalisation.',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-r',
