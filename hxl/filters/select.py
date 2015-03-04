@@ -14,6 +14,7 @@ import sys
 import re
 import operator
 import argparse
+from hxl.filters import TagPattern
 from hxl.model import HXLDataProvider
 from hxl.io import StreamInput, HXLReader, writeHXL
 
@@ -62,6 +63,16 @@ class HXLSelectFilter(HXLDataProvider):
 
     next = __next__
 
+    def _row_matches_p(self, row):
+        """Check if a key-value pair appears in a HXL row"""
+        for query in self.queries:
+            for i in range(len(self.columns)):
+                if query[0].match(self.columns[i]):
+                    op = query[1]
+                    if row.values[i] and self._try_op(query[1], row.values[i], query[2]):
+                        return not self.reverse
+        return self.reverse
+
     def _try_op(self, op, v1, v2):
         """Try an operator as numeric first, then string"""
         # TODO add dates
@@ -71,16 +82,6 @@ class HXLSelectFilter(HXLDataProvider):
         except ValueError:
             return op(v1, v2)
 
-    def _row_matches_p(self, row):
-        """Check if a key-value pair appears in a HXL row"""
-        for query in self.queries:
-            values = row.getAll(query[0])
-            if values:
-                for value in values:
-                    op = query[1]
-                    if value and self._try_op(op, value, query[2]):
-                        return not self.reverse
-        return self.reverse
 
 def operator_re(s, pattern):
     """Regular-expression comparison operator."""
@@ -89,6 +90,7 @@ def operator_re(s, pattern):
 def operator_nre(s, pattern):
     """Regular-expression negative comparison operator."""
     return not re.match(pattern, s)
+
 
 # Map of comparison operators
 operator_map = {
@@ -107,20 +109,12 @@ operator_map = {
 #
 
 def parse_query(s):
-    """
-    Parse a filter expression
-    """
-    result = re.match('^#?([a-zA-Z][a-zA-Z0-9_]*)([<>]=?|!?=|!?~)(.*)$', s)
-    if result:
-       filter = list(result.group(1, 2, 3))
-       # (re)add hash to start of tag
-       filter[0] = '#' + filter[0]
-       op = operator_map[filter[1]]
-       if op:
-           filter[1] = op
-           return filter
-    print >>stderr, "Bad filter expression: " + s
-    exit(2)
+    """Parse a filter expression"""
+    parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
+    pattern = TagPattern.parse(parts[0])
+    op = operator_map[parts[1]]
+    value = parts[2]
+    return (pattern, op, value)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
