@@ -31,7 +31,9 @@ class HXLAddFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLAddFilter(source, values={'#report_date': '2015-03-01', '#country': 'Kenya'})
+    date_column = HXLColumn(tag='#report_date', header='Date reported')
+    country_column = HXLColumn(tag='#country', header='Country name')
+    filter = HXLAddFilter(source, values=[(date_column, '2015-03-03'), (country_column, 'Kenya')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -39,7 +41,7 @@ class HXLAddFilter(HXLDataProvider):
     def __init__(self, source, values, before=False):
         """
         @param source a HXL data source
-        @param values a dictionary of tags and constant values
+        @param values a sequence of pairs of HXLColumn objects and constant values
         @param before True to add new columns before existing ones
         """
         self.source = source
