@@ -15,7 +15,7 @@ from copy import copy
 from . import HXLFilterException
 from hxl.model import HXLDataProvider, HXLColumn
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import parse_tags
+from hxl.filters import TagPattern
 
 class HXLAddFilter(HXLDataProvider):
     """
@@ -43,10 +43,9 @@ class HXLAddFilter(HXLDataProvider):
         @param before True to add new columns before existing ones
         """
         self.source = source
-        self.values = values
         self.before = before
+        self.values = values
         self._columns_out = None
-        self._const_values = [self.values[tag][0] for tag in self.values]
 
     @property
     def columns(self):
@@ -54,13 +53,13 @@ class HXLAddFilter(HXLDataProvider):
         Add the constant columns to the end.
         """
         if self._columns_out is None:
-            new_columns = []
-            for tag in self.values:
-                new_columns.append(HXLColumn(tag=tag, header=self.values[tag][1]))
+            new_columns = [value[0] for value in self.values]
             if self.before:
                 self._columns_out = new_columns + self.source.columns
             else:
                 self._columns_out = self.source.columns + new_columns
+            # constant values to add
+            self._const_values = [value[1] for value in self.values]
         return self._columns_out
 
     def __next__(self):
@@ -68,6 +67,7 @@ class HXLAddFilter(HXLDataProvider):
         Return the next row, with constant values added.
         """
         row = copy(next(self.source))
+        row.columns = self.columns
         if self.before:
             row.values = self._const_values + row.values
         else:
@@ -82,16 +82,14 @@ class HXLAddFilter(HXLDataProvider):
 #
 
 def parse_value(s):
-    """Parse a tag=value statement."""
-    result = re.match('^(?:(.*)#)?([a-zA-Z][a-zA-Z0-9_]*)=(.*)$', s)
+    result = re.match(r'^(?:([^#]*)#)?([^=]+)=(.*)$', s)
     if result:
-        items = [result.group(2), result.group(3, 1)]
-        # make sure the tag starts with '#'
-        if not items[0].startswith('#'):
-            items[0] = '#' + items[0]
-        return items
+        header = result.group(1)
+        tag = '#' + result.group(2)
+        value = result.group(3)
+        return (HXLColumn(tag=tag, header=header), value)
     else:
-        raise HXLFilterException("Bad value expression: " + s)
+        raise HXLFilterException("Badly formatted --value: " + s)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -139,7 +137,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with args.infile, args.outfile:
         source = HXLReader(StreamInput(args.infile))
-        filter = HXLAddFilter(source, values=dict(args.value), before=args.before)
+        filter = HXLAddFilter(source, values=args.value, before=args.before)
         writeHXL(args.outfile, filter)
 
 # end
