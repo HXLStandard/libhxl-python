@@ -181,7 +181,7 @@ class HXLReader(HXLDataProvider):
                 header = None
             if rawString:
                 nonEmptyCount += 1
-                column = self._parse_tag(column_number, source_column_number, rawString, header)
+                column = HXLColumn.parse(rawString, column_number=column_number, source_column_number=source_column_number, header=header)
                 if column:
                     columns.append(column)
                     column_number += 1
@@ -191,25 +191,6 @@ class HXLReader(HXLDataProvider):
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
             return columns
-        else:
-            return None
-
-    def _parse_tag(self, column_number, source_column_number, rawString, header):
-        """
-        Attempt to parse a full hashtag specification.
-        """
-
-        # Pattern for a single tag
-        pattern = r'^\s*(#[a-zA-Z0-9_]+)((?:\+[a-zA-Z][a-zA-Z0-9_]*)*)\s*$'
-        result = re.match(pattern, rawString)
-        if result:
-            tag = result.group(1)
-            attribute_string = result.group(2)
-            if attribute_string:
-                attributes = attribute_string[1:].split('+')
-            else:
-                attributes = []
-            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
         else:
             return None
 
