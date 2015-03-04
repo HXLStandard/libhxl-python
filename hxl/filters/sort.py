@@ -19,7 +19,7 @@ import argparse
 import dateutil.parser
 from hxl.model import HXLDataProvider
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import parse_tags
+from hxl.filters import TagPattern
 
 class HXLSortFilter(HXLDataProvider):
     """
@@ -35,7 +35,7 @@ class HXLSortFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLSortFilter(source, tags=['#sector', '#org', '#adm1'])
+    filter = HXLSortFilter(source, tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1']))
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -43,7 +43,7 @@ class HXLSortFilter(HXLDataProvider):
     def __init__(self, source, tags=[], reverse=False):
         """
         @param source a HXL data source
-        @param tags tags for sorting
+        @param tags list of TagPattern objects for sorting
         @param reverse True to reverse the sort order
         """
         self.source = source
@@ -67,16 +67,16 @@ class HXLSortFilter(HXLDataProvider):
         def make_key(row):
             """Closure: use the requested tags as keys (if provided). """
 
-            def get_value(tag):
+            def get_value(pattern):
                 """Closure: extract a sort key"""
-                raw_value = row.get(tag)
-                if tag.endswith('_num') or tag.endswith('_deg'):
+                raw_value = pattern.get_value(row)
+                if pattern.tag.endswith('_num') or pattern.tag.endswith('_deg'):
                     # left-pad numbers with zeros
                     try:
                         raw_value = str(float(raw_value)).zfill(15)
                     except ValueError:
                         pass
-                elif tag.endswith('_date'):
+                elif pattern.tag.endswith('_date'):
                     # normalise dates for sorting
                     raw_value = dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
                 return raw_value.upper()
@@ -127,7 +127,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Comma-separated list of tags to for columns to use as sort keys.',
         metavar='tag,tag...',
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-r',
