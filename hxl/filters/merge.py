@@ -11,10 +11,10 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import sys
 import argparse
-from copy import copy
+import copy
 from hxl.model import HXLDataProvider, HXLColumn
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import parse_tags, find_column, find_column_index
+from hxl.filters import TagPattern
 
 class HXLMergeFilter(HXLDataProvider):
     """
@@ -63,17 +63,17 @@ class HXLMergeFilter(HXLDataProvider):
         """
         if self.saved_columns is None:
             new_columns = []
-            for tag in self.merge_tags:
-                if self.replace and find_column(tag, self.source.columns):
+            for pattern in self.merge_tags:
+                if self.replace and pattern.find_column(self.source.columns):
                     # will use existing column
                     continue
                 else:
-                    column = find_column(tag, self.merge_source.columns)
+                    column = pattern.find_column(self.merge_source.columns)
                     if column:
                         header = column.header
                     else:
                         header = None
-                    new_columns.append(HXLColumn(tag=tag, header=header))
+                    new_columns.append(HXLColumn(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
             self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 
@@ -87,26 +87,23 @@ class HXLMergeFilter(HXLDataProvider):
             self.merge_map = self._read_merge()
 
         # Make a copy of the next row from the source
-        row = copy(next(self.source))
+        row = copy.copy(next(self.source))
 
         # Look up the merge values, based on the --keys
         merge_values = self.merge_map.get(self._make_key(row), {})
 
         # Go through the --tags
-        for tag in self.merge_tags:
+        for pattern in self.merge_tags:
             # Try to substitute in place?
             if self.replace:
-                # the column must actually exist in the source
-                index = find_column_index(tag, self.source.columns)
+                index = pattern.find_column_index(self.source.columns)
                 if index is not None:
-                    # --overwrite means replace an existing value
                     if self.overwrite or not row.values[index]:
-                        row.values[index] = merge_values.get(tag)
-                    # go to next tag if we made it here
+                        row.values[index] = merge_values.get(pattern)
                     continue
 
             # otherwise, fall through
-            row.append(merge_values.get(tag, ''))
+            row.append(merge_values.get(pattern, ''))
         return row
 
     next = __next__
@@ -116,8 +113,8 @@ class HXLMergeFilter(HXLDataProvider):
         Make a tuple key for a row.
         """
         values = []
-        for key in self.keys:
-            values.append(row.get(key))
+        for pattern in self.keys:
+            values.append(pattern.get_value(row))
         return tuple(values)
 
     def _read_merge(self):
@@ -129,8 +126,8 @@ class HXLMergeFilter(HXLDataProvider):
         merge_map = {}
         for row in self.merge_source:
             values = {}
-            for tag in self.merge_tags:
-                values[tag] = row.get(tag)
+            for pattern in self.merge_tags:
+                values[pattern] = pattern.get_value(row)
             merge_map[self._make_key(row)] = values
         return merge_map
 
@@ -176,7 +173,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         help='HXL tag(s) to use as a shared key.',
         metavar='tag,tag...',
         required=True,
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-t',
@@ -184,7 +181,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         help='Comma-separated list of column tags to include from the merge dataset.',
         metavar='tag,tag...',
         required=True,
-        type=parse_tags
+        type=TagPattern.parse_list
         )
     parser.add_argument(
         '-r',

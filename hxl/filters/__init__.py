@@ -48,6 +48,13 @@ class TagPattern(object):
         else:
             return False
 
+    def find_column_index(self, columns):
+        """Get the index of the first matching column."""
+        for i in range(len(columns)):
+            if self.match(columns[i]):
+                return i
+        return None
+
     def find_column(self, columns):
         """Check whether there is a match in a list of columns."""
         for column in columns:
@@ -107,33 +114,3 @@ def run_script(func):
         print >>sys.stderr, "Exiting ..."
         sys.exit(2)
 
-def fix_tag(t):
-    """trim whitespace and add # if needed"""
-    t = t.strip()
-    if not t.startswith('#'):
-        t = '#' + t
-    return t
-
-def parse_tags(s):
-    """Parse tags out from a comma-separated list"""
-    if s:
-        return list(map(fix_tag, s.split(',')))
-    else:
-        return None
-
-def find_column_index(tag, columns):
-    """Find the first column in a list with tag"""
-    index = 0
-    for column in columns:
-        if column.tag == tag:
-            return index
-        index += 1
-    return None
-
-def find_column(tag, columns):
-    """Find the first column in a list with tag"""
-    index = find_column_index(tag, columns)
-    if index is not None:
-        return columns[index]
-    else:
-        return None

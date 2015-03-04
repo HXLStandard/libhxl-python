@@ -17,7 +17,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLColumn, HXLRow
-from hxl.filters import TagPattern, find_column
+from hxl.filters import TagPattern
 from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLCountFilter(HXLDataProvider):
