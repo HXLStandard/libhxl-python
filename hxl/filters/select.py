@@ -35,6 +35,14 @@ class Query(object):
         self.op = op
         self.value = value
 
+    def match_row(self, row):
+        """Check if a key-value pair appears in a HXL row"""
+        for i in range(len(row.columns)):
+            if self.pattern.match(row.columns[i]):
+                if row.values[i] and self.match_value(row.values[i]):
+                    return True
+        return False
+
     def match_value(self, value):
         """Try an operator as numeric first, then string"""
         # TODO add dates
@@ -114,20 +122,9 @@ class HXLSelectFilter(HXLDataProvider):
     def _row_matches_p(self, row):
         """Check if a key-value pair appears in a HXL row"""
         for query in self.queries:
-            for i in range(len(self.columns)):
-                if query.pattern.match(self.columns[i]):
-                    if row.values[i] and query.match_value(row.values[i]):
-                        return not self.reverse
+            if query.match_row(row):
+                return not self.reverse
         return self.reverse
-
-    def _try_op(self, op, v1, v2):
-        """Try an operator as numeric first, then string"""
-        # TODO add dates
-        # TODO use knowledge about HXL tags
-        try:
-            return op(float(v1), float(v2))
-        except ValueError:
-            return op(v1, v2)
 
 
 #
