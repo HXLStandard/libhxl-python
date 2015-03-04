@@ -19,7 +19,7 @@ import argparse
 import dateutil.parser
 from hxl.model import HXLDataProvider
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import TagPattern
+from hxl.filters import TagPattern, make_input, make_output
 
 class HXLSortFilter(HXLDataProvider):
     """
@@ -111,16 +111,12 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         'infile',
         help='HXL file to read (if omitted, use standard input).',
-        nargs='?',
-        type=argparse.FileType('r'),
-        default=stdin
+        nargs='?'
         )
     parser.add_argument(
         'outfile',
         help='HXL file to write (if omitted, use standard output).',
-        nargs='?',
-        type=argparse.FileType('w'),
-        default=stdout
+        nargs='?'
         )
     parser.add_argument(
         '-t',
@@ -139,9 +135,9 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with args.infile, args.outfile:
-        source = HXLReader(StreamInput(args.infile))
+    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
+        source = HXLReader(input)
         filter = HXLSortFilter(source, args.tags, args.reverse)
-        writeHXL(args.outfile, filter)
+        writeHXL(output.output, filter)
 
 # end
