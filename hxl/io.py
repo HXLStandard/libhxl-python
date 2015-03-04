@@ -11,7 +11,11 @@ import abc
 import csv
 import json
 import re
-import urllib
+import sys
+if sys.version_info < (3,):
+    import urllib
+else:
+    import urllib.request
 from . import HXLException
 from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
 
@@ -67,7 +71,10 @@ class URLInput(AbstractInput):
     """Read raw input from a URL or filename."""
 
     def __init__(self, url):
-        self._input = urllib.urlopen(url)
+        if sys.version_info < (3,):
+            self._input = urllib.urlopen(url)
+        else:
+            self._input = urllib.request.urlopen(url)
         self._reader = csv.reader(self._input)
 
     def __next__(self):

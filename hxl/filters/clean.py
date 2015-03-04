@@ -14,7 +14,7 @@ import argparse
 import copy
 from hxl.model import HXLDataProvider
 from hxl.io import HXLReader, writeHXL, StreamInput
-from hxl.filters import TagPattern
+from hxl.filters import TagPattern, make_input, make_output
 
 class HXLCleanFilter(HXLDataProvider):
     """
@@ -123,16 +123,12 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         'infile',
         help='HXL file to read (if omitted, use standard input).',
-        nargs='?',
-        type=argparse.FileType('r'),
-        default=stdin
+        nargs='?'
         )
     parser.add_argument(
         'outfile',
         help='HXL file to write (if omitted, use standard output).',
-        nargs='?',
-        type=argparse.FileType('w'),
-        default=stdout
+        nargs='?'
         )
     parser.add_argument(
         '-W',
@@ -203,7 +199,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
     
-    with args.infile, args.outfile:
+    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
 
         if args.whitespace_all:
             whitespace_arg = True
@@ -220,8 +216,8 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         else:
             number_arg = args.number
 
-        source = HXLReader(StreamInput(args.infile))
+        source = HXLReader(input)
         filter = HXLCleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
-        writeHXL(args.outfile, filter, args.remove_headers)
+        writeHXL(output.output, filter, args.remove_headers)
 
 # end

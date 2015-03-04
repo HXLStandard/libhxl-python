@@ -127,7 +127,6 @@ def make_input(filename, stdin=sys.stdin):
 
 def make_output(filename, stdout=sys.stdout):
     if filename:
-        print(filename)
         return FileOutput(filename)
     else:
         return StreamOutput(stdout)
