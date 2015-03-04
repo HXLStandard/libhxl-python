@@ -48,7 +48,7 @@ HXL hashtag,Description,Data type,Min cols,Max cols,Default value,Min value,Max 
 #males_num,Number of males involved.,number,0,1,,0,,,,,
 #origin,Place of origin description,text,0,1,,,,,,,
 #origin_id,Place of origin code,code,0,1,,,,,,,
-#aff_num,Number of people affected,number,0,1,,0,,,,,
+#aff_num,Number of people affected,number,0,,,0,,,,,
 #impact1,Impact type level 1 description,text,0,1,,,,,,,
 #impact1_id,Impact type level 1 code,code,0,1,,,,,,,
 #impact2,Impact type level 2 description,text,0,1,,,,,,,

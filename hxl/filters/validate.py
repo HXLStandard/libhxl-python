@@ -134,10 +134,11 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with args.infile, args.outfile, args.schema:
+    with args.infile, args.outfile:
         source = HXLReader(StreamInput(args.infile))
         if args.schema:
-            schema = readHXLSchema(HXLReader(StreamInput(args.schema)), baseDir=os.path.dirname(args.schema.name))
+            with args.schema:
+                schema = readHXLSchema(HXLReader(StreamInput(args.schema)), baseDir=os.path.dirname(args.schema.name))
         else:
             schema = readHXLSchema()
         filter = HXLValidateFilter(source, schema, args.all)
