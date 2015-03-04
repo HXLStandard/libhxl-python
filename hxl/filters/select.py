@@ -28,12 +28,21 @@ def operator_nre(s, pattern):
     return not re.match(pattern, s)
 
 class Query(object):
-    """Query against a row of HXL data."""
+    """Query to execute against a row of HXL data."""
 
     def __init__(self, pattern, op, value):
         self.pattern = pattern
         self.op = op
         self.value = value
+
+    def match_value(self, value):
+        """Try an operator as numeric first, then string"""
+        # TODO add dates
+        # TODO use knowledge about HXL tags
+        try:
+            return self.op(float(value), float(self.value))
+        except ValueError:
+            return self.op(value, self.value)
 
     @staticmethod
     def parse(s):
@@ -107,8 +116,7 @@ class HXLSelectFilter(HXLDataProvider):
         for query in self.queries:
             for i in range(len(self.columns)):
                 if query.pattern.match(self.columns[i]):
-                    op = query.op
-                    if row.values[i] and self._try_op(query.op, row.values[i], query.value):
+                    if row.values[i] and query.match_value(row.values[i]):
                         return not self.reverse
         return self.reverse
 
