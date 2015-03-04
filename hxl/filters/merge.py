@@ -14,7 +14,7 @@ import argparse
 import copy
 from hxl.model import HXLDataProvider, HXLColumn
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import TagPattern
+from hxl.filters import TagPattern, make_input, make_output
 
 class HXLMergeFilter(HXLDataProvider):
     """
@@ -148,24 +148,19 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         'infile',
         help='HXL file to read (if omitted, use standard input).',
-        nargs='?',
-        type=argparse.FileType('r'),
-        default=stdin
+        nargs='?'
         )
     parser.add_argument(
         'outfile',
         help='HXL file to write (if omitted, use standard output).',
-        nargs='?',
-        type=argparse.FileType('w'),
-        default=stdout
+        nargs='?'
         )
     parser.add_argument(
         '-m',
         '--merge',
         help='HXL file to write (if omitted, use standard output).',
         metavar='filename',
-        required=True,
-        type=argparse.FileType('r')
+        required=True
         )
     parser.add_argument(
         '-k',
@@ -202,10 +197,10 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     # FIXME - will this be OK with stdin/stdout?
-    with args.infile, args.outfile, args.merge:
-        source = HXLReader(StreamInput(args.infile))
-        filter = HXLMergeFilter(source, merge_source=HXLReader(StreamInput(args.merge)),
+    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output, make_input(args.merge, None) as merge:
+        source = HXLReader(input)
+        filter = HXLMergeFilter(source, merge_source=HXLReader(merge),
                                 keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
-        writeHXL(args.outfile, filter)
+        writeHXL(output.output, filter)
 
 # end
