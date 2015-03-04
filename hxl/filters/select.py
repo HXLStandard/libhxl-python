@@ -35,12 +35,19 @@ class Query(object):
         self.pattern = pattern
         self.op = op
         self.value = value
+        self._saved_indices = None
+        try:
+            float(value)
+            self._is_numeric = True
+        except:
+            self._is_numeric = False
 
     def match_row(self, row):
         """Check if a key-value pair appears in a HXL row"""
-        for i in range(len(row.columns)):
-            if self.pattern.match(row.columns[i]):
-                if row.values[i] and self.match_value(row.values[i]):
+        indices = self._get_saved_indices(row.columns)
+        length = len(row.values)
+        for i in indices:
+            if i < length and row.values[i] and self.match_value(row.values[i]):
                     return True
         return False
 
@@ -48,10 +55,23 @@ class Query(object):
         """Try an operator as numeric first, then string"""
         # TODO add dates
         # TODO use knowledge about HXL tags
-        try:
-            return self.op(float(value), float(self.value))
-        except ValueError:
+        if self._is_numeric:
+            try:
+                return self.op(float(value), float(self.value))
+            except ValueError:
+                pass
+        else:
             return self.op(value, self.value)
+
+    def _get_saved_indices(self, columns):
+        """Cache the column tests, so that we run them only once."""
+        # FIXME - assuming that the columns never change
+        if self._saved_indices is None:
+            self._saved_indices = []
+            for i in range(len(columns)):
+                if self.pattern.match(columns[i]):
+                    self._saved_indices.append(i)
+        return self._saved_indices
 
     @staticmethod
     def parse(s):
