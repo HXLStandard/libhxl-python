@@ -27,6 +27,7 @@ def operator_nre(s, pattern):
     """Regular-expression negative comparison operator."""
     return not re.match(pattern, s)
 
+
 class Query(object):
     """Query to execute against a row of HXL data."""
 
@@ -113,14 +114,14 @@ class HXLSelectFilter(HXLDataProvider):
         Return the next row that matches the select.
         """
         row = next(self.source)
-        while not self._row_matches_p(row):
+        while not self.match_row(row):
             row = next(self.source)
         return row
 
     next = __next__
 
-    def _row_matches_p(self, row):
-        """Check if a key-value pair appears in a HXL row"""
+    def match_row(self, row):
+        """Check if any of the queries matches the row (implied OR)."""
         for query in self.queries:
             if query.match_row(row):
                 return not self.reverse
