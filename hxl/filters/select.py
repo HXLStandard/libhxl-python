@@ -58,12 +58,12 @@ class Query(object):
         """Parse a filter expression"""
         parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
         pattern = TagPattern.parse(parts[0])
-        op = Query.operator_map[parts[1]]
+        op = Query.OPERATOR_MAP[parts[1]]
         value = parts[2]
         return Query(pattern, op, value)
 
-    # Map of comparison operators
-    operator_map = {
+    # Constant map of comparison operators
+    OPERATOR_MAP = {
         '=': operator.eq,
         '!=': operator.ne,
         '<': operator.lt,
