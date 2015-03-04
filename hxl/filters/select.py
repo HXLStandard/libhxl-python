@@ -18,6 +18,45 @@ from hxl.filters import TagPattern
 from hxl.model import HXLDataProvider
 from hxl.io import StreamInput, HXLReader, writeHXL
 
+
+def operator_re(s, pattern):
+    """Regular-expression comparison operator."""
+    return re.match(pattern, s)
+
+def operator_nre(s, pattern):
+    """Regular-expression negative comparison operator."""
+    return not re.match(pattern, s)
+
+class Query(object):
+    """Query against a row of HXL data."""
+
+    def __init__(self, pattern, op, value):
+        self.pattern = pattern
+        self.op = op
+        self.value = value
+
+    @staticmethod
+    def parse(s):
+        """Parse a filter expression"""
+        parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
+        pattern = TagPattern.parse(parts[0])
+        op = Query.operator_map[parts[1]]
+        value = parts[2]
+        return Query(pattern, op, value)
+
+    # Map of comparison operators
+    operator_map = {
+        '=': operator.eq,
+        '!=': operator.ne,
+        '<': operator.lt,
+        '<=': operator.le,
+        '>': operator.gt,
+        '>=': operator.ge,
+        '~': operator_re,
+        '!~': operator_nre
+    }
+        
+
 class HXLSelectFilter(HXLDataProvider):
     """
     Composable filter class to select rows from a HXL dataset.
@@ -67,9 +106,9 @@ class HXLSelectFilter(HXLDataProvider):
         """Check if a key-value pair appears in a HXL row"""
         for query in self.queries:
             for i in range(len(self.columns)):
-                if query[0].match(self.columns[i]):
-                    op = query[1]
-                    if row.values[i] and self._try_op(query[1], row.values[i], query[2]):
+                if query.pattern.match(self.columns[i]):
+                    op = query.op
+                    if row.values[i] and self._try_op(query.op, row.values[i], query.value):
                         return not self.reverse
         return self.reverse
 
@@ -83,38 +122,9 @@ class HXLSelectFilter(HXLDataProvider):
             return op(v1, v2)
 
 
-def operator_re(s, pattern):
-    """Regular-expression comparison operator."""
-    return re.match(pattern, s)
-
-def operator_nre(s, pattern):
-    """Regular-expression negative comparison operator."""
-    return not re.match(pattern, s)
-
-
-# Map of comparison operators
-operator_map = {
-    '=': operator.eq,
-    '!=': operator.ne,
-    '<': operator.lt,
-    '<=': operator.le,
-    '>': operator.gt,
-    '>=': operator.ge,
-    '~': operator_re,
-    '!~': operator_nre
-}
-
 #
 # Command-line support
 #
-
-def parse_query(s):
-    """Parse a filter expression"""
-    parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
-    pattern = TagPattern.parse(parts[0])
-    op = operator_map[parts[1]]
-    value = parts[2]
-    return (pattern, op, value)
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -148,7 +158,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         action='append',
         metavar='tag=value, etc.',
         default=[],
-        type=parse_query
+        type=Query.parse
         )
     parser.add_argument(
         '-r',
