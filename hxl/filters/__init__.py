@@ -48,6 +48,20 @@ class TagPattern(object):
         else:
             return False
 
+    def find_column(self, columns):
+        """Check whether there is a match in a list of columns."""
+        for column in columns:
+            if self.match(column):
+                return column
+        return None
+
+    def get_value(self, row):
+        """Return the first matching value for this pattern."""
+        for i in range(min(len(row.columns), len(row.values))):
+            if self.match(row.columns[i]):
+                return row.values[i]
+        return None
+
     def __repr__(self):
         s = self.tag
         if self.include_attributes:

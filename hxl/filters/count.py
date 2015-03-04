@@ -17,7 +17,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 from hxl.model import HXLDataProvider, HXLColumn, HXLRow
-from hxl.filters import parse_tags, fix_tag, find_column
+from hxl.filters import TagPattern, find_column
 from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLCountFilter(HXLDataProvider):
@@ -38,7 +38,7 @@ class HXLCountFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLCountFilter(source, tags=['#org', '#sector', '#adm1'])
+    filter = HXLCountFilter(source, tags=[TagPattern.parse('#org'), TagPattern.parse('#sector'), TagPattern.parse('#adm1')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -47,7 +47,7 @@ class HXLCountFilter(HXLDataProvider):
         """
         Constructor
         @param source the HXL data source
-        @param tags a list of HXL tags that form a unique key together (what combinations are you counting?)
+        @param tags a list of TagPattern objects that form a unique key together (what combinations are you counting?)
         @param aggregate_tag an optional numeric tag for calculating aggregate values.
         """
         self.source = source
@@ -63,13 +63,13 @@ class HXLCountFilter(HXLDataProvider):
         """
         if self.saved_columns is None:
             cols = []
-            for tag in self.count_tags:
-                column = find_column(tag, self.source.columns)
-                if column:
+            for pattern in self.count_tags:
+                column = pattern.find_column(self.source.columns)
+                if column is not None:
                     header = column.header
                 else:
                     header = None
-                cols.append(HXLColumn(tag=tag, header=header))
+                cols.append(HXLColumn(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
             cols.append(HXLColumn(tag='#x_count_num', header='Count'))
             if self.aggregate_tag is not None:
                 cols.append(HXLColumn(tag='#x_sum_num', header='Sum'))
@@ -110,11 +110,7 @@ class HXLCountFilter(HXLDataProvider):
         """
         aggregators = {}
         for row in self.source:
-            values = []
-            for tag in self.count_tags:
-                value = row.get(tag)
-                if value is not False:
-                    values.append(value)
+            values = [pattern.get_value(row) for pattern in self.count_tags]
             if values:
                 key = tuple(values)
                 if not key in aggregators:
@@ -129,12 +125,12 @@ class Aggregator:
     Currently calculates count, sum, average, min, and max
     """
 
-    def __init__(self, tag):
+    def __init__(self, pattern):
         """
         Constructor
-        @param tag the HXL tag being counted in the row.
+        @param pattern the HXL tag being counted in the row.
         """
-        self.tag = tag
+        self.pattern = pattern
         self.count = 0
         self.sum = 0.0
         self.average = 0.0
@@ -147,19 +143,20 @@ class Aggregator:
         Add a new row of data to the aggregator.
         """
         self.count += 1
-        if self.tag:
-            value = row.get(self.tag)
-            try:
-                n = float(value)
-                self.sum += n
-                self.average = self.sum / self.count
-                if self.min is None or n < self.min:
-                    self.min = n
-                if self.max is None or n > self.max:
-                    self.max = n
-                self.seen_numbers = True
-            except ValueError:
-                pass
+        if self.pattern:
+            value = self.pattern.get_value(row)
+            if value:
+                try:
+                    n = float(value)
+                    self.sum += n
+                    self.average = self.sum / self.count
+                    if self.min is None or n < self.min:
+                        self.min = n
+                    if self.max is None or n > self.max:
+                        self.max = n
+                    self.seen_numbers = True
+                except:
+                    pass
 
 #
 # Command-line support
@@ -195,7 +192,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Comma-separated list of column tags to count.',
         metavar='tag,tag...',
-        type=parse_tags,
+        type=TagPattern.parse_list,
         default='loc,org,sector,adm1,adm2,adm3'
         )
     parser.add_argument(
@@ -203,7 +200,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '--aggregate',
         help='Hashtag to aggregate.',
         metavar='tag',
-        type=fix_tag
+        type=TagPattern.parse
         )
 
     args = parser.parse_args(args)
