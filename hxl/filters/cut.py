@@ -29,7 +29,7 @@ class HXLCutFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLCutFilter(source, include_tags=['#sector', '#org', '#adm1'])
+    filter = HXLCutFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -37,8 +37,8 @@ class HXLCutFilter(HXLDataProvider):
     def __init__(self, source, include_tags=[], exclude_tags=[]):
         """
         @param source a HXL data source
-        @param include_tags a whitelist list of hashtags to include
-        @param exclude_tags a blacklist of hashtags to exclude
+        @param include_tags a whitelist of TagPattern objects to include
+        @param exclude_tags a blacklist of TagPattern objects to exclude
         """
         self.source = source
         self.include_tags = include_tags

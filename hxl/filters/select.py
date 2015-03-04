@@ -109,7 +109,7 @@ class HXLSelectFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLSelectFilter(source, queries=[('#org', operator.eq, 'OXFAM')])
+    filter = HXLSelectFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -127,6 +127,7 @@ class HXLSelectFilter(HXLDataProvider):
 
     @property
     def columns(self):
+        """Pass on the source columns unmodified."""
         return self.source.columns
 
     def __next__(self):
