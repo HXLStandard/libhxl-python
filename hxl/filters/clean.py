@@ -12,9 +12,9 @@ import re
 import dateutil.parser
 import argparse
 import copy
-from hxl.model import HXLDataProvider
+from hxl.model import HXLDataProvider, TagPattern
 from hxl.io import HXLReader, writeHXL, StreamInput
-from hxl.filters import TagPattern, make_input, make_output
+from hxl.filters import make_input, make_output
 
 class HXLCleanFilter(HXLDataProvider):
     """

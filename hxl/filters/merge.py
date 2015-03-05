@@ -12,9 +12,9 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 import copy
-from hxl.model import HXLDataProvider, HXLColumn
+from hxl.model import HXLDataProvider, TagPattern, HXLColumn
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import TagPattern, make_input, make_output
+from hxl.filters import make_input, make_output
 
 class HXLMergeFilter(HXLDataProvider):
     """

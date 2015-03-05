@@ -7,7 +7,46 @@ License: Public Domain
 """
 
 import unittest
-from hxl.model import HXLColumn, HXLRow
+from hxl.model import TagPattern, HXLColumn, HXLRow
+
+class TestPattern(unittest.TestCase):
+    """Test the TagPattern class."""
+
+    def setUp(self):
+        self.column = HXLColumn(tag='#tag', attributes=['foo', 'bar'])
+
+    def test_simple(self):
+        pattern = TagPattern('#tag')
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tagx')
+        self.assertFalse(pattern.match(self.column))
+
+    def test_include(self):
+        pattern = TagPattern('#tag', include_attributes=['foo'])
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tag', include_attributes=['xxx'])
+        self.assertFalse(pattern.match(self.column))
+
+    def test_exclude(self):
+        pattern = TagPattern('#tag', exclude_attributes=['xxx'])
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tag', exclude_attributes=['foo'])
+        self.assertFalse(pattern.match(self.column))
+
+    def test_parse(self):
+        pattern = TagPattern.parse('#tag+foo-xxx')
+        self.assertEqual(pattern.tag, '#tag')
+        self.assertTrue('foo' in pattern.include_attributes)
+        pattern = TagPattern.parse('tag+foo-xxx')
+        self.assertEqual(pattern.tag, '#tag')
+
+    def test_parse_list(self):
+        patterns = TagPattern.parse_list('tag+foo,tag-xxx')
+        for pattern in patterns:
+            self.assertTrue(pattern.match(self.column))
+        patterns = TagPattern.parse_list('tag-foo,tag+xxx')
+        for pattern in patterns:
+            self.assertFalse(pattern.match(self.column))
 
 class TestColumn(unittest.TestCase):
 

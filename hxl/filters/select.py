@@ -14,8 +14,8 @@ import sys
 import re
 import operator
 import argparse
-from hxl.filters import TagPattern, make_input, make_output
-from hxl.model import HXLDataProvider
+from hxl.model import HXLDataProvider, TagPattern
+from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, writeHXL
 
 

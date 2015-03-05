@@ -11,8 +11,8 @@ import sys
 import argparse
 import copy
 import re
-from hxl.model import HXLDataProvider, HXLColumn
-from hxl.filters import TagPattern, make_input, make_output
+from hxl.model import HXLDataProvider, TagPattern, HXLColumn
+from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, writeHXL
 
 class HXLRenameFilter(HXLDataProvider):

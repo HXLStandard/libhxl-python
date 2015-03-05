@@ -13,9 +13,9 @@ import re
 from copy import copy
 
 from . import HXLFilterException
-from hxl.model import HXLDataProvider, HXLColumn
+from hxl.model import HXLDataProvider, TagPattern, HXLColumn
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.filters import TagPattern, make_input, make_output
+from hxl.filters import make_input, make_output
 
 class HXLAddFilter(HXLDataProvider):
     """
