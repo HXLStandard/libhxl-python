@@ -1,0 +1,12 @@
+#!/usr/bin/python
+"""
+Run hxl.filters.tag from the command line.
+David Megginson
+Started February 2015
+"""
+
+from hxl.filters import run_script
+import hxl.filters.tag
+
+if __name__ == '__main__':
+    run_script(hxl.filters.tag.run)
