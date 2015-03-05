@@ -17,7 +17,7 @@ if sys.version_info < (3,):
 else:
     import urllib.request
 from . import HXLException
-from .model import HXLDataProvider, HXLDataset, HXLColumn, HXLRow
+from .model import DataProvider, Dataset, Column, Row
 
 # Cut off for fuzzy detection of a hashtag row
 # At least this percentage of cells must parse as HXL hashtags
@@ -94,15 +94,15 @@ class ArrayInput(AbstractInput):
     """Read raw input from an array."""
 
     def __init__(self, data):
-        self._reader = csv.reader(data)
+        self._iter = iter(data)
 
     def __next__(self):
-        return next(self._reader)
+        return next(self._iter)
 
     next = __next__
 
 
-class HXLReader(HXLDataProvider):
+class HXLReader(DataProvider):
     """Read HXL data from a file
 
     This class acts as both an iterator and a context manager. If
@@ -137,7 +137,7 @@ class HXLReader(HXLDataProvider):
     @property
     def columns(self):
         """
-        Return a list of HXLColumn objects.
+        Return a list of Column objects.
         """
         if self._columns is None:
             self._columns = self._find_tags()
@@ -146,12 +146,12 @@ class HXLReader(HXLDataProvider):
     def __next__(self):
         """
         Iterable function to return the next row of HXL values.
-        Returns a HXLRow, or raises StopIteration exception at end
+        Returns a Row, or raises StopIteration exception at end
         """
         columns = self.columns
         values = self._get_row()
         self._row_number += 1
-        return HXLRow(columns=columns, values=values, source_row_number=self._source_row_number, row_number=self._row_number)
+        return Row(columns=columns, values=values, source_row_number=self._source_row_number, row_number=self._row_number)
 
     # for compatibility
     next = __next__
@@ -192,12 +192,12 @@ class HXLReader(HXLDataProvider):
                 header = None
             if rawString:
                 nonEmptyCount += 1
-                column = HXLColumn.parse(rawString, column_number=column_number, source_column_number=source_column_number, header=header)
+                column = Column.parse(rawString, column_number=column_number, source_column_number=source_column_number, header=header)
                 if column:
                     columns.append(column)
                     column_number += 1
             else:
-                columns.append(HXLColumn(column_number, source_column_number, header=header))
+                columns.append(Column(column_number, source_column_number, header=header))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
@@ -228,10 +228,10 @@ def readHXL(input):
     @param input a Python file object
     @param url a URL or filename to open
     @param rawData an iterator over a sequence of string arrays.
-    @return an in-memory HXLDataset
+    @return an in-memory Dataset
 
     """
-    dataset = HXLDataset(url)
+    dataset = Dataset(url)
 
     parser = HXLReader(input)
     dataset.columns = parser.columns
