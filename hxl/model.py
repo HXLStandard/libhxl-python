@@ -11,13 +11,13 @@ import abc
 import copy
 import re
 
-class HXLDataProvider(object):
+class DataProvider(object):
     """
     Abstract base class for a HXL data source.
 
     Any source of parsed HXL data inherits from this class: that
-    includes HXLDataset, HXLReader, and the various filters in the
-    hxl.filters package.  The contract of a HXLDataProvider is that it will
+    includes Dataset, HXLReader, and the various filters in the
+    hxl.filters package.  The contract of a DataProvider is that it will
     provide a columns property and a next() method to read through the
     rows.
 
@@ -38,7 +38,7 @@ class HXLDataProvider(object):
     def columns(self):
         """
         Get the column definitions for the dataset.
-        @return a list of HXLColumn objects.
+        @return a list of Column objects.
         """
         return
 
@@ -46,7 +46,7 @@ class HXLDataProvider(object):
     def __next__(self):
         """
         Iterable function to return the next row of HXL values.
-        @return an iterable HXLRow
+        @return an iterable Row
         @exception StopIteration exception at end of the rows.
         """
         return
@@ -84,7 +84,7 @@ class HXLDataProvider(object):
                 return True
         return False
 
-class HXLDataset(HXLDataProvider):
+class Dataset(DataProvider):
     """
     In-memory HXL dataset.
     """
@@ -104,9 +104,9 @@ class HXLDataset(HXLDataProvider):
         @return A debugging string.
         """
         if self.url:
-            return '<HXLDataset ' + self.url + '>'
+            return '<Dataset ' + self.url + '>'
         else:
-            return '<HXLDataset>'
+            return '<Dataset>'
 
 
 class TagPattern(object):
@@ -126,7 +126,7 @@ class TagPattern(object):
         self.exclude_attributes = exclude_attributes
 
     def match(self, column):
-        """Check whether a HXLColumn matches this pattern."""
+        """Check whether a Column matches this pattern."""
         if self.tag == column.tag:
             # all include_attributes must be present
             if self.include_attributes:
@@ -191,7 +191,7 @@ class TagPattern(object):
                     exclude_attributes.append(attribute_specs[i + 1])
             return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
         else:
-            raise HXLFilterException('Malformed tag: ' + s)
+            raise HXLException('Malformed tag: ' + s)
 
     @staticmethod
     def parse_list(s):
@@ -199,7 +199,7 @@ class TagPattern(object):
         return [TagPattern.parse(spec) for spec in s.split(',')]
 
 
-class HXLColumn(object):
+class Column(object):
     """
     The definition of a logical column in the HXL data.
     """ 
@@ -258,14 +258,14 @@ class HXLColumn(object):
                 attributes = attribute_string[1:].split('+')
             else:
                 attributes = []
-            return HXLColumn(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
+            return Column(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
         else:
             if use_exception:
                 raise HXLException("Malformed tag expression: " + rawString)
             else:
                 return None
 
-class HXLRow(object):
+class Row(object):
     """
     An iterable row of values in a HXL dataset.
     """
@@ -276,7 +276,7 @@ class HXLRow(object):
     def __init__(self, columns, row_number=None, source_row_number=None, values=[]):
         """
         Set up a new row.
-        @param columns The column definitions (array of HXLColumn objects).
+        @param columns The column definitions (array of Column objects).
         @param row_number The logical row number in the input dataset (default: None)
         @param source_row_number The original row number in the raw source dataset (default: None)
         """
@@ -332,7 +332,7 @@ class HXLRow(object):
         
         The function returns a new list constructed from the return
         values of the mapping function, which must take two arguments
-        (the value, and the HXLColumn object).
+        (the value, and the Column object).
         @param function The mapping function.
         @return A new array of values, after the mapping
         """
@@ -354,7 +354,7 @@ class HXLRow(object):
         """
         Create a string representation of a row for debugging.
         """
-        s = '<HXLRow';
+        s = '<Row';
         s += "\n  row_number: " + str(self.row_number)
         s += "\n  source_row_number: " + str(self.source_row_number)
         for column_number, value in enumerate(self.values):
