@@ -5,7 +5,7 @@ import csv
 import hxl
 from hxl.model import Column
 from hxl.io import AbstractInput, HXLReader, writeHXL
-from hxl.filters import make_input, make_output
+from hxl.filters import make_input, make_output, HXLFilterException
 
 class Tagger(AbstractInput):
     """Add HXL hashtags to a CSV-like input stream.
@@ -93,7 +93,7 @@ def _norm(s):
 # Command-line support
 #
 
-SPEC_PATTERN = r'^(.+)(#{token})$'.format(token=hxl.TOKEN)
+SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.TOKEN)
 
 def parse_spec(s):
     result = re.match(SPEC_PATTERN, s)
