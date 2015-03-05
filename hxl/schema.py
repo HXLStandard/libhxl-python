@@ -159,10 +159,10 @@ class SchemaRule(object):
             if not (pieces.scheme and pieces.netloc):
                 return self._report_error("Expected a URL", value, row, column)
         elif self.dataType == self.TYPE_EMAIL:
-            if not re.match('^[^@]+@[^@]+$', value):
+            if not re.match(r'^[^@]+@[^@]+$', value):
                 return self._report_error("Expected an email address", value, row, column)
         elif self.dataType == self.TYPE_PHONE:
-            if not re.match('^\+?[0-9xX()\s-]{5,}$', value):
+            if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
                 return self._report_error("Expected a phone number", value, row, column)
         
         return True

@@ -11,6 +11,7 @@ import sys
 import argparse
 import copy
 import re
+import hxl
 from hxl.model import DataProvider, TagPattern, Column
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, writeHXL
@@ -72,6 +73,17 @@ class RenameFilter(DataProvider):
 # Command-line support.
 #
 
+RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.TOKEN)
+
+def parse_rename(s):
+    result = re.match(RENAME_PATTERN, s)
+    if result:
+        pattern = TagPattern.parse(result.group(1))
+        column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
+        return (pattern, column)
+    else:
+        raise HXLFilterException("Bad rename expression: " + s)
+
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlcut with command-line arguments.
@@ -107,14 +119,5 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         source = HXLReader(input)
         filter = RenameFilter(source, args.rename)
         writeHXL(output.output, filter)
-
-def parse_rename(s):
-    result = re.match(r'^\s*#?([^:]+):(?:([^#]*)#)?([^#]+)\s*$', s)
-    if result:
-        pattern = TagPattern.parse(result.group(1))
-        column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
-        return (pattern, column)
-    else:
-        raise HXLFilterException("Bad rename expression: " + s)
 
 # end

@@ -2,7 +2,7 @@ import sys
 import re
 import argparse
 import csv
-from hxl import HXLException
+import hxl
 from hxl.model import Column
 from hxl.io import AbstractInput, HXLReader, writeHXL
 from hxl.filters import make_input, make_output
@@ -35,7 +35,7 @@ class Tagger(AbstractInput):
                 self._found_tags = True
             else:
                 # if no match, through an exception
-                raise HXLException("Tagging failed")
+                raise hxl.HXLException("Tagging failed")
         if len(self._cache) > 0:
             # read from the cache, first
             return self._cache.pop(0)
@@ -94,8 +94,10 @@ def _norm(s):
 # Command-line support
 #
 
+SPEC_PATTERN = r'^(.+)(#{token})$'.format(token=hxl.TOKEN)
+
 def parse_spec(s):
-    result = re.match(r'^(.+)(#[^#]+)$', s)
+    result = re.match(SPEC_PATTERN, s)
     if result:
         return (result.group(1), Column.parse(result.group(2), use_exception=True).displayTag)
     else:

@@ -10,8 +10,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import abc
 import copy
 import re
-
-from hxl import HXLException
+import hxl
 
 class DataProvider(object):
     """
@@ -121,6 +120,9 @@ class TagPattern(object):
     #tag+foo-bar matches #tag with foo but not bar
     """
 
+    # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
+    PATTERN = r'^\s*#?({token})((?:[+-]{token})*)\s*$'.format(token=hxl.TOKEN)
+
     def __init__(self, tag, include_attributes=None, exclude_attributes=None):
         """Like a column, but has a whitelist and a blacklist."""
         self.tag = tag
@@ -180,7 +182,7 @@ class TagPattern(object):
     @staticmethod
     def parse(s):
         """Parse a single tagspec, like #tag+foo-bar."""
-        result = re.match(r'^\s*#?([A-Za-z][_0-9A-Za-z]*)((?:[+-][A-Za-z][_0-9A-Za-z]*)*)\s*$', s)
+        result = re.match(TagPattern.PATTERN, s)
         if result:
             tag = '#' + result.group(1)
             include_attributes = []
@@ -193,7 +195,7 @@ class TagPattern(object):
                     exclude_attributes.append(attribute_specs[i + 1])
             return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
         else:
-            raise HXLException('Malformed tag: ' + s)
+            raise hxl.HXLException('Malformed tag: ' + s)
 
     @staticmethod
     def parse_list(s):
@@ -208,6 +210,9 @@ class Column(object):
     """
     The definition of a logical column in the HXL data.
     """ 
+
+    # Regular expression to match a HXL tag
+    PATTERN = r'^\s*(#{token})((?:\+{token})*)\s*$'.format(token=hxl.TOKEN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
     __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header', 'attributes']
@@ -254,8 +259,7 @@ class Column(object):
         Attempt to parse a full hashtag specification.
         """
         # Pattern for a single tag
-        pattern = r'^\s*(#[a-zA-Z0-9_]+)((?:\+[a-zA-Z][a-zA-Z0-9_]*)*)\s*$'
-        result = re.match(pattern, rawString)
+        result = re.match(Column.PATTERN, rawString)
         if result:
             tag = result.group(1)
             attribute_string = result.group(2)
@@ -266,7 +270,7 @@ class Column(object):
             return Column(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
         else:
             if use_exception:
-                raise HXLException("Malformed tag expression: " + rawString)
+                raise hxl.HXLException("Malformed tag expression: " + rawString)
             else:
                 return None
 

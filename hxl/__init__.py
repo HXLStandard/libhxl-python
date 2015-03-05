@@ -7,6 +7,8 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
+TOKEN = r'[A-Za-z][_0-9A-Za-z]*'
+
 class HXLException(Exception):
     """Base class for all HXL-related exceptions."""
 

@@ -12,6 +12,7 @@ import argparse
 import re
 from copy import copy
 
+import hxl
 from . import HXLFilterException
 from hxl.model import DataProvider, TagPattern, Column
 from hxl.io import StreamInput, HXLReader, writeHXL
@@ -83,8 +84,10 @@ class AddFilter(DataProvider):
 # Command-line support
 #
 
+VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.TOKEN)
+
 def parse_value(s):
-    result = re.match(r'^(?:([^#]*)#)?([^=]+)=(.*)$', s)
+    result = re.match(VALUE_PATTERN, s)
     if result:
         header = result.group(1)
         tag = '#' + result.group(2)
