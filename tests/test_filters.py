@@ -260,12 +260,37 @@ class TestTag(BaseTest):
         self.input_file = 'input-untagged.csv'
 
     def test_full(self):
+        """Use full header text for tagging."""
         self.assertOutput([
             '-m', 'Organisation#org',
             '-m', 'Cluster#sector',
             '-m', 'Country#country',
             '-m', 'Subdivision#adm1'
         ], 'tag-output-full.csv')
+
+
+    def test_substrings(self):
+        """Use header substrings for tagging."""
+        self.assertOutput([
+            '-m', 'org#org',
+            '-m', 'cluster#sector',
+            '-m', 'ntry#country',
+            '-m', 'div#adm1'
+        ], 'tag-output-full.csv')
+
+    def test_partial(self):
+        """Try tagging only one row."""
+        self.assertOutput([
+            '--map', 'cluster#sector'
+        ], 'tag-output-partial.csv')
+
+
+    def test_ambiguous(self):
+        """Use an ambiguous header for the second one."""
+        self.assertOutput([
+            '-m', 'organisation#org',
+            '-m', 'is#adm1'
+        ], 'tag-output-ambiguous.csv')
 
 
 class TestValidate(BaseTest):
