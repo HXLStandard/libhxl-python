@@ -12,11 +12,11 @@ import re
 import dateutil.parser
 import argparse
 import copy
-from hxl.model import HXLDataProvider, TagPattern
+from hxl.model import DataProvider, TagPattern
 from hxl.io import HXLReader, writeHXL, StreamInput
 from hxl.filters import make_input, make_output
 
-class HXLCleanFilter(HXLDataProvider):
+class CleanFilter(DataProvider):
     """
     Filter for cleaning values in HXL data.
     Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.
@@ -82,18 +82,18 @@ class HXLCleanFilter(HXLDataProvider):
 
         # Date (-d or -D)
         if self._match_patterns(self.date, column, '_date'):
-            value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+            if value:
+                value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
 
         # Number (-n or -N)
         if self._match_patterns(self.number, column, '_num') and re.match('\d', value):
-            value = re.sub('[^\d.]', '', value)
-            value = re.sub('^0+', '', value)
-            value = re.sub('(\..*)0+$', '\g<1>', value)
-            value = re.sub('\.$', '', value)
+            if value:
+                value = re.sub('[^\d.]', '', value)
+                value = re.sub('^0+', '', value)
+                value = re.sub('(\..*)0+$', '\g<1>', value)
+                value = re.sub('\.$', '', value)
 
         return value
-
-    
 
     def _match_patterns(self, patterns, column, extension=None):
         """Test if a column matches a list of patterns."""
@@ -101,7 +101,7 @@ class HXLCleanFilter(HXLDataProvider):
             return False
         elif patterns is True:
             # if there's an extension specific like "_date", must match it
-            return (not extension or column.tag.endswith(extension))
+            return (column.tag and (not extension or column.tag.endswith(extension)))
         else:
             for pattern in patterns:
                 if pattern.match(column):
@@ -217,7 +217,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
             number_arg = args.number
 
         source = HXLReader(input)
-        filter = HXLCleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
+        filter = CleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
         writeHXL(output.output, filter, args.remove_headers)
 
 # end
