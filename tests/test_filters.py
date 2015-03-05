@@ -25,6 +25,7 @@ import hxl.filters.clean
 import hxl.filters.rename
 import hxl.filters.select
 import hxl.filters.sort
+import hxl.filters.tag
 import hxl.filters.validate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -247,6 +248,24 @@ class TestSort(BaseTest):
     def test_reverse(self):
         self.assertOutput(['-r'], 'sort-output-reverse.csv')
         self.assertOutput(['--reverse'], 'sort-output-reverse.csv')
+
+
+class TestTag(BaseTest):
+    """
+    Test the hxltag command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.filters.tag.run
+        self.input_file = 'input-untagged.csv'
+
+    def test_full(self):
+        self.assertOutput([
+            '-m', 'Organisation#org',
+            '-m', 'Cluster#sector',
+            '-m', 'Country#country',
+            '-m', 'Subdivision#adm1'
+        ], 'tag-output-full.csv')
 
 
 class TestValidate(BaseTest):

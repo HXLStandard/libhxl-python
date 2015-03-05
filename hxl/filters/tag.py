@@ -65,7 +65,6 @@ class Tagger(AbstractInput):
             value = _norm(value)
             for spec in self.specs:
                 if spec[0] in value:
-                    print(spec)
                     tags.append(spec[1])
                     tagCount += 1
                     break
