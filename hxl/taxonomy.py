@@ -9,12 +9,12 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 from . import HXLException
 
-class HXLTaxonomyException(HXLException):
+class TaxonomyException(HXLException):
 
     def __init__(self, message):
-        super(HXLTaxonomyException, self).__init__(message)
+        super(TaxonomyException, self).__init__(message)
 
-class HXLTaxonomy:
+class Taxonomy:
 
     def __init__(self, terms=None):
         self.terms = terms if terms is not None else {}
@@ -22,7 +22,7 @@ class HXLTaxonomy:
     def add(self, term):
         """
         Add a new term
-        @param term the new HXLTerm to add
+        @param term the new Term to add
         @return the old term with the same code, if any
         """
         old_term = self.terms.get(term.code)
@@ -87,7 +87,7 @@ class HXLTaxonomy:
         return result
         
 
-class HXLTerm:
+class Term:
 
     __slots__ = ['code', 'parent_code', 'level']
 
@@ -100,12 +100,12 @@ class HXLTerm:
 def readTaxonomy(source):
     """
     Read a taxonomy from a HXL data source.
-    Throws a HXLTaxonomyException for duplicate terms.
-    @param a HXLDataProvider
-    @return a HXLTaxonomy
+    Throws a TaxonomyException for duplicate terms.
+    @param a DataProvider
+    @return a Taxonomy
     """
 
-    taxonomy = HXLTaxonomy()
+    taxonomy = Taxonomy()
 
     for row in source:
         # skip empty rows
@@ -117,12 +117,12 @@ def readTaxonomy(source):
         if code:
             parent_code = row.get('#parent_id')
             level = row.get('#level_num')
-            term = HXLTerm(code, parent_code, level)
+            term = Term(code, parent_code, level)
             old_term = taxonomy.add(term)
             if old_term is not None:
-                raise HXLTaxonomyException("Duplicate term: " + old_term.code)
+                raise TaxonomyException("Duplicate term: " + old_term.code)
         else:
-            raise HXLTaxonomyException("Missing #term_id in row " + str(row.source_row_number))
+            raise TaxonomyException("Missing #term_id in row " + str(row.source_row_number))
 
     return taxonomy
                 

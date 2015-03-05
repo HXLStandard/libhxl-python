@@ -12,11 +12,11 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 import copy
-from hxl.model import HXLDataProvider, TagPattern, HXLColumn
+from hxl.model import DataProvider, TagPattern, Column
 from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.filters import make_input, make_output
 
-class HXLMergeFilter(HXLDataProvider):
+class MergeFilter(DataProvider):
     """
     Composable filter class to merge values from two HXL datasets.
 
@@ -24,7 +24,7 @@ class HXLMergeFilter(HXLDataProvider):
 
     Warning: this filter may store a large amount of data in memory, depending on the merge.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -33,7 +33,7 @@ class HXLMergeFilter(HXLDataProvider):
     <pre>
     source = HXLReader(sys.stdin)
     merge_source = HXLReader(open('file-to-merge.csv', 'r'))
-    filter = HXLMergeFilter(source, merge_source=merge_source, keys=['adm1_id'], tags=['adm1'])
+    filter = MergeFilter(source, merge_source=merge_source, keys=['adm1_id'], tags=['adm1'])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -73,7 +73,7 @@ class HXLMergeFilter(HXLDataProvider):
                         header = column.header
                     else:
                         header = None
-                    new_columns.append(HXLColumn(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
+                    new_columns.append(Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
             self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 
@@ -199,7 +199,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     # FIXME - will this be OK with stdin/stdout?
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output, make_input(args.merge, None) as merge:
         source = HXLReader(input)
-        filter = HXLMergeFilter(source, merge_source=HXLReader(merge),
+        filter = MergeFilter(source, merge_source=HXLReader(merge),
                                 keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         writeHXL(output.output, filter)
 

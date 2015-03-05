@@ -8,27 +8,27 @@ License: Public Domain
 
 import unittest
 import os
-from hxl.model import HXLColumn, HXLRow
+from hxl.model import Column, Row
 from hxl.io import StreamInput, HXLReader
-from hxl.schema import HXLSchema, HXLSchemaRule, readHXLSchema
-from hxl.taxonomy import HXLTaxonomy, HXLTerm
+from hxl.schema import Schema, SchemaRule, readSchema
+from hxl.taxonomy import Taxonomy, Term
 
 class TestSchema(unittest.TestCase):
 
     def setUp(self):
         self.errors = []
-        self.schema = HXLSchema(
+        self.schema = Schema(
             rules=[
-                HXLSchemaRule('#sector', minOccur=1),
-                HXLSchemaRule('#affected_num', dataType=HXLSchemaRule.TYPE_NUMBER)
+                SchemaRule('#sector', minOccur=1),
+                SchemaRule('#affected_num', dataType=SchemaRule.TYPE_NUMBER)
                 ],
             callback = lambda error: self.errors.append(error)
             )
-        self.row = HXLRow(
+        self.row = Row(
             columns = [
-                HXLColumn(tag='#affected_num', column_number=0),
-                HXLColumn(tag='#sector', column_number=1),
-                HXLColumn(tag='#sector', column_number=2)
+                Column(tag='#affected_num', column_number=0),
+                Column(tag='#sector', column_number=1),
+                Column(tag='#sector', column_number=2)
             ],
             row_number = 1,
             source_row_number = 2
@@ -54,7 +54,7 @@ class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
         self.errors = []
-        self.rule = HXLSchemaRule('#x_test', callback=lambda error: self.errors.append(error))
+        self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error))
 
     def test_type_none(self):
         self._try_rule('')
@@ -62,29 +62,29 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule('hello, world')
 
     def test_type_text(self):
-        self.rule.dataType = HXLSchemaRule.TYPE_TEXT
+        self.rule.dataType = SchemaRule.TYPE_TEXT
         self._try_rule('')
         self._try_rule(10)
         self._try_rule('hello, world')
 
     def test_type_num(self):
-        self.rule.dataType = HXLSchemaRule.TYPE_NUMBER
+        self.rule.dataType = SchemaRule.TYPE_NUMBER
         self._try_rule(10)
         self._try_rule(' -10.1 ');
         self._try_rule('ten', 1)
 
     def test_type_url(self):
-        self.rule.dataType = HXLSchemaRule.TYPE_URL
+        self.rule.dataType = SchemaRule.TYPE_URL
         self._try_rule('http://www.example.org')
         self._try_rule('hello, world', 1)
 
     def test_type_email(self):
-        self.rule.dataType = HXLSchemaRule.TYPE_EMAIL;
+        self.rule.dataType = SchemaRule.TYPE_EMAIL;
         self._try_rule('somebody@example.org')
         self._try_rule('hello, world', 1)
 
     def test_type_phone(self):
-        self.rule.dataType = HXLSchemaRule.TYPE_PHONE
+        self.rule.dataType = SchemaRule.TYPE_PHONE
         self._try_rule('+1-613-555-1111 x1234')
         self._try_rule('(613) 555-1111')
         self._try_rule('123', 1)
@@ -131,11 +131,11 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule('dd', 1)
 
     def test_row_restrictions(self):
-        row = HXLRow(
+        row = Row(
             columns=[
-                HXLColumn(tag='#x_test'),
-                HXLColumn(tag='#subsector'),
-                HXLColumn(tag='#x_test')
+                Column(tag='#x_test'),
+                Column(tag='#subsector'),
+                Column(tag='#x_test')
                 ],
             row_number = 1
             );
@@ -156,7 +156,7 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule(row, 1)
 
     def test_load_default(self):
-        schema = readHXLSchema()
+        schema = readSchema()
         self.assertTrue(0 < len(schema.rules))
         with _read_file('data-good.csv') as input:
             dataset = HXLReader(StreamInput(input))
@@ -164,14 +164,14 @@ class TestSchemaRule(unittest.TestCase):
 
     def test_load_good(self):
         with _read_file('schema-basic.csv') as schema_input:
-            schema = readHXLSchema(HXLReader(StreamInput(schema_input)))
+            schema = readSchema(HXLReader(StreamInput(schema_input)))
             with _read_file('data-good.csv') as input:
                 dataset = HXLReader(StreamInput(input))
                 self.assertTrue(schema.validate(dataset))
 
     def test_load_bad(self):
         with _read_file('schema-basic.csv') as schema_input:
-            schema = readHXLSchema(HXLReader(StreamInput(schema_input)))
+            schema = readSchema(HXLReader(StreamInput(schema_input)))
             schema.callback = lambda e: True # to avoid seeing error messages
             with _read_file('data-bad.csv') as input:
                 dataset = HXLReader(StreamInput(input))
@@ -180,15 +180,15 @@ class TestSchemaRule(unittest.TestCase):
     def test_load_taxonomy(self):
         with _read_file('schema-taxonomy.csv') as schema_input:
             with _read_file('data-taxonomy-good.csv') as input:
-                schema = readHXLSchema(HXLReader(StreamInput(schema_input)), baseDir=file_dir)
+                schema = readSchema(HXLReader(StreamInput(schema_input)), baseDir=file_dir)
                 dataset = HXLReader(StreamInput(input))
                 self.assertTrue(schema.validate(dataset))
 
     def _try_rule(self, value, errors_expected = 0):
         """
-        Validate a single value with a HXLSchemaRule
+        Validate a single value with a SchemaRule
         """
-        if isinstance(value, HXLRow):
+        if isinstance(value, Row):
             result = self.rule.validateRow(value)
         else:
             result = self.rule.validate(value)
@@ -210,9 +210,9 @@ def _read_file(name):
     return open(os.path.join(file_dir, name), 'r')
 
 def _make_taxonomy():
-    return HXLTaxonomy(terms={
-        'AAA': HXLTerm('AAA', level=1),
-        'BBB': HXLTerm('BBB', level=2)
+    return Taxonomy(terms={
+        'AAA': Term('AAA', level=1),
+        'BBB': Term('BBB', level=2)
         })
 
 # end

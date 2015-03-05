@@ -3,7 +3,7 @@ Sort a HXL dataset.
 David Megginson
 January 2015
 
-The HXLSortFilter class will use numeric sorting for hashtags ending
+The SortFilter class will use numeric sorting for hashtags ending
 in _num or _deg, and date-normalised sorting for hashtags ending in
 _date.
 
@@ -17,17 +17,17 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 import dateutil.parser
-from hxl.model import HXLDataProvider, TagPattern
+from hxl.model import DataProvider, TagPattern
 from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.filters import make_input, make_output
 
-class HXLSortFilter(HXLDataProvider):
+class SortFilter(DataProvider):
     """
     Composable filter class to sort a HXL dataset.
 
     This is the class supporting the hxlsort command-line utility.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -35,7 +35,7 @@ class HXLSortFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLSortFilter(source, tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1']))
+    filter = SortFilter(source, tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1']))
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -137,7 +137,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = HXLSortFilter(source, args.tags, args.reverse)
+        filter = SortFilter(source, args.tags, args.reverse)
         writeHXL(output.output, filter)
 
 # end

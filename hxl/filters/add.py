@@ -13,17 +13,17 @@ import re
 from copy import copy
 
 from . import HXLFilterException
-from hxl.model import HXLDataProvider, TagPattern, HXLColumn
+from hxl.model import DataProvider, TagPattern, Column
 from hxl.io import StreamInput, HXLReader, writeHXL
 from hxl.filters import make_input, make_output
 
-class HXLAddFilter(HXLDataProvider):
+class AddFilter(DataProvider):
     """
     Composable filter class to add constant values to every row of a HXL dataset.
 
     This is the class supporting the hxladd command-line utility.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -31,9 +31,9 @@ class HXLAddFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    date_column = HXLColumn(tag='#report_date', header='Date reported')
-    country_column = HXLColumn(tag='#country', header='Country name')
-    filter = HXLAddFilter(source, values=[(date_column, '2015-03-03'), (country_column, 'Kenya')])
+    date_column = Column(tag='#report_date', header='Date reported')
+    country_column = Column(tag='#country', header='Country name')
+    filter = AddFilter(source, values=[(date_column, '2015-03-03'), (country_column, 'Kenya')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -41,7 +41,7 @@ class HXLAddFilter(HXLDataProvider):
     def __init__(self, source, values, before=False):
         """
         @param source a HXL data source
-        @param values a sequence of pairs of HXLColumn objects and constant values
+        @param values a sequence of pairs of Column objects and constant values
         @param before True to add new columns before existing ones
         """
         self.source = source
@@ -89,7 +89,7 @@ def parse_value(s):
         header = result.group(1)
         tag = '#' + result.group(2)
         value = result.group(3)
-        return (HXLColumn(tag=tag, header=header), value)
+        return (Column(tag=tag, header=header), value)
     else:
         raise HXLFilterException("Badly formatted --value: " + s)
 
@@ -135,7 +135,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = HXLAddFilter(source, values=args.value, before=args.before)
+        filter = AddFilter(source, values=args.value, before=args.before)
         writeHXL(output.output, filter)
 
 # end

@@ -47,7 +47,7 @@ class HXLValidationException(HXLException):
             source_column_number = str(self.column.source_column_number + 1)
         return "E " + "(" + source_row_number + "," + source_column_number + ") " + self.rule.tag + " " + value + ": " + self.message
 
-class HXLSchemaRule(object):
+class SchemaRule(object):
     """
     Validation rule for a single HXL hashtag.
     """
@@ -77,8 +77,8 @@ class HXLSchemaRule(object):
 
     def validateRow(self, row):
         """
-        Apply the rule to an entire HXLRow
-        @param row the HXLRow to validate
+        Apply the rule to an entire Row
+        @param row the Row to validate
         @return True if all matching values in the row are valid
         """
 
@@ -110,8 +110,8 @@ class HXLSchemaRule(object):
         """
         Apply the rule to a single value.
         @param value the value to validate
-        @param row (optional) the HXLRow being validated
-        @param column (optional) the HXLColumn being validated
+        @param row (optional) the Row being validated
+        @param column (optional) the Column being validated
         @return True if valid; false otherwise
         """
 
@@ -217,7 +217,7 @@ class HXLSchemaRule(object):
         """String representation of a rule (for debugging)"""
         return "<HXL schema rule: " + self.tag + ">"
                 
-class HXLSchema(object):
+class Schema(object):
     """
     Schema against which to validate a HXL document.
     """
@@ -263,7 +263,7 @@ class HXLSchema(object):
         s += ">"
         return s
 
-def readHXLSchema(source=None, baseDir=None):
+def readSchema(source=None, baseDir=None):
     if source is None:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
         with open(path, 'r') as input:
@@ -277,19 +277,19 @@ def _read_hxl_schema(source, baseDir):
     @param source HXL data source for the scheme (e.g. a HXLReader or filter)
     """
 
-    schema = HXLSchema()
+    schema = Schema()
 
     def parseType(typeString):
         if typeString == 'text':
-            return HXLSchemaRule.TYPE_TEXT
+            return SchemaRule.TYPE_TEXT
         elif typeString == 'number':
-            return HXLSchemaRule.TYPE_NUMBER
+            return SchemaRule.TYPE_NUMBER
         elif typeString == 'url':
-            return HXLSchemaRule.TYPE_URL
+            return SchemaRule.TYPE_URL
         elif typeString == 'email':
-            return HXLSchemaRule.TYPE_EMAIL
+            return SchemaRule.TYPE_EMAIL
         elif typeString == 'phone':
-            return HXLSchemaRule.TYPE_PHONE
+            return SchemaRule.TYPE_PHONE
         else:
             #TODO add warning
             return None
@@ -324,7 +324,7 @@ def _read_hxl_schema(source, baseDir):
             return None
 
     for row in source:
-        rule = HXLSchemaRule(row.get('#x_tag'))
+        rule = SchemaRule(row.get('#x_tag'))
         rule.minOccur = toInt(row.get('#x_minoccur_num'))
         rule.maxOccur = toInt(row.get('#x_maxoccur_num'))
         rule.dataType = parseType(row.get('#x_datatype'))

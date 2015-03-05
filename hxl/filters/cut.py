@@ -11,17 +11,17 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import sys
 import argparse
-from hxl.model import HXLDataProvider, TagPattern, HXLRow
+from hxl.model import DataProvider, TagPattern, Row
 from hxl.io import HXLReader, writeHXL
 from hxl.filters import make_input, make_output
 
-class HXLCutFilter(HXLDataProvider):
+class CutFilter(DataProvider):
     """
     Composable filter class to cut columns from a HXL dataset.
 
     This is the class supporting the hxlcut command-line utility.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -29,7 +29,7 @@ class HXLCutFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLCutFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
+    filter = CutFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -66,7 +66,7 @@ class HXLCutFilter(HXLDataProvider):
         Return the next row, with appropriate columns filtered out.
         """
         row_in = next(self.source)
-        row_out = HXLRow(columns=self.columns)
+        row_out = Row(columns=self.columns)
         values_out = []
         for i in self.indices:
             values_out.append(row_in.values[i])
@@ -141,7 +141,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = HXLCutFilter(source, args.include, args.exclude)
+        filter = CutFilter(source, args.include, args.exclude)
         writeHXL(output.output, filter)
 
 # end

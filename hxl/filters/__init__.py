@@ -11,7 +11,7 @@ import sys
 import re
 from hxl import HXLException
 from hxl.io import StreamInput, URLInput
-from hxl.model import HXLDataProvider, HXLColumn
+from hxl.model import DataProvider, Column
 
 class HXLFilterException(HXLException):
     pass
@@ -20,7 +20,7 @@ def run_script(func):
     """Try running a command-line script, with exception handling."""
     try:
         func(sys.argv[1:], sys.stdin, sys.stdout)
-    except HXLException:
+    except HXLException as e:
         print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + str(e.message)
         print >>sys.stderr, "Exiting ..."
         sys.exit(2)

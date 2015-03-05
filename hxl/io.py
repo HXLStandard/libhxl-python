@@ -185,12 +185,12 @@ class HXLReader(DataProvider):
         columns = []
 
         for source_column_number, rawString in enumerate(raw_row):
-            rawString = rawString.strip()
             if source_column_number < len(previous_row):
                 header = previous_row[source_column_number]
             else:
                 header = None
             if rawString:
+                rawString = rawString.strip()
                 nonEmptyCount += 1
                 column = Column.parse(rawString, column_number=column_number, source_column_number=source_column_number, header=header)
                 if column:

@@ -7,13 +7,13 @@ License: Public Domain
 """
 
 import unittest
-from hxl.model import TagPattern, HXLColumn, HXLRow
+from hxl.model import TagPattern, Column, Row
 
 class TestPattern(unittest.TestCase):
     """Test the TagPattern class."""
 
     def setUp(self):
-        self.column = HXLColumn(tag='#tag', attributes=['foo', 'bar'])
+        self.column = Column(tag='#tag', attributes=['foo', 'bar'])
 
     def test_simple(self):
         pattern = TagPattern('#tag')
@@ -57,7 +57,7 @@ class TestColumn(unittest.TestCase):
     SOURCE_COLUMN_NUMBER = 7
 
     def setUp(self):
-        self.column = HXLColumn(column_number=TestColumn.COLUMN_NUMBER, source_column_number=TestColumn.SOURCE_COLUMN_NUMBER,
+        self.column = Column(column_number=TestColumn.COLUMN_NUMBER, source_column_number=TestColumn.SOURCE_COLUMN_NUMBER,
                                 tag=TestColumn.HXL_TAG, attributes=TestColumn.ATTRIBUTES, header=TestColumn.HEADER_TEXT)
 
     def test_variables(self):
@@ -83,8 +83,8 @@ class TestRow(unittest.TestCase):
     def setUp(self):
         columns = []
         for column_number, tag in enumerate(TestRow.TAGS):
-            columns.append(HXLColumn(column_number, -1, tag))
-        self.row = HXLRow(columns, TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
+            columns.append(Column(column_number, -1, tag))
+        self.row = Row(columns, TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
         for content in TestRow.CONTENT:
             self.row.append(content)
 

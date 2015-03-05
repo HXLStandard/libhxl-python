@@ -14,7 +14,7 @@ import sys
 import re
 import operator
 import argparse
-from hxl.model import HXLDataProvider, TagPattern
+from hxl.model import DataProvider, TagPattern
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, writeHXL
 
@@ -95,13 +95,13 @@ class Query(object):
     }
         
 
-class HXLSelectFilter(HXLDataProvider):
+class SelectFilter(DataProvider):
     """
     Composable filter class to select rows from a HXL dataset.
 
     This is the class supporting the hxlselect command-line utility.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -109,7 +109,7 @@ class HXLSelectFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLSelectFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
+    filter = SelectFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -195,7 +195,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = HXLSelectFilter(source, queries=args.query, reverse=args.reverse)
+        filter = SelectFilter(source, queries=args.query, reverse=args.reverse)
         writeHXL(output.output, filter)
 
 # end

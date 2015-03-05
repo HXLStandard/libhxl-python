@@ -15,7 +15,7 @@ import filecmp
 import difflib
 import tempfile
 
-from hxl.model import HXLColumn
+from hxl.model import Column
 
 import hxl.filters.add
 import hxl.filters.count

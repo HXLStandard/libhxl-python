@@ -9,10 +9,10 @@ License: Public Domain
 import os
 import unittest
 from hxl.io import StreamInput, HXLReader
-from hxl.taxonomy import HXLTaxonomyException, HXLTaxonomy, HXLTerm, readTaxonomy
+from hxl.taxonomy import TaxonomyException, Taxonomy, Term, readTaxonomy
 
 class TestTaxonomy(unittest.TestCase):
-    """Test the HXLTaxonomy class"""
+    """Test the Taxonomy class"""
     
     def test_good(self):
         """A normal taxonomy should load correctly"""
@@ -38,10 +38,10 @@ class TestTaxonomy(unittest.TestCase):
 
 
 class TestTerm(unittest.TestCase):
-    """Test the HXLTerm class"""
+    """Test the Term class"""
 
     def test_properties(self):
-        term = HXLTerm('XXX', 'YYY', 3)
+        term = Term('XXX', 'YYY', 3)
         self.assertEqual('XXX', term.code)
         self.assertEqual('YYY', term.parent_code)
         self.assertEqual(3, term.level)
@@ -58,7 +58,7 @@ def try_loaded(name):
     is_loaded = True
     try:
         read_taxonomy(name)
-    except HXLTaxonomyException:
+    except TaxonomyException:
         is_loaded = False
     return is_loaded
 

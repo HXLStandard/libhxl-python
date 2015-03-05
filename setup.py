@@ -29,6 +29,7 @@ setup(name='libhxl',
         'scripts/hxlrename',
         'scripts/hxlselect',
         'scripts/hxlsort',
+        'scripts/hxltag',
         'scripts/hxlvalidate'
         ]
       )

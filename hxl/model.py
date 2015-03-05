@@ -11,6 +11,8 @@ import abc
 import copy
 import re
 
+from hxl import HXLException
+
 class DataProvider(object):
     """
     Abstract base class for a HXL data source.
@@ -196,7 +198,10 @@ class TagPattern(object):
     @staticmethod
     def parse_list(s):
         """Parse a comma-separated list of tagspecs."""
-        return [TagPattern.parse(spec) for spec in s.split(',')]
+        if s:
+            return [TagPattern.parse(spec) for spec in s.split(',')]
+        else:
+            return []
 
 
 class Column(object):

@@ -11,16 +11,16 @@ import sys
 import os
 import argparse
 from copy import copy
-from hxl.model import HXLDataProvider, HXLColumn
+from hxl.model import DataProvider, Column
 from hxl.io import StreamInput, HXLReader, writeHXL
-from hxl.schema import readHXLSchema
+from hxl.schema import readSchema
 
-class HXLValidateFilter(HXLDataProvider):
+class ValidateFilter(DataProvider):
     """Composable filter class to validate a HXL dataset against a schema.
 
     This is the class supporting the hxlvalidate command-line utility.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, singled-threaded processing pipeline.
 
@@ -28,8 +28,8 @@ class HXLValidateFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    schema = readHXLSchema(readHXL(open('my-schema.csv', 'r')))
-    filter = HXLValidateFilter(source, schema)
+    schema = readSchema(readHXL(open('my-schema.csv', 'r')))
+    filter = ValidateFilter(source, schema)
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -37,7 +37,7 @@ class HXLValidateFilter(HXLDataProvider):
     def __init__(self, source, schema, show_all=False):
         """
         @param source a HXL data source
-        @param schema a HXLSchema object
+        @param schema a Schema object
         @param show_all boolean flag to report all lines (including those without errors).
         """
         self.source = source
@@ -52,10 +52,10 @@ class HXLValidateFilter(HXLDataProvider):
         """
         if self._saved_columns is None:
             # append error columns
-            err_col = HXLColumn(tag='#x_errors', header='Error messages')
-            tag_col = HXLColumn(tag='#x_tags', header='Error tag')
-            row_col = HXLColumn(tag='#x_rows', header='Error row number (source)')
-            col_col = HXLColumn(tag='#x_cols', header='Error column number (source)')
+            err_col = Column(tag='#x_errors', header='Error messages')
+            tag_col = Column(tag='#x_tags', header='Error tag')
+            row_col = Column(tag='#x_rows', header='Error row number (source)')
+            col_col = Column(tag='#x_cols', header='Error column number (source)')
             self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 
@@ -138,10 +138,10 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         source = HXLReader(StreamInput(args.infile))
         if args.schema:
             with args.schema:
-                schema = readHXLSchema(HXLReader(StreamInput(args.schema)), baseDir=os.path.dirname(args.schema.name))
+                schema = readSchema(HXLReader(StreamInput(args.schema)), baseDir=os.path.dirname(args.schema.name))
         else:
-            schema = readHXLSchema()
-        filter = HXLValidateFilter(source, schema, args.all)
+            schema = readSchema()
+        filter = ValidateFilter(source, schema, args.all)
         writeHXL(args.outfile, filter)
 
 # end

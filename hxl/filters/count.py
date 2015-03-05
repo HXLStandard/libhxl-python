@@ -16,17 +16,17 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import sys
 import argparse
-from hxl.model import HXLDataProvider, TagPattern, HXLColumn, HXLRow
+from hxl.model import DataProvider, TagPattern, Column, Row
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, writeHXL
 
-class HXLCountFilter(HXLDataProvider):
+class CountFilter(DataProvider):
     """
     Composable filter class to aggregate rows in a HXL dataset.
 
     This is the class supporting the hxlcount command-line utility.
 
-    Because this class is a {@link hxl.model.HXLDataProvider}, you can use
+    Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -38,7 +38,7 @@ class HXLCountFilter(HXLDataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = HXLCountFilter(source, tags=[TagPattern.parse('#org'), TagPattern.parse('#sector'), TagPattern.parse('#adm1')])
+    filter = CountFilter(source, tags=[TagPattern.parse('#org'), TagPattern.parse('#sector'), TagPattern.parse('#adm1')])
     writeHXL(sys.stdout, filter)
     </pre>
     """
@@ -69,13 +69,13 @@ class HXLCountFilter(HXLDataProvider):
                     header = column.header
                 else:
                     header = None
-                cols.append(HXLColumn(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-            cols.append(HXLColumn(tag='#x_count_num', header='Count'))
+                cols.append(Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
+            cols.append(Column(tag='#x_count_num', header='Count'))
             if self.aggregate_tag is not None:
-                cols.append(HXLColumn(tag='#x_sum_num', header='Sum'))
-                cols.append(HXLColumn(tag='#x_average_num', header='Average (mean)'))
-                cols.append(HXLColumn(tag='#x_min_num', header='Minimum value'))
-                cols.append(HXLColumn(tag='#x_max_num', header='Maximum value'))
+                cols.append(Column(tag='#x_sum_num', header='Sum'))
+                cols.append(Column(tag='#x_average_num', header='Average (mean)'))
+                cols.append(Column(tag='#x_min_num', header='Minimum value'))
+                cols.append(Column(tag='#x_max_num', header='Maximum value'))
             self.saved_columns = cols
         return self.saved_columns
 
@@ -98,7 +98,7 @@ class HXLCountFilter(HXLDataProvider):
             else:
                 values = values + ([''] * 4)
 
-        row = HXLRow(self.columns)
+        row = Row(self.columns)
         row.values = values
         return row
 
@@ -202,7 +202,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = HXLCountFilter(source, args.tags, args.aggregate)
+        filter = CountFilter(source, args.tags, args.aggregate)
         writeHXL(output.output, filter)
 
 # end
