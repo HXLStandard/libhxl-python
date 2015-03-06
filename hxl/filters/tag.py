@@ -19,10 +19,8 @@ class Tagger(AbstractInput):
     The tag specs are not parsed for correctness.
     """
 
-    def __init__(self, input, specs):
-        self.specs = []
-        for spec in specs:
-            self.specs.append([_norm(spec[0]), spec[1]])
+    def __init__(self, input, specs=[]):
+        self.specs = [(_norm(spec[0]), spec[1]) for spec in specs]
         self.input = iter(input)
         self._cache = []
         self._found_tags = False
@@ -126,6 +124,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '-m',
         '--map',
         help='Mapping expression',
+        required=True,
         action='append',
         metavar='Header Text#tag',
         type=parse_spec
