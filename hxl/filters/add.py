@@ -27,16 +27,6 @@ class AddFilter(DataProvider):
     Because this class is a {@link hxl.model.DataProvider}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
-
-    Usage:
-
-    <pre>
-    source = HXLReader(sys.stdin)
-    date_column = Column(tag='#report_date', header='Date reported')
-    country_column = Column(tag='#country', header='Country name')
-    filter = AddFilter(source, values=[(date_column, '2015-03-03'), (country_column, 'Kenya')])
-    writeHXL(sys.stdout, filter)
-    </pre>
     """
 
     def __init__(self, source, values, before=False):
