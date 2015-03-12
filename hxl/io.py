@@ -17,7 +17,7 @@ if sys.version_info < (3,):
 else:
     import urllib.request
 from . import HXLException
-from .model import DataProvider, Dataset, Column, Row
+from hxl.model import DataProvider, Dataset, Column, Row
 
 # Cut off for fuzzy detection of a hashtag row
 # At least this percentage of cells must parse as HXL hashtags
