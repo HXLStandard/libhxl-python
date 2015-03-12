@@ -1,8 +1,4 @@
 *.pyc
-/
-/TAGS
 /build
 /dist
 /libhxl.egg-info
-/make-tags.sh
-/pypi-upload.sh
