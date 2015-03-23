@@ -54,7 +54,12 @@ class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
         self.errors = []
-        self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error))
+        self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), level="warning")
+
+    def test_level(self):
+        self.rule.dataType = SchemaRule.TYPE_NUMBER
+        self._try_rule('xxx', 1)
+        self.assertEqual('warning', self.errors[0].level)
 
     def test_type_none(self):
         self._try_rule('')
@@ -188,6 +193,7 @@ class TestSchemaRule(unittest.TestCase):
         """
         Validate a single value with a SchemaRule
         """
+        self.errors = [] # clear errors for the next run
         if isinstance(value, Row):
             result = self.rule.validateRow(value)
         else:
@@ -197,7 +203,6 @@ class TestSchemaRule(unittest.TestCase):
         else:
             self.assertFalse(result)
         self.assertEqual(len(self.errors), errors_expected)
-        self.errors = [] # clear errors for the next run
 
 ########################################################################
 # Support functions

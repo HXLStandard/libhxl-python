@@ -24,37 +24,19 @@ else:
     from urlparse import urlparse
 
 
-SEVERITY_INFO = 0
-SEVERITY_WARNING = 1
-SEVERITY_ERROR = 2
-
-SEVERITY_LABELS = {
-    SEVERITY_INFO: 'info',
-    SEVERITY_WARNING: 'warning',
-    SEVERITY_ERROR: 'error'
-}
-
 class HXLValidationException(HXLException):
     """
     Data structure to hold a HXL validation error.
     """
 
-    def __init__(self, message, rule=None, value=None, row=None, column=None, severity=SEVERITY_ERROR):
+    def __init__(self, message, rule=None, value=None, row=None, column=None, level="error"):
         """Construct a new exception."""
         super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row
         self.column = column
-        self.severity = severity
-
-    @property
-    def severity_label(self):
-        """Get a text label for the severity"""
-        label = SEVERITY_LABELS.get(self.severity)
-        if not label:
-            label = 'unknown'
-        return label
+        self.level = level
 
     def __str__(self):
         """Get a string rendition of this error."""
@@ -101,7 +83,7 @@ class SchemaRule(object):
 
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
-                 callback=None):
+                 callback=None, level="error"):
         if type(tag) is TagPattern:
             self.tag_pattern = tag
         else:
@@ -117,6 +99,7 @@ class SchemaRule(object):
         self.taxonomy = taxonomy
         self.taxonomyLevel = taxonomyLevel
         self.callback = callback
+        self.level = level
 
     def validateColumns(self, columns):
         """
@@ -205,7 +188,8 @@ class SchemaRule(object):
                     rule=self,
                     value = value,
                     row = row,
-                    column = column
+                    column = column,
+                    level = self.level
                     )
                 )
         return False
