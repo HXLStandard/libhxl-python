@@ -12,7 +12,9 @@ import re
 import os
 from copy import copy
 from email.utils import parseaddr
-from . import HXLException
+
+from hxl import HXLException
+from hxl.model import TagPattern
 from hxl.io import StreamInput, HXLReader
 from hxl.taxonomy import readTaxonomy
 
@@ -45,7 +47,7 @@ class HXLValidationException(HXLException):
         source_column_number = "?"
         if self.column:
             source_column_number = str(self.column.source_column_number + 1)
-        return "E " + "(" + source_row_number + "," + source_column_number + ") " + self.rule.tag + " " + value + ": " + self.message
+        return "E " + "(" + source_row_number + "," + source_column_number + ") " + str(self.rule.tag_pattern) + " " + value + ": " + self.message
 
 class SchemaRule(object):
     """
@@ -61,7 +63,10 @@ class SchemaRule(object):
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
                  callback=None):
-        self.tag = tag
+        if type(tag) is TagPattern:
+            self.tag_pattern = tag
+        else:
+            self.tag_pattern = TagPattern.parse(tag)
         self.minOccur = minOccur
         self.maxOccur = maxOccur
         self.dataType = dataType
@@ -74,7 +79,6 @@ class SchemaRule(object):
         self.taxonomyLevel = taxonomyLevel
         self.callback = callback
 
-
     def validateRow(self, row):
         """
         Apply the rule to an entire Row
@@ -86,7 +90,7 @@ class SchemaRule(object):
         result = True
 
         # Look up only the values that apply to this rule
-        values = row.getAll(self.tag)
+        values = row.getAll(self.tag_pattern)
         if values:
             for column_number, value in enumerate(values):
                 if not self.validate(value, row, row.columns[column_number]):
@@ -215,7 +219,7 @@ class SchemaRule(object):
 
     def __str__(self):
         """String representation of a rule (for debugging)"""
-        return "<HXL schema rule: " + self.tag + ">"
+        return "<HXL schema rule: " + str(self.tag_pattern) + ">"
                 
 class Schema(object):
     """
