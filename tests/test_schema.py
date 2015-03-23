@@ -54,12 +54,12 @@ class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
         self.errors = []
-        self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), level="warning")
+        self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), severity="warning")
 
-    def test_level(self):
+    def test_severity(self):
         self.rule.dataType = SchemaRule.TYPE_NUMBER
         self._try_rule('xxx', 1)
-        self.assertEqual('warning', self.errors[0].level)
+        self.assertEqual('warning', self.errors[0].severity)
 
     def test_type_none(self):
         self._try_rule('')
