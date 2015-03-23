@@ -24,19 +24,57 @@ else:
     from urlparse import urlparse
 
 
+SEVERITY_INFO = 0
+SEVERITY_WARNING = 1
+SEVERITY_ERROR = 2
+
+SEVERITY_LABELS = {
+    SEVERITY_INFO: 'info',
+    SEVERITY_WARNING: 'warning',
+    SEVERITY_ERROR: 'error'
+}
+
 class HXLValidationException(HXLException):
     """
     Data structure to hold a HXL validation error.
     """
 
-    def __init__(self, message, rule = None, value = None, row = None, column = None):
+    def __init__(self, message, rule=None, value=None, row=None, column=None, severity=SEVERITY_ERROR):
+        """Construct a new exception."""
         super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row
         self.column = column
+        self.severity = severity
+
+    @property
+    def severity_label(self):
+        """Get a text label for the severity"""
+        label = SEVERITY_LABELS.get(self.severity)
+        if not label:
+            label = 'unknown'
+        return label
 
     def __str__(self):
+        """Get a string rendition of this error."""
+        s = ''
+
+        if self.rule.tag_pattern:
+            if self.value:
+                s += '{}={} '.format(str(self.rule.tag_pattern), str(self.value))
+            else:
+                s += '{} '.format(str(self.rule.tag_pattern))
+
+        if self.message:
+            s += '- {}'.format(self.message)
+
+        return s
+
+
+
+        return s
+        
         value = "<no value>"
         if self.value:
             value = str(re.sub('\s+', ' ', self.value))
@@ -93,9 +131,10 @@ class SchemaRule(object):
                 if self.tag_pattern.match(column):
                     number_seen += 1
             if number_seen < self.minOccur:
-                self._report_error(
-                    "Hashtag must appear on at least {0} columns (actual: {1})".format(self.minOccur, number_seen)
-                )
+                if number_seen == 0:
+                    self._report_error('column with this hashtag required but not found')
+                else:
+                    self._report_error('not enough columns with this hashtag (expected {} but found {})'.format(self.minOccur, number_seen))
                 result = False
         
         return result
