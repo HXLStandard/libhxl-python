@@ -48,7 +48,7 @@ python setup.py install
 echo
 echo -n "Testing in "
 python --version
-python -m unittest tests
+python setup.py test
 
 #
 # Run tests in clean Python3 environment
@@ -57,7 +57,7 @@ python -m unittest tests
 echo
 echo -n "Testing in "
 python --version
-python -m unittest tests
+python setup.py test
 
 # rm -rf testenv-python2
 # rm -rf testenv-python3
