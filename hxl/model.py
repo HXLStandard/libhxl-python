@@ -306,15 +306,21 @@ class Row(object):
     def get(self, tag, index=0, default=None):
         """
         Get a single value for a tag in a row.
-        @param tag The HXL tag for the value.
+        @param tag A TagPattern or a string value for a tag.
         @param index The zero-based index if there are multiple values for the tag (default: 0)
         @param default The default value if not found (default: None)
         @return The value found, or the default value provided.
         """
+
+        if type(tag) is TagPattern:
+            pattern = tag
+        else:
+            pattern = TagPattern.parse(tag)
+
         for i, column in enumerate(self.columns):
             if i >= len(self.values):
                 break
-            if column.tag == tag:
+            if pattern.match(column):
                 if index == 0:
                     return self.values[i]
                 else:
@@ -324,14 +330,20 @@ class Row(object):
     def getAll(self, tag):
         """
         Get all values for a specific tag in a row
-        @param tag The HXL tag for the value(s).
+        @param tag A TagPattern or a string value for a tag.
         @return An array of values for the HXL hashtag.
         """
+
+        if type(tag) is TagPattern:
+            pattern = tag
+        else:
+            pattern = TagPattern.parse(tag)
+
         result = []
         for i, column in enumerate(self.columns):
             if i >= len(self.values):
                 break
-            if column.tag == tag:
+            if pattern.match(column):
                 result.append(self.values[i])
         return result
 
