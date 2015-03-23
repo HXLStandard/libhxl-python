@@ -47,6 +47,7 @@ class HXLValidationException(HXLException):
         source_column_number = "?"
         if self.column:
             source_column_number = str(self.column.source_column_number + 1)
+
         return "E " + "(" + source_row_number + "," + source_column_number + ") " + str(self.rule.tag_pattern) + " " + value + ": " + self.message
 
 class SchemaRule(object):
@@ -78,6 +79,26 @@ class SchemaRule(object):
         self.taxonomy = taxonomy
         self.taxonomyLevel = taxonomyLevel
         self.callback = callback
+
+    def validateColumns(self, columns):
+        """
+        Test whether the columns are present to satisfy this rule.
+        """
+
+        result = True
+        
+        if self.minOccur > 0:
+            number_seen = 0
+            for column in columns:
+                if self.tag_pattern.match(column):
+                    number_seen += 1
+            if number_seen < self.minOccur:
+                self._report_error(
+                    "Hashtag must appear on at least {0} columns (actual: {1})".format(self.minOccur, number_seen)
+                )
+                result = False
+        
+        return result
 
     def validateRow(self, row):
         """
@@ -233,6 +254,8 @@ class Schema(object):
         else:
             self.callback = callback
 
+        self.impossible_rules = {}
+
     def showError(self, error):
         print >> sys.stderr, error
         
@@ -243,20 +266,33 @@ class Schema(object):
 
     def validate(self, parser):
         result = True
+
+        self.validateColumns(parser.columns)
+
         for row in parser:
             if not self.validateRow(row):
                 result = False
         return result
 
-    def validateRow(self, row):
-        result = True
+    def validateColumns(self, columns):
         for rule in self.rules:
             old_callback = rule.callback
             if self.callback:
                 rule.callback = self.callback
-            if not rule.validateRow(row):
-                result = False
+            if not rule.validateColumns(columns):
+                self.impossible_rules[rule] = True
             rule.callback = old_callback
+
+    def validateRow(self, row):
+        result = True
+        for rule in self.rules:
+            if not rule in self.impossible_rules:
+                old_callback = rule.callback
+                if self.callback:
+                    rule.callback = self.callback
+                if not rule.validateRow(row):
+                    result = False
+                rule.callback = old_callback
         return result
 
     def __str__(self):
