@@ -94,6 +94,13 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule('(613) 555-1111')
         self._try_rule('123', 1)
         self._try_rule('123456789abc', 1)
+        
+    def test_type_date(self):
+        self.rule.dataType = 'date'
+        self._try_rule('2015-03-15')
+        self._try_rule('2015-03')
+        self._try_rule('2015')
+        self._try_rule('xxx', 1)
 
     def test_type_taxonomy(self):
         # No level specified

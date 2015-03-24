@@ -76,7 +76,7 @@ class SchemaRule(object):
     """
 
     # allow datatypes (others ignored)
-    DATATYPES = ['text', 'number', 'url', 'email', 'phone']
+    DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
 
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
@@ -213,6 +213,9 @@ class SchemaRule(object):
         elif self.dataType == 'phone':
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
                 return self._report_error("Expected a phone number", value, row, column)
+        elif self.dataType == 'date':
+            if not re.match(r'^\d\d\d\d(?:-[01]\d(?:-[0-3]\d)?)?$', value):
+                return self._report_error("Expected an ISO date (YYYY, YYYY-MM, or YYYY-MM-DD)", value, row, column)
         
         return True
 
