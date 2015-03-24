@@ -75,12 +75,6 @@ class SchemaRule(object):
     Validation rule for a single HXL hashtag.
     """
 
-    TYPE_TEXT = 1
-    TYPE_NUMBER = 2
-    TYPE_URL = 3
-    TYPE_EMAIL = 4
-    TYPE_PHONE = 5
-
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
                  callback=None, severity="error", description=None):
@@ -197,20 +191,20 @@ class SchemaRule(object):
 
     def _test_type(self, value, row, column):
         """Check the datatype."""
-        if self.dataType == self.TYPE_NUMBER:
+        if self.dataType == 'number':
             try:
                 float(value)
                 return True
             except ValueError:
                 return self._report_error("Expected a number", value, row, column)
-        elif self.dataType == self.TYPE_URL:
+        elif self.dataType == 'url':
             pieces = urlparse(value)
             if not (pieces.scheme and pieces.netloc):
                 return self._report_error("Expected a URL", value, row, column)
-        elif self.dataType == self.TYPE_EMAIL:
+        elif self.dataType == 'email':
             if not re.match(r'^[^@]+@[^@]+$', value):
                 return self._report_error("Expected an email address", value, row, column)
-        elif self.dataType == self.TYPE_PHONE:
+        elif self.dataType == 'phone':
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
                 return self._report_error("Expected a phone number", value, row, column)
         
@@ -345,15 +339,15 @@ def _read_hxl_schema(source, baseDir):
 
     def parseType(typeString):
         if typeString == 'text':
-            return SchemaRule.TYPE_TEXT
+            return 'text'
         elif typeString == 'number':
-            return SchemaRule.TYPE_NUMBER
+            return 'number'
         elif typeString == 'url':
-            return SchemaRule.TYPE_URL
+            return 'url'
         elif typeString == 'email':
-            return SchemaRule.TYPE_EMAIL
+            return 'email'
         elif typeString == 'phone':
-            return SchemaRule.TYPE_PHONE
+            return 'phone'
         else:
             #TODO add warning
             return None

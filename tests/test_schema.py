@@ -20,7 +20,7 @@ class TestSchema(unittest.TestCase):
         self.schema = Schema(
             rules=[
                 SchemaRule('#sector', minOccur=1),
-                SchemaRule('#affected_num', dataType=SchemaRule.TYPE_NUMBER)
+                SchemaRule('#affected_num', dataType='number')
                 ],
             callback = lambda error: self.errors.append(error)
             )
@@ -57,7 +57,7 @@ class TestSchemaRule(unittest.TestCase):
         self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), severity="warning")
 
     def test_severity(self):
-        self.rule.dataType = SchemaRule.TYPE_NUMBER
+        self.rule.dataType = 'number'
         self._try_rule('xxx', 1)
         self.assertEqual('warning', self.errors[0].severity)
 
@@ -67,29 +67,29 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule('hello, world')
 
     def test_type_text(self):
-        self.rule.dataType = SchemaRule.TYPE_TEXT
+        self.rule.dataType = 'text'
         self._try_rule('')
         self._try_rule(10)
         self._try_rule('hello, world')
 
     def test_type_num(self):
-        self.rule.dataType = SchemaRule.TYPE_NUMBER
+        self.rule.dataType = 'number'
         self._try_rule(10)
         self._try_rule(' -10.1 ');
         self._try_rule('ten', 1)
 
     def test_type_url(self):
-        self.rule.dataType = SchemaRule.TYPE_URL
+        self.rule.dataType = 'url'
         self._try_rule('http://www.example.org')
         self._try_rule('hello, world', 1)
 
     def test_type_email(self):
-        self.rule.dataType = SchemaRule.TYPE_EMAIL;
+        self.rule.dataType = 'email'
         self._try_rule('somebody@example.org')
         self._try_rule('hello, world', 1)
 
     def test_type_phone(self):
-        self.rule.dataType = SchemaRule.TYPE_PHONE
+        self.rule.dataType = 'phone'
         self._try_rule('+1-613-555-1111 x1234')
         self._try_rule('(613) 555-1111')
         self._try_rule('123', 1)
