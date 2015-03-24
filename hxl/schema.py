@@ -75,6 +75,9 @@ class SchemaRule(object):
     Validation rule for a single HXL hashtag.
     """
 
+    # allow datatypes (others ignored)
+    DATATYPES = ['text', 'number', 'url', 'email', 'phone']
+
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
                  callback=None, severity="error", description=None):
@@ -337,19 +340,12 @@ def _read_hxl_schema(source, baseDir):
 
     schema = Schema()
 
-    def parseType(typeString):
-        if typeString == 'text':
-            return 'text'
-        elif typeString == 'number':
-            return 'number'
-        elif typeString == 'url':
-            return 'url'
-        elif typeString == 'email':
-            return 'email'
-        elif typeString == 'phone':
-            return 'phone'
+    def parseType(type):
+        type = type.lower()
+        type = re.sub(r'[^a-z_-]', '', type) # normalise
+        if type in SchemaRule.DATATYPES:
+            return type
         else:
-            #TODO add warning
             return None
 
     def toInt(s):
