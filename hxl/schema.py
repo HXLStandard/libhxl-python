@@ -396,7 +396,7 @@ def _read_hxl_schema(source, baseDir):
         rule.valuePattern = toRegex(row.get('#x_pattern'))
         rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
         rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
-        rule.severity = row.get('#x_severity')
+        rule.severity = row.get('#x_severity') or 'error'
         s = row.get('#x_enumeration')
         if s:
             rule.valueEnumeration = s.split('|')
