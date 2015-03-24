@@ -87,7 +87,10 @@ class SchemaRule(object):
             self.tag_pattern = TagPattern.parse(tag)
         self.minOccur = minOccur
         self.maxOccur = maxOccur
-        self.dataType = dataType
+        if dataType is None or dataType in self.DATATYPES:
+            self.dataType = dataType
+        else:
+            raise HXLException('Unknown data type: {}'.format(dataType))
         self.minValue = minValue
         self.maxValue = maxValue
         self.valuePattern = valuePattern
