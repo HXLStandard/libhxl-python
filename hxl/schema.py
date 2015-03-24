@@ -83,7 +83,7 @@ class SchemaRule(object):
 
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
-                 callback=None, severity="error"):
+                 callback=None, severity="error", description=None):
         if type(tag) is TagPattern:
             self.tag_pattern = tag
         else:
@@ -100,6 +100,7 @@ class SchemaRule(object):
         self.taxonomyLevel = taxonomyLevel
         self.callback = callback
         self.severity = severity
+        self.description = description
 
     def validateColumns(self, columns):
         """
@@ -397,6 +398,7 @@ def _read_hxl_schema(source, baseDir):
         rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
         rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
         rule.severity = row.get('#x_severity') or 'error'
+        rule.description = row.get('#description')
         s = row.get('#x_enumeration')
         if s:
             rule.valueEnumeration = s.split('|')
