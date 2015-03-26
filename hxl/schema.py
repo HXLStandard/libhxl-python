@@ -395,7 +395,7 @@ def _read_hxl_schema(source, baseDir):
         rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
         rule.severity = row.get('#valid_severity') or 'error'
         rule.description = row.get('#description')
-        s = row.get('#valid_value+enum')
+        s = row.get('#valid_value+list')
         if s:
             rule.valueEnumeration = s.split('|')
         rule.caseSensitive = toInt(row.get('#valid_value+case'))
