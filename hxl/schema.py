@@ -366,6 +366,15 @@ def _read_hxl_schema(source, baseDir):
         else:
             return None
 
+    def toBoolean(s):
+        if not s or s.lower() in ['0', 'n', 'no', 'f', 'false']:
+            return False
+        elif s.lower() in ['y', 'yes', 't', 'true']:
+            return True
+        else:
+            raise HXLException('Unrecognised true/false value: {}'.format(s))
+
+
     def toRegex(s):
         if s:
             return re.compile(s)
@@ -393,12 +402,13 @@ def _read_hxl_schema(source, baseDir):
         rule.valuePattern = toRegex(row.get('#valid_value+regex'))
         rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
         rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
+        rule.required = toBoolean(row.get('#valid_required-min-max'))
         rule.severity = row.get('#valid_severity') or 'error'
         rule.description = row.get('#description')
         s = row.get('#valid_value+list')
         if s:
-            rule.valueEnumeration = s.split('|')
-        rule.caseSensitive = toInt(row.get('#valid_value+case'))
+            rule.valueEnumeration = re.split(r'\s*\|\s*', s)
+        rule.caseSensitive = toBoolean(row.get('#valid_value+case'))
         schema.rules.append(rule)
 
     return schema
