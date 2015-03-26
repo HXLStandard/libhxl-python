@@ -1,8 +1,8 @@
-"#valid_tag",#valid_required+min,#valid_required+max,#valid_datatype,#valid_value+min,#valid_value+max,#valid_value+regex,#valid_value+list,#valid_value+case
-"#sector",1,1,text,,,,WASH|Salud|Educación,0
-"#subsector",1,2,text,,,,,0
-"#org",1,1,text,,,,,0
-"#sex",1,1,text,,,,Hombres|Mujeres,0
-"#targeted_num",0,1,number,0,1000000000,,,0
-"#country",1,1,text,,,,,0
-"#adm1",0,1,text,,,,,0
+"#valid_tag",#valid_required,#valid_required+min,#valid_required+max,#valid_datatype,#valid_value+min,#valid_value+max,#valid_value+regex,#valid_value+list,#valid_value+case
+"#sector",true,,,text,,,,WASH|Salud|Educación,0
+"#subsector",,1,2,text,,,,,0
+"#org",,1,1,text,,,,,0
+"#sex",,1,1,text,,,,Hombres|Mujeres,0
+"#targeted_num",,0,1,number,0,1000000000,,,0
+"#country",true,,,text,,,,,0
+"#adm1",,0,1,text,,,,,0

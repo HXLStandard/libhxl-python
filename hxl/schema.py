@@ -80,7 +80,7 @@ class SchemaRule(object):
 
     def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
-                 callback=None, severity="error", description=None):
+                 callback=None, severity="error", description=None, required=False):
         if type(tag) is TagPattern:
             self.tag_pattern = tag
         else:
@@ -101,6 +101,7 @@ class SchemaRule(object):
         self.callback = callback
         self.severity = severity
         self.description = description
+        self.required = required
 
     def validateColumns(self, columns):
         """
@@ -114,7 +115,7 @@ class SchemaRule(object):
             for column in columns:
                 if self.tag_pattern.match(column):
                     number_seen += 1
-            if number_seen < self.minOccur:
+            if (self.required and number_seen < 1) or (number_seen < self.minOccur):
                 if number_seen == 0:
                     self._report_error('column with this hashtag required but not found')
                 else:
@@ -141,6 +142,11 @@ class SchemaRule(object):
                     result = False
                 if value:
                     numberSeen += 1
+        if self.required and numberSeen < 1:
+            result = self._report_error(
+                'A value for {} was required.'.format(self.tag_pattern),
+                row = row
+                )
         if self.minOccur is not None and numberSeen < self.minOccur:
             result = self._report_error(
                 "Expected at least " + str(self.minOccur) + " instance(s) but found " + str(numberSeen),
