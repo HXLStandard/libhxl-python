@@ -1,5 +1,5 @@
 HXL hashtag,Description,Data type,Min cols,Max cols,Default value,Min value,Max value,Pattern,Allowed values,Case sensitive?,Category
-#x_tag,#x_notes,#x_datatype,#x_minoccur_num,#x_maxoccur_num,#x_default,#x_minvalue_num,#x_maxvalue_num,#x_pattern,#x_enumeration,#x_casesensitive,#x_category
+#valid_tag,#valid_notes,#valid_datatype,#valid_required+min,#valid_required+max,#valid_default,#valid_value+min,#valid_value+max,#valid_value+regex,#valid_value+enum,#valid_value+case,#category
 #report_date,Date reported,date,0,1,,,,,,,
 #from_date,Start date applicable,date,0,1,,,,,,,
 #to_date,End date applicable,date,0,1,,,,,,,

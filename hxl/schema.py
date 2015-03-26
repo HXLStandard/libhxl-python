@@ -384,21 +384,21 @@ def _read_hxl_schema(source, baseDir):
             return None
 
     for row in source:
-        rule = SchemaRule(row.get('#x_tag'))
-        rule.minOccur = toInt(row.get('#x_minoccur_num'))
-        rule.maxOccur = toInt(row.get('#x_maxoccur_num'))
-        rule.dataType = parseType(row.get('#x_datatype'))
-        rule.minValue = toFloat(row.get('#x_minvalue_num'))
-        rule.maxValue = toFloat(row.get('#x_maxvalue_num'))
-        rule.valuePattern = toRegex(row.get('#x_pattern'))
+        rule = SchemaRule(row.get('#valid_tag'))
+        rule.minOccur = toInt(row.get('#valid_required+min'))
+        rule.maxOccur = toInt(row.get('#valid_required+max'))
+        rule.dataType = parseType(row.get('#valid_datatype'))
+        rule.minValue = toFloat(row.get('#valid_value+min'))
+        rule.maxValue = toFloat(row.get('#valid_value+max'))
+        rule.valuePattern = toRegex(row.get('#valid_value+regex'))
         rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
         rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
-        rule.severity = row.get('#x_severity') or 'error'
+        rule.severity = row.get('#valid_severity') or 'error'
         rule.description = row.get('#description')
-        s = row.get('#x_enumeration')
+        s = row.get('#valid_value+enum')
         if s:
             rule.valueEnumeration = s.split('|')
-        rule.caseSensitive = toInt(row.get('#x_casesensitive'))
+        rule.caseSensitive = toInt(row.get('#valid_value+case'))
         schema.rules.append(rule)
 
     return schema
