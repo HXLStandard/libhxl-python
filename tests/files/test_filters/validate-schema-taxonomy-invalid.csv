@@ -1,4 +1,4 @@
-"#x_tag",#x_minoccur_num,#x_maxoccur_num,#x_datatype,#x_minvalue_num,#x_maxvalue_num,#x_pattern,#x_enumeration,#x_casesensitive,#x_taxonomy,#x_taxonomyLevel
+"#valid_tag",#valid_required+min,#valid_required+max,#valid_datatype,#valid_value+min,#valid_value+max,#valid_value+regex,#valid_value+enum,#valid_value+case,#x_taxonomy,#x_taxonomyLevel
 "#sector",1,1,text,,,,WASH|Salud|Educación,0,,
 "#subsector",1,2,text,,,,,0,,
 "#org",1,1,text,,,,,0,,
