@@ -32,10 +32,8 @@ def make_input(filename, stdin=sys.stdin):
     """Make an input from the specified file, if any."""
     if filename:
         if re.match('^.*\.xlsx?$', filename):
-            print("Excel file: " + filename)
             return ExcelInput(filename)
         else:
-            print("CSV file: " + filename)
             return CSVInput(filename)
     else:
         return StreamInput(stdin)

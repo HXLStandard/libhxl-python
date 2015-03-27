@@ -24,6 +24,18 @@ from hxl.model import DataProvider, Dataset, Column, Row
 # At least this percentage of cells must parse as HXL hashtags
 FUZZY_HASHTAG_PERCENTAGE = 0.5
 
+if sys.version_info < (3,):
+    def encode(value):
+        """Encode a string into UTF-8 for Python2"""
+        try:
+            return value.encode('utf-8')
+        except:
+            return value
+else:
+    def encode(value):
+        """Leave a Unicode string as-is for Python3"""
+        return value
+
 class HXLParseException(HXLException):
     """
     A parsing error in a HXL dataset.
@@ -102,7 +114,7 @@ class ExcelInput(AbstractInput):
                 input = urllib.request.urlopen(url)
             except:
                 # kludge for local files
-                input = open(url, 'r')
+                input = open(url, 'rb')
         try:
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
@@ -111,11 +123,6 @@ class ExcelInput(AbstractInput):
         self._row_index = 0
 
     def __next__(self):
-        def encode(value):
-            try:
-                return value.encode('utf-8')
-            except:
-                return value
         if self._row_index < self._sheet.nrows:
             row = [encode(cell.value) for cell in self._sheet.row(self._row_index)]
             self._row_index += 1
