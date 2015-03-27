@@ -10,8 +10,9 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import abc
 import csv
 import json
-import re
 import sys
+import xlrd
+
 if sys.version_info < (3,):
     import urllib
 else:
@@ -67,8 +68,8 @@ class StreamInput(AbstractInput):
     next = __next__
 
 
-class URLInput(AbstractInput):
-    """Read raw input from a URL or filename."""
+class CSVInput(AbstractInput):
+    """Read raw CSV input from a URL or filename."""
 
     def __init__(self, url):
         if sys.version_info < (3,):
@@ -88,6 +89,44 @@ class URLInput(AbstractInput):
 
     def __exit__(self, value, type, traceback):
         self._input.close()
+
+
+class ExcelInput(AbstractInput):
+    """Read raw XLS input from a URL or filename."""
+
+    def __init__(self, url, sheet_index=0):
+        if sys.version_info < (3,):
+            input = urllib.urlopen(url)
+        else:
+            try:
+                input = urllib.request.urlopen(url)
+            except:
+                # kludge for local files
+                input = open(url, 'r')
+        try:
+            self._workbook = xlrd.open_workbook(file_contents=input.read())
+        finally:
+            input.close()
+        self._sheet = self._workbook.sheet_by_index(sheet_index)
+        self._row_index = 0
+
+    def __next__(self):
+        def encode(value):
+            try:
+                return value.encode('utf-8')
+            except:
+                return value
+        if self._row_index < self._sheet.nrows:
+            row = [encode(cell.value) for cell in self._sheet.row(self._row_index)]
+            self._row_index += 1
+            return row
+        else:
+            raise StopIteration()
+
+    next = __next__
+
+    def __exit__(self, value, type, traceback):
+        pass
 
 
 class ArrayInput(AbstractInput):

@@ -10,7 +10,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import re
 from hxl import HXLException
-from hxl.io import StreamInput, URLInput
+from hxl.io import StreamInput, CSVInput, ExcelInput
 from hxl.model import DataProvider, Column
 
 class HXLFilterException(HXLException):
@@ -31,7 +31,12 @@ def run_script(func):
 def make_input(filename, stdin=sys.stdin):
     """Make an input from the specified file, if any."""
     if filename:
-        return URLInput(filename)
+        if re.match('^.*\.xlsx?$', filename):
+            print("Excel file: " + filename)
+            return ExcelInput(filename)
+        else:
+            print("CSV file: " + filename)
+            return CSVInput(filename)
     else:
         return StreamInput(stdin)
 
