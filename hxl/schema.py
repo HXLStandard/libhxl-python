@@ -110,12 +110,12 @@ class SchemaRule(object):
 
         result = True
         
-        if self.required or self.minOccur > 0:
+        if self.required or (self.minOccur is not None and int(self.minOccur) > 0):
             number_seen = 0
             for column in columns:
                 if self.tag_pattern.match(column):
                     number_seen += 1
-            if (self.required and (number_seen < 1)) or (number_seen < self.minOccur):
+            if (self.required and (number_seen < 1)) or (self.minOccur is not None and number_seen < int(self.minOccur)):
                 print("*** impossible column")
                 if number_seen == 0:
                     self._report_error('column with this hashtag required but not found')
