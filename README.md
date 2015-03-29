@@ -11,27 +11,32 @@ Streaming identity transformation in a pipeline (read from standard input, write
 
 ```
 import sys
-import csv
-from hxl.parser import HXLReader
+from hxl.io import StreamInput, HXLReader, write_hxl
 
-
-parser = HXLReader(sys.stdin)
-writer = csv.writer(sys.stdout)
-
-writer.writerow(parser.headers)
-writer.writerow(parser.tags)
-for row in parser:
-    writer.writerow(row.values)
+source = HXLReader(StreamInput(sys.stdin))
+write_hxl(sys.stdout, source)
 ```
 
 Same transformation, but loading the entire dataset into memory:
 
 ```
 import sys
-from hxl.parser import readHXL, writeHXL
+from hxl.io import read_hxl, write_hxl
 
-dataset = readHXL(sys.stdin)
-writeHXL(sys.stdout, dataset)
+dataset = read_hxl(StreamInput(sys.stdin))
+write_hxl(sys.stdout, dataset)
+```
+
+Finding the #org for every row that has a #sector of "WASH":
+
+```
+import sys
+from hxl.io import read_hxl
+
+source = HXLReader(StreamInput(sys.stdin))
+for row in source:
+    if row.get('#sector') == 'WASH':
+       print row.get('#org')
 ```
 
 # Installation
@@ -43,6 +48,12 @@ command:
 
 ```
 python setup.py install
+```
+
+If you don't need to install from source, try simply
+
+```
+pip install libhxl
 ```
 
 Once you've installed, you will be able to include the HXL libraries
