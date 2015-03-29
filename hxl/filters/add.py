@@ -15,7 +15,7 @@ from copy import copy
 import hxl
 from . import HXLFilterException
 from hxl.model import DataProvider, TagPattern, Column
-from hxl.io import StreamInput, HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 
 class AddFilter(DataProvider):
@@ -129,6 +129,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
         filter = AddFilter(source, values=args.value, before=args.before)
-        writeHXL(output.output, filter)
+        write_hxl(output.output, filter)
 
 # end

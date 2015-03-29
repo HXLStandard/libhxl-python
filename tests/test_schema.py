@@ -19,7 +19,7 @@ class TestSchema(unittest.TestCase):
         self.errors = []
         self.schema = Schema(
             rules=[
-                SchemaRule('#sector', minOccur=1),
+                SchemaRule('#sector', min_occur=1),
                 SchemaRule('#affected_num', dataType='number')
                 ],
             callback = lambda error: self.errors.append(error)
@@ -59,7 +59,7 @@ class TestSchemaRule(unittest.TestCase):
     def test_severity(self):
         self.rule.dataType = 'number'
         self._try_rule('xxx', 1)
-        self.assertEqual('warning', self.errors[0].severity)
+        self.assertEqual('warning', self.errors[0].rule.severity)
 
     def test_type_none(self):
         self._try_rule('')
@@ -153,13 +153,13 @@ class TestSchemaRule(unittest.TestCase):
             );
         row.values = ['WASH', '', ''];
 
-        self.rule.minOccur = 1
+        self.rule.min_occur = 1
         self._try_rule(row)
 
-        self.rule.minOccur = 2
+        self.rule.min_occur = 2
         self._try_rule(row, 1)
 
-        self.rule.minOccur = None
+        self.rule.min_occur = None
 
         self.rule.maxOccur = 1
         self._try_rule(row)

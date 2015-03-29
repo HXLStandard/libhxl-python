@@ -69,7 +69,7 @@ class TestColumn(unittest.TestCase):
 
     def test_display_tag(self):
         # order is not fixed
-        #self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.displayTag)
+        #self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.display_tag)
         pass
 
 

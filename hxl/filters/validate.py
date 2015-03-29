@@ -12,7 +12,7 @@ import os
 import argparse
 from copy import copy
 from hxl.model import DataProvider, Column
-from hxl.io import StreamInput, HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.schema import readSchema
 
 class ValidateFilter(DataProvider):
@@ -28,9 +28,9 @@ class ValidateFilter(DataProvider):
 
     <pre>
     source = HXLReader(sys.stdin)
-    schema = readSchema(readHXL(open('my-schema.csv', 'r')))
+    schema = readSchema(read_hxl(open('my-schema.csv', 'r')))
     filter = ValidateFilter(source, schema)
-    writeHXL(sys.stdout, filter)
+    write_hxl(sys.stdout, filter)
     </pre>
     """
 
@@ -142,6 +142,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         else:
             schema = readSchema()
         filter = ValidateFilter(source, schema, args.all)
-        writeHXL(args.outfile, filter)
+        write_hxl(args.outfile, filter)
 
 # end

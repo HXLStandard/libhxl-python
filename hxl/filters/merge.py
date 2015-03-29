@@ -13,7 +13,7 @@ import sys
 import argparse
 import copy
 from hxl.model import DataProvider, TagPattern, Column
-from hxl.io import StreamInput, HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 
 class MergeFilter(DataProvider):
@@ -34,7 +34,7 @@ class MergeFilter(DataProvider):
     source = HXLReader(sys.stdin)
     merge_source = HXLReader(open('file-to-merge.csv', 'r'))
     filter = MergeFilter(source, merge_source=merge_source, keys=['adm1_id'], tags=['adm1'])
-    writeHXL(sys.stdout, filter)
+    write_hxl(sys.stdout, filter)
     </pre>
     """
 
@@ -201,6 +201,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         source = HXLReader(input)
         filter = MergeFilter(source, merge_source=HXLReader(merge),
                                 keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
-        writeHXL(output.output, filter)
+        write_hxl(output.output, filter)
 
 # end

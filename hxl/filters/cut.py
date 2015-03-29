@@ -12,7 +12,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 from hxl.model import DataProvider, TagPattern, Row
-from hxl.io import HXLReader, writeHXL
+from hxl.io import HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 
 class CutFilter(DataProvider):
@@ -30,7 +30,7 @@ class CutFilter(DataProvider):
     <pre>
     source = HXLReader(sys.stdin)
     filter = CutFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
-    writeHXL(sys.stdout, filter)
+    write_hxl(sys.stdout, filter)
     </pre>
     """
 
@@ -142,6 +142,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
         filter = CutFilter(source, args.include, args.exclude)
-        writeHXL(output.output, filter)
+        write_hxl(output.output, filter)
 
 # end

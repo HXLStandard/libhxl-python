@@ -18,7 +18,7 @@ import sys
 import argparse
 import dateutil.parser
 from hxl.model import DataProvider, TagPattern
-from hxl.io import StreamInput, HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 
 class SortFilter(DataProvider):
@@ -36,7 +36,7 @@ class SortFilter(DataProvider):
     <pre>
     source = HXLReader(sys.stdin)
     filter = SortFilter(source, tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1']))
-    writeHXL(sys.stdout, filter)
+    write_hxl(sys.stdout, filter)
     </pre>
     """
 
@@ -138,6 +138,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
         filter = SortFilter(source, args.tags, args.reverse)
-        writeHXL(output.output, filter)
+        write_hxl(output.output, filter)
 
 # end

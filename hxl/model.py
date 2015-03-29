@@ -69,14 +69,14 @@ class DataProvider(object):
         return list(map(lambda column: column.tag, self.columns))
 
     @property
-    def displayTags(self):
+    def display_tags(self):
         """
         Return a list of display tags.
         """
-        return list(map(lambda column: column.displayTag, self.columns))
+        return list(map(lambda column: column.display_tag, self.columns))
 
     @property
-    def hasHeaders(self):
+    def has_headers(self):
         """
         Report whether any non-empty header strings exist.
         """
@@ -235,7 +235,7 @@ class Column(object):
             self.attributes = {}
 
     @property
-    def displayTag(self):
+    def display_tag(self):
         """
         Generate a display version of the column hashtag
         @return the reassembled HXL hashtag string, including language code
@@ -249,17 +249,17 @@ class Column(object):
             return None
 
     def __repr__(self):
-        return self.displayTag
+        return self.display_tag
 
     __str__ = __repr__
 
     @staticmethod
-    def parse(rawString, header=None, column_number=None, source_column_number=None, use_exception=False):
+    def parse(raw_string, header=None, column_number=None, source_column_number=None, use_exception=False):
         """
         Attempt to parse a full hashtag specification.
         """
         # Pattern for a single tag
-        result = re.match(Column.PATTERN, rawString)
+        result = re.match(Column.PATTERN, raw_string)
         if result:
             tag = result.group(1)
             attribute_string = result.group(2)
@@ -270,7 +270,7 @@ class Column(object):
             return Column(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
         else:
             if use_exception:
-                raise hxl.HXLException("Malformed tag expression: " + rawString)
+                raise hxl.HXLException("Malformed tag expression: " + raw_string)
             else:
                 return None
 

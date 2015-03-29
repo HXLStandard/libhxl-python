@@ -25,50 +25,28 @@ else:
 
 
 class HXLValidationException(HXLException):
-    """
-    Data structure to hold a HXL validation error.
-    """
+    """Data structure to hold a HXL validation error."""
 
-    def __init__(self, message, rule=None, value=None, row=None, column=None, severity="error"):
+    def __init__(self, message, rule=None, value=None, row=None, column=None):
         """Construct a new exception."""
         super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row
         self.column = column
-        self.severity = severity
 
     def __str__(self):
         """Get a string rendition of this error."""
         s = ''
-
         if self.rule.tag_pattern:
             if self.value:
                 s += '{}={} '.format(str(self.rule.tag_pattern), str(self.value))
             else:
                 s += '{} '.format(str(self.rule.tag_pattern))
-
         if self.message:
             s += '- {}'.format(self.message)
-
         return s
 
-
-
-        return s
-        
-        value = "<no value>"
-        if self.value:
-            value = str(re.sub('\s+', ' ', self.value))
-            value = '"' + value[:10] + (value[10:] and '...') + '"'
-        source_row_number = "?"
-        if self.row:
-            source_row_number = str(self.row.source_row_number + 1)
-        source_column_number = "?"
-        if self.column:
-            source_column_number = str(self.column.source_column_number + 1)
-
-        return "E " + "(" + source_row_number + "," + source_column_number + ") " + str(self.rule.tag_pattern) + " " + value + ": " + self.message
 
 class SchemaRule(object):
     """
@@ -78,14 +56,14 @@ class SchemaRule(object):
     # allow datatypes (others ignored)
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
 
-    def __init__(self, tag, minOccur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
+    def __init__(self, tag, min_occur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
                  valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
                  callback=None, severity="error", description=None, required=False):
         if type(tag) is TagPattern:
             self.tag_pattern = tag
         else:
             self.tag_pattern = TagPattern.parse(tag)
-        self.minOccur = minOccur
+        self.min_occur = min_occur
         self.maxOccur = maxOccur
         if dataType is None or dataType in self.DATATYPES:
             self.dataType = dataType
@@ -110,17 +88,17 @@ class SchemaRule(object):
 
         result = True
         
-        if self.required or (self.minOccur is not None and int(self.minOccur) > 0):
+        if self.required or (self.min_occur is not None and int(self.min_occur) > 0):
             number_seen = 0
             for column in columns:
                 if self.tag_pattern.match(column):
                     number_seen += 1
-            if (self.required and (number_seen < 1)) or (self.minOccur is not None and number_seen < int(self.minOccur)):
+            if (self.required and (number_seen < 1)) or (self.min_occur is not None and number_seen < int(self.min_occur)):
                 print("*** impossible column")
                 if number_seen == 0:
                     self._report_error('column with this hashtag required but not found')
                 else:
-                    self._report_error('not enough columns with this hashtag (expected {} but found {})'.format(self.minOccur, number_seen))
+                    self._report_error('not enough columns with this hashtag (expected {} but found {})'.format(self.min_occur, number_seen))
                 result = False
         
         return result
@@ -148,9 +126,9 @@ class SchemaRule(object):
                 'A value for {} was required.'.format(self.tag_pattern),
                 row = row
                 )
-        if self.minOccur is not None and numberSeen < self.minOccur:
+        if self.min_occur is not None and numberSeen < self.min_occur:
             result = self._report_error(
-                "Expected at least " + str(self.minOccur) + " instance(s) but found " + str(numberSeen),
+                "Expected at least " + str(self.min_occur) + " instance(s) but found " + str(numberSeen),
                 row = row
                 )
         if self.maxOccur is not None and numberSeen > self.maxOccur:
@@ -196,8 +174,7 @@ class SchemaRule(object):
                     rule=self,
                     value = value,
                     row = row,
-                    column = column,
-                    severity = self.severity
+                    column = column
                     )
                 )
         return False
@@ -402,7 +379,7 @@ def _read_hxl_schema(source, baseDir):
 
     for row in source:
         rule = SchemaRule(row.get('#valid_tag'))
-        rule.minOccur = toInt(row.get('#valid_required+min'))
+        rule.min_occur = toInt(row.get('#valid_required+min'))
         rule.maxOccur = toInt(row.get('#valid_required+max'))
         rule.dataType = parseType(row.get('#valid_datatype'))
         rule.minValue = toFloat(row.get('#valid_value+min'))

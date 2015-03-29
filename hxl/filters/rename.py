@@ -14,7 +14,7 @@ import re
 import hxl
 from hxl.model import DataProvider, TagPattern, Column
 from hxl.filters import make_input, make_output
-from hxl.io import StreamInput, HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, write_hxl
 
 class RenameFilter(DataProvider):
     """
@@ -31,7 +31,7 @@ class RenameFilter(DataProvider):
     <pre>
     source = HXLReader(sys.stdin)
     filter = RenameFilter(source, rename=[[TagPattern.parse('#foo'), Column.parse('#bar')]])
-    writeHXL(sys.stdout, filter)
+    write_hxl(sys.stdout, filter)
     </pre>
     """
 
@@ -118,6 +118,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
         filter = RenameFilter(source, args.rename)
-        writeHXL(output.output, filter)
+        write_hxl(output.output, filter)
 
 # end

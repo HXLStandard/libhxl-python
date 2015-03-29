@@ -18,7 +18,7 @@ import sys
 import argparse
 from hxl.model import DataProvider, TagPattern, Column, Row
 from hxl.filters import make_input, make_output
-from hxl.io import StreamInput, HXLReader, writeHXL
+from hxl.io import StreamInput, HXLReader, write_hxl
 
 class CountFilter(DataProvider):
     """
@@ -39,7 +39,7 @@ class CountFilter(DataProvider):
     <pre>
     source = HXLReader(sys.stdin)
     filter = CountFilter(source, tags=[TagPattern.parse('#org'), TagPattern.parse('#sector'), TagPattern.parse('#adm1')])
-    writeHXL(sys.stdout, filter)
+    write_hxl(sys.stdout, filter)
     </pre>
     """
 
@@ -203,6 +203,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
         filter = CountFilter(source, args.tags, args.aggregate)
-        writeHXL(output.output, filter)
+        write_hxl(output.output, filter)
 
 # end

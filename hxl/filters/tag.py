@@ -4,7 +4,7 @@ import argparse
 import csv
 import hxl
 from hxl.model import Column
-from hxl.io import AbstractInput, HXLReader, writeHXL
+from hxl.io import AbstractInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output, HXLFilterException
 
 class Tagger(AbstractInput):
@@ -96,7 +96,7 @@ SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.TOKEN)
 def parse_spec(s):
     result = re.match(SPEC_PATTERN, s)
     if result:
-        return (result.group(1), Column.parse(result.group(2), use_exception=True).displayTag)
+        return (result.group(1), Column.parse(result.group(2), use_exception=True).display_tag)
     else:
         raise HXLFilterException("Bad tagging spec: " + s)
 
@@ -134,6 +134,6 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         tagger = Tagger(input, args.map)
         source = HXLReader(tagger)
-        writeHXL(output.output, source)
+        write_hxl(output.output, source)
 
 # end

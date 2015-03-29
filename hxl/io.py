@@ -230,15 +230,15 @@ class HXLReader(DataProvider):
 
         columns = []
 
-        for source_column_number, rawString in enumerate(raw_row):
+        for source_column_number, raw_string in enumerate(raw_row):
             if source_column_number < len(previous_row):
                 header = previous_row[source_column_number]
             else:
                 header = None
-            if rawString:
-                rawString = rawString.strip()
+            if raw_string:
+                raw_string = raw_string.strip()
                 nonEmptyCount += 1
-                column = Column.parse(rawString, column_number=column_number, source_column_number=source_column_number, header=header)
+                column = Column.parse(raw_string, column_number=column_number, source_column_number=source_column_number, header=header)
                 if column:
                     columns.append(column)
                     column_number += 1
@@ -265,7 +265,7 @@ class HXLReader(DataProvider):
         if self._opened_input:
             self._opened_input.close()
 
-def readHXL(input):
+def read_hxl(input):
     """Load an in-memory HXL dataset.
 
     At least one of input, url, and rawData must be provided. Order of
@@ -287,17 +287,17 @@ def readHXL(input):
     return dataset
 
 
-def writeHXL(output, source, showHeaders=True):
+def write_hxl(output, source, showHeaders=True):
     """Serialize a HXL dataset to an output stream."""
-    for line in genHXL(source, showHeaders):
+    for line in gen_hxl(source, showHeaders):
         output.write(line)
 
-def writeJSON(output, source, showHeaders=True):
+def write_json(output, source, showHeaders=True):
     """Serialize a dataset to JSON."""
-    for line in genJSON(source, showHeaders):
+    for line in gen_json(source, showHeaders):
         output.write(line)
 
-def genHXL(source, showHeaders=True):
+def gen_hxl(source, showHeaders=True):
     """
     Generate HXL output one row at a time.
     """
@@ -313,21 +313,21 @@ def genHXL(source, showHeaders=True):
             return data
     output = TextOut()
     writer = csv.writer(output)
-    if showHeaders and source.hasHeaders:
+    if showHeaders and source.has_headers:
         writer.writerow(source.headers)
         yield output.get()
-    writer.writerow(source.displayTags)
+    writer.writerow(source.display_tags)
     yield output.get()
     for row in source:
         writer.writerow(row.values)
         yield output.get()
 
-def genJSON(source, showHeaders=True):
+def gen_json(source, showHeaders=True):
     """
     Generate JSON output, one line at a time.
     """
     yield "{\n"
-    if showHeaders and source.hasHeaders:
+    if showHeaders and source.has_headers:
         yield "  \"headers\": " + json.dumps(source.headers) + ",\n"
     yield "  \"tags\": " + json.dumps(source.tags) + ",\n"
     yield "  \"data\": [\n"
