@@ -97,7 +97,7 @@ class Term:
         self.level = level
 
 
-def readTaxonomy(source):
+def read_taxonomy(source):
     """
     Read a taxonomy from a HXL data source.
     Throws a TaxonomyException for duplicate terms.

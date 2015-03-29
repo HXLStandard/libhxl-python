@@ -161,7 +161,7 @@ class HXLReader(DataProvider):
     def __init__(self, input):
         """Constructor
 
-        The order of preference is to use rawData if supplied; then
+        The order of preference is to use raw_data if supplied; then
         fall back to input (an already-open file object); then fall
         back to opening the resource specified by url (URL or
         filename) if all else fails. In the last case, the object can
@@ -169,7 +169,7 @@ class HXLReader(DataProvider):
         resource in its __exit__ method.
 
         @param input a Python file object.
-        @param rawData an iterable over a series of string arrays.
+        @param raw_data an iterable over a series of string arrays.
         @param url the URL or filename to open.
 
         """
@@ -268,12 +268,12 @@ class HXLReader(DataProvider):
 def read_hxl(input):
     """Load an in-memory HXL dataset.
 
-    At least one of input, url, and rawData must be provided. Order of
+    At least one of input, url, and raw_data must be provided. Order of
     preference is as with HXLReader.
 
     @param input a Python file object
     @param url a URL or filename to open
-    @param rawData an iterator over a sequence of string arrays.
+    @param raw_data an iterator over a sequence of string arrays.
     @return an in-memory Dataset
 
     """
@@ -287,17 +287,17 @@ def read_hxl(input):
     return dataset
 
 
-def write_hxl(output, source, showHeaders=True):
+def write_hxl(output, source, show_headers=True):
     """Serialize a HXL dataset to an output stream."""
-    for line in gen_hxl(source, showHeaders):
+    for line in gen_hxl(source, show_headers):
         output.write(line)
 
-def write_json(output, source, showHeaders=True):
+def write_json(output, source, show_headers=True):
     """Serialize a dataset to JSON."""
-    for line in gen_json(source, showHeaders):
+    for line in gen_json(source, show_headers):
         output.write(line)
 
-def gen_hxl(source, showHeaders=True):
+def gen_hxl(source, show_headers=True):
     """
     Generate HXL output one row at a time.
     """
@@ -313,7 +313,7 @@ def gen_hxl(source, showHeaders=True):
             return data
     output = TextOut()
     writer = csv.writer(output)
-    if showHeaders and source.has_headers:
+    if show_headers and source.has_headers:
         writer.writerow(source.headers)
         yield output.get()
     writer.writerow(source.display_tags)
@@ -322,12 +322,12 @@ def gen_hxl(source, showHeaders=True):
         writer.writerow(row.values)
         yield output.get()
 
-def gen_json(source, showHeaders=True):
+def gen_json(source, show_headers=True):
     """
     Generate JSON output, one line at a time.
     """
     yield "{\n"
-    if showHeaders and source.has_headers:
+    if show_headers and source.has_headers:
         yield "  \"headers\": " + json.dumps(source.headers) + ",\n"
     yield "  \"tags\": " + json.dumps(source.tags) + ",\n"
     yield "  \"data\": [\n"

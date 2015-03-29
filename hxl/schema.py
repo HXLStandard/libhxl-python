@@ -16,7 +16,7 @@ from email.utils import parseaddr
 from hxl import HXLException
 from hxl.model import TagPattern
 from hxl.io import StreamInput, HXLReader
-from hxl.taxonomy import readTaxonomy
+from hxl.taxonomy import read_taxonomy
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
@@ -49,42 +49,38 @@ class HXLValidationException(HXLException):
 
 
 class SchemaRule(object):
-    """
-    Validation rule for a single HXL hashtag.
-    """
+    """Validation rule for a single HXL hashtag."""
 
     # allow datatypes (others ignored)
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
 
-    def __init__(self, tag, min_occur=None, maxOccur=None, dataType=None, minValue=None, maxValue=None,
-                 valuePattern=None, valueEnumeration=None, caseSensitive=True, taxonomy=None, taxonomyLevel=None,
+    def __init__(self, tag, min_occur=None, max_occur=None, data_type=None, min_value=None, max_value=None,
+                 regex=None, enum=None, case_sensitive=True, taxonomy=None, taxonomy_level=None,
                  callback=None, severity="error", description=None, required=False):
         if type(tag) is TagPattern:
             self.tag_pattern = tag
         else:
             self.tag_pattern = TagPattern.parse(tag)
         self.min_occur = min_occur
-        self.maxOccur = maxOccur
-        if dataType is None or dataType in self.DATATYPES:
-            self.dataType = dataType
+        self.max_occur = max_occur
+        if data_type is None or data_type in self.DATATYPES:
+            self.data_type = data_type
         else:
-            raise HXLException('Unknown data type: {}'.format(dataType))
-        self.minValue = minValue
-        self.maxValue = maxValue
-        self.valuePattern = valuePattern
-        self.valueEnumeration = valueEnumeration
-        self.caseSensitive = caseSensitive
+            raise HXLException('Unknown data type: {}'.format(data_type))
+        self.min_value = min_value
+        self.max_value = max_value
+        self.regex = regex
+        self.enum = enum
+        self.case_sensitive = case_sensitive
         self.taxonomy = taxonomy
-        self.taxonomyLevel = taxonomyLevel
+        self.taxonomy_level = taxonomy_level
         self.callback = callback
         self.severity = severity
         self.description = description
         self.required = required
 
-    def validateColumns(self, columns):
-        """
-        Test whether the columns are present to satisfy this rule.
-        """
+    def validate_columns(self, columns):
+        """Test whether the columns are present to satisfy this rule."""
 
         result = True
         
@@ -103,37 +99,37 @@ class SchemaRule(object):
         
         return result
 
-    def validateRow(self, row):
+    def validate_row(self, row):
         """
         Apply the rule to an entire Row
         @param row the Row to validate
         @return True if all matching values in the row are valid
         """
 
-        numberSeen = 0
+        number_seen = 0
         result = True
 
         # Look up only the values that apply to this rule
-        values = row.getAll(self.tag_pattern)
+        values = row.get_all(self.tag_pattern)
         if values:
             for column_number, value in enumerate(values):
                 if not self.validate(value, row, row.columns[column_number]):
                     result = False
                 if value:
-                    numberSeen += 1
-        if self.required and numberSeen < 1:
+                    number_seen += 1
+        if self.required and number_seen < 1:
             result = self._report_error(
                 'A value for {} was required.'.format(self.tag_pattern),
                 row = row
                 )
-        if self.min_occur is not None and numberSeen < self.min_occur:
+        if self.min_occur is not None and number_seen < self.min_occur:
             result = self._report_error(
-                "Expected at least " + str(self.min_occur) + " instance(s) but found " + str(numberSeen),
+                "Expected at least " + str(self.min_occur) + " instance(s) but found " + str(number_seen),
                 row = row
                 )
-        if self.maxOccur is not None and numberSeen > self.maxOccur:
+        if self.max_occur is not None and number_seen > self.max_occur:
             result = self._report_error(
-                "Expected at most " + str(self.maxOccur) + " instance(s) but found " + str(numberSeen),
+                "Expected at most " + str(self.max_occur) + " instance(s) but found " + str(number_seen),
                 row = row
                 )
         return result
@@ -181,23 +177,23 @@ class SchemaRule(object):
 
     def _test_type(self, value, row, column):
         """Check the datatype."""
-        if self.dataType == 'number':
+        if self.data_type == 'number':
             try:
                 float(value)
                 return True
             except ValueError:
                 return self._report_error("Expected a number", value, row, column)
-        elif self.dataType == 'url':
+        elif self.data_type == 'url':
             pieces = urlparse(value)
             if not (pieces.scheme and pieces.netloc):
                 return self._report_error("Expected a URL", value, row, column)
-        elif self.dataType == 'email':
+        elif self.data_type == 'email':
             if not re.match(r'^[^@]+@[^@]+$', value):
                 return self._report_error("Expected an email address", value, row, column)
-        elif self.dataType == 'phone':
+        elif self.data_type == 'phone':
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
                 return self._report_error("Expected a phone number", value, row, column)
-        elif self.dataType == 'date':
+        elif self.data_type == 'date':
             if not re.match(r'^\d\d\d\d(?:-[01]\d(?:-[0-3]\d)?)?$', value):
                 return self._report_error("Expected an ISO date (YYYY, YYYY-MM, or YYYY-MM-DD)", value, row, column)
         
@@ -207,46 +203,46 @@ class SchemaRule(object):
         """Test against a numeric range (if specified)."""
         result = True
         try:
-            if self.minValue is not None:
-                if float(value) < float(self.minValue):
-                    result = self._report_error("Value is less than " + str(self.minValue), value, row, column)
-            if self.maxValue is not None:
-                if float(value) > float(self.maxValue):
-                    result = self._report_error("Value is great than " + str(self.maxValue), value, row, column)
+            if self.min_value is not None:
+                if float(value) < float(self.min_value):
+                    result = self._report_error("Value is less than " + str(self.min_value), value, row, column)
+            if self.max_value is not None:
+                if float(value) > float(self.max_value):
+                    result = self._report_error("Value is great than " + str(self.max_value), value, row, column)
         except ValueError:
             result = False
         return result
 
     def _test_pattern(self, value, row, column):
         """Test against a regular expression pattern (if specified)."""
-        if self.valuePattern:
+        if self.regex:
             flags = 0
-            if self.caseSensitive:
+            if self.case_sensitive:
                 flags = re.IGNORECASE
-            if not re.match(self.valuePattern, value, flags):
-                self._report_error("Failed to match pattern " + str(self.valuePattern), value, row, column)
+            if not re.match(self.regex, value, flags):
+                self._report_error("Failed to match pattern " + str(self.regex), value, row, column)
                 return False
         return True
 
     def _test_enumeration(self, value, row, column):
         """Test against an enumerated set of values (if specified)."""
-        if self.valueEnumeration is not None:
-            if self.caseSensitive:
-                if value not in self.valueEnumeration:
-                    return self._report_error("Must be one of " + str(self.valueEnumeration), value, row, column)
+        if self.enum is not None:
+            if self.case_sensitive:
+                if value not in self.enum:
+                    return self._report_error("Must be one of " + str(self.enum), value, row, column)
             else:
-                if value.upper() not in map(lambda item: item.upper(), self.valueEnumeration):
-                    return self._report_error("Must be one of " + str(self.valueEnumeration) + " (case-insensitive)", value, row, column)
+                if value.upper() not in map(lambda item: item.upper(), self.enum):
+                    return self._report_error("Must be one of " + str(self.enum) + " (case-insensitive)", value, row, column)
         return True
 
     def _test_taxonomy(self, value, row, column):
         """Test against a taxonomy (if specified)."""
         if self.taxonomy is not None:
-            if not self.taxonomy.contains(value, self.taxonomyLevel):
-                if self.taxonomyLevel is None:
+            if not self.taxonomy.contains(value, self.taxonomy_level):
+                if self.taxonomy_level is None:
                     return self._report_error("Not in taxonomy", value, row, column)
                 else:
-                    return self._report_error("Not in taxonomy at level " + str(self.taxonomyLevel), value, row, column)
+                    return self._report_error("Not in taxonomy at level " + str(self.taxonomy_level), value, row, column)
         return True
 
     def __str__(self):
@@ -261,13 +257,13 @@ class Schema(object):
     def __init__(self, rules=[], callback=None):
         self.rules = copy(rules)
         if callback is None:
-            self.callback = self.showError
+            self.callback = self.show_error
         else:
             self.callback = callback
 
         self.impossible_rules = {}
 
-    def showError(self, error):
+    def show_error(self, error):
         print >> sys.stderr, error
         
 
@@ -278,31 +274,31 @@ class Schema(object):
     def validate(self, parser):
         result = True
 
-        self.validateColumns(parser.columns)
+        self.validate_columns(parser.columns)
 
         for row in parser:
-            if not self.validateRow(row):
+            if not self.validate_row(row):
                 result = False
         return result
 
-    def validateColumns(self, columns):
+    def validate_columns(self, columns):
         for rule in self.rules:
             old_callback = rule.callback
             if self.callback:
                 rule.callback = self.callback
-            if not rule.validateColumns(columns):
+            if not rule.validate_columns(columns):
                 print('adding {} to impossible rules'.format(rule))
                 self.impossible_rules[rule] = True
             rule.callback = old_callback
 
-    def validateRow(self, row):
+    def validate_row(self, row):
         result = True
         for rule in self.rules:
             if not rule in self.impossible_rules:
                 old_callback = rule.callback
                 if self.callback:
                     rule.callback = self.callback
-                if not rule.validateRow(row):
+                if not rule.validate_row(row):
                     result = False
                 rule.callback = old_callback
         return result
@@ -315,15 +311,15 @@ class Schema(object):
         s += ">"
         return s
 
-def readSchema(source=None, baseDir=None):
+def read_schema(source=None, base_dir=None):
     if source is None:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
         with open(path, 'r') as input:
-            return _read_hxl_schema(HXLReader(StreamInput(input)), baseDir)
+            return _read_hxl_schema(HXLReader(StreamInput(input)), base_dir)
     else:
-        return _read_hxl_schema(source, baseDir)
+        return _read_hxl_schema(source, base_dir)
 
-def _read_hxl_schema(source, baseDir):
+def _read_hxl_schema(source, base_dir):
     """
     Load a HXL schema from the provided input stream, or load default schema.
     @param source HXL data source for the scheme (e.g. a HXLReader or filter)
@@ -331,7 +327,7 @@ def _read_hxl_schema(source, baseDir):
 
     schema = Schema()
 
-    def parseType(type):
+    def parse_type(type):
         type = type.lower()
         type = re.sub(r'[^a-z_-]', '', type) # normalise
         if type in SchemaRule.DATATYPES:
@@ -339,19 +335,19 @@ def _read_hxl_schema(source, baseDir):
         else:
             return None
 
-    def toInt(s):
+    def to_int(s):
         if s:
             return int(s)
         else:
             return None
         
-    def toFloat(s):
+    def to_float(s):
         if s:
             return float(s)
         else:
             return None
 
-    def toBoolean(s):
+    def to_boolean(s):
         if not s or s.lower() in ['0', 'n', 'no', 'f', 'false']:
             return False
         elif s.lower() in ['y', 'yes', 't', 'true']:
@@ -360,40 +356,40 @@ def _read_hxl_schema(source, baseDir):
             raise HXLException('Unrecognised true/false value: {}'.format(s))
 
 
-    def toRegex(s):
+    def to_regex(s):
         if s:
             return re.compile(s)
         else:
             return None
 
-    def toTaxonomy(s):
+    def to_taxonomy(s):
         if s:
-            if baseDir:
-                path = os.path.join(baseDir, s)
+            if base_dir:
+                path = os.path.join(base_dir, s)
             else:
                 path = s
             with open(path, 'r') as input:
-                return readTaxonomy(HXLReader(StreamInput(input)))
+                return read_taxonomy(HXLReader(StreamInput(input)))
         else:
             return None
 
     for row in source:
         rule = SchemaRule(row.get('#valid_tag'))
-        rule.min_occur = toInt(row.get('#valid_required+min'))
-        rule.maxOccur = toInt(row.get('#valid_required+max'))
-        rule.dataType = parseType(row.get('#valid_datatype'))
-        rule.minValue = toFloat(row.get('#valid_value+min'))
-        rule.maxValue = toFloat(row.get('#valid_value+max'))
-        rule.valuePattern = toRegex(row.get('#valid_value+regex'))
-        rule.taxonomy = toTaxonomy(row.get('#x_taxonomy'))
-        rule.taxonomyLevel = toInt(row.get('#x_taxonomylevel_num'))
-        rule.required = toBoolean(row.get('#valid_required-min-max'))
+        rule.min_occur = to_int(row.get('#valid_required+min'))
+        rule.max_occur = to_int(row.get('#valid_required+max'))
+        rule.data_type = parse_type(row.get('#valid_datatype'))
+        rule.min_value = to_float(row.get('#valid_value+min'))
+        rule.max_value = to_float(row.get('#valid_value+max'))
+        rule.regex = to_regex(row.get('#valid_value+regex'))
+        rule.taxonomy = to_taxonomy(row.get('#x_taxonomy'))
+        rule.taxonomy_level = to_int(row.get('#x_taxonomylevel_num'))
+        rule.required = to_boolean(row.get('#valid_required-min-max'))
         rule.severity = row.get('#valid_severity') or 'error'
         rule.description = row.get('#description')
         s = row.get('#valid_value+list')
         if s:
-            rule.valueEnumeration = re.split(r'\s*\|\s*', s)
-        rule.caseSensitive = toBoolean(row.get('#valid_value+case'))
+            rule.enum = re.split(r'\s*\|\s*', s)
+        rule.case_sensitive = to_boolean(row.get('#valid_value+case'))
         schema.rules.append(rule)
 
     return schema

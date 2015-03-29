@@ -29,7 +29,7 @@ class Tagger(AbstractInput):
         """Get the next row, if we can tag the raw data."""
         if not self._found_tags:
             # Search the first 25 rows for a match.
-            if self.addTags():
+            if self.add_tags():
                 self._found_tags = True
             else:
                 # if no match, through an exception
@@ -42,34 +42,34 @@ class Tagger(AbstractInput):
 
     next = __next__
 
-    def addTags(self):
+    def add_tags(self):
         """Look for headers in the first 25 rows."""
         for n in range(0, 25):
-            rawRow = next(self.input)
-            if not rawRow:
+            raw_row = next(self.input)
+            if not raw_row:
                 break
-            self._cache.append(rawRow)
-            tagRow = self.tryTagRow(rawRow)
-            if tagRow:
-                self._cache.append(tagRow)
+            self._cache.append(raw_row)
+            tag_row = self.tryTagRow(raw_row)
+            if tag_row:
+                self._cache.append(tag_row)
                 return True
         return False
 
-    def tryTagRow(self, rawRow):
+    def tryTagRow(self, raw_row):
         """See if we can match a header row."""
         tags = []
-        tagCount = 0
-        for index, value in enumerate(rawRow):
+        tag_count = 0
+        for index, value in enumerate(raw_row):
             value = _norm(value)
             for spec in self.specs:
                 if spec[0] in value:
                     tags.append(spec[1])
-                    tagCount += 1
+                    tag_count += 1
                     break
             else:
                 # run only if nothing found
                 tags.append('')
-        if tagCount > 0 and tagCount/float(len(self.specs)) >= 0.5:
+        if tag_count > 0 and tag_count/float(len(self.specs)) >= 0.5:
             return tags
         else:
             return None

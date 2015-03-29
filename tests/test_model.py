@@ -111,8 +111,8 @@ class TestRow(unittest.TestCase):
     def test_get(self):
         self.assertEqual('WFP', self.row.get('#org'))
 
-    def test_getAll(self):
-        result = self.row.getAll('#org')
+    def test_get_all(self):
+        result = self.row.get_all('#org')
         self.assertTrue(type(result) is list)
         self.assertEqual(1, len(result))
 
@@ -120,7 +120,7 @@ class TestRow(unittest.TestCase):
         # what happens when a row is too short?
         self.row.values = self.CONTENT[0:1]
         self.assertEqual(None, self.row.get('#country'))
-        self.assertEqual([], self.row.getAll('#country'))
+        self.assertEqual([], self.row.get_all('#country'))
 
     def test_map(self):
 

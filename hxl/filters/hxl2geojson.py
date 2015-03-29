@@ -34,7 +34,7 @@ def hxl2geojson(input, output):
     parser = HXLReader(StreamInput(input))
 
     pattern = re.compile('^', re.MULTILINE)
-    isFirst = True
+    is_first = True
     for row in parser:
         # Create a feature only when lat/lon are present
         lat = row.get('#lat_deg')
@@ -60,8 +60,8 @@ def hxl2geojson(input, output):
                         feature['properties'] = properties
                         
                 # Render the feature
-                if isFirst:
-                    isFirst = False
+                if is_first:
+                    is_first = False
                 else:
                     output.write(',\n')
 

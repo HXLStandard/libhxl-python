@@ -327,7 +327,7 @@ class Row(object):
                     index = index - 1
         return default
 
-    def getAll(self, tag):
+    def get_all(self, tag):
         """
         Get all values for a specific tag in a row
         @param tag A TagPattern or a string value for a tag.
