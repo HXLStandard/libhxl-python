@@ -16,7 +16,6 @@ from email.utils import parseaddr
 from hxl import HXLException
 from hxl.model import TagPattern
 from hxl.io import StreamInput, HXLReader
-from hxl.taxonomy import read_taxonomy
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
@@ -54,9 +53,11 @@ class SchemaRule(object):
     # allow datatypes (others ignored)
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
 
-    def __init__(self, tag, min_occur=None, max_occur=None, data_type=None, min_value=None, max_value=None,
-                 regex=None, enum=None, case_sensitive=True, taxonomy=None, taxonomy_level=None,
-                 callback=None, severity="error", description=None, required=False):
+    def __init__(self, tag, min_occur=None, max_occur=None,
+                 data_type=None, min_value=None, max_value=None,
+                 regex=None, enum=None, case_sensitive=True,
+                 callback=None, severity="error", description=None,
+                 required=False):
         if type(tag) is TagPattern:
             self.tag_pattern = tag
         else:
@@ -72,8 +73,6 @@ class SchemaRule(object):
         self.regex = regex
         self.enum = enum
         self.case_sensitive = case_sensitive
-        self.taxonomy = taxonomy
-        self.taxonomy_level = taxonomy_level
         self.callback = callback
         self.severity = severity
         self.description = description
@@ -156,8 +155,6 @@ class SchemaRule(object):
             result = False
         if not self._test_enumeration(value, row, column):
             result = False
-        if not self._test_taxonomy(value, row, column):
-            result = False
 
         return result
 
@@ -233,16 +230,6 @@ class SchemaRule(object):
             else:
                 if value.upper() not in map(lambda item: item.upper(), self.enum):
                     return self._report_error("Must be one of " + str(self.enum) + " (case-insensitive)", value, row, column)
-        return True
-
-    def _test_taxonomy(self, value, row, column):
-        """Test against a taxonomy (if specified)."""
-        if self.taxonomy is not None:
-            if not self.taxonomy.contains(value, self.taxonomy_level):
-                if self.taxonomy_level is None:
-                    return self._report_error("Not in taxonomy", value, row, column)
-                else:
-                    return self._report_error("Not in taxonomy at level " + str(self.taxonomy_level), value, row, column)
         return True
 
     def __str__(self):
@@ -362,17 +349,6 @@ def _read_hxl_schema(source, base_dir):
         else:
             return None
 
-    def to_taxonomy(s):
-        if s:
-            if base_dir:
-                path = os.path.join(base_dir, s)
-            else:
-                path = s
-            with open(path, 'r') as input:
-                return read_taxonomy(HXLReader(StreamInput(input)))
-        else:
-            return None
-
     for row in source:
         rule = SchemaRule(row.get('#valid_tag'))
         rule.min_occur = to_int(row.get('#valid_required+min'))
@@ -381,8 +357,6 @@ def _read_hxl_schema(source, base_dir):
         rule.min_value = to_float(row.get('#valid_value+min'))
         rule.max_value = to_float(row.get('#valid_value+max'))
         rule.regex = to_regex(row.get('#valid_value+regex'))
-        rule.taxonomy = to_taxonomy(row.get('#x_taxonomy'))
-        rule.taxonomy_level = to_int(row.get('#x_taxonomylevel_num'))
         rule.required = to_boolean(row.get('#valid_required-min-max'))
         rule.severity = row.get('#valid_severity') or 'error'
         rule.description = row.get('#description')

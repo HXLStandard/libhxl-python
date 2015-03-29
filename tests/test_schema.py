@@ -11,7 +11,6 @@ import os
 from hxl.model import Column, Row
 from hxl.io import StreamInput, HXLReader
 from hxl.schema import Schema, SchemaRule, read_schema
-from hxl.taxonomy import Taxonomy, Term
 
 class TestSchema(unittest.TestCase):
 
@@ -102,19 +101,6 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule('2015')
         self._try_rule('xxx', 1)
 
-    def test_type_taxonomy(self):
-        # No level specified
-        self.rule.taxonomy = _make_taxonomy()
-        self._try_rule('AAA') # level 1
-        self._try_rule('BBB') # level 2
-        self._try_rule('CCC', 1) # not defined
-
-        # Explicit level
-        self.rule.taxonomy_level = 1
-        self._try_rule('AAA') # level 1
-        self._try_rule('BBB', 1) # level 2
-        self._try_rule('CCC', 1) # not defined
-
     def test_value_range(self):
         self.rule.min_value = 3.5
         self.rule.max_value = 4.5
@@ -189,13 +175,6 @@ class TestSchemaRule(unittest.TestCase):
                 dataset = HXLReader(StreamInput(input))
                 self.assertFalse(schema.validate(dataset))
 
-    def test_load_taxonomy(self):
-        with _read_file('schema-taxonomy.csv') as schema_input:
-            with _read_file('data-taxonomy-good.csv') as input:
-                schema = read_schema(HXLReader(StreamInput(schema_input)), base_dir=file_dir)
-                dataset = HXLReader(StreamInput(input))
-                self.assertTrue(schema.validate(dataset))
-
     def _try_rule(self, value, errors_expected = 0):
         """
         Validate a single value with a SchemaRule
@@ -220,11 +199,5 @@ file_dir = os.path.join(root_dir, 'tests', 'files', 'test_schema')
 
 def _read_file(name):
     return open(os.path.join(file_dir, name), 'r')
-
-def _make_taxonomy():
-    return Taxonomy(terms={
-        'AAA': Term('AAA', level=1),
-        'BBB': Term('BBB', level=2)
-        })
 
 # end
