@@ -45,68 +45,77 @@ class CleanFilter(DataProvider):
         """Pass on the source columns unmodified."""
         return self.source.columns
 
-    def __next__(self):
-        """Return the next row, with values cleaned as needed."""
-        # TODO implement a lazy copy
-        row = copy.copy(next(self.source))
-        for i in range(min(len(row.values), len(row.columns))):
-            row.values[i] = self._clean_value(row.values[i], row.columns[i])
-        return row
+    def __iter__(self):
+        return CleanFilter.Iterator(self)
 
-    next = __next__
+    class Iterator:
 
-    def _clean_value(self, value, column):
-        """Clean a single HXL value."""
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
 
-        # TODO prescan columns at start for matches
+        def __next__(self):
+            """Return the next row, with values cleaned as needed."""
+            # TODO implement a lazy copy
+            row = copy.copy(next(self.iterator))
+            for i in range(min(len(row.values), len(row.columns))):
+                row.values[i] = self._clean_value(row.values[i], row.columns[i])
+            return row
 
-        # Whitespace (-w or -W)
-        if self._match_patterns(self.whitespace, column):
-            value = re.sub('^\s+', '', value)
-            value = re.sub('\s+$', '', value)
-            value = re.sub('\s+', ' ', value)
+        next = __next__
 
-        # Uppercase (-u)
-        if self._match_patterns(self.upper, column):
-            if sys.version_info[0] > 2:
-                value = value.upper()
+        def _clean_value(self, value, column):
+            """Clean a single HXL value."""
+
+            # TODO prescan columns at start for matches
+
+            # Whitespace (-w or -W)
+            if self._match_patterns(self.outer.whitespace, column):
+                value = re.sub('^\s+', '', value)
+                value = re.sub('\s+$', '', value)
+                value = re.sub('\s+', ' ', value)
+
+            # Uppercase (-u)
+            if self._match_patterns(self.outer.upper, column):
+                if sys.version_info[0] > 2:
+                    value = value.upper()
+                else:
+                    value = value.decode('utf8').upper().encode('utf8')
+
+            # Lowercase (-l)
+            if self._match_patterns(self.outer.lower, column):
+                if sys.version_info[0] > 2:
+                    value = value.lower()
+                else:
+                    value = value.decode('utf8').lower().encode('utf8')
+
+            # Date (-d or -D)
+            if self._match_patterns(self.outer.date, column, '_date'):
+                if value:
+                    value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+
+            # Number (-n or -N)
+            if self._match_patterns(self.outer.number, column, '_num') and re.match('\d', value):
+                if value:
+                    value = re.sub('[^\d.]', '', value)
+                    value = re.sub('^0+', '', value)
+                    value = re.sub('(\..*)0+$', '\g<1>', value)
+                    value = re.sub('\.$', '', value)
+
+            return value
+
+        def _match_patterns(self, patterns, column, extension=None):
+            """Test if a column matches a list of patterns."""
+            if not patterns:
+                return False
+            elif patterns is True:
+                # if there's an extension specific like "_date", must match it
+                return (column.tag and (not extension or column.tag.endswith(extension)))
             else:
-                value = value.decode('utf8').upper().encode('utf8')
-
-        # Lowercase (-l)
-        if self._match_patterns(self.lower, column):
-            if sys.version_info[0] > 2:
-                value = value.lower()
-            else:
-                value = value.decode('utf8').lower().encode('utf8')
-
-        # Date (-d or -D)
-        if self._match_patterns(self.date, column, '_date'):
-            if value:
-                value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
-
-        # Number (-n or -N)
-        if self._match_patterns(self.number, column, '_num') and re.match('\d', value):
-            if value:
-                value = re.sub('[^\d.]', '', value)
-                value = re.sub('^0+', '', value)
-                value = re.sub('(\..*)0+$', '\g<1>', value)
-                value = re.sub('\.$', '', value)
-
-        return value
-
-    def _match_patterns(self, patterns, column, extension=None):
-        """Test if a column matches a list of patterns."""
-        if not patterns:
-            return False
-        elif patterns is True:
-            # if there's an extension specific like "_date", must match it
-            return (column.tag and (not extension or column.tag.endswith(extension)))
-        else:
-            for pattern in patterns:
-                if pattern.match(column):
-                    return True
-            return False
+                for pattern in patterns:
+                    if pattern.match(column):
+                        return True
+                return False
 
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):

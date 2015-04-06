@@ -179,6 +179,7 @@ class HXLReader(DataProvider):
         self._source_row_number = -1
         self._row_number = -1
         self._raw_data = None
+        self._used_iter = False
 
     @property
     def columns(self):
@@ -188,6 +189,12 @@ class HXLReader(DataProvider):
         if self._columns is None:
             self._columns = self._find_tags()
         return self._columns
+
+    def __iter__(self):
+        if self._used_iter:
+            raise HXLException("Cannot read a stream twice")
+        else:
+            return self
 
     def __next__(self):
         """

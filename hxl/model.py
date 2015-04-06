@@ -28,11 +28,12 @@ class DataProvider(object):
 
     __metaclass__ = abc.ABCMeta
 
+    @abc.abstractmethod
     def __iter__(self):
         """
-        The object itself is an iterator.
+        Get the iterator over the rows.
         """
-        return self
+        return
 
     @property
     @abc.abstractmethod
@@ -42,17 +43,6 @@ class DataProvider(object):
         @return a list of Column objects.
         """
         return
-
-    @abc.abstractmethod
-    def __next__(self):
-        """
-        Iterable function to return the next row of HXL values.
-        @return an iterable Row
-        @exception StopIteration exception at end of the rows.
-        """
-        return
-
-    next = __next__
 
     @property
     def headers(self):

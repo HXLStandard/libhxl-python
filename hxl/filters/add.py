@@ -55,19 +55,28 @@ class AddFilter(DataProvider):
             self._const_values = [value[1] for value in self.values]
         return self._columns_out
 
-    def __next__(self):
-        """
-        Return the next row, with constant values added.
-        """
-        row = copy(next(self.source))
-        row.columns = self.columns
-        if self.before:
-            row.values = self._const_values + row.values
-        else:
-            row.values = row.values + self._const_values
-        return row
+    def __iter__(self):
+        return AddFilter.Iterator(self)
 
-    next = __next__
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __next__(self):
+            """
+            Return the next row, with constant values added.
+            """
+            row = copy(next(self.outer.source))
+            row.columns = self.outer.columns
+            if self.outer.before:
+                row.values = self.outer._const_values + row.values
+            else:
+                row.values = row.values + self.outer._const_values
+            return row
+
+        next = __next__
 
 
 #

@@ -54,7 +54,6 @@ class CountFilter(DataProvider):
         self.count_tags = tags
         self.aggregate_tag = aggregate_tag
         self.saved_columns = None
-        self.aggregate_iter = None
 
     @property
     def columns(self):
@@ -79,44 +78,54 @@ class CountFilter(DataProvider):
             self.saved_columns = cols
         return self.saved_columns
 
-    def __next__(self):
-        """
-        @return the next row of aggregated data.
-        """
-        if self.aggregate_iter is None:
-            self._aggregate()
-        # Write the stats, sorted in value order
-        aggregate = next(self.aggregate_iter)
-        values = list(aggregate[0])
-        values.append(aggregate[1].count)
-        if self.aggregate_tag:
-            if aggregate[1].seen_numbers:
-                values.append(aggregate[1].sum)
-                values.append(aggregate[1].average)
-                values.append(aggregate[1].min)
-                values.append(aggregate[1].max)
-            else:
-                values = values + ([''] * 4)
+    def __iter__(self):
+        return CountFilter.Iterator(self)
 
-        row = Row(self.columns)
-        row.values = values
-        return row
+    class Iterator:
 
-    next = __next__
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+            self.aggregate_iter = None
 
-    def _aggregate(self):
-        """
-        Read the entire source dataset and produce saved aggregate data.
-        """
-        aggregators = {}
-        for row in self.source:
-            values = [pattern.get_value(row) for pattern in self.count_tags]
-            if values:
-                key = tuple(values)
-                if not key in aggregators:
-                    aggregators[key] = Aggregator(self.aggregate_tag)
-                aggregators[key].add(row)
-        self.aggregate_iter = iter(sorted(aggregators.items()))
+        def __next__(self):
+            """
+            @return the next row of aggregated data.
+            """
+            if self.aggregate_iter is None:
+                self._aggregate()
+            # Write the stats, sorted in value order
+            aggregate = next(self.aggregate_iter)
+            values = list(aggregate[0])
+            values.append(aggregate[1].count)
+            if self.outer.aggregate_tag:
+                if aggregate[1].seen_numbers:
+                    values.append(aggregate[1].sum)
+                    values.append(aggregate[1].average)
+                    values.append(aggregate[1].min)
+                    values.append(aggregate[1].max)
+                else:
+                    values = values + ([''] * 4)
+
+            row = Row(self.outer.columns)
+            row.values = values
+            return row
+
+        next = __next__
+
+        def _aggregate(self):
+            """
+            Read the entire source dataset and produce saved aggregate data.
+            """
+            aggregators = {}
+            for row in self.iterator:
+                values = [pattern.get_value(row) for pattern in self.outer.count_tags]
+                if values:
+                    key = tuple(values)
+                    if not key in aggregators:
+                        aggregators[key] = Aggregator(self.outer.aggregate_tag)
+                    aggregators[key].add(row)
+            self.aggregate_iter = iter(sorted(aggregators.items()))
 
 class Aggregator:
     """
