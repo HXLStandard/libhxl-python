@@ -59,37 +59,46 @@ class ValidateFilter(DataProvider):
             self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 
-    def __next__(self):
-        """
-        Report rows with error information.
-        """
-        validation_errors = []
-        def callback(error):
-            """
-            Collect validation errors
-            """
-            validation_errors.append(error)
-        self.schema.callback = callback
+    def __iter__(self):
+        return ValidateFilter.Iterator(self)
 
-        """
-        Read rows until we find an error (unless we're printing all rows)
-        """
-        row = next(self.source)
-        while row:
-            if not self.schema.validate_row(row) or self.show_all:
-                # append error data to row
-                error_row = copy(row)
-                messages = "\n".join(map(lambda e: e.message, validation_errors))
-                tags = "\n".join(map(lambda e: str(e.rule.tag_pattern) if e.rule else '', validation_errors))
-                rows = "\n".join(map(lambda e: str(e.row.source_row_number) if e.row else '', validation_errors))
-                columns = "\n".join(map(lambda e: str(e.column.source_column_number) if e.column else '', validation_errors))
-                error_row.columns = self.columns
-                error_row.values = error_row.values + [messages, tags, rows, columns]
-                return error_row
-            else:
-                row = next(self.source)
+    class Iterator:
 
-    next = __next__
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __next__(self):
+            """
+            Report rows with error information.
+            """
+            validation_errors = []
+            def callback(error):
+                """
+                Collect validation errors
+                """
+                validation_errors.append(error)
+            self.outer.schema.callback = callback
+
+            """
+            Read rows until we find an error (unless we're printing all rows)
+            """
+            row = next(self.iterator)
+            while row:
+                if not self.outer.schema.validate_row(row) or self.outer.show_all:
+                    # append error data to row
+                    error_row = copy(row)
+                    messages = "\n".join(map(lambda e: e.message, validation_errors))
+                    tags = "\n".join(map(lambda e: str(e.rule.tag_pattern) if e.rule else '', validation_errors))
+                    rows = "\n".join(map(lambda e: str(e.row.source_row_number) if e.row else '', validation_errors))
+                    columns = "\n".join(map(lambda e: str(e.column.source_column_number) if e.column else '', validation_errors))
+                    error_row.columns = self.outer.columns
+                    error_row.values = error_row.values + [messages, tags, rows, columns]
+                    return error_row
+                else:
+                    row = next(self.iterator)
+
+        next = __next__
 
 
 def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
