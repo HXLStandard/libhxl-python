@@ -61,19 +61,8 @@ class CutFilter(DataProvider):
                     self.indices.append(i) # save index to avoid retesting for data
         return self.columns_out
 
-    def __next__(self):
-        """
-        Return the next row, with appropriate columns filtered out.
-        """
-        row_in = next(self.source)
-        row_out = Row(columns=self.columns)
-        values_out = []
-        for i in self.indices:
-            values_out.append(row_in.values[i])
-        row_out.values = values_out
-        return row_out
-
-    next = __next__
+    def __iter__(self):
+        return CutFilter.Iterator(self)
 
     def _test_column(self, column):
         """
@@ -98,6 +87,26 @@ class CutFilter(DataProvider):
         else:
             # no whitelist
             return True
+
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __next__(self):
+            """
+            Return the next row, with appropriate columns filtered out.
+            """
+            row_in = next(self.iterator)
+            row_out = Row(columns=self.outer.columns)
+            values_out = []
+            for i in self.outer.indices:
+                values_out.append(row_in.values[i])
+            row_out.values = values_out
+            return row_out
+
+        next = __next__
 
 #
 # Command-line support
