@@ -16,8 +16,10 @@ import difflib
 import tempfile
 
 from hxl.model import Column
+from hxl.io import ArrayInput, HXLReader
 
 import hxl.filters.add
+from hxl.filters.cache import CacheFilter
 import hxl.filters.count
 import hxl.filters.cut
 import hxl.filters.merge
@@ -34,6 +36,25 @@ root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 ########################################################################
 # Test classes
 ########################################################################
+
+class TestCache(unittest.TestCase):
+
+    DATA = [
+        ['#org', '#sector', '#country'],
+        ['Org A', 'WASH', 'Panama'],
+        ['Org B', 'Health', 'Panama'],
+        ['Org C', 'WASH', 'Colombia']
+    ]
+
+    def setUp(self):
+        self.source = HXLReader(ArrayInput(TestCache.DATA))
+        self.filter = CacheFilter(self.source)
+        
+    def test_columns(self):
+        self.assertEqual(self.DATA[0], [column.tag for column in self.filter.columns])
+
+    def test_rows(self):
+        self.assertEqual(self.DATA[1:], [row.values for row in self.filter])
 
 class BaseTest(unittest.TestCase):
     """
