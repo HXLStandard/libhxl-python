@@ -58,7 +58,7 @@ class SortFilter(DataProvider):
         """
         return self.source.columns
 
-    def __next__(self):
+    def __iter__(self):
         """
         Sort the dataset first, then return it row by row.
         """
@@ -87,12 +87,7 @@ class SortFilter(DataProvider):
                 return row.values
 
         # Main method
-        if self._iter is None:
-            self._iter = iter(sorted(self.source, key=make_key, reverse=self.reverse))
-        return next(self._iter)
-
-    next = __next__
-
+        return iter(sorted(self.source, key=make_key, reverse=self.reverse))
             
 #
 # Command-line support
