@@ -130,23 +130,32 @@ class SelectFilter(DataProvider):
         """Pass on the source columns unmodified."""
         return self.source.columns
 
-    def __next__(self):
-        """
-        Return the next row that matches the select.
-        """
-        row = next(self.source)
-        while not self.match_row(row):
-            row = next(self.source)
-        return row
+    def __iter__(self):
+        return SelectFilter.Iterator(self)
 
-    next = __next__
+    class Iterator:
 
-    def match_row(self, row):
-        """Check if any of the queries matches the row (implied OR)."""
-        for query in self.queries:
-            if query.match_row(row):
-                return not self.reverse
-        return self.reverse
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __next__(self):
+            """
+            Return the next row that matches the select.
+            """
+            row = next(self.iterator)
+            while not self.match_row(row):
+                row = next(self.iterator)
+            return row
+
+        next = __next__
+
+        def match_row(self, row):
+            """Check if any of the queries matches the row (implied OR)."""
+            for query in self.outer.queries:
+                if query.match_row(row):
+                    return not self.outer.reverse
+            return self.outer.reverse
 
 
 #
