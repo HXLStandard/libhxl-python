@@ -63,10 +63,8 @@ class RenameFilter(DataProvider):
             self._saved_columns = [rename_column(column) for column in self.source.columns]
         return self._saved_columns
 
-    def __next__(self):
-        return next(self.source)
-
-    next = __next__
+    def __iter__(self):
+        return iter(self.source)
 
 
 #
