@@ -27,6 +27,9 @@ def operator_nre(s, pattern):
     """Regular-expression negative comparison operator."""
     return not re.match(pattern, s)
 
+def norm(s):
+    return s.strip().lower().replace(r'\s\s+', ' ')
+
 
 class Query(object):
     """Query to execute against a row of HXL data."""
@@ -60,8 +63,7 @@ class Query(object):
                 return self.op(float(value), float(self.value))
             except ValueError:
                 pass
-        else:
-            return self.op(value, self.value)
+        return self.op(norm(value), norm(self.value))
 
     def _get_saved_indices(self, columns):
         """Cache the column tests, so that we run them only once."""
