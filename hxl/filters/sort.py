@@ -83,7 +83,7 @@ class SortFilter(Dataset):
                 return raw_value.upper() if raw_value else ''
 
             if self.sort_tags:
-                return list(map(get_value, self.sort_tags))
+                return [get_value(pattern) for pattern in self.sort_tags]
             else:
                 return row.values
 

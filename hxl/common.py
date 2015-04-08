@@ -2,6 +2,8 @@
 Common information for HXL.
 """
 
+import six
+
 TOKEN = r'[A-Za-z][_0-9A-Za-z]*'
 
 class HXLException(Exception):
@@ -25,6 +27,6 @@ def pattern_list(patterns):
     from hxl.model import TagPattern
     if not patterns:
         return []
-    elif not hasattr(patterns, '__len__') or isinstance(patterns, str):
+    elif isinstance(patterns, six.string_types):
         patterns = [patterns]
-    return map(TagPattern.parse, patterns)
+    return [TagPattern.parse(pattern) for pattern in patterns]

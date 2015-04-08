@@ -130,7 +130,7 @@ class SelectFilter(Dataset):
         if not hasattr(queries, '__len__') or isinstance(queries, str):
             # make a list if needed
             queries = [queries]
-        self.queries = map(Query.parse, queries)
+        self.queries = [Query.parse(query) for query in queries]
         self.reverse = reverse
 
     @property
