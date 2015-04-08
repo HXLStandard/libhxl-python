@@ -7,17 +7,35 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-TOKEN = r'[A-Za-z][_0-9A-Za-z]*'
+import re
+from hxl.common import TOKEN, HXLException
+from hxl.model import DataProvider
+from hxl.io import HXLReader, ArrayInput, StreamInput
 
-class HXLException(Exception):
-    """Base class for all HXL-related exceptions."""
+def hxl(data):
+    """
+    Convenience method for reading a HXL dataset.
+    If passed an existing DataProvider, simply returns it.
+    @param data a HXL data provider, file object, array, or string (representing a URL or file name).
+    """
 
-    def __init__(self, message):
-        super(Exception, self).__init__(message)
-        self.message = message
+    if isinstance(data, DataProvider):
+        # it's already HXL data
+        return data
 
-    def __str__(self):
-        return "<HXException: " + str(self.message) + ">"
+    elif hasattr(data, 'read'):
+        # it's a file stream
+        return HXLReader(StreamInput(data))
+
+    elif hasattr(data, '__len__') and (not isinstance(data, str)):
+        # it's an array
+        return HXLReader(ArrayInput(data))
+
+    elif re.match(r'\.xlsx?', data):
+        return HXLReader(ExcelInput(data))
+    
+    else:
+        return HXLReader(CSVInput(data))
 
 # end
 

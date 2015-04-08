@@ -15,8 +15,8 @@ import filecmp
 import difflib
 import tempfile
 
+import hxl
 from hxl.model import Column
-from hxl.io import ArrayInput, HXLReader
 
 import hxl.filters.add
 from hxl.filters.cache import CacheFilter
@@ -47,7 +47,7 @@ class TestCache(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.source = HXLReader(ArrayInput(TestCache.DATA))
+        self.source = hxl.hxl(TestCache.DATA)
         self.filter = CacheFilter(self.source)
         
     def test_columns(self):

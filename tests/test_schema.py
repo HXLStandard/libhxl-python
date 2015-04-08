@@ -8,8 +8,8 @@ License: Public Domain
 
 import unittest
 import os
+from hxl import hxl
 from hxl.model import Column, Row
-from hxl.io import StreamInput, HXLReader
 from hxl.schema import Schema, SchemaRule, read_schema
 
 class TestSchema(unittest.TestCase):
@@ -157,22 +157,22 @@ class TestSchemaRule(unittest.TestCase):
         schema = read_schema()
         self.assertTrue(0 < len(schema.rules))
         with _read_file('data-good.csv') as input:
-            dataset = HXLReader(StreamInput(input))
+            dataset = hxl(input)
             self.assertTrue(schema.validate(dataset))
 
     def test_load_good(self):
         with _read_file('schema-basic.csv') as schema_input:
-            schema = read_schema(HXLReader(StreamInput(schema_input)))
+            schema = read_schema(hxl(schema_input))
             with _read_file('data-good.csv') as input:
-                dataset = HXLReader(StreamInput(input))
+                dataset = hxl(input)
                 self.assertTrue(schema.validate(dataset))
 
     def test_load_bad(self):
         with _read_file('schema-basic.csv') as schema_input:
-            schema = read_schema(HXLReader(StreamInput(schema_input)))
+            schema = read_schema(hxl(schema_input))
             schema.callback = lambda e: True # to avoid seeing error messages
             with _read_file('data-bad.csv') as input:
-                dataset = HXLReader(StreamInput(input))
+                dataset = hxl(input)
                 self.assertFalse(schema.validate(dataset))
 
     def _try_rule(self, value, errors_expected = 0):
