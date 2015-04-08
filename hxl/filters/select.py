@@ -78,6 +78,9 @@ class Query(object):
     @staticmethod
     def parse(s):
         """Parse a filter expression"""
+        if isinstance(s, Query):
+            # already parsed
+            return s
         parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op = Query.OPERATOR_MAP[parts[1]]
@@ -124,7 +127,10 @@ class SelectFilter(DataProvider):
         @param reverse True to reverse the sense of the select
         """
         self.source = source
-        self.queries = queries
+        if not hasattr(queries, '__len__') or isinstance(queries, str):
+            # make a list if needed
+            queries = [queries]
+        self.queries = map(Query.parse, queries)
         self.reverse = reverse
 
     @property

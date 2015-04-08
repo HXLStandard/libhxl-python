@@ -39,6 +39,14 @@ class TestShortcuts(unittest.TestCase):
         self.assertEqual(expected, [column.tag for column in self.source.without_columns('#sector').columns])
         self.assertEqual(expected, [column.tag for column in self.source.without_columns(['#sector']).columns])
 
+    def test_with_rows(self):
+        self.assertEqual(DATA[2:], [row.values for row in self.source.with_rows(['#sector=education'])])
+        self.assertEqual(DATA[2:], [row.values for row in self.source.with_rows('#sector=education')])
+
+    def test_without_rows(self):
+        self.assertEqual(DATA[2:], [row.values for row in self.source.without_rows(['#sector=wash'])])
+        self.assertEqual(DATA[2:], [row.values for row in self.source.without_rows('#sector=wash')])
+
     def test_count(self):
         tags = [column.tag for column in self.source.count('#sector').columns]
         print(tags)

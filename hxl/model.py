@@ -88,6 +88,14 @@ class DataProvider(object):
         import hxl.filters.cut
         return hxl.filters.cut.CutFilter(self, exclude_tags=blacklist)
 
+    def with_rows(self, queries):
+        import hxl.filters.select
+        return hxl.filters.select.SelectFilter(self, queries=queries, reverse=False)
+
+    def without_rows(self, queries):
+        import hxl.filters.select
+        return hxl.filters.select.SelectFilter(self, queries=queries, reverse=True)
+
     def sort(self, keys=None, reverse=False):
         import hxl.filters.sort
         return hxl.filters.sort.SortFilter(self, tags=keys, reverse=reverse)
