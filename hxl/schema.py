@@ -228,7 +228,7 @@ class SchemaRule(object):
                 if value not in self.enum:
                     return self._report_error("Must be one of " + str(self.enum), value, row, column)
             else:
-                if value.upper() not in map(lambda item: item.upper(), self.enum):
+                if value.upper() not in [item.upper() for item in self.enum]:
                     return self._report_error("Must be one of " + str(self.enum) + " (case-insensitive)", value, row, column)
         return True
 

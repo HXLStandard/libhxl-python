@@ -52,21 +52,21 @@ class Dataset(object):
         """
         Return a list of header strings (for a spreadsheet row).
         """
-        return list(map(lambda column: column.header, self.columns))
+        return [column.header for column in self.columns]
 
     @property
     def tags(self):
         """
         Return a list of tags.
         """
-        return list(map(lambda column: column.tag, self.columns))
+        return [column.tag for column in self.columns]
 
     @property
     def display_tags(self):
         """
         Return a list of display tags.
         """
-        return list(map(lambda column: column.display_tag, self.columns))
+        return [column.display_tag for column in self.columns]
 
     @property
     def has_headers(self):
