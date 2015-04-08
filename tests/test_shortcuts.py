@@ -29,5 +29,11 @@ class TestShortcuts(unittest.TestCase):
         self.assertEqual(DATA[1:], [row.values for row in self.source]) 
 
     def test_with_columns(self):
+        expected = ['#sector']
+        self.assertEqual(expected, [column.tag for column in self.source.with_columns('#sector').columns])
+        self.assertEqual(expected, [column.tag for column in self.source.with_columns(['#sector']).columns])
+
+    def test_without_columns(self):
         expected = ['#org', '#adm1']
         self.assertEqual(expected, [column.tag for column in self.source.without_columns('#sector').columns])
+        self.assertEqual(expected, [column.tag for column in self.source.without_columns(['#sector']).columns])
