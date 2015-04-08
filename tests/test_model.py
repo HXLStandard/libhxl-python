@@ -122,15 +122,4 @@ class TestRow(unittest.TestCase):
         self.assertEqual(None, self.row.get('#country'))
         self.assertEqual([], self.row.get_all('#country'))
 
-    def test_map(self):
-
-        def tolower(value, column):
-            """Function to map over the row"""
-            if column.tag == '#org':
-                value = value.lower()
-            return value
-
-        values = self.row.map(tolower)
-        self.assertEqual(['Health', 'wfp', 'Liberia'], values)
-
 # end
