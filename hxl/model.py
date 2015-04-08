@@ -94,7 +94,7 @@ class DataProvider(object):
 
     def count(self, patterns, aggregate_pattern=None):
         import hxl.filters.count
-        return hxl.filters.count.CountFilter(self, tags=patterns, aggregate_tag=aggregate_pattern)
+        return hxl.filters.count.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
 
 class Dataset(DataProvider):
     """

@@ -2,16 +2,6 @@
 Script to count distinct values in a HXL dataset.
 David Megginson
 October 2014
-
-Counts all combinations of the tags specified on the command line. In
-the command-line version, you may omit the initial '#' from tag names
-to avoid the need to quote them.  Also optionally calculates sum,
-average (mean), min, and max for a numeric tag.
-
-Only the *first* column with each hashtag is currently used.
-
-License: Public Domain
-Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys
@@ -38,32 +28,36 @@ class CountFilter(DataProvider):
     Usage:
 
     <pre>
-    source = HXLReader(sys.stdin)
-    filter = CountFilter(source, tags=[TagPattern.parse('#org'), TagPattern.parse('#sector'), TagPattern.parse('#adm1')])
-    write_hxl(sys.stdout, filter)
+    filter = CountFilter(source, patterns=['#org', '#sector'])
+    </pre>
+
+    or
+
+    <pre>
+    filter = source.count(['#org', '#sector'])
     </pre>
     """
 
-    def __init__(self, source, tags, aggregate_tag=None):
+    def __init__(self, source, patterns, aggregate_pattern=None):
         """
         Constructor
         @param source the HXL data source
-        @param tags a list of TagPattern objects that form a unique key together (what combinations are you counting?)
-        @param aggregate_tag an optional numeric tag for calculating aggregate values.
+        @param patterns a list of strings or TagPattern objects that form a unique key together
+        @param aggregate_pattern an optional tag pattern calculating numeric aggregate values.
         """
         self.source = source
-        self.count_tags = pattern_list(tags)
-        self.aggregate_tag = TagPattern.parse(aggregate_tag) if aggregate_tag else None
-        self.saved_columns = None
+        self.patterns = pattern_list(patterns)
+        self.aggregate_pattern = TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
+        self._saved_columns = None
 
     @property
     def columns(self):
         """
         @return the column definitions used in the aggregation report
         """
-        if self.saved_columns is None:
+        if self._saved_columns is None:
             cols = []
-            for pattern in self.count_tags:
+            for pattern in self.patterns:
                 column = pattern.find_column(self.source.columns)
                 if column is not None:
                     header = column.header
@@ -71,13 +65,13 @@ class CountFilter(DataProvider):
                     header = None
                 cols.append(Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
             cols.append(Column(tag='#x_count_num', header='Count'))
-            if self.aggregate_tag is not None:
+            if self.aggregate_pattern is not None:
                 cols.append(Column(tag='#x_sum_num', header='Sum'))
                 cols.append(Column(tag='#x_average_num', header='Average (mean)'))
                 cols.append(Column(tag='#x_min_num', header='Minimum value'))
                 cols.append(Column(tag='#x_max_num', header='Maximum value'))
-            self.saved_columns = cols
-        return self.saved_columns
+            self._saved_columns = cols
+        return self._saved_columns
 
     def __iter__(self):
         return CountFilter.Iterator(self)
@@ -99,7 +93,7 @@ class CountFilter(DataProvider):
             aggregate = next(self.aggregate_iter)
             values = list(aggregate[0])
             values.append(aggregate[1].count)
-            if self.outer.aggregate_tag:
+            if self.outer.aggregate_pattern:
                 if aggregate[1].seen_numbers:
                     values.append(aggregate[1].sum)
                     values.append(aggregate[1].average)
@@ -120,11 +114,11 @@ class CountFilter(DataProvider):
             """
             aggregators = {}
             for row in self.iterator:
-                values = [pattern.get_value(row) for pattern in self.outer.count_tags]
+                values = [pattern.get_value(row) for pattern in self.outer.patterns]
                 if values:
                     key = tuple(values)
                     if not key in aggregators:
-                        aggregators[key] = Aggregator(self.outer.aggregate_tag)
+                        aggregators[key] = Aggregator(self.outer.aggregate_pattern)
                     aggregators[key].add(row)
             self.aggregate_iter = iter(sorted(aggregators.items()))
 
