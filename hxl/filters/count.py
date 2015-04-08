@@ -16,6 +16,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import sys
 import argparse
+from hxl.common import pattern_list
 from hxl.model import DataProvider, TagPattern, Column, Row
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, write_hxl
@@ -51,8 +52,8 @@ class CountFilter(DataProvider):
         @param aggregate_tag an optional numeric tag for calculating aggregate values.
         """
         self.source = source
-        self.count_tags = tags
-        self.aggregate_tag = aggregate_tag
+        self.count_tags = pattern_list(tags)
+        self.aggregate_tag = TagPattern.parse(aggregate_tag) if aggregate_tag else None
         self.saved_columns = None
 
     @property

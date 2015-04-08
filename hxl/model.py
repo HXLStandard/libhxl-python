@@ -92,6 +92,10 @@ class DataProvider(object):
         import hxl.filters.sort
         return hxl.filters.sort.SortFilter(self, tags=keys, reverse=reverse)
 
+    def count(self, patterns, aggregate_pattern=None):
+        import hxl.filters.count
+        return hxl.filters.count.CountFilter(self, tags=patterns, aggregate_tag=aggregate_pattern)
+
 class Dataset(DataProvider):
     """
     In-memory HXL dataset.

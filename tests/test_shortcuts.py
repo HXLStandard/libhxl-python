@@ -39,10 +39,17 @@ class TestShortcuts(unittest.TestCase):
         self.assertEqual(expected, [column.tag for column in self.source.without_columns('#sector').columns])
         self.assertEqual(expected, [column.tag for column in self.source.without_columns(['#sector']).columns])
 
+    def test_count(self):
+        tags = [column.tag for column in self.source.count('#sector').columns]
+        print(tags)
+        self.assertTrue('#sector' in tags)
+        self.assertTrue('#x_count_num' in tags)
+        self.assertTrue('#adm1' not in tags)
+        # TODO test aggregation
+
     def test_sort(self):
         self.assertEqual(sorted(DATA[1:]), [row.values for row in self.source.sort()])
         self.assertEqual(sorted(DATA[1:], reverse=True), [row.values for row in self.source.sort(reverse=True)])
-
         # try with custom sort keys
         def key(r):
             return [r[2], r[1]]
