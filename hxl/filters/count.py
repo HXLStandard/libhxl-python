@@ -122,7 +122,7 @@ class CountFilter(Dataset):
                     aggregators[key].add(row)
             self.aggregate_iter = iter(sorted(aggregators.items()))
 
-class Aggregator:
+class Aggregator(object):
     """
     Class to collect aggregates for a single combination.
 

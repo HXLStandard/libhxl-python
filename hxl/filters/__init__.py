@@ -44,7 +44,7 @@ def make_output(filename, stdout=sys.stdout):
     else:
         return StreamOutput(stdout)
 
-class FileOutput:
+class FileOutput(object):
 
     def __init__(self, filename):
         self.output = open(filename, 'w')
@@ -55,7 +55,7 @@ class FileOutput:
     def __exit__(self, value, type, traceback):
         close(self.output)
 
-class StreamOutput:
+class StreamOutput(object):
 
     def __init__(self, output):
         self.output = output
