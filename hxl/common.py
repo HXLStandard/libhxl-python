@@ -14,3 +14,17 @@ class HXLException(Exception):
     def __str__(self):
         return "<HXException: " + str(self.message) + ">"
 
+def pattern_list(patterns):
+    """
+    Normalise a pattern list:
+    - if falsy, make into an empty list
+    - if scalar, make into a one-item list
+    - make sure each item is compiled into a tag pattern
+    @param patterns a string or list of strings/TagPattern objects
+    """
+    from hxl.model import TagPattern
+    if not patterns:
+        return []
+    elif not hasattr(patterns, '__len__') or isinstance(patterns, str):
+        patterns = [patterns]
+    return map(TagPattern.parse, patterns)

@@ -14,6 +14,7 @@ import argparse
 from hxl.model import DataProvider, TagPattern, Row
 from hxl.io import HXLReader, write_hxl
 from hxl.filters import make_input, make_output
+from hxl.common import pattern_list
 
 class CutFilter(DataProvider):
     """
@@ -41,8 +42,8 @@ class CutFilter(DataProvider):
         @param exclude_tags a blacklist of TagPattern objects to exclude
         """
         self.source = source
-        self.include_tags = include_tags
-        self.exclude_tags = exclude_tags
+        self.include_tags = pattern_list(include_tags)
+        self.exclude_tags = pattern_list(exclude_tags)
         self.indices = [] # saved indices for columns to include
         self.columns_out = None
 

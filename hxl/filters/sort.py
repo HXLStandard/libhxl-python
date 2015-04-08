@@ -17,6 +17,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 import dateutil.parser
+from hxl.common import pattern_list
 from hxl.model import DataProvider, TagPattern
 from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output
@@ -47,7 +48,7 @@ class SortFilter(DataProvider):
         @param reverse True to reverse the sort order
         """
         self.source = source
-        self.sort_tags = tags
+        self.sort_tags = pattern_list(tags)
         self.reverse = reverse
         self._iter = None
 

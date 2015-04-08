@@ -20,7 +20,8 @@ DATA = [
 class TestShortcuts(unittest.TestCase):
 
     def setUp(self):
-        self.source = hxl(DATA)
+        # use a cache filter so that we can run tests multiple times
+        self.source = hxl(DATA).cache()
 
     def test_columns(self):
         self.assertEqual(DATA[0], [column.tag for column in self.source.columns])
@@ -37,3 +38,12 @@ class TestShortcuts(unittest.TestCase):
         expected = ['#org', '#adm1']
         self.assertEqual(expected, [column.tag for column in self.source.without_columns('#sector').columns])
         self.assertEqual(expected, [column.tag for column in self.source.without_columns(['#sector']).columns])
+
+    def test_sort(self):
+        self.assertEqual(sorted(DATA[1:]), [row.values for row in self.source.sort()])
+        self.assertEqual(sorted(DATA[1:], reverse=True), [row.values for row in self.source.sort(reverse=True)])
+
+        # try with custom sort keys
+        def key(r):
+            return [r[2], r[1]]
+        self.assertEqual(sorted(DATA[1:], key=key), [row.values for row in self.source.sort(['#adm1', '#sector'])])

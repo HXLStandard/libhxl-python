@@ -11,6 +11,7 @@ import abc
 import copy
 import re
 import hxl
+from hxl.common import HXLException
 
 class DataProvider(object):
     """
@@ -75,17 +76,21 @@ class DataProvider(object):
                 return True
         return False
 
+    def cache(self):
+        import hxl.filters.cache
+        return hxl.filters.cache.CacheFilter(self)
+
     def with_columns(self, whitelist):
         import hxl.filters.cut
-        if not hasattr(whitelist, '__len__') or isinstance(whitelist, str):
-            whitelist = [whitelist]
-        return hxl.filters.cut.CutFilter(self, include_tags=map(TagPattern.parse, whitelist))
+        return hxl.filters.cut.CutFilter(self, include_tags=whitelist)
 
     def without_columns(self, blacklist):
         import hxl.filters.cut
-        if not hasattr(blacklist, '__len__') or isinstance(blacklist, str):
-            blacklist = [blacklist]
-        return hxl.filters.cut.CutFilter(self, exclude_tags=map(TagPattern.parse, blacklist))
+        return hxl.filters.cut.CutFilter(self, exclude_tags=blacklist)
+
+    def sort(self, keys=None, reverse=False):
+        import hxl.filters.sort
+        return hxl.filters.sort.SortFilter(self, tags=keys, reverse=reverse)
 
 class Dataset(DataProvider):
     """
@@ -184,7 +189,9 @@ class TagPattern(object):
     @staticmethod
     def parse(s):
         """Parse a single tagspec, like #tag+foo-bar."""
-        if isinstance(s, TagPattern):
+        if not s:
+            raise HXLException('Attempt to parse empty tag pattern')
+        if not isinstance(s, str):
             return s
         result = re.match(TagPattern.PATTERN, s)
         if result:
