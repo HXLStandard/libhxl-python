@@ -14,17 +14,17 @@ from copy import copy
 
 import hxl
 from . import HXLFilterException
-from hxl.model import DataProvider, TagPattern, Column
+from hxl.model import Dataset, TagPattern, Column
 from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 
-class AddFilter(DataProvider):
+class AddFilter(Dataset):
     """
     Composable filter class to add constant values to every row of a HXL dataset.
 
     This is the class supporting the hxladd command-line utility.
 
-    Because this class is a {@link hxl.model.DataProvider}, you can use
+    Because this class is a {@link hxl.model.Dataset}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
     """

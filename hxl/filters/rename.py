@@ -12,17 +12,17 @@ import argparse
 import copy
 import re
 import hxl
-from hxl.model import DataProvider, TagPattern, Column
+from hxl.model import Dataset, TagPattern, Column
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, write_hxl
 
-class RenameFilter(DataProvider):
+class RenameFilter(Dataset):
     """
     Composable filter class to rename columns in a HXL dataset.
 
     This is the class supporting the hxlrename command-line utility.
 
-    Because this class is a {@link hxl.model.DataProvider}, you can use
+    Because this class is a {@link hxl.model.Dataset}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
@@ -38,7 +38,7 @@ class RenameFilter(DataProvider):
     def __init__(self, source, rename=[]):
         """
         Constructor
-        @param source the DataProvider for the data.
+        @param source the Dataset for the data.
         @param rename_map map of tags to rename
         """
         self.source = source

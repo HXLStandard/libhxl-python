@@ -10,16 +10,18 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import abc
 import copy
 import re
+import csv
+import json
 import hxl
 from hxl.common import HXLException
 
-class DataProvider(object):
+class Dataset(object):
     """
     Abstract base class for a HXL data source.
 
     Any source of parsed HXL data inherits from this class: that
     includes Dataset, HXLReader, and the various filters in the
-    hxl.filters package.  The contract of a DataProvider is that it will
+    hxl.filters package.  The contract of a Dataset is that it will
     provide a columns property and a next() method to read through the
     rows.
 
@@ -76,58 +78,82 @@ class DataProvider(object):
                 return True
         return False
 
+    #
+    # Filters
+    #
+
     def cache(self):
+        """Add a caching filter to the dataset."""
         import hxl.filters.cache
         return hxl.filters.cache.CacheFilter(self)
 
     def with_columns(self, whitelist):
+        """Select matching columns."""
         import hxl.filters.cut
         return hxl.filters.cut.CutFilter(self, include_tags=whitelist)
 
     def without_columns(self, blacklist):
+        """Select non-matching columns."""
         import hxl.filters.cut
         return hxl.filters.cut.CutFilter(self, exclude_tags=blacklist)
 
     def with_rows(self, queries):
+        """Select matching rows."""
         import hxl.filters.select
         return hxl.filters.select.SelectFilter(self, queries=queries, reverse=False)
 
     def without_rows(self, queries):
+        """Select non-matching rows."""
         import hxl.filters.select
         return hxl.filters.select.SelectFilter(self, queries=queries, reverse=True)
 
     def sort(self, keys=None, reverse=False):
+        """Sort the dataset (caching)."""
         import hxl.filters.sort
         return hxl.filters.sort.SortFilter(self, tags=keys, reverse=reverse)
 
     def count(self, patterns, aggregate_pattern=None):
+        """Count values in the dataset (caching)."""
         import hxl.filters.count
         return hxl.filters.count.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
 
-class Dataset(DataProvider):
-    """
-    In-memory HXL dataset.
-    """
+    #
+    # Generators
+    #
 
-    def __init__(self, url=None, columns=[], rows=[]):
-        """
-        Initialise a dataset.
-        @param url The dataset's URL (default: None).
-        """
-        self.url = url
-        self.columns = copy.copy(columns)
-        self.rows = copy.copy(rows)
+    def gen_raw(self, show_headers=True, show_tags=True):
+        """Generate an array representation of a HXL dataset, one at a time."""
+        if show_headers:
+            yield self.headers
+        if show_tags:
+            yield self.display_tags
+        for row in self:
+            yield row.values
 
-    def __str__(self):
-        """
-        Create a string representation of a dataset for debugging.
-        @return A debugging string.
-        """
-        if self.url:
-            return '<Dataset ' + self.url + '>'
-        else:
-            return '<Dataset>'
+    def gen_csv(self, show_headers=True, show_tags=True):
+        """Generate a CSV representation of a HXL dataset, one row at a time."""
+        class TextOut:
+            """Simple string output source to capture CSV"""
+            def __init__(self):
+                self.data = ''
+            def write(self, s):
+                self.data += s
+            def get(self):
+                data = self.data
+                self.data = ''
+                return data
+        output = TextOut()
+        writer = csv.writer(output)
+        for raw in self.gen_raw(show_headers, show_tags):
+            writer.writerow(raw)
+            yield output.get()
 
+    def gen_json(self, show_headers=True, show_tags=True):
+        """Generate a JSON representation of a HXL dataset, one row at a time."""
+        yield "[\n"
+        for raw in self.gen_raw():
+            yield json.dumps(raw)
+        yield "]\n"
 
 class TagPattern(object):
     """

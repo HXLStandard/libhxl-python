@@ -8,9 +8,9 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 from copy import copy
-from hxl.model import DataProvider
+from hxl.model import Dataset
 
-class CacheFilter(DataProvider):
+class CacheFilter(Dataset):
     """Composable filter class to cache HXL data in memory."""
 
     def __init__(self, source, max_rows=None):

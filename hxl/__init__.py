@@ -9,17 +9,17 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import re
 from hxl.common import TOKEN, HXLException
-from hxl.model import DataProvider
+from hxl.model import Dataset
 from hxl.io import HXLReader, ArrayInput, StreamInput
 
 def hxl(data):
     """
     Convenience method for reading a HXL dataset.
-    If passed an existing DataProvider, simply returns it.
+    If passed an existing Dataset, simply returns it.
     @param data a HXL data provider, file object, array, or string (representing a URL or file name).
     """
 
-    if isinstance(data, DataProvider):
+    if isinstance(data, Dataset):
         # it's already HXL data
         return data
 

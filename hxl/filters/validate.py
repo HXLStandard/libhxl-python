@@ -11,16 +11,16 @@ import sys
 import os
 import argparse
 from copy import copy
-from hxl.model import DataProvider, Column
+from hxl.model import Dataset, Column
 from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.schema import read_schema
 
-class ValidateFilter(DataProvider):
+class ValidateFilter(Dataset):
     """Composable filter class to validate a HXL dataset against a schema.
 
     This is the class supporting the hxlvalidate command-line utility.
 
-    Because this class is a {@link hxl.model.DataProvider}, you can use
+    Because this class is a {@link hxl.model.Dataset}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, singled-threaded processing pipeline.
 

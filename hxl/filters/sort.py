@@ -18,17 +18,17 @@ import sys
 import argparse
 import dateutil.parser
 from hxl.common import pattern_list
-from hxl.model import DataProvider, TagPattern
+from hxl.model import Dataset, TagPattern
 from hxl.io import StreamInput, HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 
-class SortFilter(DataProvider):
+class SortFilter(Dataset):
     """
     Composable filter class to sort a HXL dataset.
 
     This is the class supporting the hxlsort command-line utility.
 
-    Because this class is a {@link hxl.model.DataProvider}, you can use
+    Because this class is a {@link hxl.model.Dataset}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 

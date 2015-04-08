@@ -14,7 +14,7 @@ import sys
 import re
 import operator
 import argparse
-from hxl.model import DataProvider, TagPattern
+from hxl.model import Dataset, TagPattern
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, write_hxl
 
@@ -100,13 +100,13 @@ class Query(object):
     }
         
 
-class SelectFilter(DataProvider):
+class SelectFilter(Dataset):
     """
     Composable filter class to select rows from a HXL dataset.
 
     This is the class supporting the hxlselect command-line utility.
 
-    Because this class is a {@link hxl.model.DataProvider}, you can use
+    Because this class is a {@link hxl.model.Dataset}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 

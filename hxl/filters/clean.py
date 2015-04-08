@@ -12,11 +12,11 @@ import re
 import dateutil.parser
 import argparse
 import copy
-from hxl.model import DataProvider, TagPattern
+from hxl.model import Dataset, TagPattern
 from hxl.io import HXLReader, write_hxl, StreamInput
 from hxl.filters import make_input, make_output
 
-class CleanFilter(DataProvider):
+class CleanFilter(Dataset):
     """
     Filter for cleaning values in HXL data.
     Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.

@@ -18,7 +18,7 @@ if sys.version_info < (3,):
 else:
     import urllib.request
 from . import HXLException
-from hxl.model import DataProvider, Dataset, Column, Row
+from hxl.model import Dataset, Column, Row
 
 # Cut off for fuzzy detection of a hashtag row
 # At least this percentage of cells must parse as HXL hashtags
@@ -148,7 +148,7 @@ class ArrayInput(AbstractInput):
     next = __next__
 
 
-class HXLReader(DataProvider):
+class HXLReader(Dataset):
     """Read HXL data from a file
 
     This class acts as both an iterator and a context manager. If
@@ -272,82 +272,15 @@ class HXLReader(DataProvider):
         if self._opened_input:
             self._opened_input.close()
 
-def read_hxl(input):
-    """Load an in-memory HXL dataset.
-
-    At least one of input, url, and raw_data must be provided. Order of
-    preference is as with HXLReader.
-
-    @param input a Python file object
-    @param url a URL or filename to open
-    @param raw_data an iterator over a sequence of string arrays.
-    @return an in-memory Dataset
-
-    """
-    dataset = Dataset(url)
-
-    parser = HXLReader(input)
-    dataset.columns = parser.columns
-    for row in parser:
-        dataset.rows.append(row)
-
-    return dataset
-
-
-def write_hxl(output, source, show_headers=True):
+def write_hxl(output, source, show_headers=True, show_tags=True):
     """Serialize a HXL dataset to an output stream."""
-    for line in gen_hxl(source, show_headers):
+    for line in source.gen_csv(show_headers, show_tags):
         output.write(line)
 
-def write_json(output, source, show_headers=True):
+def write_json(output, source, show_headers=True, show_tags=True):
     """Serialize a dataset to JSON."""
-    for line in gen_json(source, show_headers):
+    for line in source.gen_json(show_headers, show_tags):
         output.write(line)
-
-def gen_hxl(source, show_headers=True):
-    """
-    Generate HXL output one row at a time.
-    """
-    class TextOut:
-        """Simple string output source to capture CSV"""
-        def __init__(self):
-            self.data = ''
-        def write(self, s):
-            self.data += s
-        def get(self):
-            data = self.data
-            self.data = ''
-            return data
-    output = TextOut()
-    writer = csv.writer(output)
-    if show_headers and source.has_headers:
-        writer.writerow(source.headers)
-        yield output.get()
-    writer.writerow(source.display_tags)
-    yield output.get()
-    for row in source:
-        writer.writerow(row.values)
-        yield output.get()
-
-def gen_json(source, show_headers=True):
-    """
-    Generate JSON output, one line at a time.
-    """
-    yield "{\n"
-    if show_headers and source.has_headers:
-        yield "  \"headers\": " + json.dumps(source.headers) + ",\n"
-    yield "  \"tags\": " + json.dumps(source.tags) + ",\n"
-    yield "  \"data\": [\n"
-    is_first = True
-    for row in source:
-        if is_first:
-            yield "    "
-            is_first = False
-        else:
-            yield ",\n    "
-        yield json.dumps(row.values)
-    yield "\n  ]\n"
-    yield "}\n"
 
 # end
 

@@ -11,7 +11,7 @@ import sys
 import re
 from hxl import HXLException
 from hxl.io import StreamInput, CSVInput, ExcelInput
-from hxl.model import DataProvider, Column
+from hxl.model import Dataset, Column
 
 class HXLFilterException(HXLException):
     pass

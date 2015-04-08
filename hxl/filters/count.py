@@ -7,17 +7,17 @@ October 2014
 import sys
 import argparse
 from hxl.common import pattern_list
-from hxl.model import DataProvider, TagPattern, Column, Row
+from hxl.model import Dataset, TagPattern, Column, Row
 from hxl.filters import make_input, make_output
 from hxl.io import StreamInput, HXLReader, write_hxl
 
-class CountFilter(DataProvider):
+class CountFilter(Dataset):
     """
     Composable filter class to aggregate rows in a HXL dataset.
 
     This is the class supporting the hxlcount command-line utility.
 
-    Because this class is a {@link hxl.model.DataProvider}, you can use
+    Because this class is a {@link hxl.model.Dataset}, you can use
     it as the source to an instance of another filter class to build a
     dynamic, single-threaded processing pipeline.
 
