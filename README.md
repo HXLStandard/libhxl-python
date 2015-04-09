@@ -60,13 +60,46 @@ result = hxl(url).with_rows('#sector!=WASH').count('#org')
 
 The following filters are available:
 
-* .cache() - cache an in-memory version of the dataset (for processing multiple times)
-* .with_columns(patterns) - include only columns that match the tag pattern(s), e.g. "#org+impl"
-* .without_columns(patterns) - include all columns _except_ those that match the tag patterns
-* .with_rows(queries) - include only rows that match at least one of the queries, e.g. "#sector=WASH"
-* .without_rows(queries) - exclude rows that match at least one of the queries, e.g. "#sector=WASH"
-* .sort(patterns, reverse=False) - sort the rows, optionally using the pattern(s) provided as sort keys. Set _reverse_ to True for a descending sort
-* .count(patterns, aggregate_pattern=None) - count the number of value combinations that appear for the pattern(s), e.g. ['#sector', '#org']
+<table>
+  <thead>
+    <th>Filter method</th>
+    <th>Description</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Dataset.cache()</code></td>
+      <td>Cache an in-memory version of the dataset (for processing multiple times).</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.with_columns(patterns)</code></td>
+      <td>Include only columns that match the tag pattern(s), e.g. "#org+impl".</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.without_columns(patterns)</code></td>
+      <td>Include all columns <em>except</em> those that match the tag patterns.</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.with_rows(queries)</code></td>
+      <td>Include only rows that match at least one of the queries, e.g. "#sector=WASH".</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.without_rows(queries)</code></td>
+      <td>Exclude rows that match at least one of the queries, e.g. "#sector=WASH".</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.sort(patterns, reverse=False)</code></td>
+      <td>Sort the rows, optionally using the pattern(s) provided as sort keys. Set _reverse_ to True for a descending sort.</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.count(patterns, aggregate_pattern=None)</code></td>
+      <td>Count the number of value combinations that appear for the pattern(s), e.g. ['#sector', '#org']</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.add_columns(specs, before=False)</code></td>
+      <td>Add columns with fixed values to the dataset, e.g. "Country#country=Kenya" to add a new column #country with the text header "Country" and the value "Kenya" in every row.</td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Generators
@@ -80,9 +113,26 @@ for line in hxl(url).gen_csv():
 
 The following generators are available (you can use the parameters to turn the text headers and HXL tags on or off):
 
-* .gen_raw(show_headers=True, show_tags=True) - generate arrays of strings, one row at a time
-* .gen_csv(show_headers=True, show_tags=True) - generate encoded CSV rows, one row at a time
-* .gen_json(show_headers=True, show_tags=True) - generate encoded JSON rows, one row at a time
+<table>
+  <thead>
+    <th>Generator method</th>
+    <th>Description</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Dataset.gen_raw(show_headers=True, show_tags=True)</code></td>
+      <td>Generate arrays of strings, one row at a time.</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.gen_csv(show_headers=True, show_tags=True)</code></td>
+      <td>Generate encoded CSV rows, one row at a time.</td>
+    </tr>
+    <tr>
+      <td><code>Dataset.gen_json(show_headers=True, show_tags=True)</code></td>
+      <td>Generate encoded JSON rows, one row at a time.</td>
+    </tr>
+  </tbody>
+</table>
 
 
 # Installation

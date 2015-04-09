@@ -10,6 +10,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import argparse
 import re
+import six
 from copy import copy
 
 import hxl
@@ -36,8 +37,10 @@ class AddFilter(Dataset):
         @param before True to add new columns before existing ones
         """
         self.source = source
+        if isinstance(values, six.string_types):
+            values = [values]
+        self.values = [parse_value(value) for value in values]
         self.before = before
-        self.values = values
         self._columns_out = None
 
     @property
@@ -68,7 +71,7 @@ class AddFilter(Dataset):
             """
             Return the next row, with constant values added.
             """
-            row = copy(next(self.outer.source))
+            row = copy(next(self.iterator))
             row.columns = self.outer.columns
             if self.outer.before:
                 row.values = self.outer._const_values + row.values
@@ -86,6 +89,8 @@ class AddFilter(Dataset):
 VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.TOKEN)
 
 def parse_value(s):
+    if not isinstance(s, six.string_types):
+        return s
     result = re.match(VALUE_PATTERN, s)
     if result:
         header = result.group(1)

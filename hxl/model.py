@@ -219,8 +219,11 @@ class Dataset(object):
 
     def count(self, patterns, aggregate_pattern=None):
         """Count values in the dataset (caching)."""
-        import hxl.filters.count
         return hxl.filters.count.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
+
+    def add_columns(self, specs, before=False):
+        """Add fixed-value columns to a HXL dataset."""
+        return hxl.filters.add.AddFilter(self, values=specs, before=before)
 
     #
     # Generators
