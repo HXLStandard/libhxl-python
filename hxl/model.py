@@ -12,6 +12,7 @@ import copy
 import re
 import csv
 import json
+import six
 import hxl
 from hxl.common import HXLException
 
@@ -87,10 +88,14 @@ class TagPattern(object):
     @staticmethod
     def parse(s):
         """Parse a single tagspec, like #tag+foo-bar."""
+
         if not s:
+            # edge case: null value
             raise HXLException('Attempt to parse empty tag pattern')
-        if not isinstance(s, str):
+        elif isinstance(s, TagPattern):
+            # edge case: already parsed
             return s
+
         result = re.match(TagPattern.PATTERN, s)
         if result:
             tag = '#' + result.group(1)
