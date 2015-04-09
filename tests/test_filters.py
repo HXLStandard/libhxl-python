@@ -314,30 +314,6 @@ class TestTag(BaseTest):
         ], 'tag-output-ambiguous.csv')
 
 
-class TestValidate(BaseTest):
-    """
-    Test the hxlvalidate command-line tool.
-    """
-
-    def setUp(self):
-        self.function = hxl.filters.validate.run
-        self.input_file = 'input-simple.csv'
-
-    def test_valid(self):
-        schema = resolve_file('validate-schema-valid.csv')
-        self.assertOutput(['-s', schema], 'validate-output-valid.csv')
-        self.assertOutput(['--schema', schema], 'validate-output-valid.csv')
-
-    def test_all(self):
-        schema = resolve_file('validate-schema-valid.csv')
-        self.assertOutput(['-s', schema, '-a'], 'validate-output-all.csv')
-        self.assertOutput(['-s', schema, '--all'], 'validate-output-all.csv')
-
-    def test_number(self):
-        schema = resolve_file('validate-schema-num.csv')
-        self.assertOutput(['-s', schema], 'validate-output-num.csv')
-
-
 ########################################################################
 # Support functions
 ########################################################################

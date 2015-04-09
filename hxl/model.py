@@ -264,24 +264,18 @@ class Column(object):
     PATTERN = r'^\s*(#{token})((?:\+{token})*)\s*$'.format(token=hxl.TOKEN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
-    __slots__ = ['column_number', 'source_column_number', 'tag', 'lang', 'header', 'attributes']
+    __slots__ = ['tag', 'attributes', 'header']
 
-    def __init__(self, column_number=None, source_column_number=None, tag=None, header=None, attributes=None):
+    def __init__(self, tag=None, attributes=(), header=None):
         """
         Initialise a column definition.
-        @param column_number the logical column number (default: None)
-        @param source_column_number the raw column number in the source dataset (default: None)
         @param tag the HXL hashtag for the column (default: None)
+        @param attributes a sequence of attributes (default: ())
         @param header the original plaintext header for the column (default: None)
         """
-        self.column_number = column_number
-        self.source_column_number = source_column_number
         self.tag = tag
         self.header = header
-        if attributes:
-            self.attributes = set(attributes)
-        else:
-            self.attributes = {}
+        self.attributes = set(attributes)
 
     @property
     def display_tag(self):
@@ -303,7 +297,7 @@ class Column(object):
     __str__ = __repr__
 
     @staticmethod
-    def parse(raw_string, header=None, column_number=None, source_column_number=None, use_exception=False):
+    def parse(raw_string, header=None, use_exception=False):
         """
         Attempt to parse a full hashtag specification.
         """
@@ -316,7 +310,7 @@ class Column(object):
                 attributes = attribute_string[1:].split('+')
             else:
                 attributes = []
-            return Column(column_number=column_number, source_column_number=source_column_number, tag=tag, attributes=attributes, header=header)
+            return Column(tag=tag, attributes=attributes, header=header)
         else:
             if use_exception:
                 raise hxl.HXLException("Malformed tag expression: " + raw_string)

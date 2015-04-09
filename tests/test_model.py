@@ -57,12 +57,9 @@ class TestColumn(unittest.TestCase):
     SOURCE_COLUMN_NUMBER = 7
 
     def setUp(self):
-        self.column = Column(column_number=TestColumn.COLUMN_NUMBER, source_column_number=TestColumn.SOURCE_COLUMN_NUMBER,
-                                tag=TestColumn.HXL_TAG, attributes=TestColumn.ATTRIBUTES, header=TestColumn.HEADER_TEXT)
+        self.column = Column(tag=TestColumn.HXL_TAG, attributes=TestColumn.ATTRIBUTES, header=TestColumn.HEADER_TEXT)
 
     def test_variables(self):
-        self.assertEqual(TestColumn.COLUMN_NUMBER, self.column.column_number)
-        self.assertEqual(TestColumn.SOURCE_COLUMN_NUMBER, self.column.source_column_number)
         self.assertEqual(TestColumn.HXL_TAG, self.column.tag)
         self.assertEqual(TestColumn.ATTRIBUTES, self.column.attributes)
         self.assertEqual(TestColumn.HEADER_TEXT, self.column.header)
@@ -83,7 +80,7 @@ class TestRow(unittest.TestCase):
     def setUp(self):
         columns = []
         for column_number, tag in enumerate(TestRow.TAGS):
-            columns.append(Column(column_number, -1, tag))
+            columns.append(Column(tag=tag))
         self.row = Row(columns, TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
         for content in TestRow.CONTENT:
             self.row.append(content)

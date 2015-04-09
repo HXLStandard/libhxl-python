@@ -57,7 +57,7 @@ class TestParser(unittest.TestCase):
         with _read_file() as input:
             for row in HXLReader(StreamInput(input)):
                 for column_number, column in enumerate(row.columns):
-                    self.assertEqual(TestParser.EXPECTED_ATTRIBUTES[column_number], column.attributes)
+                    self.assertEqual(set(TestParser.EXPECTED_ATTRIBUTES[column_number]), column.attributes)
 
     def test_column_count(self):
         with _read_file() as input:

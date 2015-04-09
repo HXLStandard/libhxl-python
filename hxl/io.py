@@ -245,12 +245,12 @@ class HXLReader(Dataset):
             if raw_string:
                 raw_string = raw_string.strip()
                 nonEmptyCount += 1
-                column = Column.parse(raw_string, column_number=column_number, source_column_number=source_column_number, header=header)
+                column = Column.parse(raw_string, header=header)
                 if column:
                     columns.append(column)
                     column_number += 1
             else:
-                columns.append(Column(column_number, source_column_number, header=header))
+                columns.append(Column(header=header))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:

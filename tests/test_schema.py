@@ -25,9 +25,9 @@ class TestSchema(unittest.TestCase):
             )
         self.row = Row(
             columns = [
-                Column(tag='#affected_num', column_number=0),
-                Column(tag='#sector', column_number=1),
-                Column(tag='#sector', column_number=2)
+                Column(tag='#affected_num'),
+                Column(tag='#sector'),
+                Column(tag='#sector')
             ],
             row_number = 1,
             source_row_number = 2

@@ -91,9 +91,8 @@ class ValidateFilter(Dataset):
                     messages = "\n".join(map(lambda e: e.message, validation_errors))
                     tags = "\n".join(map(lambda e: str(e.rule.tag_pattern) if e.rule else '', validation_errors))
                     rows = "\n".join(map(lambda e: str(e.row.source_row_number) if e.row else '', validation_errors))
-                    columns = "\n".join(map(lambda e: str(e.column.source_column_number) if e.column else '', validation_errors))
                     error_row.columns = self.outer.columns
-                    error_row.values = error_row.values + [messages, tags, rows, columns]
+                    error_row.values = error_row.values + [messages, tags, rows]
                     return error_row
                 else:
                     row = next(self.iterator)
