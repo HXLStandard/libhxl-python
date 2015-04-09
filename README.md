@@ -1,42 +1,47 @@
 libhxl-python
 =============
 
-Python support library for the Humanitarian Exchange Language (HXL) data standard.
+Python support library for the Humanitarian Exchange Language (HXL)
+data standard.  It supports both Python 2.7+ and Python 3.
 
-http://hxlstandard.org
+About HXL: http://hxlstandard.org
 
 # Usage
 
-Streaming identity transformation in a pipeline (read from standard input, write to standard output):
+Streaming identity transformation in a pipeline (read from standard
+input, write to standard output):
 
 ```
-import sys
-from hxl.io import StreamInput, HXLReader, write_hxl
-
-source = HXLReader(StreamInput(sys.stdin))
-write_hxl(sys.stdout, source)
+for line in hxl(sys.stdin).gen_csv():
+    print(line)
 ```
 
-Same transformation, but loading the entire dataset into memory:
+Same transformation, but loading the entire dataset into memory as an
+intermediate step:
 
 ```
-import sys
-from hxl.io import read_hxl, write_hxl
-
-dataset = read_hxl(StreamInput(sys.stdin))
-write_hxl(sys.stdout, dataset)
+for line in hxl(sys.stdin).cache().gen_csv():
+    print(line)
 ```
 
-Finding the #org for every row that has a #sector of "WASH":
+## Filters
+
+There are a number of filters that you can apply in a stream after a
+HXL dataset.  This example uses the _with_rows()_ filter to find every
+row that has a #sector of "WASH" and print the organisation mentioned
+in the row:
 
 ```
-import sys
-from hxl.io import read_hxl
+for row in hxl(sys.stdin).with_rows('#sector=WASH'):
+    print('The organisation is {}'.format(row.get('#org')))
+```
 
-source = HXLReader(StreamInput(sys.stdin))
-for row in source:
-    if row.get('#sector') == 'WASH':
-       print row.get('#org')
+This example removes the WASH sector from the results, then counts the
+number of times each organisation appears in the remaining rows:
+
+```
+url = 'http://example.org/data.csv'
+result = hxl(url).with_rows('#sector!=WASH').count('#org')
 ```
 
 # Installation
@@ -59,8 +64,3 @@ pip install libhxl
 Once you've installed, you will be able to include the HXL libraries
 from any Python application, and will be able to call scripts like
 _hxlvalidate_ from the command line.
-
-# Scripts
-
-There are several scripts that you can call from the command line. For
-details, see https://github.com/HXLStandard/libhxl-python/wiki
