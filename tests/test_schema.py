@@ -28,9 +28,7 @@ class TestSchema(unittest.TestCase):
                 Column(tag='#affected_num'),
                 Column(tag='#sector'),
                 Column(tag='#sector')
-            ],
-            row_number = 1,
-            source_row_number = 2
+            ]
         )
 
 
@@ -130,14 +128,13 @@ class TestSchemaRule(unittest.TestCase):
 
     def test_row_restrictions(self):
         row = Row(
-            columns=[
+            columns = [
                 Column(tag='#x_test'),
                 Column(tag='#subsector'),
                 Column(tag='#x_test')
-                ],
-            row_number = 1
+            ],
+            values=['WASH', '', '']
             );
-        row.values = ['WASH', '', ''];
 
         self.rule.min_occur = 1
         self._try_rule(row)

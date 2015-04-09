@@ -15,6 +15,106 @@ import json
 import hxl
 from hxl.common import HXLException
 
+class TagPattern(object):
+    """
+    Pattern for matching a tag.
+
+    #tag matches #tag with any attributes
+    #tag+foo matches #tag with foo among its attributes
+    #tag-foo matches #tag with foo *not* among its attributes
+    #tag+foo-bar matches #tag with foo but not bar
+    """
+
+    # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
+    PATTERN = r'^\s*#?({token})((?:[+-]{token})*)\s*$'.format(token=hxl.TOKEN)
+
+    def __init__(self, tag, include_attributes=None, exclude_attributes=None):
+        """Like a column, but has a whitelist and a blacklist."""
+        self.tag = tag
+        self.include_attributes = include_attributes
+        self.exclude_attributes = exclude_attributes
+
+    def match(self, column):
+        """Check whether a Column matches this pattern."""
+        if self.tag == column.tag:
+            # all include_attributes must be present
+            if self.include_attributes:
+                for attribute in self.include_attributes:
+                    if attribute not in column.attributes:
+                        return False
+            # all exclude_attributes must be absent
+            if self.exclude_attributes:
+                for attribute in self.exclude_attributes:
+                    if attribute in column.attributes:
+                        return False
+            return True
+        else:
+            return False
+
+    def find_column_index(self, columns):
+        """Get the index of the first matching column."""
+        for i in range(len(columns)):
+            if self.match(columns[i]):
+                return i
+        return None
+
+    def find_column(self, columns):
+        """Check whether there is a match in a list of columns."""
+        for column in columns:
+            if self.match(column):
+                return column
+        return None
+
+    def get_value(self, row):
+        """Return the first matching value for this pattern."""
+        for i in range(min(len(row.columns), len(row.values))):
+            if self.match(row.columns[i]):
+                return row.values[i]
+        return None
+
+    def __repr__(self):
+        s = self.tag
+        if self.include_attributes:
+            for attribute in self.include_attributes:
+                s += '+' + attribute
+        if self.exclude_attributes:
+            for attribute in self.exclude_attributes:
+                s += '-' + attribute
+        return s
+
+    __str__ = __repr__
+
+    @staticmethod
+    def parse(s):
+        """Parse a single tagspec, like #tag+foo-bar."""
+        if not s:
+            raise HXLException('Attempt to parse empty tag pattern')
+        if not isinstance(s, str):
+            return s
+        result = re.match(TagPattern.PATTERN, s)
+        if result:
+            tag = '#' + result.group(1)
+            include_attributes = []
+            exclude_attributes = []
+            attribute_specs = re.split(r'([+-])', result.group(2))
+            for i in range(1, len(attribute_specs), 2):
+                if attribute_specs[i] == '+':
+                    include_attributes.append(attribute_specs[i + 1])
+                else:
+                    exclude_attributes.append(attribute_specs[i + 1])
+            return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
+        else:
+            raise hxl.HXLException('Malformed tag: ' + s)
+
+    @staticmethod
+    def parse_list(s):
+        """Parse a comma-separated list of tagspecs."""
+        if s:
+            return [TagPattern.parse(spec) for spec in s.split(',')]
+        else:
+            return []
+
+
 class Dataset(object):
     """
     Abstract base class for a HXL data source.
@@ -155,106 +255,6 @@ class Dataset(object):
             yield json.dumps(raw)
         yield "]\n"
 
-class TagPattern(object):
-    """
-    Pattern for matching a tag.
-
-    #tag matches #tag with any attributes
-    #tag+foo matches #tag with foo among its attributes
-    #tag-foo matches #tag with foo *not* among its attributes
-    #tag+foo-bar matches #tag with foo but not bar
-    """
-
-    # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
-    PATTERN = r'^\s*#?({token})((?:[+-]{token})*)\s*$'.format(token=hxl.TOKEN)
-
-    def __init__(self, tag, include_attributes=None, exclude_attributes=None):
-        """Like a column, but has a whitelist and a blacklist."""
-        self.tag = tag
-        self.include_attributes = include_attributes
-        self.exclude_attributes = exclude_attributes
-
-    def match(self, column):
-        """Check whether a Column matches this pattern."""
-        if self.tag == column.tag:
-            # all include_attributes must be present
-            if self.include_attributes:
-                for attribute in self.include_attributes:
-                    if attribute not in column.attributes:
-                        return False
-            # all exclude_attributes must be absent
-            if self.exclude_attributes:
-                for attribute in self.exclude_attributes:
-                    if attribute in column.attributes:
-                        return False
-            return True
-        else:
-            return False
-
-    def find_column_index(self, columns):
-        """Get the index of the first matching column."""
-        for i in range(len(columns)):
-            if self.match(columns[i]):
-                return i
-        return None
-
-    def find_column(self, columns):
-        """Check whether there is a match in a list of columns."""
-        for column in columns:
-            if self.match(column):
-                return column
-        return None
-
-    def get_value(self, row):
-        """Return the first matching value for this pattern."""
-        for i in range(min(len(row.columns), len(row.values))):
-            if self.match(row.columns[i]):
-                return row.values[i]
-        return None
-
-    def __repr__(self):
-        s = self.tag
-        if self.include_attributes:
-            for attribute in self.include_attributes:
-                s += '+' + attribute
-        if self.exclude_attributes:
-            for attribute in self.exclude_attributes:
-                s += '-' + attribute
-        return s
-
-    __str__ = __repr__
-
-    @staticmethod
-    def parse(s):
-        """Parse a single tagspec, like #tag+foo-bar."""
-        if not s:
-            raise HXLException('Attempt to parse empty tag pattern')
-        if not isinstance(s, str):
-            return s
-        result = re.match(TagPattern.PATTERN, s)
-        if result:
-            tag = '#' + result.group(1)
-            include_attributes = []
-            exclude_attributes = []
-            attribute_specs = re.split(r'([+-])', result.group(2))
-            for i in range(1, len(attribute_specs), 2):
-                if attribute_specs[i] == '+':
-                    include_attributes.append(attribute_specs[i + 1])
-                else:
-                    exclude_attributes.append(attribute_specs[i + 1])
-            return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
-        else:
-            raise hxl.HXLException('Malformed tag: ' + s)
-
-    @staticmethod
-    def parse_list(s):
-        """Parse a comma-separated list of tagspecs."""
-        if s:
-            return [TagPattern.parse(spec) for spec in s.split(',')]
-        else:
-            return []
-
-
 class Column(object):
     """
     The definition of a logical column in the HXL data.
@@ -323,9 +323,9 @@ class Row(object):
     """
 
     # Predefine the slots for efficiency (may reconsider later)
-    __slots__ = ['columns', 'values', 'row_number', 'source_row_number']
+    __slots__ = ['columns', 'values']
 
-    def __init__(self, columns, row_number=None, source_row_number=None, values=[]):
+    def __init__(self, columns, values=[]):
         """
         Set up a new row.
         @param columns The column definitions (array of Column objects).
@@ -334,8 +334,6 @@ class Row(object):
         """
         self.columns = columns
         self.values = copy.copy(values)
-        self.row_number = row_number
-        self.source_row_number = source_row_number
 
     def append(self, value):
         """
@@ -404,8 +402,6 @@ class Row(object):
         Create a string representation of a row for debugging.
         """
         s = '<Row';
-        s += "\n  row_number: " + str(self.row_number)
-        s += "\n  source_row_number: " + str(self.source_row_number)
         for column_number, value in enumerate(self.values):
             s += "\n  " + str(self.columns[column_number]) + "=" + str(value)
         s += "\n>"

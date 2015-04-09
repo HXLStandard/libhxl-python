@@ -81,16 +81,12 @@ class TestRow(unittest.TestCase):
         columns = []
         for column_number, tag in enumerate(TestRow.TAGS):
             columns.append(Column(tag=tag))
-        self.row = Row(columns, TestRow.ROW_NUMBER, TestRow.SOURCE_ROW_NUMBER)
+        self.row = Row(columns)
         for content in TestRow.CONTENT:
             self.row.append(content)
 
     def test_data(self):
         self.assertEqual(TestRow.CONTENT, self.row.values)
-
-    def test_variables(self):
-        self.assertEqual(TestRow.ROW_NUMBER, self.row.row_number)
-        self.assertEqual(TestRow.SOURCE_ROW_NUMBER, self.row.source_row_number)
 
     def test_iteration(self):
         expectedLength = len(TestRow.TAGS)
