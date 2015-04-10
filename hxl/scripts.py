@@ -1,5 +1,13 @@
 """
 Console scripts
+David Megginson
+April 2015
+
+This is a big, ugly module to support the libhxl
+console scripts, including (mainly) argument parsing.
+
+License: Public Domain
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys
