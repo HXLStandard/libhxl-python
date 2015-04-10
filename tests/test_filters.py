@@ -135,7 +135,7 @@ class TestMerge(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.merge.run
+        self.function = hxl.scripts.hxlmerge_main
         self.input_file = 'input-simple.csv'
 
     def test_merge(self):
