@@ -21,13 +21,13 @@ setup(name='libhxl',
       entry_points={
           'console_scripts': [
               'hxladd = hxl.scripts:hxladd',
+              'hxlclean = hxl.scripts:hxlclean',
               'hxlcut = hxl.scripts:hxlcut'
           ]
       },
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxlbounds',
-        'scripts/hxlclean',
         'scripts/hxlcount',
         'scripts/hxlmerge',
         'scripts/hxlrename',
