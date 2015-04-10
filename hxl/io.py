@@ -11,6 +11,7 @@ import abc
 import csv
 import json
 import sys
+import re
 import xlrd
 
 if sys.version_info < (3,):
@@ -293,12 +294,14 @@ class HXLReader(Dataset):
 
     def __enter__(self):
         """Context-start support."""
+        if self._input:
+            self._input.__enter__()
         return self
 
-    def __exit__(self):
+    def __exit__(self, value, type, traceback):
         """Context-end support."""
-        if self._opened_input:
-            self._opened_input.close()
+        if self._input:
+            self._input.__exit__(value, type, traceback)
 
 def write_hxl(output, source, show_headers=True, show_tags=True):
     """Serialize a HXL dataset to an output stream."""

@@ -109,49 +109,4 @@ class ColumnFilter(Dataset):
 
         next = __next__
 
-#
-# Command-line support
-#
-
-def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Run hxlcut with command-line arguments.
-    @param args A list of arguments, excluding the script name
-    @param stdin Standard input for the script
-    @param stdout Standard output for the script
-    @param stderr Standard error for the script
-    """
-
-    parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
-    parser.add_argument(
-        '-i',
-        '--include',
-        help='Comma-separated list of column tags to include',
-        metavar='tag,tag...',
-        type=TagPattern.parse_list
-        )
-    parser.add_argument(
-        '-x',
-        '--exclude',
-        help='Comma-separated list of column tags to exclude',
-        metavar='tag,tag...',
-        type=TagPattern.parse_list
-        )
-    args = parser.parse_args(args)
-
-    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
-        source = HXLReader(input)
-        filter = ColumnFilter(source, args.include, args.exclude)
-        write_hxl(output.output, filter)
-
 # end

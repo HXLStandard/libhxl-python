@@ -18,13 +18,17 @@ setup(name='libhxl',
       package_data={'': ['*.csv']},
       include_package_data=True,
       test_suite='tests',
+      entry_points={
+          'console_scripts': [
+              'hxlcut = hxl.scripts:hxlcut'
+          ]
+      },
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxladd',
         'scripts/hxlbounds',
         'scripts/hxlclean',
         'scripts/hxlcount',
-        'scripts/hxlcut',
         'scripts/hxlmerge',
         'scripts/hxlrename',
         'scripts/hxlselect',

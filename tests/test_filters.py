@@ -16,12 +16,12 @@ import difflib
 import tempfile
 
 import hxl
+import hxl.scripts
 from hxl.model import Column
 
 import hxl.filters.add
 from hxl.filters.cache import CacheFilter
 import hxl.filters.count
-import hxl.filters.cut
 import hxl.filters.merge
 import hxl.filters.clean
 import hxl.filters.rename
@@ -117,7 +117,7 @@ class TestCut(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.cut.run
+        self.function = hxl.scripts.hxlcut_main
         self.input_file = 'input-simple.csv'
 
     def test_whitelist(self):
