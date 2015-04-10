@@ -101,8 +101,35 @@ The following filters are available:
   </tbody>
 </table>
 
+## Sinks
 
-## Generators
+Sinks take a HXL stream and convert it into something that's not HXL.
+
+### Validation
+
+To validate a HXL dataset against a schema (also in HXL), use the ``validate`` sink:
+
+```
+is_valid = hxl(url).validate('my-schema.csv')
+```
+
+If you don't specify a schema, the library will use a simple, built-in schema:
+
+```
+is_valid = hxl(url).validate()
+```
+
+If you include a callback, you can collect details about the errors and warnings:
+
+```
+def my_callback(error_info):
+    # error_info is a HXLValidationException
+    sys.stderr.write(error_info)
+
+is_valid = hxl(url).validate(schema='my-schema.csv', callback=my_callback)
+```
+
+### Generators
 
 Generators allow the re-serialising of HXL data, returning something that works like an iterator.  Example:
 

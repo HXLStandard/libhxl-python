@@ -17,6 +17,16 @@ DATA = [
     ['NGO B', 'Education', 'Plains'],
     ['NGO B', 'Education', 'Coast']
 ]
+
+SCHEMA_GOOD = [
+    ['#valid_tag', '#valid_required'],
+    ['#org', 'true']
+]
+
+SCHEMA_BAD = [
+    ['#valid_tag', '#valid_required'],
+    ['#severity', 'true']
+]
     
 class TestShortcuts(unittest.TestCase):
 
@@ -50,7 +60,6 @@ class TestShortcuts(unittest.TestCase):
 
     def test_count(self):
         tags = [column.tag for column in self.source.count('#sector').columns]
-        print(tags)
         self.assertTrue('#sector' in tags)
         self.assertTrue('#x_count_num' in tags)
         self.assertTrue('#adm1' not in tags)
@@ -90,3 +99,7 @@ class TestShortcuts(unittest.TestCase):
             [values + ['Country A'] for values in DATA[2:]],
             [row.values for row in self.source.add_columns('#country=Country A')]
         )
+
+    def test_validate(self):
+        self.assertTrue(self.source.validate(SCHEMA_GOOD))
+        self.assertFalse(self.source.validate(SCHEMA_BAD))
