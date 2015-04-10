@@ -109,7 +109,6 @@ class SchemaRule(object):
                 if self.tag_pattern.match(column):
                     number_seen += 1
             if (self.required and (number_seen < 1)) or (self.min_occur is not None and number_seen < int(self.min_occur)):
-                print("*** impossible column")
                 if number_seen == 0:
                     self._report_error('column with this hashtag required but not found')
                 else:
@@ -263,40 +262,33 @@ class Schema(object):
 
     def __init__(self, rules=[], callback=None):
         self.rules = copy(rules)
-        if callback is None:
-            self.callback = self.show_error
-        else:
-            self.callback = callback
-
+        self.callback = callback
         self.impossible_rules = {}
-
-    def show_error(self, error):
-        print >> sys.stderr, error
-        
 
     # TODO add support for validating columns against rules, too
     # this is where to mention impossible conditions, or columns
     # without rules
 
-    def validate(self, parser):
+    def validate(self, source):
         result = True
-
-        self.validate_columns(parser.columns)
-
-        for row in parser:
+        if not self.validate_columns(source.columns):
+            result = False
+        for row in source:
             if not self.validate_row(row):
                 result = False
         return result
 
     def validate_columns(self, columns):
+        result = True
         for rule in self.rules:
             old_callback = rule.callback
             if self.callback:
                 rule.callback = self.callback
             if not rule.validate_columns(columns):
-                print('adding {} to impossible rules'.format(rule))
+                result = False
                 self.impossible_rules[rule] = True
             rule.callback = old_callback
+        return result
 
     def validate_row(self, row):
         result = True
@@ -328,8 +320,9 @@ def parse_schema(source, callback):
     schema = Schema(callback=callback)
 
     def parse_type(type):
-        type = type.lower()
-        type = re.sub(r'[^a-z_-]', '', type) # normalise
+        if type:
+            type = type.lower()
+            type = re.sub(r'[^a-z_-]', '', type) # normalise
         if type in SchemaRule.DATATYPES:
             return type
         else:
