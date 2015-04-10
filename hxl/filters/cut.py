@@ -9,11 +9,8 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys
-import argparse
-from hxl.model import Dataset, TagPattern, Row
+from hxl.model import Dataset, Row
 from hxl.io import HXLReader, write_hxl
-from hxl.filters import make_input, make_output
 from hxl.common import pattern_list
 
 class ColumnFilter(Dataset):
@@ -29,8 +26,7 @@ class ColumnFilter(Dataset):
     Usage:
 
     <pre>
-    source = HXLReader(sys.stdin)
-    filter = ColumnFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
+    filter = ColumnFilter(source, include_tags=['#org', '#sector', '#adm1'])
     write_hxl(sys.stdout, filter)
     </pre>
     """

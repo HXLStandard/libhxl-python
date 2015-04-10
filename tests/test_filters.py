@@ -79,7 +79,7 @@ class TestAdd(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.add.run
+        self.function = hxl.scripts.hxladd_main
         self.input_file = 'input-simple.csv'
 
     def test_default(self):

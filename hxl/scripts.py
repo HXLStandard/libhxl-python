@@ -8,11 +8,17 @@ import re
 
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl
+
+from hxl.filters.add import AddFilter
 from hxl.filters.cut import ColumnFilter
 
 #
 # Console script entry points
 #
+
+def hxladd():
+    """Console script for hxladd."""
+    run_script(hxladd_main)
 
 def hxlcut():
     """Console script for hxlcut."""
@@ -21,6 +27,53 @@ def hxlcut():
 #
 # Main scripts for command-line tools.
 #
+
+#
+# Command-line support
+#
+
+def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxladd with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Add new columns with constant values to a HXL dataset.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-v',
+        '--value',
+        help='Constant value to add to each row',
+        metavar='[[Text header]#]<tag>=<value>',
+        action='append',
+        required=True
+        )
+    parser.add_argument(
+        '-b',
+        '--before',
+        help='Add new columns before existing ones rather than after them.',
+        action='store_const',
+        const=True,
+        default=False
+    )
+        
+    args = parser.parse_args(args)
+
+    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+        filter = AddFilter(source, values=args.value, before=args.before)
+        write_hxl(output.output, filter)
 
 def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')

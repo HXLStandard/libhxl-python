@@ -7,17 +7,13 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys
-import argparse
 import re
 import six
 from copy import copy
 
 import hxl
-from . import HXLFilterException
-from hxl.model import Dataset, TagPattern, Column
-from hxl.io import StreamInput, HXLReader, write_hxl
-from hxl.filters import make_input, make_output
+from hxl.filters import HXLFilterException
+from hxl.model import Dataset, Column
 
 class AddFilter(Dataset):
     """
@@ -39,7 +35,7 @@ class AddFilter(Dataset):
         self.source = source
         if isinstance(values, six.string_types):
             values = [values]
-        self.values = [parse_value(value) for value in values]
+        self.values = [AddFilter.parse_value(value) for value in values]
         self.before = before
         self._columns_out = None
 
@@ -81,68 +77,19 @@ class AddFilter(Dataset):
 
         next = __next__
 
+    VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.common.TOKEN)
 
-#
-# Command-line support
-#
-
-VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.common.TOKEN)
-
-def parse_value(s):
-    if not isinstance(s, six.string_types):
-        return s
-    result = re.match(VALUE_PATTERN, s)
-    if result:
-        header = result.group(1)
-        tag = '#' + result.group(2)
-        value = result.group(3)
-        return (Column(tag=tag, header=header), value)
-    else:
-        raise HXLFilterException("Badly formatted --value: " + s)
-
-def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Run hxladd with command-line arguments.
-    @param args A list of arguments, excluding the script name
-    @param stdin Standard input for the script
-    @param stdout Standard output for the script
-    @param stderr Standard error for the script
-    """
-
-    parser = argparse.ArgumentParser(description = 'Add new columns with constant values to a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
-    parser.add_argument(
-        '-v',
-        '--value',
-        help='Constant value to add to each row',
-        metavar='[[Text header]#]<tag>=<value>',
-        action='append',
-        required=True,
-        type=parse_value
-        )
-    parser.add_argument(
-        '-b',
-        '--before',
-        help='Add new columns before existing ones rather than after them.',
-        action='store_const',
-        const=True,
-        default=False
-    )
-        
-    args = parser.parse_args(args)
-
-    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
-        source = HXLReader(input)
-        filter = AddFilter(source, values=args.value, before=args.before)
-        write_hxl(output.output, filter)
+    @staticmethod
+    def parse_value(s):
+        if not isinstance(s, six.string_types):
+            return s
+        result = re.match(AddFilter.VALUE_PATTERN, s)
+        if result:
+            header = result.group(1)
+            tag = '#' + result.group(2)
+            value = result.group(3)
+            return (Column(tag=tag, header=header), value)
+        else:
+            raise HXLFilterException("Badly formatted --value: " + s)
 
 # end

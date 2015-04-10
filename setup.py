@@ -20,12 +20,12 @@ setup(name='libhxl',
       test_suite='tests',
       entry_points={
           'console_scripts': [
+              'hxladd = hxl.scripts:hxladd',
               'hxlcut = hxl.scripts:hxlcut'
           ]
       },
       scripts=[
         'scripts/hxl2geojson',
-        'scripts/hxladd',
         'scripts/hxlbounds',
         'scripts/hxlclean',
         'scripts/hxlcount',
