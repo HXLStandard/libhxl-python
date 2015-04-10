@@ -86,7 +86,7 @@ class AddFilter(Dataset):
 # Command-line support
 #
 
-VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.TOKEN)
+VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.common.TOKEN)
 
 def parse_value(s):
     if not isinstance(s, six.string_types):

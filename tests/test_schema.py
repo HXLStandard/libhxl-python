@@ -10,7 +10,7 @@ import unittest
 import os
 from hxl import hxl
 from hxl.model import Column, Row
-from hxl.schema import Schema, SchemaRule, read_schema
+from hxl.schema import Schema, SchemaRule, hxl_schema
 
 class TestSchema(unittest.TestCase):
 
@@ -151,7 +151,7 @@ class TestSchemaRule(unittest.TestCase):
         self._try_rule(row, 1)
 
     def test_load_default(self):
-        schema = read_schema()
+        schema = hxl_schema()
         self.assertTrue(0 < len(schema.rules))
         with _read_file('data-good.csv') as input:
             dataset = hxl(input)
@@ -159,14 +159,14 @@ class TestSchemaRule(unittest.TestCase):
 
     def test_load_good(self):
         with _read_file('schema-basic.csv') as schema_input:
-            schema = read_schema(hxl(schema_input))
+            schema = hxl_schema(schema_input)
             with _read_file('data-good.csv') as input:
                 dataset = hxl(input)
                 self.assertTrue(schema.validate(dataset))
 
     def test_load_bad(self):
         with _read_file('schema-basic.csv') as schema_input:
-            schema = read_schema(hxl(schema_input))
+            schema = hxl_schema(schema_input)
             schema.callback = lambda e: True # to avoid seeing error messages
             with _read_file('data-bad.csv') as input:
                 dataset = hxl(input)

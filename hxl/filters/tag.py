@@ -91,7 +91,7 @@ def _norm(s):
 # Command-line support
 #
 
-SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.TOKEN)
+SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.common.TOKEN)
 
 def parse_spec(s):
     result = re.match(SPEC_PATTERN, s)

@@ -9,7 +9,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import sys
 import re
-from hxl import HXLException
+from hxl.common import HXLException
 from hxl.io import StreamInput, CSVInput, ExcelInput
 from hxl.model import Dataset, Column
 

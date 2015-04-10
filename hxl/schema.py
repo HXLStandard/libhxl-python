@@ -13,14 +13,34 @@ import os
 from copy import copy
 from email.utils import parseaddr
 
-from hxl import HXLException
+from hxl.common import HXLException
 from hxl.model import TagPattern
-from hxl.io import StreamInput, HXLReader
+from hxl.io import hxl
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
 else:
     from urlparse import urlparse
+
+def hxl_schema(origin=None, callback=None):
+    """
+    Convenience method for reading a HXL schema.
+    If passed an existing Schema, simply returns it.
+    @param origin a HXL data provider, file object, array, or string (representing a URL or file name).
+    """
+
+    if not origin:
+        path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
+        with open(path, 'r') as input:
+            return parse_schema(hxl(input), callback)
+
+    if isinstance(origin, Schema):
+        # it's already a HXL schema
+        return origin
+
+    else:
+        # create a schema
+        return parse_schema(hxl(origin), callback)
 
 
 class HXLValidationException(HXLException):
@@ -298,21 +318,14 @@ class Schema(object):
         s += ">"
         return s
 
-def read_schema(source=None, base_dir=None):
-    if source is None:
-        path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
-        with open(path, 'r') as input:
-            return _read_hxl_schema(HXLReader(StreamInput(input)), base_dir)
-    else:
-        return _read_hxl_schema(source, base_dir)
-
-def _read_hxl_schema(source, base_dir):
+def parse_schema(source, callback):
     """
     Load a HXL schema from the provided input stream, or load default schema.
     @param source HXL data source for the scheme (e.g. a HXLReader or filter)
+    @param callback a callback function for reporting errors (receives a HXLValidationException)
     """
 
-    schema = Schema()
+    schema = Schema(callback=callback)
 
     def parse_type(type):
         type = type.lower()

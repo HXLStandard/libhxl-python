@@ -71,7 +71,7 @@ class RenameFilter(Dataset):
 # Command-line support.
 #
 
-RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.TOKEN)
+RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.common.TOKEN)
 
 def parse_rename(s):
     result = re.match(RENAME_PATTERN, s)

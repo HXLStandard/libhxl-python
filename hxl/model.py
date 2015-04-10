@@ -27,7 +27,7 @@ class TagPattern(object):
     """
 
     # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
-    PATTERN = r'^\s*#?({token})((?:[+-]{token})*)\s*$'.format(token=hxl.TOKEN)
+    PATTERN = r'^\s*#?({token})((?:[+-]{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
     def __init__(self, tag, include_attributes=None, exclude_attributes=None):
         """Like a column, but has a whitelist and a blacklist."""
@@ -269,7 +269,7 @@ class Column(object):
     """ 
 
     # Regular expression to match a HXL tag
-    PATTERN = r'^\s*(#{token})((?:\+{token})*)\s*$'.format(token=hxl.TOKEN)
+    PATTERN = r'^\s*(#{token})((?:\+{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
     __slots__ = ['tag', 'attributes', 'header']

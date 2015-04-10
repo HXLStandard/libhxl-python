@@ -13,7 +13,7 @@ import argparse
 from copy import copy
 from hxl.model import Dataset, Column
 from hxl.io import StreamInput, HXLReader, write_hxl
-from hxl.schema import read_schema
+from hxl.schema import hxl_schema
 
 class ValidateFilter(Dataset):
     """Composable filter class to validate a HXL dataset against a schema.
@@ -28,7 +28,7 @@ class ValidateFilter(Dataset):
 
     <pre>
     source = HXLReader(sys.stdin)
-    schema = read_schema(read_hxl(open('my-schema.csv', 'r')))
+    schema = hxl_schema('my-schema.csv')
     filter = ValidateFilter(source, schema)
     write_hxl(sys.stdout, filter)
     </pre>
@@ -146,9 +146,9 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         source = HXLReader(StreamInput(args.infile))
         if args.schema:
             with args.schema:
-                schema = read_schema(HXLReader(StreamInput(args.schema)), base_dir=os.path.dirname(args.schema.name))
+                schema = hxl_schema(args.schema)
         else:
-            schema = read_schema()
+            schema = hxl_schema()
         filter = ValidateFilter(source, schema, args.all)
         write_hxl(args.outfile, filter)
 

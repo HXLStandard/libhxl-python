@@ -17,7 +17,8 @@ if sys.version_info < (3,):
     import urllib
 else:
     import urllib.request
-from . import HXLException
+
+from hxl.common import HXLException
 from hxl.model import Dataset, Column, Row
 
 # Cut off for fuzzy detection of a hashtag row
@@ -35,6 +36,33 @@ else:
     def encode(value):
         """Leave a Unicode string as-is for Python3"""
         return value
+
+
+def hxl(data):
+    """
+    Convenience method for reading a HXL dataset.
+    If passed an existing Dataset, simply returns it.
+    @param data a HXL data provider, file object, array, or string (representing a URL or file name).
+    """
+
+    if isinstance(data, Dataset):
+        # it's already HXL data
+        return data
+
+    elif hasattr(data, 'read'):
+        # it's a file stream
+        return HXLReader(StreamInput(data))
+
+    elif hasattr(data, '__len__') and (not isinstance(data, str)):
+        # it's an array
+        return HXLReader(ArrayInput(data))
+
+    elif re.match(r'\.xlsx?', data):
+        return HXLReader(ExcelInput(data))
+    
+    else:
+        return HXLReader(CSVInput(data))
+
 
 class HXLParseException(HXLException):
     """
