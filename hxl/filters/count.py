@@ -4,12 +4,8 @@ David Megginson
 October 2014
 """
 
-import sys
-import argparse
 from hxl.common import pattern_list
 from hxl.model import Dataset, TagPattern, Column, Row
-from hxl.filters import make_input, make_output
-from hxl.io import StreamInput, HXLReader, write_hxl
 
 class CountFilter(Dataset):
     """
@@ -161,52 +157,5 @@ class Aggregator(object):
                     self.seen_numbers = True
                 except:
                     pass
-
-#
-# Command-line support
-#
-
-def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Run hxlcount with command-line arguments.
-    @param args A list of arguments, excluding the script name
-    @param stdin Standard input for the script
-    @param stdout Standard output for the script
-    @param stderr Standard error for the script
-    """
-
-    # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Generate aggregate counts for a HXL dataset')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
-    parser.add_argument(
-        '-t',
-        '--tags',
-        help='Comma-separated list of column tags to count.',
-        metavar='tag,tag...',
-        type=TagPattern.parse_list,
-        default='loc,org,sector,adm1,adm2,adm3'
-        )
-    parser.add_argument(
-        '-a',
-        '--aggregate',
-        help='Hashtag to aggregate.',
-        metavar='tag',
-        type=TagPattern.parse
-        )
-
-    args = parser.parse_args(args)
-    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
-        source = HXLReader(input)
-        filter = CountFilter(source, args.tags, args.aggregate)
-        write_hxl(output.output, filter)
 
 # end

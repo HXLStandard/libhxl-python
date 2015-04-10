@@ -19,6 +19,7 @@ from hxl.io import write_hxl
 
 from hxl.filters.add import AddFilter
 from hxl.filters.clean import CleanFilter
+from hxl.filters.count import CountFilter
 from hxl.filters.cut import ColumnFilter
 
 
@@ -33,6 +34,10 @@ def hxladd():
 def hxlclean():
     """Console script for hxlclean."""
     run_script(hxlclean_main)
+
+def hxlcount():
+    """Console script for hxlcount."""
+    run_script(hxlcount_main)
 
 def hxlcut():
     """Console script for hxlcut."""
@@ -199,6 +204,52 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
         filter = CleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
         write_hxl(output.output, filter, args.remove_headers)
+
+#
+# Command-line support
+#
+
+def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlcount with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Generate aggregate counts for a HXL dataset')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of column tags to count.',
+        metavar='tag,tag...',
+        type=TagPattern.parse_list,
+        default='loc,org,sector,adm1,adm2,adm3'
+        )
+    parser.add_argument(
+        '-a',
+        '--aggregate',
+        help='Hashtag to aggregate.',
+        metavar='tag',
+        type=TagPattern.parse
+        )
+
+    args = parser.parse_args(args)
+    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+        filter = CountFilter(source, args.tags, args.aggregate)
+        write_hxl(output.output, filter)
 
 
 def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
