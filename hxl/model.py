@@ -12,7 +12,6 @@ import copy
 import re
 import csv
 import json
-import six
 import hxl
 from hxl.common import HXLException
 
@@ -182,6 +181,18 @@ class Dataset(object):
             if column.header:
                 return True
         return False
+
+    #
+    # Utility
+    #
+
+    def validate(self, schema=None, callback=None):
+        """
+        Validate the current dataset.
+        @param schema (optional) the pre-compiled schema, schema filename, URL, file object, etc. Defaults to a built-in schema.
+        @param callback (optional) a function to call with each error or warning. Defaults to collecting errors in an array and returning them.
+        """
+        return hxl.schema.hxl_schema(schema, callback).validate(self)
 
     #
     # Filters
