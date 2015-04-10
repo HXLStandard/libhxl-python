@@ -100,7 +100,7 @@ class Query(object):
     }
         
 
-class SelectFilter(Dataset):
+class RowFilter(Dataset):
     """
     Composable filter class to select rows from a HXL dataset.
 
@@ -114,7 +114,7 @@ class SelectFilter(Dataset):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = SelectFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
+    filter = RowFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
     write_hxl(sys.stdout, filter)
     </pre>
     """
@@ -139,7 +139,7 @@ class SelectFilter(Dataset):
         return self.source.columns
 
     def __iter__(self):
-        return SelectFilter.Iterator(self)
+        return RowFilter.Iterator(self)
 
     class Iterator:
 
@@ -212,7 +212,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = SelectFilter(source, queries=args.query, reverse=args.reverse)
+        filter = RowFilter(source, queries=args.query, reverse=args.reverse)
         write_hxl(output.output, filter)
 
 # end

@@ -206,22 +206,22 @@ class Dataset(object):
     def with_columns(self, whitelist):
         """Select matching columns."""
         import hxl.filters.cut
-        return hxl.filters.cut.CutFilter(self, include_tags=whitelist)
+        return hxl.filters.cut.ColumnFilter(self, include_tags=whitelist)
 
     def without_columns(self, blacklist):
         """Select non-matching columns."""
         import hxl.filters.cut
-        return hxl.filters.cut.CutFilter(self, exclude_tags=blacklist)
+        return hxl.filters.cut.ColumnFilter(self, exclude_tags=blacklist)
 
     def with_rows(self, queries):
         """Select matching rows."""
         import hxl.filters.select
-        return hxl.filters.select.SelectFilter(self, queries=queries, reverse=False)
+        return hxl.filters.select.RowFilter(self, queries=queries, reverse=False)
 
     def without_rows(self, queries):
         """Select non-matching rows."""
         import hxl.filters.select
-        return hxl.filters.select.SelectFilter(self, queries=queries, reverse=True)
+        return hxl.filters.select.RowFilter(self, queries=queries, reverse=True)
 
     def sort(self, keys=None, reverse=False):
         """Sort the dataset (caching)."""

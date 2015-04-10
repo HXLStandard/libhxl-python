@@ -16,7 +16,7 @@ from hxl.io import HXLReader, write_hxl
 from hxl.filters import make_input, make_output
 from hxl.common import pattern_list
 
-class CutFilter(Dataset):
+class ColumnFilter(Dataset):
     """
     Composable filter class to cut columns from a HXL dataset.
 
@@ -30,7 +30,7 @@ class CutFilter(Dataset):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = CutFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
+    filter = ColumnFilter(source, include_tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1')])
     write_hxl(sys.stdout, filter)
     </pre>
     """
@@ -63,7 +63,7 @@ class CutFilter(Dataset):
         return self.columns_out
 
     def __iter__(self):
-        return CutFilter.Iterator(self)
+        return ColumnFilter.Iterator(self)
 
     def _test_column(self, column):
         """
@@ -151,7 +151,7 @@ def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
         source = HXLReader(input)
-        filter = CutFilter(source, args.include, args.exclude)
+        filter = ColumnFilter(source, args.include, args.exclude)
         write_hxl(output.output, filter)
 
 # end
