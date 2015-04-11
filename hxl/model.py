@@ -232,6 +232,10 @@ class Dataset(object):
         """Add fixed-value columns to a HXL dataset."""
         return hxl.filters.AddFilter(self, values=specs, before=before)
 
+    def rename_columns(self, specs):
+        """Changes headers and tags on a column."""
+        return hxl.filters.RenameFilter(self, specs)
+
     #
     # Generators
     #

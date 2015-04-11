@@ -73,7 +73,7 @@ class TestShortcuts(unittest.TestCase):
             return [r[2], r[1]]
         self.assertEqual(sorted(DATA[2:], key=key), [row.values for row in self.source.sort(['#adm1', '#sector'])])
 
-    def test_add(self):
+    def test_add_columns(self):
         spec = 'Country#country=Country A'
 
         # tags at start
@@ -98,6 +98,17 @@ class TestShortcuts(unittest.TestCase):
         self.assertEqual(
             [values + ['Country A'] for values in DATA[2:]],
             [row.values for row in self.source.add_columns('#country=Country A')]
+        )
+
+    def test_rename_columns(self):
+        spec = '#sector:Sub-sector#subsector'
+        self.assertEqual(
+            ['#org', '#subsector', '#adm1'],
+            self.source.rename_columns(spec).tags
+        )
+        self.assertEqual(
+            ['Organisation', 'Sub-sector', 'District'],
+            self.source.rename_columns(spec).headers
         )
 
     def test_validate(self):
