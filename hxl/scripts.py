@@ -19,9 +19,8 @@ from shapely.geometry import shape
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
 
-from hxl.filters import AddFilter, CountFilter
+from hxl.filters import AddFilter, CleanFilter, CountFilter
 
-from hxl.old_filters.clean import CleanFilter
 from hxl.old_filters.cut import ColumnFilter
 from hxl.old_filters.merge import MergeFilter
 from hxl.old_filters.rename import RenameFilter
