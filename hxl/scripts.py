@@ -13,6 +13,8 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import sys
 import re
 import argparse
+import json
+from shapely.geometry import shape
 
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
@@ -26,6 +28,7 @@ from hxl.filters.rename import RenameFilter
 from hxl.filters.select import RowFilter
 from hxl.filters.sort import SortFilter
 
+from hxl.filters.bounds import hxlbounds
 from hxl.filters.tag import Tagger
 
 
@@ -36,6 +39,10 @@ from hxl.filters.tag import Tagger
 def hxladd():
     """Console script for hxladd."""
     run_script(hxladd_main)
+
+def hxlbounds():
+    """Console script for hxlbounds."""
+    run_script(hxlbounds_main)
 
 def hxlclean():
     """Console script for hxlclean."""
@@ -120,6 +127,49 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
         filter = AddFilter(source, values=args.value, before=args.before)
         write_hxl(output.output, filter)
+
+
+def hxlbounds_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Perform bounds checking on a HXL dataset.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?',
+        type=argparse.FileType('r'),
+        default=stdin
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?',
+        type=argparse.FileType('w'),
+        default=stdout
+        )
+    parser.add_argument(
+        '-b',
+        '--bounds',
+        help='GeoJSON file containing the boundary information.',
+        required=True,
+        type=argparse.FileType('r')
+        )
+    parser.add_argument(
+        '-c',
+        '--tags',
+        help='Comma-separated list of column tags to include in error reports',
+        metavar='tag,tag...',
+        type=TagPattern.parse_list,
+        default='loc,org,sector,adm1,adm2,adm3'
+        )
+    args = parser.parse_args(args)
+
+    data = json.load(args.bounds)
+    shapes = []
+    for d in data['features']:
+        shapes.append(shape(d['geometry']))
+
+    # Call the command function
+    hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
 
 
 def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):

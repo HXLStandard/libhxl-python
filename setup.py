@@ -21,6 +21,7 @@ setup(name='libhxl',
       entry_points={
           'console_scripts': [
               'hxladd = hxl.scripts:hxladd',
+              'hxlbounds = hxl.scripts:hxlbounds',
               'hxlclean = hxl.scripts:hxlclean',
               'hxlcount = hxl.scripts:hxlcount',
               'hxlcut = hxl.scripts:hxlcut',
@@ -31,8 +32,6 @@ setup(name='libhxl',
               'hxltag = hxl.scripts:hxltag',
               'hxlvalidate = hxl.scripts:hxlvalidate'
           ]
-      },
-      scripts=[
-        'scripts/hxlbounds'
-        ]
-      )
+      }
+
+)

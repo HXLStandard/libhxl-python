@@ -36,12 +36,8 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys
-import argparse
-import json
-from shapely.geometry import Point, shape
 from hxl.io import HXLReader
-from . import parse_tags
+
 
 def hxlbounds(input, output, bounds, tags=[]):
     """
