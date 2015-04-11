@@ -12,8 +12,10 @@ import copy
 import re
 import csv
 import json
+
 import hxl
 from hxl.common import HXLException
+
 
 class TagPattern(object):
     """
@@ -200,8 +202,7 @@ class Dataset(object):
 
     def cache(self):
         """Add a caching filter to the dataset."""
-        import hxl.old_filters.cache
-        return hxl.old_filters.cache.CacheFilter(self)
+        return hxl.filters.CacheFilter(self)
 
     def with_columns(self, whitelist):
         """Select matching columns."""
@@ -234,7 +235,7 @@ class Dataset(object):
 
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
-        return hxl.old_filters.add.AddFilter(self, values=specs, before=before)
+        return hxl.filters.AddFilter(self, values=specs, before=before)
 
     #
     # Generators
