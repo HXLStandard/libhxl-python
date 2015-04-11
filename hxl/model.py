@@ -125,7 +125,7 @@ class Dataset(object):
 
     Any source of parsed HXL data inherits from this class: that
     includes Dataset, HXLReader, and the various filters in the
-    hxl.filters package.  The contract of a Dataset is that it will
+    hxl.old_filters package.  The contract of a Dataset is that it will
     provide a columns property and a next() method to read through the
     rows.
 
@@ -200,41 +200,41 @@ class Dataset(object):
 
     def cache(self):
         """Add a caching filter to the dataset."""
-        import hxl.filters.cache
-        return hxl.filters.cache.CacheFilter(self)
+        import hxl.old_filters.cache
+        return hxl.old_filters.cache.CacheFilter(self)
 
     def with_columns(self, whitelist):
         """Select matching columns."""
-        import hxl.filters.cut
-        return hxl.filters.cut.ColumnFilter(self, include_tags=whitelist)
+        import hxl.old_filters.cut
+        return hxl.old_filters.cut.ColumnFilter(self, include_tags=whitelist)
 
     def without_columns(self, blacklist):
         """Select non-matching columns."""
-        import hxl.filters.cut
-        return hxl.filters.cut.ColumnFilter(self, exclude_tags=blacklist)
+        import hxl.old_filters.cut
+        return hxl.old_filters.cut.ColumnFilter(self, exclude_tags=blacklist)
 
     def with_rows(self, queries):
         """Select matching rows."""
-        import hxl.filters.select
-        return hxl.filters.select.RowFilter(self, queries=queries, reverse=False)
+        import hxl.old_filters.select
+        return hxl.old_filters.select.RowFilter(self, queries=queries, reverse=False)
 
     def without_rows(self, queries):
         """Select non-matching rows."""
-        import hxl.filters.select
-        return hxl.filters.select.RowFilter(self, queries=queries, reverse=True)
+        import hxl.old_filters.select
+        return hxl.old_filters.select.RowFilter(self, queries=queries, reverse=True)
 
     def sort(self, keys=None, reverse=False):
         """Sort the dataset (caching)."""
-        import hxl.filters.sort
-        return hxl.filters.sort.SortFilter(self, tags=keys, reverse=reverse)
+        import hxl.old_filters.sort
+        return hxl.old_filters.sort.SortFilter(self, tags=keys, reverse=reverse)
 
     def count(self, patterns, aggregate_pattern=None):
         """Count values in the dataset (caching)."""
-        return hxl.filters.count.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
+        return hxl.old_filters.count.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
 
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
-        return hxl.filters.add.AddFilter(self, values=specs, before=before)
+        return hxl.old_filters.add.AddFilter(self, values=specs, before=before)
 
     #
     # Generators

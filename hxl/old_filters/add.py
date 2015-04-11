@@ -12,7 +12,7 @@ import six
 from copy import copy
 
 import hxl
-from hxl.filters import HXLFilterException
+from hxl.old_filters import HXLFilterException
 from hxl.model import Dataset, Column
 
 class AddFilter(Dataset):

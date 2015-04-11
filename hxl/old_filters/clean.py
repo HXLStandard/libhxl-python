@@ -14,7 +14,7 @@ import argparse
 import copy
 from hxl.model import Dataset, TagPattern
 from hxl.io import HXLReader, write_hxl, StreamInput
-from hxl.filters import make_input, make_output
+from hxl.old_filters import make_input, make_output
 
 class CleanFilter(Dataset):
     """

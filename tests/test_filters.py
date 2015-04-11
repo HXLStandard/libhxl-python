@@ -8,7 +8,7 @@ License: Public Domain
 
 import unittest
 import hxl
-from hxl.filters.cache import CacheFilter
+from hxl.old_filters.cache import CacheFilter
 
 
 ########################################################################

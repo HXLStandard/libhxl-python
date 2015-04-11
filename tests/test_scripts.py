@@ -1,5 +1,5 @@
 """
-Unit tests for the hxl.filters module
+Unit tests for the hxl.scripts module
 David Megginson
 December 2014
 

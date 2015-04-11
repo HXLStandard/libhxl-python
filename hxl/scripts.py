@@ -19,17 +19,17 @@ from shapely.geometry import shape
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
 
-from hxl.filters.add import AddFilter
-from hxl.filters.clean import CleanFilter
-from hxl.filters.count import CountFilter
-from hxl.filters.cut import ColumnFilter
-from hxl.filters.merge import MergeFilter
-from hxl.filters.rename import RenameFilter
-from hxl.filters.select import RowFilter
-from hxl.filters.sort import SortFilter
+from hxl.old_filters.add import AddFilter
+from hxl.old_filters.clean import CleanFilter
+from hxl.old_filters.count import CountFilter
+from hxl.old_filters.cut import ColumnFilter
+from hxl.old_filters.merge import MergeFilter
+from hxl.old_filters.rename import RenameFilter
+from hxl.old_filters.select import RowFilter
+from hxl.old_filters.sort import SortFilter
 
-from hxl.filters.bounds import hxlbounds
-from hxl.filters.tag import Tagger
+from hxl.old_filters.bounds import hxlbounds
+from hxl.old_filters.tag import Tagger
 
 
 #
