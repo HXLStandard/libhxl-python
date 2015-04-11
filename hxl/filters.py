@@ -74,6 +74,9 @@ class AddFilter(Dataset):
             self.outer = outer
             self.iterator = iter(outer.source)
 
+        def __iter__(self):
+            return self
+
         def __next__(self):
             """
             Return the next row, with constant values added.
@@ -176,6 +179,9 @@ class CleanFilter(Dataset):
         def __init__(self, outer):
             self.outer = outer
             self.iterator = iter(outer.source)
+
+        def __iter__(self):
+            return self
 
         def __next__(self):
             """Return the next row, with values cleaned as needed."""
@@ -319,6 +325,9 @@ class ColumnFilter(Dataset):
             self.outer = outer
             self.iterator = iter(outer.source)
 
+        def __iter__(self):
+            return self
+
         def __next__(self):
             """
             Return the next row, with appropriate columns filtered out.
@@ -405,6 +414,9 @@ class CountFilter(Dataset):
             self.outer = outer
             self.iterator = iter(outer.source)
             self.aggregate_iter = None
+
+        def __iter__(self):
+            return self
 
         def __next__(self):
             """
@@ -555,6 +567,9 @@ class MergeFilter(Dataset):
             self.iterator = iter(outer.source)
             self.merge_iterator = iter(outer.merge_source)
             self.merge_map = None
+
+        def __iter__(self):
+            return self
 
         def __next__(self):
             """
@@ -714,11 +729,14 @@ class RowFilter(Dataset):
     def __iter__(self):
         return RowFilter.Iterator(self)
 
-    class Iterator:
+    class Iterator(object):
 
         def __init__(self, outer):
             self.outer = outer
             self.iterator = iter(outer.source)
+
+        def __iter__(self):
+            return self
 
         def __next__(self):
             """
@@ -941,6 +959,9 @@ class ValidateFilter(Dataset):
         def __init__(self, outer):
             self.outer = outer
             self.iterator = iter(outer.source)
+
+        def __iter__(self):
+            return self
 
         def __next__(self):
             """
