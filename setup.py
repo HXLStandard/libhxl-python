@@ -33,7 +33,6 @@ setup(name='libhxl',
           ]
       },
       scripts=[
-        'scripts/hxl2geojson',
         'scripts/hxlbounds'
         ]
       )
