@@ -206,13 +206,11 @@ class Dataset(object):
 
     def with_columns(self, whitelist):
         """Select matching columns."""
-        import hxl.old_filters.cut
-        return hxl.old_filters.cut.ColumnFilter(self, include_tags=whitelist)
+        return hxl.filters.ColumnFilter(self, include_tags=whitelist)
 
     def without_columns(self, blacklist):
         """Select non-matching columns."""
-        import hxl.old_filters.cut
-        return hxl.old_filters.cut.ColumnFilter(self, exclude_tags=blacklist)
+        return hxl.filters.ColumnFilter(self, exclude_tags=blacklist)
 
     def with_rows(self, queries):
         """Select matching rows."""
