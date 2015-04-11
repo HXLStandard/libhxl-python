@@ -100,56 +100,5 @@ class ValidateFilter(Dataset):
         next = __next__
 
 
-def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Run hxlvalidate with command-line arguments.
-    @param args A list of arguments, excluding the script name
-    @param stdin Standard input for the script
-    @param stdout Standard output for the script
-    @param stderr Standard error for the script
-    """
-
-    parser = argparse.ArgumentParser(description = 'Validate a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?',
-        type=argparse.FileType('r'),
-        default=stdin
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?',
-        type=argparse.FileType('w'),
-        default=stdout
-        )
-    parser.add_argument(
-        '-s',
-        '--schema',
-        help='Schema file for validating the HXL dataset (if omitted, use the default core schema).',
-        metavar='schema',
-        type=argparse.FileType('r'),
-        default=None
-        )
-    parser.add_argument(
-        '-a',
-        '--all',
-        help='Include all rows in the output, including those without errors',
-        action='store_const',
-        const=True,
-        default=False
-        )
-    args = parser.parse_args(args)
-
-    with args.infile, args.outfile:
-        source = HXLReader(StreamInput(args.infile))
-        if args.schema:
-            with args.schema:
-                schema = hxl_schema(args.schema)
-        else:
-            schema = hxl_schema()
-        filter = ValidateFilter(source, schema, args.all)
-        write_hxl(args.outfile, filter)
 
 # end

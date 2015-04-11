@@ -28,7 +28,6 @@ import hxl.filters.rename
 import hxl.filters.select
 import hxl.filters.sort
 import hxl.filters.tag
-import hxl.filters.validate
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 

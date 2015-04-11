@@ -1,11 +1,9 @@
-import sys
 import re
-import argparse
 import csv
 import hxl
 from hxl.model import Column
-from hxl.io import AbstractInput, HXLReader, write_hxl
-from hxl.filters import make_input, make_output, HXLFilterException
+from hxl.io import AbstractInput, HXLReader, write_hxl, make_input
+
 
 class Tagger(AbstractInput):
     """Add HXL hashtags to a CSV-like input stream.
