@@ -20,9 +20,7 @@ from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
 
 from hxl.filters import AddFilter, CleanFilter, ColumnFilter, CountFilter, MergeFilter, RenameFilter, RowFilter, SortFilter, ValidateFilter
-
-from hxl.old_filters.bounds import hxlbounds
-from hxl.old_filters.tag import Tagger
+from hxl.converters import Tagger
 
 
 #
@@ -162,7 +160,7 @@ def hxlbounds_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         shapes.append(shape(d['geometry']))
 
     # Call the command function
-    hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
+    hxl.converters.hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
 
 
 def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):

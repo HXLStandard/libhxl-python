@@ -1,11 +1,14 @@
+"""
+HXL converters (to/from other formats)
+"""
+
 import re
-import csv
 import hxl
+from hxl.common import normalise_string
 from hxl.model import Column
-from hxl.io import AbstractInput, HXLReader, write_hxl, make_input
 
 
-class Tagger(AbstractInput):
+class Tagger(hxl.io.AbstractInput):
     """Add HXL hashtags to a CSV-like input stream.
 
     The input spec is a list of tuples, where the first item is a
@@ -18,7 +21,7 @@ class Tagger(AbstractInput):
     """
 
     def __init__(self, input, specs=[]):
-        self.specs = [(_norm(spec[0]), spec[1]) for spec in specs]
+        self.specs = [(normalise_string(spec[0]), spec[1]) for spec in specs]
         self.input = iter(input)
         self._cache = []
         self._found_tags = False
@@ -58,7 +61,7 @@ class Tagger(AbstractInput):
         tags = []
         tag_count = 0
         for index, value in enumerate(raw_row):
-            value = _norm(value)
+            value = normalise_string(value)
             for spec in self.specs:
                 if spec[0] in value:
                     tags.append(spec[1])
@@ -86,13 +89,45 @@ class Tagger(AbstractInput):
         else:
             raise HXLFilterException("Bad tagging spec: " + s)
 
-def _norm(s):
-    """Normalise a string to lower case, alphanum only, single spaces."""
-    if not s:
-        s = ''
-    s = str(s).strip()
-    s = re.sub(r'\W+', ' ', s)
-    s = s.lower()
-    return s
 
-# end
+# FIXME untested and badly out of date
+def hxlbounds(input, output, bounds, tags=[]):
+    """
+    Check that all points in a HXL dataset fall without a set of bounds.
+    """
+
+    def error(row, message):
+        """Report a bounds error."""
+        lat = row.get('#lat_deg')
+        lon = row.get('#lon_deg')
+        context = [
+            '#lat_deg' + '=' + lat,
+            '#lon_deg' + '=' + lon
+            ]
+        if (tags):
+            for tag in tags:
+                value = row.get(tag)
+                if value:
+                    context.append(tag + '=' + value)
+        report = str(message) + ' (row ' + str(row.source_row_number) + ') ' + str(context)
+        print >>output, report
+
+    reader = HXLReader(input)
+    for row in reader:
+        lat = row.get('#lat_deg')
+        lon = row.get('#lon_deg')
+        if lat and lon:
+            try:
+                seen_shape = False
+                for s in bounds:
+                    if s.contains(Point(float(lon), float(lat))):
+                        seen_shape = True
+                        break;
+                if not seen_shape:
+                    error(row, 'out of bounds')
+            except ValueError:
+                error(row, 'malformed lat/lon')
+        elif lat or lon:
+            error(row, '#lat_deg or #lon_deg missing')
+        # TODO user option to report no lat *and* no lon
+                    
