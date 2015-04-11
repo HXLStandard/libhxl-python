@@ -251,7 +251,7 @@ class TestSort(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.sort.run
+        self.function = hxl.scripts.hxlsort_main
         self.input_file = 'input-simple.csv'
 
     def test_default(self):

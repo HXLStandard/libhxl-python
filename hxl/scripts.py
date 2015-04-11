@@ -24,7 +24,7 @@ from hxl.filters.cut import ColumnFilter
 from hxl.filters.merge import MergeFilter
 from hxl.filters.rename import RenameFilter
 from hxl.filters.select import RowFilter
-
+from hxl.filters.sort import SortFilter
 
 #
 # Console script entry points
@@ -57,6 +57,10 @@ def hxlrename():
 def hxlselect():
     """Console script for hxlselect."""
     run_script(hxlselect_main)
+
+def hxlsort():
+    """Console script for hxlsort."""
+    run_script(hxlsort_main)
 
 
 #
@@ -444,6 +448,47 @@ def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
         filter = RowFilter(source, queries=args.query, reverse=args.reverse)
+        write_hxl(output.output, filter)
+
+def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlcut with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Sort a HXL dataset.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of tags to for columns to use as sort keys.',
+        metavar='tag,tag...',
+        type=TagPattern.parse_list
+        )
+    parser.add_argument(
+        '-r',
+        '--reverse',
+        help='Flag to reverse sort order.',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+        filter = SortFilter(source, args.tags, args.reverse)
         write_hxl(output.output, filter)
 
 

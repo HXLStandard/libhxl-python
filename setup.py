@@ -7,7 +7,7 @@ dependency_links=[
 ]
 
 setup(name='libhxl',
-      version='1.11',
+      version='1.12',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       author_email='contact@megginson.com',
@@ -26,13 +26,13 @@ setup(name='libhxl',
               'hxlcut = hxl.scripts:hxlcut',
               'hxlmerge = hxl.scripts:hxlmerge',
               'hxlrename = hxl.scripts:hxlrename',
-              'hxlselect = hxl.scripts:hxlselect'
+              'hxlselect = hxl.scripts:hxlselect',
+              'hxlsort = hxl.scripts:hxlsort'
           ]
       },
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxlbounds',
-        'scripts/hxlsort',
         'scripts/hxltag',
         'scripts/hxlvalidate'
         ]
