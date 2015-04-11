@@ -66,56 +66,16 @@ class RenameFilter(Dataset):
     def __iter__(self):
         return iter(self.source)
 
+    RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.common.TOKEN)
 
-#
-# Command-line support.
-#
-
-RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.common.TOKEN)
-
-def parse_rename(s):
-    result = re.match(RENAME_PATTERN, s)
-    if result:
-        pattern = TagPattern.parse(result.group(1))
-        column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
-        return (pattern, column)
-    else:
-        raise HXLFilterException("Bad rename expression: " + s)
-
-def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Run hxlcut with command-line arguments.
-    @param args A list of arguments, excluding the script name
-    @param stdin Standard input for the script
-    @param stdout Standard output for the script
-    @param stderr Standard error for the script
-    """
-
-    parser = argparse.ArgumentParser(description = 'Rename and retag columns in a HXL dataset')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
-    parser.add_argument(
-        '-r',
-        '--rename',
-        help='Rename an old tag to a new one (with an optional new text header).',
-        action='append',
-        metavar='#?<original_tag>:<Text header>?#?<new_tag>',
-        default=[],
-        type=parse_rename
-        )
-    args = parser.parse_args(args)
-
-    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
-        source = HXLReader(input)
-        filter = RenameFilter(source, args.rename)
-        write_hxl(output.output, filter)
+    @staticmethod
+    def parse_rename(s):
+        result = re.match(RenameFilter.RENAME_PATTERN, s)
+        if result:
+            pattern = TagPattern.parse(result.group(1))
+            column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
+            return (pattern, column)
+        else:
+            raise HXLFilterException("Bad rename expression: " + s)
 
 # end

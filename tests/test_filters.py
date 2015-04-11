@@ -129,29 +129,6 @@ class TestCut(BaseTest):
         self.assertOutput(['--exclude', 'sex,targeted_num'], 'cut-output-blacklist.csv')
 
 
-class TestMerge(BaseTest):
-    """
-    Test the hxlmerge command-line tool.
-    """
-
-    def setUp(self):
-        self.function = hxl.scripts.hxlmerge_main
-        self.input_file = 'input-simple.csv'
-
-    def test_merge(self):
-        self.assertOutput(['-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
-        self.assertOutput(['--keys', 'sector', '--tags', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
-
-    def test_replace(self):
-        self.input_file = 'input-status.csv'
-        self.assertOutput(['-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
-        self.assertOutput(['--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
-
-    def test_overwrite (self):
-        self.input_file = 'input-status.csv'
-        self.assertOutput(['-O', '-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-overwrite.csv')
-        self.assertOutput(['--overwrite', '--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-overwrite.csv')
-
 class TestClean(BaseTest):
     """
     Test the hxlclean command-line tool.
@@ -181,13 +158,36 @@ class TestClean(BaseTest):
 
     # TODO: test dates and numbers
 
+class TestMerge(BaseTest):
+    """
+    Test the hxlmerge command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.scripts.hxlmerge_main
+        self.input_file = 'input-simple.csv'
+
+    def test_merge(self):
+        self.assertOutput(['-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
+        self.assertOutput(['--keys', 'sector', '--tags', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-basic.csv')
+
+    def test_replace(self):
+        self.input_file = 'input-status.csv'
+        self.assertOutput(['-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
+        self.assertOutput(['--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-replace.csv')
+
+    def test_overwrite (self):
+        self.input_file = 'input-status.csv'
+        self.assertOutput(['-O', '-r', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-overwrite.csv')
+        self.assertOutput(['--overwrite', '--replace', '-k', 'sector', '-t', 'status', '-m', resolve_file('input-merge.csv')], 'merge-output-overwrite.csv')
+
 class TestRename(BaseTest):
     """
     Test the hxlrename command-line tool.
     """
 
     def setUp(self):
-        self.function = hxl.filters.rename.run
+        self.function = hxl.scripts.hxlrename_main
         self.input_file = 'input-simple.csv'
 
     def test_single(self):

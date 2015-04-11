@@ -22,6 +22,7 @@ from hxl.filters.clean import CleanFilter
 from hxl.filters.count import CountFilter
 from hxl.filters.cut import ColumnFilter
 from hxl.filters.merge import MergeFilter
+from hxl.filters.rename import RenameFilter
 
 
 #
@@ -47,6 +48,10 @@ def hxlcut():
 def hxlmerge():
     """Console script for hxlmerge."""
     run_script(hxlmerge_main)
+
+def hxlrename():
+    """Console script for hxlrename."""
+    run_script(hxlrename_main)
 
 #
 # Main scripts for command-line tools.
@@ -350,15 +355,50 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    # FIXME - will this be OK with stdin/stdout?
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output, hxl(args.merge) if args.merge else None as merge_source:
         filter = MergeFilter(source, merge_source=merge_source,
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         write_hxl(output.output, filter)
 
 
+def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlcut with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Rename and retag columns in a HXL dataset')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-r',
+        '--rename',
+        help='Rename an old tag to a new one (with an optional new text header).',
+        action='append',
+        metavar='#?<original_tag>:<Text header>?#?<new_tag>',
+        default=[],
+        type=RenameFilter.parse_rename
+        )
+    args = parser.parse_args(args)
+
+    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+        filter = RenameFilter(source, args.rename)
+        write_hxl(output.output, filter)
+
+
 #
-# Utility scripts
+# Utility functions
 #
 
 def run_script(func):
