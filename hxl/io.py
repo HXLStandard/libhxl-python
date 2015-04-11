@@ -39,6 +39,26 @@ else:
         return value
 
 
+def make_input(data):
+
+    if isinstance(data, AbstractInput):
+        return data
+
+    elif hasattr(data, 'read'):
+        # it's a file stream
+        return StreamInput(data)
+
+    elif hasattr(data, '__len__') and (not isinstance(data, str)):
+        # it's an array
+        return ArrayInput(data)
+
+    elif re.match(r'\.xlsx?', data):
+        return ExcelInput(data)
+    
+    else:
+        return CSVInput(data)
+
+
 def hxl(data):
     """
     Convenience method for reading a HXL dataset.
@@ -50,19 +70,8 @@ def hxl(data):
         # it's already HXL data
         return data
 
-    elif hasattr(data, 'read'):
-        # it's a file stream
-        return HXLReader(StreamInput(data))
-
-    elif hasattr(data, '__len__') and (not isinstance(data, str)):
-        # it's an array
-        return HXLReader(ArrayInput(data))
-
-    elif re.match(r'\.xlsx?', data):
-        return HXLReader(ExcelInput(data))
-    
     else:
-        return HXLReader(CSVInput(data))
+        return HXLReader(make_input(data))
 
 
 class HXLParseException(HXLException):

@@ -78,6 +78,16 @@ class Tagger(AbstractInput):
         """Make iterable."""
         return self
 
+    SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.common.TOKEN)
+
+    @staticmethod
+    def parse_spec(s):
+        result = re.match(Tagger.SPEC_PATTERN, s)
+        if result:
+            return (result.group(1), Column.parse(result.group(2), use_exception=True).display_tag)
+        else:
+            raise HXLFilterException("Bad tagging spec: " + s)
+
 def _norm(s):
     """Normalise a string to lower case, alphanum only, single spaces."""
     if not s:
@@ -86,54 +96,5 @@ def _norm(s):
     s = re.sub(r'\W+', ' ', s)
     s = s.lower()
     return s
-
-#
-# Command-line support
-#
-
-SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.common.TOKEN)
-
-def parse_spec(s):
-    result = re.match(SPEC_PATTERN, s)
-    if result:
-        return (result.group(1), Column.parse(result.group(2), use_exception=True).display_tag)
-    else:
-        raise HXLFilterException("Bad tagging spec: " + s)
-
-def run(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Run hxltag with command-line arguments.
-    @param args A list of arguments, excluding the script name
-    @param stdin Standard input for the script
-    @param stdout Standard output for the script
-    @param stderr Standard error for the script
-    """
-
-    parser = argparse.ArgumentParser(description = 'Add HXL tags to a raw CSV file.')
-    parser.add_argument(
-        'infile',
-        help='CSV file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='CSV file to write (if omitted, use standard output).',
-        nargs='?'
-        )
-    parser.add_argument(
-        '-m',
-        '--map',
-        help='Mapping expression',
-        required=True,
-        action='append',
-        metavar='Header Text#tag',
-        type=parse_spec
-        )
-    args = parser.parse_args(args)
-
-    with make_input(args.infile, stdin) as input, make_output(args.outfile, stdout) as output:
-        tagger = Tagger(input, args.map)
-        source = HXLReader(tagger)
-        write_hxl(output.output, source)
 
 # end

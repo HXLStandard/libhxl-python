@@ -15,7 +15,7 @@ import re
 import argparse
 
 from hxl import hxl, TagPattern, HXLException
-from hxl.io import write_hxl
+from hxl.io import write_hxl, make_input
 
 from hxl.filters.add import AddFilter
 from hxl.filters.clean import CleanFilter
@@ -25,6 +25,9 @@ from hxl.filters.merge import MergeFilter
 from hxl.filters.rename import RenameFilter
 from hxl.filters.select import RowFilter
 from hxl.filters.sort import SortFilter
+
+from hxl.filters.tag import Tagger
+
 
 #
 # Console script entry points
@@ -62,13 +65,13 @@ def hxlsort():
     """Console script for hxlsort."""
     run_script(hxlsort_main)
 
+def hxltag():
+    """Console script for hxltag."""
+    run_script(hxltag_main)
+
 
 #
 # Main scripts for command-line tools.
-#
-
-#
-# Command-line support
 #
 
 def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -225,9 +228,6 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         filter = CleanFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
         write_hxl(output.output, filter, args.remove_headers)
 
-#
-# Command-line support
-#
 
 def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -303,6 +303,7 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
         filter = ColumnFilter(source, args.include, args.exclude)
         write_hxl(output.output, filter)
+
 
 def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -490,6 +491,42 @@ def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
         filter = SortFilter(source, args.tags, args.reverse)
         write_hxl(output.output, filter)
+
+
+def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxltag with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Add HXL tags to a raw CSV file.')
+    parser.add_argument(
+        'infile',
+        help='CSV file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='CSV file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-m',
+        '--map',
+        help='Mapping expression',
+        required=True,
+        action='append',
+        metavar='Header Text#tag',
+        type=Tagger.parse_spec
+        )
+    args = parser.parse_args(args)
+
+    with make_input(args.infile or stdin) as input, make_output(args.outfile, stdout) as output:
+        tagger = Tagger(input, args.map)
+        write_hxl(output.output, hxl(tagger))
 
 
 #

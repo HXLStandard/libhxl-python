@@ -279,7 +279,7 @@ class TestTag(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.tag.run
+        self.function = hxl.scripts.hxltag_main
         self.input_file = 'input-untagged.csv'
 
     def test_full(self):
