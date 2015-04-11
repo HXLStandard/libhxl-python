@@ -651,7 +651,9 @@ class RenameFilter(Dataset):
         @param rename_map map of tags to rename
         """
         self.source = source
-        self.rename = rename
+        if isinstance(rename, six.string_types):
+            rename = [rename]
+        self.rename = [self.parse_rename(spec) for spec in rename]
         self._saved_columns = None
 
     @property
@@ -675,17 +677,20 @@ class RenameFilter(Dataset):
     def __iter__(self):
         return iter(self.source)
 
-    RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.common.TOKEN)
+    RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
     @staticmethod
     def parse_rename(s):
-        result = re.match(RenameFilter.RENAME_PATTERN, s)
-        if result:
-            pattern = TagPattern.parse(result.group(1))
-            column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
-            return (pattern, column)
+        if isinstance(s, six.string_types):
+            result = re.match(RenameFilter.RENAME_PATTERN, s)
+            if result:
+                pattern = TagPattern.parse(result.group(1))
+                column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
+                return (pattern, column)
+            else:
+                raise HXLFilterException("Bad rename expression: " + s)
         else:
-            raise HXLFilterException("Bad rename expression: " + s)
+            return s
 
 
 class RowFilter(Dataset):
