@@ -214,13 +214,11 @@ class Dataset(object):
 
     def with_rows(self, queries):
         """Select matching rows."""
-        import hxl.old_filters.select
-        return hxl.old_filters.select.RowFilter(self, queries=queries, reverse=False)
+        return hxl.filters.RowFilter(self, queries=queries, reverse=False)
 
     def without_rows(self, queries):
         """Select non-matching rows."""
-        import hxl.old_filters.select
-        return hxl.old_filters.select.RowFilter(self, queries=queries, reverse=True)
+        return hxl.filters.RowFilter(self, queries=queries, reverse=True)
 
     def sort(self, keys=None, reverse=False):
         """Sort the dataset (caching)."""

@@ -16,6 +16,9 @@ class HXLException(Exception):
     def __str__(self):
         return "<HXException: " + str(self.message) + ">"
 
+def normalise_string(s):
+    return s.strip().lower().replace(r'\s\s+', ' ')
+
 def pattern_list(patterns):
     """
     Normalise a pattern list:

@@ -7,12 +7,12 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys, re, six
+import sys, re, six, operator
 from copy import copy
 import dateutil.parser
 
 import hxl
-from hxl.common import pattern_list
+from hxl.common import pattern_list, normalise_string
 from hxl.model import TagPattern, Dataset, Column, Row
 
 
@@ -609,3 +609,213 @@ class MergeFilter(Dataset):
                     values[pattern] = pattern.get_value(row)
                 merge_map[self._make_key(row)] = values
             return merge_map
+
+class RenameFilter(Dataset):
+    """
+    Composable filter class to rename columns in a HXL dataset.
+
+    This is the class supporting the hxlrename command-line utility.
+
+    Because this class is a {@link hxl.model.Dataset}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, single-threaded processing pipeline.
+
+    Usage:
+
+    <pre>
+    source = HXLReader(sys.stdin)
+    filter = RenameFilter(source, rename=[[TagPattern.parse('#foo'), Column.parse('#bar')]])
+    write_hxl(sys.stdout, filter)
+    </pre>
+    """
+
+    def __init__(self, source, rename=[]):
+        """
+        Constructor
+        @param source the Dataset for the data.
+        @param rename_map map of tags to rename
+        """
+        self.source = source
+        self.rename = rename
+        self._saved_columns = None
+
+    @property
+    def columns(self):
+        """
+        Return the renamed columns.
+        """
+
+        if self._saved_columns is None:
+            def rename_column(column):
+                for spec in self.rename:
+                    if spec[0].match(column):
+                        new_column = copy(spec[1])
+                        if new_column.header is None:
+                            new_column.header = column.header
+                        return new_column
+                return column
+            self._saved_columns = [rename_column(column) for column in self.source.columns]
+        return self._saved_columns
+
+    def __iter__(self):
+        return iter(self.source)
+
+    RENAME_PATTERN = r'^\s*#?({token}):(?:([^#]*)#)?({token})\s*$'.format(token=hxl.common.TOKEN)
+
+    @staticmethod
+    def parse_rename(s):
+        result = re.match(RenameFilter.RENAME_PATTERN, s)
+        if result:
+            pattern = TagPattern.parse(result.group(1))
+            column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
+            return (pattern, column)
+        else:
+            raise HXLFilterException("Bad rename expression: " + s)
+
+
+class RowFilter(Dataset):
+    """
+    Composable filter class to select rows from a HXL dataset.
+
+    This is the class supporting the hxlselect command-line utility.
+
+    Because this class is a {@link hxl.model.Dataset}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, single-threaded processing pipeline.
+
+    Usage:
+
+    <pre>
+    source = HXLReader(sys.stdin)
+    filter = RowFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
+    write_hxl(sys.stdout, filter)
+    </pre>
+    """
+
+    def __init__(self, source, queries=[], reverse=False):
+        """
+        Constructor
+        @param source the HXL data source
+        @param queries a series for parsed queries
+        @param reverse True to reverse the sense of the select
+        """
+        self.source = source
+        if not hasattr(queries, '__len__') or isinstance(queries, str):
+            # make a list if needed
+            queries = [queries]
+        self.queries = [RowFilter.Query.parse(query) for query in queries]
+        self.reverse = reverse
+
+    @property
+    def columns(self):
+        """Pass on the source columns unmodified."""
+        return self.source.columns
+
+    def __iter__(self):
+        return RowFilter.Iterator(self)
+
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __next__(self):
+            """
+            Return the next row that matches the select.
+            """
+            row = next(self.iterator)
+            while not self.match_row(row):
+                row = next(self.iterator)
+            return row
+
+        next = __next__
+
+        def match_row(self, row):
+            """Check if any of the queries matches the row (implied OR)."""
+            for query in self.outer.queries:
+                if query.match_row(row):
+                    return not self.outer.reverse
+            return self.outer.reverse
+
+    class Query(object):
+        """Query to execute against a row of HXL data."""
+
+        def __init__(self, pattern, op, value):
+            self.pattern = pattern
+            self.op = op
+            self.value = value
+            self._saved_indices = None
+            try:
+                float(value)
+                self._is_numeric = True
+            except:
+                self._is_numeric = False
+
+        def match_row(self, row):
+            """Check if a key-value pair appears in a HXL row"""
+            indices = self._get_saved_indices(row.columns)
+            length = len(row.values)
+            for i in indices:
+                if i < length and row.values[i] and self.match_value(row.values[i]):
+                        return True
+            return False
+
+        def match_value(self, value):
+            """Try an operator as numeric first, then string"""
+            # TODO add dates
+            # TODO use knowledge about HXL tags
+            if self._is_numeric:
+                try:
+                    return self.op(float(value), float(self.value))
+                except ValueError:
+                    pass
+            return self.op(normalise_string(value), normalise_string(self.value))
+
+        def _get_saved_indices(self, columns):
+            """Cache the column tests, so that we run them only once."""
+            # FIXME - assuming that the columns never change
+            if self._saved_indices is None:
+                self._saved_indices = []
+                for i in range(len(columns)):
+                    if self.pattern.match(columns[i]):
+                        self._saved_indices.append(i)
+            return self._saved_indices
+
+        @staticmethod
+        def parse(s):
+            """Parse a filter expression"""
+            if isinstance(s, RowFilter.Query):
+                # already parsed
+                return s
+            parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
+            pattern = TagPattern.parse(parts[0])
+            op = RowFilter.Query.OPERATOR_MAP[parts[1]]
+            value = parts[2]
+            return RowFilter.Query(pattern, op, value)
+
+        @staticmethod
+        def operator_re(s, pattern):
+            """Regular-expression comparison operator."""
+            return re.match(pattern, s)
+
+        @staticmethod
+        def operator_nre(s, pattern):
+            """Regular-expression negative comparison operator."""
+            return not re.match(pattern, s)
+
+        # Constant map of comparison operators
+        OPERATOR_MAP = {
+            '=': operator.eq,
+            '!=': operator.ne,
+            '<': operator.lt,
+            '<=': operator.le,
+            '>': operator.gt,
+            '>=': operator.ge
+        }
+
+
+# Extra static initialisation
+RowFilter.Query.OPERATOR_MAP['~'] = RowFilter.Query.operator_re
+RowFilter.Query.OPERATOR_MAP['!~'] = RowFilter.Query.operator_nre
+
