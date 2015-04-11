@@ -94,6 +94,37 @@ class TestAdd(BaseTest):
         self.assertOutput(['-b', '-v', 'report_date=2015-03-31'], 'add-output-before.csv')
         self.assertOutput(['--before', '--value', 'report_date=2015-03-31'], 'add-output-before.csv')
 
+
+class TestClean(BaseTest):
+    """
+    Test the hxlclean command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.scripts.hxlclean_main
+        self.input_file = 'input-simple.csv'
+
+    def test_noheaders(self):
+        self.assertOutput(['-r'], 'clean-output-noheaders.csv')
+        self.assertOutput(['--remove-headers'], 'clean-output-noheaders.csv')
+
+    def test_headers(self):
+        self.assertOutput([], 'clean-output-headers.csv')
+
+    def test_compact(self):
+        self.assertOutput([], 'clean-output-compact.csv')
+
+    def test_whitespace(self):
+        self.assertOutput(['-W'], 'clean-output-whitespace-all.csv', 'input-whitespace.csv')
+        self.assertOutput(['-w', 'subsector'], 'clean-output-whitespace-tags.csv', 'input-whitespace.csv')
+
+    def test_case(self):
+        self.assertOutput(['-u', 'sector,subsector'], 'clean-output-upper.csv')
+        self.assertOutput(['-l', 'sector,subsector'], 'clean-output-lower.csv')
+
+    # TODO: test dates and numbers
+
+
 class TestCount(BaseTest):
     """
     Test the hxlcount command-line tool.
@@ -128,35 +159,6 @@ class TestCut(BaseTest):
         self.assertOutput(['-x', 'sex,targeted_num'], 'cut-output-blacklist.csv')
         self.assertOutput(['--exclude', 'sex,targeted_num'], 'cut-output-blacklist.csv')
 
-
-class TestClean(BaseTest):
-    """
-    Test the hxlclean command-line tool.
-    """
-
-    def setUp(self):
-        self.function = hxl.scripts.hxlclean_main
-        self.input_file = 'input-simple.csv'
-
-    def test_noheaders(self):
-        self.assertOutput(['-r'], 'clean-output-noheaders.csv')
-        self.assertOutput(['--remove-headers'], 'clean-output-noheaders.csv')
-
-    def test_headers(self):
-        self.assertOutput([], 'clean-output-headers.csv')
-
-    def test_compact(self):
-        self.assertOutput([], 'clean-output-compact.csv')
-
-    def test_whitespace(self):
-        self.assertOutput(['-W'], 'clean-output-whitespace-all.csv', 'input-whitespace.csv')
-        self.assertOutput(['-w', 'subsector'], 'clean-output-whitespace-tags.csv', 'input-whitespace.csv')
-
-    def test_case(self):
-        self.assertOutput(['-u', 'sector,subsector'], 'clean-output-upper.csv')
-        self.assertOutput(['-l', 'sector,subsector'], 'clean-output-lower.csv')
-
-    # TODO: test dates and numbers
 
 class TestMerge(BaseTest):
     """
@@ -207,7 +209,7 @@ class TestSelect(BaseTest):
     """
 
     def setUp(self):
-        self.function = hxl.filters.select.run
+        self.function = hxl.scripts.hxlselect_main
         self.input_file = 'input-simple.csv'
 
     def test_eq(self):

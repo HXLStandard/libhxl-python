@@ -25,13 +25,13 @@ setup(name='libhxl',
               'hxlcount = hxl.scripts:hxlcount',
               'hxlcut = hxl.scripts:hxlcut',
               'hxlmerge = hxl.scripts:hxlmerge',
-              'hxlrename = hxl.scripts:hxlrename'
+              'hxlrename = hxl.scripts:hxlrename',
+              'hxlselect = hxl.scripts:hxlselect'
           ]
       },
       scripts=[
         'scripts/hxl2geojson',
         'scripts/hxlbounds',
-        'scripts/hxlselect',
         'scripts/hxlsort',
         'scripts/hxltag',
         'scripts/hxlvalidate'

@@ -7,14 +7,11 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys
-import argparse
 import copy
 import re
 import hxl
 from hxl.model import Dataset, TagPattern, Column
-from hxl.filters import make_input, make_output
-from hxl.io import StreamInput, HXLReader, write_hxl
+
 
 class RenameFilter(Dataset):
     """

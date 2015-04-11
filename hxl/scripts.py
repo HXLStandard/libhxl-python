@@ -23,6 +23,7 @@ from hxl.filters.count import CountFilter
 from hxl.filters.cut import ColumnFilter
 from hxl.filters.merge import MergeFilter
 from hxl.filters.rename import RenameFilter
+from hxl.filters.select import RowFilter
 
 
 #
@@ -52,6 +53,11 @@ def hxlmerge():
 def hxlrename():
     """Console script for hxlrename."""
     run_script(hxlrename_main)
+
+def hxlselect():
+    """Console script for hxlselect."""
+    run_script(hxlselect_main)
+
 
 #
 # Main scripts for command-line tools.
@@ -394,6 +400,50 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
         filter = RenameFilter(source, args.rename)
+        write_hxl(output.output, filter)
+
+
+def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlselect with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description = 'Filter rows in a HXL dataset.')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-q',
+        '--query',
+        help='query expression for selecting rows (use multiple times for logical OR): <hashtag><op><value>, where <op> is =, !=, <, <=, >, >=, ~, or !~',
+        action='append',
+        metavar='tag=value, etc.',
+        default=[]
+        )
+    parser.add_argument(
+        '-r',
+        '--reverse',
+        help='Show only lines *not* matching criteria',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+        filter = RowFilter(source, queries=args.query, reverse=args.reverse)
         write_hxl(output.output, filter)
 
 
