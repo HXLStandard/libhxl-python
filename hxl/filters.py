@@ -26,7 +26,7 @@ class HXLFilterException(hxl.HXLException):
 # Filter classes
 #
 
-class AddFilter(Dataset):
+class AddColumnsFilter(Dataset):
     """
     Composable filter class to add constant values to every row of a HXL dataset.
 
@@ -46,7 +46,7 @@ class AddFilter(Dataset):
         self.source = source
         if isinstance(values, six.string_types):
             values = [values]
-        self.values = [AddFilter.parse_value(value) for value in values]
+        self.values = [AddColumnsFilter.parse_value(value) for value in values]
         self.before = before
         self._columns_out = None
 
@@ -66,7 +66,7 @@ class AddFilter(Dataset):
         return self._columns_out
 
     def __iter__(self):
-        return AddFilter.Iterator(self)
+        return AddColumnsFilter.Iterator(self)
 
     class Iterator:
 
@@ -97,7 +97,7 @@ class AddFilter(Dataset):
     def parse_value(s):
         if not isinstance(s, six.string_types):
             return s
-        result = re.match(AddFilter.VALUE_PATTERN, s)
+        result = re.match(AddColumnsFilter.VALUE_PATTERN, s)
         if result:
             header = result.group(1)
             tag = '#' + result.group(2)
