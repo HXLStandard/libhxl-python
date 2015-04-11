@@ -441,46 +441,46 @@ class CountFilter(Dataset):
                 if values:
                     key = tuple(values)
                     if not key in aggregators:
-                        aggregators[key] = Aggregator(self.outer.aggregate_pattern)
+                        aggregators[key] = CountFilter.Aggregator(self.outer.aggregate_pattern)
                     aggregators[key].add(row)
             self.aggregate_iter = iter(sorted(aggregators.items()))
 
-class Aggregator(object):
-    """
-    Class to collect aggregates for a single combination.
+    class Aggregator(object):
+        """
+        Class to collect aggregates for a single combination.
 
-    Currently calculates count, sum, average, min, and max
-    """
+        Currently calculates count, sum, average, min, and max
+        """
 
-    def __init__(self, pattern):
-        """
-        Constructor
-        @param pattern the HXL tag being counted in the row.
-        """
-        self.pattern = pattern
-        self.count = 0
-        self.sum = 0.0
-        self.average = 0.0
-        self.min = None
-        self.max = None
-        self.seen_numbers = False
+        def __init__(self, pattern):
+            """
+            Constructor
+            @param pattern the HXL tag being counted in the row.
+            """
+            self.pattern = pattern
+            self.count = 0
+            self.sum = 0.0
+            self.average = 0.0
+            self.min = None
+            self.max = None
+            self.seen_numbers = False
 
-    def add(self, row):
-        """
-        Add a new row of data to the aggregator.
-        """
-        self.count += 1
-        if self.pattern:
-            value = self.pattern.get_value(row)
-            if value:
-                try:
-                    n = float(value)
-                    self.sum += n
-                    self.average = self.sum / self.count
-                    if self.min is None or n < self.min:
-                        self.min = n
-                    if self.max is None or n > self.max:
-                        self.max = n
-                    self.seen_numbers = True
-                except:
-                    pass
+        def add(self, row):
+            """
+            Add a new row of data to the aggregator.
+            """
+            self.count += 1
+            if self.pattern:
+                value = self.pattern.get_value(row)
+                if value:
+                    try:
+                        n = float(value)
+                        self.sum += n
+                        self.average = self.sum / self.count
+                        if self.min is None or n < self.min:
+                            self.min = n
+                        if self.max is None or n > self.max:
+                            self.max = n
+                        self.seen_numbers = True
+                    except:
+                        pass
