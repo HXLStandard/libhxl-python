@@ -222,8 +222,7 @@ class Dataset(object):
 
     def sort(self, keys=None, reverse=False):
         """Sort the dataset (caching)."""
-        import hxl.old_filters.sort
-        return hxl.old_filters.sort.SortFilter(self, tags=keys, reverse=reverse)
+        return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
     def count(self, patterns, aggregate_pattern=None):
         """Count values in the dataset (caching)."""
