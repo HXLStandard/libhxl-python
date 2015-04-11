@@ -142,7 +142,7 @@ class CacheFilter(Dataset):
                     self.cached_rows.append(copy(row))
 
 
-class CleanFilter(Dataset):
+class CleanDataFilter(Dataset):
     """
     Filter for cleaning values in HXL data.
     Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.
@@ -172,7 +172,7 @@ class CleanFilter(Dataset):
         return self.source.columns
 
     def __iter__(self):
-        return CleanFilter.Iterator(self)
+        return CleanDataFilter.Iterator(self)
 
     class Iterator:
 
