@@ -236,6 +236,10 @@ class Dataset(object):
         """Changes headers and tags on a column."""
         return hxl.filters.RenameFilter(self, specs)
 
+    def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False):
+        """Merges values from a second dataset."""
+        return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite)
+
     #
     # Generators
     #
