@@ -497,7 +497,7 @@ class CountFilter(Dataset):
                     except:
                         pass
 
-class MergeFilter(Dataset):
+class MergeDataFilter(Dataset):
     """
     Composable filter class to merge values from two HXL datasets.
 
@@ -514,7 +514,7 @@ class MergeFilter(Dataset):
     <pre>
     source = HXLReader(sys.stdin)
     merge_source = HXLReader(open('file-to-merge.csv', 'r'))
-    filter = MergeFilter(source, merge_source=merge_source, keys=['adm1_id'], tags=['adm1'])
+    filter = MergeDataFilter(source, merge_source=merge_source, keys=['adm1_id'], tags=['adm1'])
     write_hxl(sys.stdout, filter)
     </pre>
     """
@@ -558,7 +558,7 @@ class MergeFilter(Dataset):
         return self.saved_columns
 
     def __iter__(self):
-        return MergeFilter.Iterator(self)
+        return MergeDataFilter.Iterator(self)
 
     class Iterator:
 

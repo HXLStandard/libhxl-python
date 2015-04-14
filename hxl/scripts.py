@@ -19,7 +19,7 @@ from shapely.geometry import shape
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
 
-from hxl.filters import AddColumnsFilter, CleanDataFilter, ColumnFilter, CountFilter, MergeFilter, RenameFilter, RowFilter, SortFilter, ValidateFilter
+from hxl.filters import AddColumnsFilter, CleanDataFilter, ColumnFilter, CountFilter, MergeDataFilter, RenameFilter, RowFilter, SortFilter, ValidateFilter
 from hxl.converters import Tagger
 
 
@@ -412,7 +412,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output, hxl(args.merge) if args.merge else None as merge_source:
-        filter = MergeFilter(source, merge_source=merge_source,
+        filter = MergeDataFilter(source, merge_source=merge_source,
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         write_hxl(output.output, filter)
 
