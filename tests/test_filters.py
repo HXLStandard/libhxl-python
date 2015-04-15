@@ -62,22 +62,16 @@ class TestColumnFilter(AbstractFilterTest):
 
     def test_with_columns(self):
         expected = ['#sector']
-        self.assertEqual(expected, [column.tag for column in self.source.with_columns('#sector').columns])
-        self.assertEqual(expected, [column.tag for column in self.source.with_columns(['#sector']).columns])
+        self.assertEqual(expected, self.source.with_columns('#sector').tags)
+        self.assertEqual(expected, self.source.with_columns(['#sector']).tags)
 
     def test_without_columns(self):
         expected = ['#org', '#adm1']
         self.assertEqual(expected, self.source.without_columns('#sector').tags)
         self.assertEqual(expected, self.source.without_columns(['#sector']).tags)
 
-    def test_iterator(self):
-        filter = self.source.with_columns('#sector')
-        for f in [filter, filter.cache()]:
-            for index, row in enumerate(f):
-                self.assertEqual(DATA[index+2][1], row.values[0])
 
-
-class TestShortcuts(AbstractFilterTest):
+class TestRowFilter(AbstractFilterTest):
 
     def test_with_rows(self):
         self.assertEqual(DATA[3:], [row.values for row in self.source.with_rows(['#sector=education'])])
@@ -87,58 +81,91 @@ class TestShortcuts(AbstractFilterTest):
         self.assertEqual(DATA[3:], [row.values for row in self.source.without_rows(['#sector=wash'])])
         self.assertEqual(DATA[3:], [row.values for row in self.source.without_rows('#sector=wash')])
 
-    def test_count(self):
-        tags = [column.tag for column in self.source.count('#sector').columns]
-        self.assertTrue('#sector' in tags)
-        self.assertTrue('#x_count_num' in tags)
-        self.assertTrue('#adm1' not in tags)
-        # TODO test aggregation
 
-    def test_sort(self):
+class TestCountFilter(AbstractFilterTest):
+
+    def test_tags(self):
+        expected = ['#sector', '#x_count_num']
+        self.assertEqual(expected, self.source.count('#sector').tags)
+
+    # TODO test aggregation
+
+
+class TestSortFilter(AbstractFilterTest):
+
+    def test_forward(self):
         self.assertEqual(sorted(DATA[2:]), [row.values for row in self.source.sort()])
+
+    def test_backward(self):
         self.assertEqual(sorted(DATA[2:], reverse=True), [row.values for row in self.source.sort(reverse=True)])
-        # try with custom sort keys
+
+    def test_custom_keys(self):
         def key(r):
             return [r[2], r[1]]
         self.assertEqual(sorted(DATA[2:], key=key), [row.values for row in self.source.sort(['#adm1', '#sector'])])
 
-    def test_add_columns(self):
-        spec = 'Country#country=Country A'
 
-        # tags at start
+class TestAddColumnsFilter(AbstractFilterTest):
+
+    spec = 'Country#country=Country A'
+
+    def test_before(self):
         self.assertEqual(
             ['#country', '#org', '#sector', '#adm1'],
-            self.source.add_columns(spec, True).tags
+            self.source.add_columns(self.spec, True).tags
         )
 
-        # tags
+    def test_after(self):
         self.assertEqual(
             ['#org', '#sector', '#adm1', '#country'],
-            self.source.add_columns(spec).tags
+            self.source.add_columns(self.spec).tags
         )
 
-        # headers
+    def test_headers(self):
         self.assertEqual(
             DATA[0] + ['Country'],
-            self.source.add_columns(spec).headers
+            self.source.add_columns(self.spec).headers
         )
 
-        # rows
+    def test_rows(self):
         self.assertEqual(
             [values + ['Country A'] for values in DATA[2:]],
-            [row.values for row in self.source.add_columns('#country=Country A')]
+            [row.values for row in self.source.add_columns(self.spec)]
         )
 
-    def test_rename_columns(self):
-        spec = '#sector:Sub-sector#subsector'
+
+class TestRenameFilter(AbstractFilterTest):
+
+    spec = '#sector:Sub-sector#subsector'
+
+    def test_tags(self):
         self.assertEqual(
             ['#org', '#subsector', '#adm1'],
-            self.source.rename_columns(spec).tags
+            self.source.rename_columns(self.spec).tags
         )
+
+    def test_headers(self):
         self.assertEqual(
             ['Organisation', 'Sub-sector', 'District'],
-            self.source.rename_columns(spec).headers
+            self.source.rename_columns(self.spec).headers
         )
+
+
+class TestChaining(AbstractFilterTest):
+
+    def test_rowfilter_countfilter(self):
+        self.assertEqual(
+            [['NGO A', 1]],
+            [row.values for row in self.source.with_rows('#sector=wash').count('#org')]
+        )
+        self.assertEqual(
+            [['NGO B', 2]],
+            [row.values for row in self.source.without_rows('#sector=wash').count('#org')]
+        )
+
+
+class TestNonFilters(AbstractFilterTest):
+    # TODO move elsewhere
 
     def test_validate(self):
         self.assertTrue(self.source.validate(SCHEMA_GOOD))
