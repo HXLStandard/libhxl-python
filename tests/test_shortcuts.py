@@ -27,7 +27,24 @@ SCHEMA_BAD = [
     ['#valid_tag', '#valid_required'],
     ['#severity', 'true']
 ]
-    
+
+
+class TestCacheFilter(unittest.TestCase):
+
+    def setUp(self):
+        self.source = hxl(DATA)
+        self.filter = self.source.cache()
+        
+    def test_headers(self):
+        self.assertEqual(DATA[0], self.filter.headers)
+
+    def test_columns(self):
+        self.assertEqual(DATA[1], self.filter.tags)
+
+    def test_rows(self):
+        self.assertEqual(DATA[2:], [row.values for row in self.filter])
+
+
 class TestShortcuts(unittest.TestCase):
 
     def setUp(self):
