@@ -242,7 +242,7 @@ class HXLReader(Dataset):
         columns = self.columns
         values = self._get_row()
         self._row_number += 1
-        return Row(columns=columns, values=values)
+        return Row(columns=columns, values=values, row_number=self._row_number)
 
     # for compatibility
     next = __next__
