@@ -73,7 +73,6 @@ class TestColumn(unittest.TestCase):
 class TestRow(unittest.TestCase):
 
     ROW_NUMBER = 5
-    SOURCE_ROW_NUMBER = 4
     TAGS = ['#sector', '#org', '#country']
     CONTENT = ['Health', 'WFP', 'Liberia'];
 
@@ -81,9 +80,10 @@ class TestRow(unittest.TestCase):
         columns = []
         for column_number, tag in enumerate(TestRow.TAGS):
             columns.append(Column(tag=tag))
-        self.row = Row(columns)
-        for content in TestRow.CONTENT:
-            self.row.append(content)
+        self.row = Row(columns=columns, values=self.CONTENT, row_number=self.ROW_NUMBER)
+
+    def test_row_number(self):
+        self.assertEqual(TestRow.ROW_NUMBER, self.row.row_number)
 
     def test_data(self):
         self.assertEqual(TestRow.CONTENT, self.row.values)

@@ -350,17 +350,18 @@ class Row(object):
     """
 
     # Predefine the slots for efficiency (may reconsider later)
-    __slots__ = ['columns', 'values']
+    __slots__ = ['columns', 'values', 'row_number']
 
-    def __init__(self, columns, values=[]):
+    def __init__(self, columns, values=[], row_number=None):
         """
         Set up a new row.
         @param columns The column definitions (array of Column objects).
-        @param row_number The logical row number in the input dataset (default: None)
-        @param source_row_number The original row number in the raw source dataset (default: None)
+        @param values (optional) The string values for the row (default: [])
+        @param row_number (optional) The logical row number in the input dataset (default: None)
         """
         self.columns = columns
         self.values = copy.copy(values)
+        self.row_number = row_number
 
     def append(self, value):
         """
