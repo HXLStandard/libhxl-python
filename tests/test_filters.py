@@ -55,7 +55,7 @@ class TestCacheFilter(AbstractFilterTest):
         self.assertEqual(DATA[1], self.source.cache().tags)
 
     def test_rows(self):
-        self.assertEqual(DATA[2:], [row.values for row in self.source.cache()])
+        self.assertEqual(DATA[2:], self.source.cache().values)
 
 
 class TestColumnFilter(AbstractFilterTest):
@@ -74,12 +74,12 @@ class TestColumnFilter(AbstractFilterTest):
 class TestRowFilter(AbstractFilterTest):
 
     def test_with_rows(self):
-        self.assertEqual(DATA[3:], [row.values for row in self.source.with_rows(['#sector=education'])])
-        self.assertEqual(DATA[3:], [row.values for row in self.source.with_rows('#sector=education')])
+        self.assertEqual(DATA[3:], self.source.with_rows(['#sector=education']).values)
+        self.assertEqual(DATA[3:], self.source.with_rows('#sector=education').values)
 
     def test_without_rows(self):
-        self.assertEqual(DATA[3:], [row.values for row in self.source.without_rows(['#sector=wash'])])
-        self.assertEqual(DATA[3:], [row.values for row in self.source.without_rows('#sector=wash')])
+        self.assertEqual(DATA[3:], self.source.without_rows(['#sector=wash']).values)
+        self.assertEqual(DATA[3:], self.source.without_rows('#sector=wash').values)
 
 
 class TestCountFilter(AbstractFilterTest):
@@ -94,15 +94,15 @@ class TestCountFilter(AbstractFilterTest):
 class TestSortFilter(AbstractFilterTest):
 
     def test_forward(self):
-        self.assertEqual(sorted(DATA[2:]), [row.values for row in self.source.sort()])
+        self.assertEqual(sorted(DATA[2:]), self.source.sort().values)
 
     def test_backward(self):
-        self.assertEqual(sorted(DATA[2:], reverse=True), [row.values for row in self.source.sort(reverse=True)])
+        self.assertEqual(sorted(DATA[2:], reverse=True), self.source.sort(reverse=True).values)
 
     def test_custom_keys(self):
         def key(r):
             return [r[2], r[1]]
-        self.assertEqual(sorted(DATA[2:], key=key), [row.values for row in self.source.sort(['#adm1', '#sector'])])
+        self.assertEqual(sorted(DATA[2:], key=key), self.source.sort(['#adm1', '#sector']).values)
 
 
 class TestAddColumnsFilter(AbstractFilterTest):
@@ -130,7 +130,7 @@ class TestAddColumnsFilter(AbstractFilterTest):
     def test_rows(self):
         self.assertEqual(
             [values + ['Country A'] for values in DATA[2:]],
-            [row.values for row in self.source.add_columns(self.spec)]
+            self.source.add_columns(self.spec).values
         )
 
 
@@ -156,11 +156,11 @@ class TestChaining(AbstractFilterTest):
     def test_rowfilter_countfilter(self):
         self.assertEqual(
             [['NGO A', 1]],
-            [row.values for row in self.source.with_rows('#sector=wash').count('#org')]
+            self.source.with_rows('#sector=wash').count('#org').values
         )
         self.assertEqual(
             [['NGO B', 2]],
-            [row.values for row in self.source.without_rows('#sector=wash').count('#org')]
+            self.source.without_rows('#sector=wash').count('#org').values
         )
 
 
