@@ -53,16 +53,16 @@ class TestAdd(BaseTest):
         self.input_file = 'input-simple.csv'
 
     def test_default(self):
-        self.assertOutput(['-v', 'report_date=2015-03-31'], 'add-output-default.csv')
-        self.assertOutput(['--value', 'report_date=2015-03-31'], 'add-output-default.csv')
+        self.assertOutput(['-s', 'report_date=2015-03-31'], 'add-output-default.csv')
+        self.assertOutput(['--spec', 'report_date=2015-03-31'], 'add-output-default.csv')
 
     def test_headers(self):
-        self.assertOutput(['-v', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
-        self.assertOutput(['--value', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
+        self.assertOutput(['-s', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
+        self.assertOutput(['--spec', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
 
     def test_before(self):
-        self.assertOutput(['-b', '-v', 'report_date=2015-03-31'], 'add-output-before.csv')
-        self.assertOutput(['--before', '--value', 'report_date=2015-03-31'], 'add-output-before.csv')
+        self.assertOutput(['-b', '-s', 'report_date=2015-03-31'], 'add-output-before.csv')
+        self.assertOutput(['--before', '--spec', 'report_date=2015-03-31'], 'add-output-before.csv')
 
 
 class TestClean(BaseTest):

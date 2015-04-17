@@ -184,6 +184,14 @@ class Dataset(object):
                 return True
         return False
 
+    @property
+    def values(self):
+        """
+        Get all values for the dataset at once, in an array of arrays.
+        This method can be highly inefficient for large datasets.
+        """
+        return [row.values for row in self]
+
     #
     # Utility
     #
@@ -230,7 +238,7 @@ class Dataset(object):
 
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
-        return hxl.filters.AddColumnsFilter(self, values=specs, before=before)
+        return hxl.filters.AddColumnsFilter(self, specs=specs, before=before)
 
     def rename_columns(self, specs):
         """Changes headers and tags on a column."""

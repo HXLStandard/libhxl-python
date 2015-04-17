@@ -97,8 +97,8 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         nargs='?'
         )
     parser.add_argument(
-        '-v',
-        '--value',
+        '-s',
+        '--spec',
         help='Constant value to add to each row',
         metavar='[[Text header]#]<tag>=<value>',
         action='append',
@@ -116,7 +116,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
-        filter = AddColumnsFilter(source, values=args.value, before=args.before)
+        filter = AddColumnsFilter(source, specs=args.spec, before=args.before)
         write_hxl(output.output, filter)
 
 

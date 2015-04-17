@@ -37,16 +37,16 @@ class AddColumnsFilter(Dataset):
     dynamic, single-threaded processing pipeline.
     """
 
-    def __init__(self, source, values, before=False):
+    def __init__(self, source, specs, before=False):
         """
         @param source a HXL data source
-        @param values a sequence of pairs of Column objects and constant values
+        @param specs a sequence of pairs of Column objects and constant values
         @param before True to add new columns before existing ones
         """
         self.source = source
-        if isinstance(values, six.string_types):
-            values = [values]
-        self.values = [AddColumnsFilter.parse_value(value) for value in values]
+        if isinstance(specs, six.string_types):
+            specs = [specs]
+        self.specs = [AddColumnsFilter.parse_spec(spec) for spec in specs]
         self.before = before
         self._columns_out = None
 
@@ -56,13 +56,13 @@ class AddColumnsFilter(Dataset):
         Add the constant columns to the end.
         """
         if self._columns_out is None:
-            new_columns = [value[0] for value in self.values]
+            new_columns = [spec[0] for spec in self.specs]
             if self.before:
                 self._columns_out = new_columns + self.source.columns
             else:
                 self._columns_out = self.source.columns + new_columns
             # constant values to add
-            self._const_values = [value[1] for value in self.values]
+            self._const_values = [spec[1] for spec in self.specs]
         return self._columns_out
 
     def __iter__(self):
@@ -94,17 +94,17 @@ class AddColumnsFilter(Dataset):
     VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.common.TOKEN)
 
     @staticmethod
-    def parse_value(s):
-        if not isinstance(s, six.string_types):
-            return s
-        result = re.match(AddColumnsFilter.VALUE_PATTERN, s)
+    def parse_spec(spec):
+        if not isinstance(spec, six.string_types):
+            return spec
+        result = re.match(AddColumnsFilter.VALUE_PATTERN, spec)
         if result:
             header = result.group(1)
             tag = '#' + result.group(2)
             value = result.group(3)
             return (Column(tag=tag, header=header), value)
         else:
-            raise HXLFilterException("Badly formatted --value: " + s)
+            raise HXLFilterException("Badly formatted new-column spec: " + s)
 
 
 class CacheFilter(Dataset):
