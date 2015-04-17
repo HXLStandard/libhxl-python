@@ -15,11 +15,11 @@ from hxl import hxl
 #
 
 DATA = [
-    ['Organisation', 'Cluster', 'District'],
-    ['#org', '#sector', '#adm1'],
-    ['NGO A', 'WASH', 'Coast'],
-    ['NGO B', 'Education', 'Plains'],
-    ['NGO B', 'Education', 'Coast']
+    ['Organisation', 'Cluster', 'District', 'Affected'],
+    ['#org', '#sector', '#adm1', '#affected'],
+    ['NGO A', 'WASH', 'Coast', '100'],
+    ['NGO B', 'Education', 'Plains', '200'],
+    ['NGO B', 'Education', 'Coast', '300']
 ]
 
 SCHEMA_GOOD = [
@@ -66,7 +66,7 @@ class TestColumnFilter(AbstractFilterTest):
         self.assertEqual(expected, self.source.with_columns(['#sector']).tags)
 
     def test_without_columns(self):
-        expected = ['#org', '#adm1']
+        expected = ['#org', '#adm1', '#affected']
         self.assertEqual(expected, self.source.without_columns('#sector').tags)
         self.assertEqual(expected, self.source.without_columns(['#sector']).tags)
 
@@ -88,7 +88,23 @@ class TestCountFilter(AbstractFilterTest):
         expected = ['#sector', '#x_count_num']
         self.assertEqual(expected, self.source.count('#sector').tags)
 
-    # TODO test aggregation
+    def test_values(self):
+        expected = [
+            ['Education', 2],
+            ['WASH', 1]
+        ]
+        self.assertEqual(expected, self.source.count('#sector').values)
+
+    def test_aggregation_tags(self):
+        expected = ['#sector', '#x_count_num', '#x_sum_num', '#x_average_num', '#x_min_num', '#x_max_num']
+        self.assertEqual(expected, self.source.count('#sector', '#affected').tags)
+
+    def test_aggregation_values(self):
+        expected = [
+            ['Education', 2, 500, 250, 200, 300],
+            ['WASH', 1, 100, 100, 100, 100]
+        ]
+        self.assertEqual(expected, self.source.count('#sector', '#affected').values)
 
 
 class TestSortFilter(AbstractFilterTest):
@@ -111,13 +127,13 @@ class TestAddColumnsFilter(AbstractFilterTest):
 
     def test_before(self):
         self.assertEqual(
-            ['#country', '#org', '#sector', '#adm1'],
+            ['#country', '#org', '#sector', '#adm1', '#affected'],
             self.source.add_columns(self.spec, True).tags
         )
 
     def test_after(self):
         self.assertEqual(
-            ['#org', '#sector', '#adm1', '#country'],
+            ['#org', '#sector', '#adm1', '#affected', '#country'],
             self.source.add_columns(self.spec).tags
         )
 
@@ -140,13 +156,13 @@ class TestRenameFilter(AbstractFilterTest):
 
     def test_tags(self):
         self.assertEqual(
-            ['#org', '#subsector', '#adm1'],
+            ['#org', '#subsector', '#adm1', '#affected'],
             self.source.rename_columns(self.spec).tags
         )
 
     def test_headers(self):
         self.assertEqual(
-            ['Organisation', 'Sub-sector', 'District'],
+            ['Organisation', 'Sub-sector', 'District', 'Affected'],
             self.source.rename_columns(self.spec).headers
         )
 
