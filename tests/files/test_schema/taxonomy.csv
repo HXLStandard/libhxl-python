@@ -1,9 +1,0 @@
-#term_id,#parent_id,#level_num
-Colombia,,1
-Panamá,,1
-Venezuela,,1
-Los Santos,Panamá,2
-Amazonas,Venezuela,2
-Chocó,Colombia,2
-Cauca,Colombia,2
-

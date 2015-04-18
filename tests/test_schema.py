@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Unit tests for the hxl.schema module
 David Megginson
@@ -11,6 +12,48 @@ import os
 from hxl import hxl
 from hxl.model import Column, Row
 from hxl.schema import Schema, SchemaRule, hxl_schema
+
+
+#
+# Test data
+#
+
+SCHEMA_BASIC = [
+    ['#valid_tag', '#valid_required', '#valid_required+max', '#valid_datatype', '#valid_value+min', '#valid_value+max', '#valid_value+list'],
+    ['#sector', 'true', '', 'text', '', '', 'WASH|Salud|Educación'],
+    ['#subsector', 'true', '2', 'text', '', '', ''],
+    ['#org', 'true', '1', 'text', '', '', ''],
+    ['#sex', 'true', '1', 'text', '', '', 'Hombres|Mujeres'],
+    ['#targeted', '', '1', 'number', '0', '1000000000', ''],
+    ['#country', 'true', '', 'text', '', '', ''],
+    ['#adm1', '', '1', 'text', '', '', '']
+]
+
+DATA_GOOD = [
+    ['Sector/Cluster', 'Subsector', 'Organización', 'Sex', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
+    ['#sector', '#subsector', '#org', '#sex', '#targeted', '#country', '#adm1'],
+    ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
+    ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
+    ['Salud', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
+    ['Salud', 'Vacunación', 'OMS', 'Mujeres', '', 'Colombia', 'Cauca'],
+    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Hombres', '250', 'Colombia', 'Chocó'],
+    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Mujeres', '300', 'Colombia', 'Chocó'],
+    ['WASH', 'Urbano', 'OMS', 'Hombres', '80', 'Venezuela', 'Amazonas'],
+    ['WASH', 'Urbano', 'OMS', 'Mujeres', '95', 'Venezuela', 'Amazonas']
+]
+
+DATA_BAD = [
+    ['Sector/Cluster', 'Subsector', 'Organización', 'Sex', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
+    ['#sector', '#subsector', '#org', '#sex', '#targeted', '#country', '#adm1'],
+    ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
+    ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
+    ['', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
+    ['Salud', 'Vacunación', 'OMS', 'Mujeres', '', 'Colombia', 'Cauca'],
+    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Hombres', '250', 'Colombia', 'Chocó'],
+    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Mujeres', '300', 'Colombia', 'Chocó'],
+    ['WASH', 'Urbano', 'OMS', 'Hombres', '80', 'Venezuela', 'Amazonas'],
+    ['WASH', 'Urbano', 'OMS', 'Mujeres', '95', 'Venezuela', 'Amazonas']
+]
 
 
 class TestSchema(unittest.TestCase):
@@ -173,34 +216,15 @@ class TestSchemaLoad(unittest.TestCase):
     def test_load_default(self):
         schema = hxl_schema()
         self.assertTrue(0 < len(schema.rules))
-        with _read_file('data-good.csv') as input:
-            dataset = hxl(input)
-            self.assertTrue(schema.validate(dataset))
+        self.assertTrue(schema.validate(hxl(DATA_GOOD)))
 
     def test_load_good(self):
-        with _read_file('schema-basic.csv') as schema_input:
-            schema = hxl_schema(schema_input)
-            with _read_file('data-good.csv') as input:
-                dataset = hxl(input)
-                self.assertTrue(schema.validate(dataset))
+        schema = hxl_schema(SCHEMA_BASIC)
+        self.assertTrue(schema.validate(hxl(DATA_GOOD)))
 
     def test_load_bad(self):
-        with _read_file('schema-basic.csv') as schema_input:
-            schema = hxl_schema(schema_input)
-            schema.callback = lambda e: True # to avoid seeing error messages
-            with _read_file('data-bad.csv') as input:
-                dataset = hxl(input)
-                self.assertFalse(schema.validate(dataset))
+        schema = hxl_schema(SCHEMA_BASIC)
+        self.assertFalse(schema.validate(hxl(DATA_BAD)))
 
-
-########################################################################
-# Support functions
-########################################################################
-
-root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
-file_dir = os.path.join(root_dir, 'tests', 'files', 'test_schema')
-
-def _read_file(name):
-    return open(os.path.join(file_dir, name), 'r')
 
 # end
