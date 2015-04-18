@@ -366,10 +366,16 @@ def parse_schema(source, callback):
         rule.required = to_boolean(row.get('#valid_required-min-max'))
         rule.severity = row.get('#valid_severity') or 'error'
         rule.description = row.get('#description')
-        s = row.get('#valid_value+list')
-        if s:
-            rule.enum = re.split(r'\s*\|\s*', s)
+
         rule.case_sensitive = to_boolean(row.get('#valid_value+case'))
+
+        # Determine allowed values
+        if row.get('#valid_value+list'):
+            rule.enum = set(re.split(r'\s*\|\s*', row.get('#valid_value+list')))
+        elif row.get('#valid_value+url'):
+            value_source = hxl(row.get('#valid_value+url'))
+            rule.enum = set(valid_source.get_value_set(row.get('#valid_value+target_tag')))
+
         schema.rules.append(rule)
 
     return schema
