@@ -8,55 +8,27 @@ License: Public Domain
 """
 
 import unittest
+import sys
 import os
 from hxl import hxl
 from hxl.model import Column, Row
 from hxl.schema import Schema, SchemaRule, hxl_schema
 
+if sys.version_info < (3, 3):
+    from mock import patch
+    URLOPEN_PATCH = 'urllib.urlopen'
+else:
+    from unittest.mock import patch
+    URLOPEN_PATCH = 'urllib.request.urlopen'
 
-#
-# Test data
-#
-
-SCHEMA_BASIC = [
-    ['#valid_tag', '#valid_required', '#valid_required+max', '#valid_datatype', '#valid_value+min', '#valid_value+max', '#valid_value+list'],
-    ['#sector', 'true', '', 'text', '', '', 'WASH|Salud|Educación'],
-    ['#subsector', 'true', '2', 'text', '', '', ''],
-    ['#org', 'true', '1', 'text', '', '', ''],
-    ['#population+sex', 'true', '1', 'text', '', '', 'Hombres|Mujeres'],
-    ['#targeted', '', '1', 'number', '0', '1000000000', ''],
-    ['#country', 'true', '', 'text', '', '', ''],
-    ['#adm1', '', '1', 'text', '', '', '']
-]
-
-DATA_GOOD = [
-    ['Sector/Cluster', 'Subsector', 'Organización', 'Sex', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
-    ['#sector', '#subsector', '#org', '#population+sex', '#targeted', '#country', '#adm1'],
-    ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
-    ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
-    ['Salud', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
-    ['Salud', 'Vacunación', 'OMS', 'Mujeres', '', 'Colombia', 'Cauca'],
-    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Hombres', '250', 'Colombia', 'Chocó'],
-    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Mujeres', '300', 'Colombia', 'Chocó'],
-    ['WASH', 'Urbano', 'OMS', 'Hombres', '80', 'Venezuela', 'Amazonas'],
-    ['WASH', 'Urbano', 'OMS', 'Mujeres', '95', 'Venezuela', 'Amazonas']
-]
-
-DATA_BAD = [
-    ['Sector/Cluster', 'Subsector', 'Organización', 'Sex', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
-    ['#sector', '#subsector', '#org', '#population+sex', '#targeted', '#country', '#adm1'],
-    ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
-    ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
-    ['', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
-    ['Salud', 'Vacunación', 'OMS', 'Mujeres', '', 'Colombia', 'Cauca'],
-    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Hombres', '250', 'Colombia', 'Chocó'],
-    ['Educación', 'Formación de enseñadores', 'UNICEF', 'Mujeres', '300', 'Colombia', 'Chocó'],
-    ['WASH', 'Urbano', 'OMS', 'Hombres', '80', 'Venezuela', 'Amazonas'],
-    ['WASH', 'Urbano', 'OMS', 'Mujeres', '95', 'Venezuela', 'Amazonas']
-]
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 
 
 class TestSchema(unittest.TestCase):
+    """Test the hxl.schema.Schema class."""
 
     def setUp(self):
         self.errors = []
@@ -92,6 +64,7 @@ class TestSchema(unittest.TestCase):
         
 
 class TestSchemaRule(unittest.TestCase):
+    """Test the hxl.schema.SchemaRule class."""
 
     def setUp(self):
         self.errors = []
@@ -196,9 +169,7 @@ class TestSchemaRule(unittest.TestCase):
 
 
     def _try_rule(self, value, errors_expected = 0):
-        """
-        Validate a single value with a SchemaRule
-        """
+        """Helper: Validate a single value with a SchemaRule"""
         self.errors = [] # clear errors for the next run
         if isinstance(value, Row):
             result = self.rule.validate_row(value)
@@ -212,6 +183,7 @@ class TestSchemaRule(unittest.TestCase):
 
 
 class TestSchemaLoad(unittest.TestCase):
+    """Test schema I/O support."""
 
     def test_load_default(self):
         schema = hxl_schema()
@@ -226,5 +198,92 @@ class TestSchemaLoad(unittest.TestCase):
         schema = hxl_schema(SCHEMA_BASIC)
         self.assertFalse(schema.validate(hxl(DATA_BAD)))
 
+    @patch(URLOPEN_PATCH)
+    def test_taxonomy_good(self, mock):
+        mock.return_value = StringIO(TAXONOMY_STRING)
+        schema = hxl_schema(SCHEMA_TAXONOMY)
+        self.assertTrue(schema.validate(hxl(DATA_TAXONOMY_GOOD)))
+
+    @patch(URLOPEN_PATCH)
+    def test_taxonomy_bad(self, mock):
+        mock.return_value = StringIO(TAXONOMY_STRING)
+        schema = hxl_schema(SCHEMA_TAXONOMY)
+        self.assertFalse(schema.validate(hxl(DATA_TAXONOMY_BAD)))
+
+    @patch(URLOPEN_PATCH)
+    def test_taxonomy_all(self, mock):
+        mock.return_value = StringIO(TAXONOMY_STRING)
+        schema = hxl_schema(SCHEMA_TAXONOMY_ALL)
+        self.assertTrue(schema.validate(hxl(DATA_TAXONOMY_BAD)))
+
+
+#
+# Test data
+#
+
+# Basic schema
+SCHEMA_BASIC = [
+    ['#valid_tag', '#valid_required', '#valid_required+max', '#valid_datatype', '#valid_value+min', '#valid_value+max', '#valid_value+list'],
+    ['#sector', 'true', '', 'text', '', '', 'WASH|Salud|Educación'],
+    ['#subsector', 'true', '2', 'text', '', '', ''],
+    ['#org', 'true', '1', 'text', '', '', ''],
+    ['#targeted', '', '1', 'number', '0', '1000000000', ''],
+    ['#country', 'true', '', 'text', '', '', ''],
+    ['#adm1', '', '1', 'text', '', '', '']
+]
+
+# Data that validates properly
+DATA_GOOD = [
+    ['Sector/Cluster', 'Subsector', 'Organización', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
+    ['#sector', '#subsector', '#org', '#targeted', '#country', '#adm1'],
+    ['WASH', 'Higiene', 'ACNUR', '100', 'Panamá', 'Los Santos'],
+    ['Salud', 'Vacunación', 'OMS', '', 'Colombia', 'Cauca'],
+    ['Educación', 'Formación de enseñadores', 'UNICEF', '250', 'Colombia', 'Chocó'],
+    ['WASH', 'Urbano', 'OMS', '80', 'Venezuela', 'Amazonas']
+]
+
+# Data that fails validation with the basic schema (missing sector in second data row)
+DATA_BAD = [
+    ['Sector/Cluster', 'Subsector', 'Organización', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
+    ['#sector', '#subsector', '#org', '#targeted', '#country', '#adm1'],
+    ['WASH', 'Higiene', 'ACNUR', '100', 'Panamá', 'Los Santos'],
+    ['', 'Vacunación', 'OMS', '', 'Colombia', 'Cauca'],
+    ['Educación', 'Formación de enseñadores', 'UNICEF', '250', 'Colombia', 'Chocó'],
+    ['WASH', 'Urbano', 'OMS', '80', 'Venezuela', 'Amazonas']
+]
+
+# Taxonomy rule with a tag selector
+SCHEMA_TAXONOMY = [
+    ['#valid_tag', '#valid_value+url', '#valid_value+target_tag'],
+    ['#adm1+code', 'http://example.org/taxonomy.csv', '#adm1+code']
+]
+
+# Taxonomy rule without a tag selector
+SCHEMA_TAXONOMY_ALL = [
+    ['#valid_tag', '#valid_value+url'],
+    ['#adm1+code', 'http://example.org/taxonomy.csv']
+]
+
+# External taxonomy dataset as a string (for simulation)
+TAXONOMY_STRING = """
+#adm1,#adm1+code
+Coast,C001
+Plains,C002
+Mountains,C003
+"""
+
+# Data that follows the taxonomy
+DATA_TAXONOMY_GOOD = [
+    ['#org', '#sector', '#adm1', '#adm1+code'],
+    ['NGO A', 'WASH', 'Coast', 'C001'],
+    ['NGO B', 'Education', 'Mountains', 'C003'],
+]
+
+# Data that doesn't follow the taxonomy (second p-code is actually a name)
+DATA_TAXONOMY_BAD = [
+    ['#org', '#sector', '#adm1', '#adm1+code'],
+    ['NGO A', 'WASH', 'Coast', 'C001'],
+    ['NGO B', 'Education', 'Mountains', 'Mountains'],
+]
 
 # end
