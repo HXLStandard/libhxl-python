@@ -22,17 +22,6 @@ DATA = [
     ['NGO B', 'Education', 'Coast', '300']
 ]
 
-SCHEMA_GOOD = [
-    ['#valid_tag', '#valid_required'],
-    ['#org', 'true']
-]
-
-SCHEMA_BAD = [
-    ['#valid_tag', '#valid_required'],
-    ['#severity', 'true']
-]
-
-
 
 class AbstractFilterTest(unittest.TestCase):
     """Base class for all tests."""
@@ -180,9 +169,3 @@ class TestChaining(AbstractFilterTest):
         )
 
 
-class TestNonFilters(AbstractFilterTest):
-    # TODO move elsewhere
-
-    def test_validate(self):
-        self.assertTrue(self.source.validate(SCHEMA_GOOD))
-        self.assertFalse(self.source.validate(SCHEMA_BAD))

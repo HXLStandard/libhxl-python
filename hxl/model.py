@@ -14,7 +14,7 @@ import csv
 import json
 
 import hxl
-from hxl.common import HXLException
+from hxl.common import HXLException, normalise_string
 
 
 class TagPattern(object):
@@ -191,6 +191,28 @@ class Dataset(object):
         This method can be highly inefficient for large datasets.
         """
         return [row.values for row in self]
+
+    def get_value_set(self, tag_pattern=None, normalise=False):
+        """
+        Return the set of all values in a dataset (optionally matching a tag pattern).
+        This method can be highly inefficient for large datasets.
+        @param tag_pattern (optional) return values only for columns matching this tag pattern.
+        @param normalise (optional) normalise the strings with hxl.common.normalise_string (default: False)
+        @return a Python set of values
+        """
+        value_set = set([])
+        if tag_pattern:
+            tag_pattern = TagPattern.parse(tag_pattern)
+        for row in self:
+            if tag_pattern:
+                new_values = row.get_all(tag_pattern)
+            else:
+                new_values = row.values
+            if normalise:
+                new_values = [normalise_string(s) for s in new_values]
+            value_set.update(new_values)
+        return value_set
+
 
     #
     # Utility

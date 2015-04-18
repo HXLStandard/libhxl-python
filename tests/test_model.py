@@ -7,7 +7,28 @@ License: Public Domain
 """
 
 import unittest
+from hxl import hxl
+from hxl.common import normalise_string
 from hxl.model import TagPattern, Column, Row
+
+DATA = [
+    ['Organisation', 'Cluster', 'District', 'Affected'],
+    ['#org', '#sector+cluster', '#adm1', '#affected'],
+    ['NGO A', 'WASH', 'Coast', '100'],
+    ['NGO B', 'Education', 'Plains', '200'],
+    ['NGO B', 'Education', 'Coast', '300']
+]
+
+SCHEMA_GOOD = [
+    ['#valid_tag', '#valid_required'],
+    ['#org', 'true']
+]
+
+SCHEMA_BAD = [
+    ['#valid_tag', '#valid_required'],
+    ['#severity', 'true']
+]
+
 
 class TestPattern(unittest.TestCase):
     """Test the TagPattern class."""
@@ -47,6 +68,49 @@ class TestPattern(unittest.TestCase):
         patterns = TagPattern.parse_list('tag-foo,tag+xxx')
         for pattern in patterns:
             self.assertFalse(pattern.match(self.column))
+
+
+class TestDataset(unittest.TestCase):
+
+    def setUp(self):
+        self.source = hxl(DATA)
+
+    def test_headers(self):
+        self.assertEqual(DATA[0], self.source.headers)
+
+    def test_has_headers(self):
+        self.assertTrue(self.source.has_headers)
+        self.assertFalse(hxl(DATA[1:]).has_headers)
+
+    def test_tags(self):
+        self.assertEqual([Column.parse(s).tag for s in DATA[1]], self.source.tags)
+
+    def test_display_tags(self):
+        self.assertEqual(DATA[1], self.source.display_tags)
+
+    def test_values(self):
+        self.assertEqual(DATA[2:], self.source.values)
+
+    def test_value_set_all(self):
+        expected = set()
+        for r in DATA[2:]:
+            expected.update(r)
+        self.assertEqual(expected, self.source.get_value_set())
+
+    def test_value_set_normalised(self):
+        expected = set([normalise_string(s[1]) for s in DATA[2:]])
+        self.assertEqual(expected, self.source.get_value_set('#sector', True))
+
+    def test_value_set_unnormalised(self):
+        expected = set([s[1] for s in DATA[2:]])
+        self.assertEqual(expected, self.source.get_value_set('#sector', False))
+
+    def test_validate(self):
+        self.assertTrue(self.source.validate(SCHEMA_GOOD))
+        self.assertFalse(self.source.validate(SCHEMA_BAD))
+
+    # TODO test generators
+
 
 class TestColumn(unittest.TestCase):
 
