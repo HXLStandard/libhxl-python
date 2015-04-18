@@ -12,6 +12,7 @@ from hxl import hxl
 from hxl.model import Column, Row
 from hxl.schema import Schema, SchemaRule, hxl_schema
 
+
 class TestSchema(unittest.TestCase):
 
     def setUp(self):
@@ -150,6 +151,25 @@ class TestSchemaRule(unittest.TestCase):
         self.rule.max_occur = 0
         self._try_rule(row, 1)
 
+
+    def _try_rule(self, value, errors_expected = 0):
+        """
+        Validate a single value with a SchemaRule
+        """
+        self.errors = [] # clear errors for the next run
+        if isinstance(value, Row):
+            result = self.rule.validate_row(value)
+        else:
+            result = self.rule.validate(value)
+        if errors_expected == 0:
+            self.assertTrue(result)
+        else:
+            self.assertFalse(result)
+        self.assertEqual(len(self.errors), errors_expected)
+
+
+class TestSchemaLoad(unittest.TestCase):
+
     def test_load_default(self):
         schema = hxl_schema()
         self.assertTrue(0 < len(schema.rules))
@@ -172,20 +192,6 @@ class TestSchemaRule(unittest.TestCase):
                 dataset = hxl(input)
                 self.assertFalse(schema.validate(dataset))
 
-    def _try_rule(self, value, errors_expected = 0):
-        """
-        Validate a single value with a SchemaRule
-        """
-        self.errors = [] # clear errors for the next run
-        if isinstance(value, Row):
-            result = self.rule.validate_row(value)
-        else:
-            result = self.rule.validate(value)
-        if errors_expected == 0:
-            self.assertTrue(result)
-        else:
-            self.assertFalse(result)
-        self.assertEqual(len(self.errors), errors_expected)
 
 ########################################################################
 # Support functions
