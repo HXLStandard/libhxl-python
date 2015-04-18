@@ -23,7 +23,7 @@ SCHEMA_BASIC = [
     ['#sector', 'true', '', 'text', '', '', 'WASH|Salud|Educación'],
     ['#subsector', 'true', '2', 'text', '', '', ''],
     ['#org', 'true', '1', 'text', '', '', ''],
-    ['#sex', 'true', '1', 'text', '', '', 'Hombres|Mujeres'],
+    ['#population+sex', 'true', '1', 'text', '', '', 'Hombres|Mujeres'],
     ['#targeted', '', '1', 'number', '0', '1000000000', ''],
     ['#country', 'true', '', 'text', '', '', ''],
     ['#adm1', '', '1', 'text', '', '', '']
@@ -31,7 +31,7 @@ SCHEMA_BASIC = [
 
 DATA_GOOD = [
     ['Sector/Cluster', 'Subsector', 'Organización', 'Sex', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
-    ['#sector', '#subsector', '#org', '#sex', '#targeted', '#country', '#adm1'],
+    ['#sector', '#subsector', '#org', '#population+sex', '#targeted', '#country', '#adm1'],
     ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
     ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
     ['Salud', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
@@ -44,7 +44,7 @@ DATA_GOOD = [
 
 DATA_BAD = [
     ['Sector/Cluster', 'Subsector', 'Organización', 'Sex', 'Targeted', 'País', 'Departamento/Provincia/Estado'],
-    ['#sector', '#subsector', '#org', '#sex', '#targeted', '#country', '#adm1'],
+    ['#sector', '#subsector', '#org', '#population+sex', '#targeted', '#country', '#adm1'],
     ['WASH', 'Higiene', 'ACNUR', 'Hombres', '100', 'Panamá', 'Los Santos'],
     ['WASH', 'Higiene', 'ACNUR', 'Mujeres', '100', 'Panamá', 'Los Santos'],
     ['', 'Vacunación', 'OMS', 'Hombres', '', 'Colombia', 'Cauca'],
@@ -75,7 +75,6 @@ class TestSchema(unittest.TestCase):
             ]
         )
 
-
     def test_row(self):
         self.try_schema(['35', 'WASH', ''])
         self.try_schema(['35', 'WASH', 'Health'])
@@ -91,6 +90,7 @@ class TestSchema(unittest.TestCase):
             self.assertFalse(self.schema.validate_row(self.row))
         self.assertEqual(len(self.errors), errors_expected)
         
+
 class TestSchemaRule(unittest.TestCase):
 
     def setUp(self):
