@@ -1,5 +1,5 @@
 Organización,Departamento/Provincia/Estado,Count,Sum,Average (mean),Minimum value,Maximum value
-#org,#adm1,#x_count_num,#x_sum_num,#x_average_num,#x_min_num,#x_max_num
+#org,#adm1,#meta+count,#meta+sum,#meta+average,#meta+min,#meta+max
 ACNUR,Los Santos,2,200.0,100.0,100.0,100.0
 OMS,Amazonas,2,175.0,87.5,80.0,95.0
 OMS,Cauca,2,,,,
