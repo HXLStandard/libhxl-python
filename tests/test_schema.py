@@ -16,7 +16,7 @@ from hxl.schema import Schema, SchemaRule, hxl_schema
 
 if sys.version_info < (3, 3):
     from mock import patch
-    URLOPEN_PATCH = 'urllib.urlopen'
+    URLOPEN_PATCH = 'urllib2.urlopen'
 else:
     from unittest.mock import patch
     URLOPEN_PATCH = 'urllib.request.urlopen'

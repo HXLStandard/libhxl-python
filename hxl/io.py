@@ -15,7 +15,7 @@ import re
 import xlrd
 
 if sys.version_info < (3,):
-    import urllib
+    import urllib2
 else:
     import urllib.request
 
@@ -124,7 +124,10 @@ class CSVInput(AbstractInput):
 
     def __init__(self, url):
         if sys.version_info < (3,):
-            self._input = urllib.urlopen(url)
+            try:
+                self._input = urllib2.urlopen(url)
+            except:
+                self._input = open(url, 'r')
         else:
             try:
                 self._input = urllib.request.urlopen(url)
