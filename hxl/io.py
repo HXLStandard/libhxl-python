@@ -126,7 +126,7 @@ class CSVInput(AbstractInput):
         if sys.version_info < (3,):
             try:
                 self._input = urllib2.urlopen(url)
-            except:
+            except ValueError: # if it's not a properly-formed URL
                 self._input = open(url, 'r')
         else:
             try:

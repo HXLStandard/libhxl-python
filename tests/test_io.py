@@ -10,6 +10,7 @@ License: Public Domain
 import unittest
 import os
 import codecs
+from urllib2 import HTTPError
 from hxl import hxl
 from hxl.io import StreamInput, HXLParseException, HXLReader, CSVInput
 
@@ -24,16 +25,24 @@ FILE_INVALID = _resolve_file('./files/test_parser/input-invalid.csv')
 
 class TestCSVInput(unittest.TestCase):
 
-    def test_bad_url(self):
+    def test_bad_file(self):
         with self.assertRaises(IOError):
             input = CSVInput('XXXXX')
+
+    def test_bad_url(self):
+        with self.assertRaises(HTTPError):
+            input = CSVInput('http://example.org/XXXXX.csv')
 
 
 class TestHXL(unittest.TestCase):
 
-    def test_bad_url(self):
+    def test_bad_file(self):
         with self.assertRaises(IOError):
             source = hxl('XXXXX')
+
+    def test_bad_url(self):
+        with self.assertRaises(HTTPError):
+            source = hxl('http://example.org/XXXXX')
 
 class TestParser(unittest.TestCase):
 
