@@ -40,6 +40,7 @@ else:
 
 
 def make_input(data):
+    """Figure out what kind of input to create."""
 
     if isinstance(data, AbstractInput):
         return data
@@ -127,7 +128,7 @@ class CSVInput(AbstractInput):
         else:
             try:
                 self._input = urllib.request.urlopen(url)
-            except:
+            except IOError, e:
                 # kludge for local files
                 self._input = open(url, 'r')
         self._reader = csv.reader(self._input)
