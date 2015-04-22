@@ -19,17 +19,3 @@ class HXLException(Exception):
 def normalise_string(s):
     return s.strip().lower().replace(r'\s\s+', ' ')
 
-def pattern_list(patterns):
-    """
-    Normalise a pattern list:
-    - if falsy, make into an empty list
-    - if scalar, make into a one-item list
-    - make sure each item is compiled into a tag pattern
-    @param patterns a string or list of strings/TagPattern objects
-    """
-    from hxl.model import TagPattern
-    if not patterns:
-        return []
-    elif isinstance(patterns, six.string_types):
-        patterns = [patterns]
-    return [TagPattern.parse(pattern) for pattern in patterns]

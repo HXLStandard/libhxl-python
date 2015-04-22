@@ -12,6 +12,7 @@ import copy
 import re
 import csv
 import json
+import six
 
 import hxl
 from hxl.common import HXLException, normalise_string
@@ -113,12 +114,19 @@ class TagPattern(object):
             raise hxl.HXLException('Malformed tag: ' + s)
 
     @staticmethod
-    def parse_list(s):
-        """Parse a comma-separated list of tagspecs."""
-        if s:
-            return [TagPattern.parse(spec) for spec in s.split(',')]
-        else:
+    def parse_list(specs):
+        """
+        Normalise a list of tag specs.
+        Split if a comma-separated string.
+        Convert every element to a TagPattern
+        @param specs the raw input
+        @return normalised list of tag patterns
+        """
+        if not specs:
             return []
+        if isinstance(specs, six.string_types):
+            specs = specs.split(',')
+        return [TagPattern.parse(spec) for spec in specs]
 
 
 class Dataset(object):

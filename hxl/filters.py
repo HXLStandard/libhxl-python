@@ -12,7 +12,7 @@ from copy import copy
 import dateutil.parser
 
 import hxl
-from hxl.common import pattern_list, normalise_string
+from hxl.common import normalise_string
 from hxl.model import TagPattern, Dataset, Column, Row
 
 
@@ -272,8 +272,8 @@ class ColumnFilter(Dataset):
         @param exclude_tags a blacklist of TagPattern objects to exclude
         """
         self.source = source
-        self.include_tags = pattern_list(include_tags)
-        self.exclude_tags = pattern_list(exclude_tags)
+        self.include_tags = TagPattern.parse_list(include_tags)
+        self.exclude_tags = TagPattern.parse_list(exclude_tags)
         self.indices = [] # saved indices for columns to include
         self.columns_out = None
 
@@ -378,7 +378,7 @@ class CountFilter(Dataset):
         @param aggregate_pattern an optional tag pattern calculating numeric aggregate values.
         """
         self.source = source
-        self.patterns = pattern_list(patterns)
+        self.patterns = TagPattern.parse_list(patterns)
         self.aggregate_pattern = TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
         self._saved_columns = None
 
@@ -869,7 +869,7 @@ class SortFilter(Dataset):
         @param reverse True to reverse the sort order
         """
         self.source = source
-        self.sort_tags = pattern_list(tags)
+        self.sort_tags = TagPattern.parse_list(tags)
         self.reverse = reverse
         self._iter = None
 
