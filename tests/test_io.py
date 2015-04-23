@@ -65,54 +65,54 @@ class TestParser(unittest.TestCase):
 
     def test_row_count(self):
         row_count = 0
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             # logical row count
             for row in source:
                 row_count += 1
         self.assertEqual(TestParser.EXPECTED_ROW_COUNT, row_count)
 
     def test_headers(self):
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             headers = source.headers
         self.assertEqual(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             tags = source.tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
     def test_attributes(self):
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(set(TestParser.EXPECTED_ATTRIBUTES[column_number]), column.attributes)
 
     def test_column_count(self):
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             for row in source:
                 self.assertEqual(len(TestParser.EXPECTED_TAGS), len(row.values))
 
     def test_columns(self):
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
 
     def test_content(self):
-        with hxl(FILE_VALID) as source:
+        with hxl(FILE_VALID, True) as source:
             for i, row in enumerate(source):
                 for j, value in enumerate(row):
                     self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
 
     def test_fuzzy(self):
         """Imperfect hashtag row should still work."""
-        with hxl(FILE_FUZZY) as source:
+        with hxl(FILE_FUZZY, True) as source:
             source.tags
 
     def test_invalid(self):
         """Missing hashtag row should raise an exception."""
         with self.assertRaises(HXLParseException):
-            with hxl(FILE_INVALID) as source:
+            with hxl(FILE_INVALID, True) as source:
                 source.tags
 
 

@@ -39,7 +39,7 @@ else:
         return value
 
 
-def make_input(data):
+def make_input(data, allow_local=False):
     """Figure out what kind of input to create."""
 
     if isinstance(data, AbstractInput):
@@ -54,13 +54,37 @@ def make_input(data):
         return ArrayInput(data)
 
     elif re.match(r'\.xlsx?', data):
-        return ExcelInput(data)
+        return ExcelInput(data, allow_local)
     
     else:
-        return CSVInput(data)
+        return CSVInput(data, allow_local)
 
 
-def hxl(data):
+def make_stream(origin, allow_local=False):
+    """Figure out whether to open a file or a URL."""
+
+    # Pre-filter to get CSV for public Google Sheets
+    result = re.match(r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+)).*$', origin)
+    if result:
+        if result.group(2):
+            origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
+        else:
+            origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
+
+    if re.match(r'^(?:https?|ftp)://', origin):
+        if sys.version_info < (3,):
+            return urllib2.urlopen(origin)
+        else:
+            return urllib.request.urlopen(origin)
+
+    elif allow_local:
+        return open(origin, 'rb')
+
+    else:
+        raise IOError('Only http(s) and ftp URLs allowed.')
+
+
+def hxl(data, allow_local=False):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
@@ -72,7 +96,7 @@ def hxl(data):
         return data
 
     else:
-        return HXLReader(make_input(data))
+        return HXLReader(make_input(data, allow_local))
 
 
 class HXLParseException(HXLException):
@@ -122,18 +146,8 @@ class StreamInput(AbstractInput):
 class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    def __init__(self, url):
-        if sys.version_info < (3,):
-            try:
-                self._input = urllib2.urlopen(url)
-            except ValueError: # if it's not a properly-formed URL
-                self._input = open(url, 'r')
-        else:
-            try:
-                self._input = urllib.request.urlopen(url)
-            except IOError, e:
-                # kludge for local files
-                self._input = open(url, 'r')
+    def __init__(self, origin, allow_local=False):
+        self._input = make_stream(origin, allow_local)
         self._reader = csv.reader(self._input)
 
     def __next__(self):
@@ -148,16 +162,9 @@ class CSVInput(AbstractInput):
 class ExcelInput(AbstractInput):
     """Read raw XLS input from a URL or filename."""
 
-    def __init__(self, url, sheet_index=0):
-        if sys.version_info < (3,):
-            input = urllib.urlopen(url)
-        else:
-            try:
-                input = urllib.request.urlopen(url)
-            except:
-                # kludge for local files
-                input = open(url, 'rb')
+    def __init__(self, url, sheet_index=0, allow_local=False):
         try:
+            input = make_stream(url, allow_local)
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
             input.close()

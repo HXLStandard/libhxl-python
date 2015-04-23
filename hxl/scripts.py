@@ -411,7 +411,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output, hxl(args.merge) if args.merge else None as merge_source:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output, hxl(args.merge, True) if args.merge else None as merge_source:
         filter = MergeDataFilter(source, merge_source=merge_source,
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         write_hxl(output.output, filter)
