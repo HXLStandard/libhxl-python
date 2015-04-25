@@ -222,7 +222,6 @@ class HXLReader(Dataset):
         @param url the URL or filename to open.
 
         """
-        
         self._input = input
         self._columns = None
         self._source_row_number = -1
@@ -298,8 +297,9 @@ class HXLReader(Dataset):
                 if column:
                     columns.append(column)
                     column_number += 1
-            else:
-                columns.append(Column(header=header))
+                    continue
+
+            columns.append(Column(header=header))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:

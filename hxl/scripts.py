@@ -115,7 +115,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = AddColumnsFilter(source, specs=args.spec, before=args.before)
         write_hxl(output.output, filter)
 
@@ -253,7 +253,7 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
     
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
 
         if args.whitespace_all:
             whitespace_arg = True
@@ -312,7 +312,7 @@ def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
 
     args = parser.parse_args(args)
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = CountFilter(source, args.tags, args.aggregate)
         write_hxl(output.output, filter)
 
@@ -345,7 +345,7 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = ColumnFilter(source, args.include, args.exclude)
         write_hxl(output.output, filter)
 
@@ -448,7 +448,7 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = RenameFilter(source, args.rename)
         write_hxl(output.output, filter)
 
@@ -492,7 +492,7 @@ def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = RowFilter(source, queries=args.query, reverse=args.reverse)
         write_hxl(output.output, filter)
 
@@ -534,7 +534,7 @@ def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin) as source, make_output(args.outfile, stdout) as output:
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = SortFilter(source, args.tags, args.reverse)
         write_hxl(output.output, filter)
 
