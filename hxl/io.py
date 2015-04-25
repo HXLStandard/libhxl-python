@@ -13,6 +13,7 @@ import json
 import sys
 import re
 import xlrd
+import six
 
 if sys.version_info < (3,):
     import urllib2
@@ -49,7 +50,7 @@ def make_input(data, allow_local=False):
         # it's a file stream
         return StreamInput(data)
 
-    elif hasattr(data, '__len__') and (not isinstance(data, str)):
+    elif hasattr(data, '__len__') and (not isinstance(data, six.string_types)):
         # it's an array
         return ArrayInput(data)
 
