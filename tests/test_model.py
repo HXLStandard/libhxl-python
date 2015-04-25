@@ -179,4 +179,22 @@ class TestRow(unittest.TestCase):
         self.assertEqual(None, self.row.get('#country'))
         self.assertEqual([], self.row.get_all('#country'))
 
+    def test_parse_simple(self):
+        column = Column.parse('#tag')
+        self.assertEqual('#tag', column.tag)
+
+    def test_parse_attributes(self):
+        # Single attribute
+        specs = ['#tag+foo', '#tag +foo', ' #tag +foo   ']
+        for column in [Column.parse(spec) for spec in specs]:
+            column = Column.parse('#tag+foo')
+            self.assertEqual('#tag', column.tag)
+            self.assertEqual(['foo'], sorted(column.attributes))
+
+        # Multiple attributes
+        specs = ['#tag+foo+bar', '#tag +foo +bar', ' #tag +bar+foo   ']
+        for column in [Column.parse(spec) for spec in specs]:
+            self.assertEqual('#tag', column.tag)
+            self.assertEqual(['bar', 'foo'], sorted(column.attributes))
+
 # end

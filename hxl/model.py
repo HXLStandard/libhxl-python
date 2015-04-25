@@ -326,7 +326,7 @@ class Column(object):
     """ 
 
     # Regular expression to match a HXL tag
-    PATTERN = r'^\s*(#{token})((?:\+{token})*)\s*$'.format(token=hxl.common.TOKEN)
+    PATTERN = r'^\s*(#{token})((?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
     __slots__ = ['tag', 'attributes', 'header']
@@ -372,7 +372,7 @@ class Column(object):
             tag = result.group(1)
             attribute_string = result.group(2)
             if attribute_string:
-                attributes = attribute_string[1:].split('+')
+                attributes = re.split(r'\s*\+', attribute_string.strip().strip('+'))
             else:
                 attributes = []
             return Column(tag=tag, attributes=attributes, header=header)
