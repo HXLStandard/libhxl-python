@@ -89,7 +89,7 @@ class TagPattern(object):
 
     @staticmethod
     def parse(s):
-        """Parse a single tagspec, like #tag+foo-bar."""
+        """Parse a single tag pattern, like #tag+foo-bar."""
 
         if not s:
             # edge case: null value
