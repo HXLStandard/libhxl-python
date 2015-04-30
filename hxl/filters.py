@@ -91,7 +91,7 @@ class AddColumnsFilter(Dataset):
 
         next = __next__
 
-    VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token})=(.*)\s*$'.format(token=hxl.common.TOKEN)
+    VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN)
 
     @staticmethod
     def parse_spec(spec):
@@ -892,16 +892,19 @@ class SortFilter(Dataset):
             def get_value(pattern):
                 """Closure: extract a sort key"""
                 raw_value = pattern.get_value(row)
-                if pattern.tag.endswith('_num') or pattern.tag.endswith('_deg'):
-                    # left-pad numbers with zeros
-                    try:
-                        raw_value = str(float(raw_value)).zfill(15)
-                    except ValueError:
-                        pass
-                elif pattern.tag.endswith('_date'):
-                    # normalise dates for sorting
-                    raw_value = dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
-                return raw_value.upper() if raw_value else ''
+
+                # is this a date?
+                if pattern.tag == 'date':
+                    return dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
+
+                # is this a number?
+                try:
+                    return float(raw_value)
+                except:
+                    pass
+
+                # normalise a string value
+                return normalise_string(raw_value)
 
             if self.sort_tags:
                 return [get_value(pattern) for pattern in self.sort_tags]

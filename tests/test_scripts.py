@@ -53,16 +53,16 @@ class TestAdd(BaseTest):
         self.input_file = 'input-simple.csv'
 
     def test_default(self):
-        self.assertOutput(['-s', 'report_date=2015-03-31'], 'add-output-default.csv')
-        self.assertOutput(['--spec', 'report_date=2015-03-31'], 'add-output-default.csv')
+        self.assertOutput(['-s', 'date+reported=2015-03-31'], 'add-output-default.csv')
+        self.assertOutput(['--spec', 'date+reported=2015-03-31'], 'add-output-default.csv')
 
     def test_headers(self):
-        self.assertOutput(['-s', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
-        self.assertOutput(['--spec', 'Report Date#report_date=2015-03-31'], 'add-output-headers.csv')
+        self.assertOutput(['-s', 'Report Date#date+reported=2015-03-31'], 'add-output-headers.csv')
+        self.assertOutput(['--spec', 'Report Date#date+reported=2015-03-31'], 'add-output-headers.csv')
 
     def test_before(self):
-        self.assertOutput(['-b', '-s', 'report_date=2015-03-31'], 'add-output-before.csv')
-        self.assertOutput(['--before', '--spec', 'report_date=2015-03-31'], 'add-output-before.csv')
+        self.assertOutput(['-b', '-s', 'date+reported=2015-03-31'], 'add-output-before.csv')
+        self.assertOutput(['--before', '--spec', 'date+reported=2015-03-31'], 'add-output-before.csv')
 
 
 class TestClean(BaseTest):
@@ -236,7 +236,7 @@ class TestSort(BaseTest):
 
     def test_date(self):
         self.input_file = 'input-date.csv'
-        self.assertOutput(['-t', 'report_date'], 'sort-output-date.csv')
+        self.assertOutput(['-t', 'date+reported'], 'sort-output-date.csv')
 
     def test_reverse(self):
         self.assertOutput(['-r'], 'sort-output-reverse.csv')
