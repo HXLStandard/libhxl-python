@@ -1,7 +1,0 @@
-Qué?,,,Quién?,Para quién?,,Dónde?
-Registro,Sector/Cluster,Subsector,Organización,Hombres,Mujeres,País,Departamento/Provincia/Estado
-,#sector/es,#subsector/es,#org/es,#sex+#targeted_num,#sex+#targeted_num,#country,#adm1
-001,WASH,Higiene,ACNUR,100,100,Panamá,Los Santos
-002,Salud,Vacunación,OMS,,,Colombia,Cauca
-003,Educación,Formación de enseñadores,UNICEF,250,300,Colombia,Chocó
-004,WASH,Urbano,OMS,80,95,Venezuela,Amazonas

@@ -1,5 +1,5 @@
 Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado,Report Date
-#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1,#date+reported
+#sector,#subsector,#org,#population+sex,#targeted,#country,#adm1,#date+reported
 WASH,Higiene,ACNUR,Hombres,100,Panamá,Los Santos,2015-03-31
 WASH,Higiene,ACNUR,Mujeres,100,Panamá,Los Santos,2015-03-31
 Salud,Vacunación,OMS,Hombres,,Colombia,Cauca,2015-03-31

@@ -35,13 +35,13 @@ class TestSchema(unittest.TestCase):
         self.schema = Schema(
             rules=[
                 SchemaRule('#sector', min_occur=1),
-                SchemaRule('#affected_num', data_type='number')
+                SchemaRule('#affected', data_type='number')
                 ],
             callback = lambda error: self.errors.append(error)
             )
         self.row = Row(
             columns = [
-                Column(tag='#affected_num'),
+                Column(tag='#affected'),
                 Column(tag='#sector'),
                 Column(tag='#sector')
             ]

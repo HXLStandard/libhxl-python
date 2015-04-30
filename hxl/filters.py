@@ -894,7 +894,7 @@ class SortFilter(Dataset):
                 raw_value = pattern.get_value(row)
 
                 # is this a date?
-                if pattern.tag == 'date':
+                if pattern.tag == '#date':
                     return dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
 
                 # is this a number?

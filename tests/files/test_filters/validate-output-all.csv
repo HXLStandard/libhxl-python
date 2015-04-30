@@ -1,5 +1,5 @@
 Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado,Error messages,Error tag,Error row number (source),Error column number (source)
-#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1,#x_errors,#x_tags,#x_rows,#x_cols
+#sector,#subsector,#org,#population+sex,#targeted,#country,#adm1,#x_errors,#x_tags,#x_rows,#x_cols
 WASH,Higiene,ACNUR,Hombres,100,Panamá,Los Santos,,,,
 WASH,Higiene,ACNUR,Mujeres,100,Panamá,Los Santos,,,,
 Salud,Vacunación,OMS,Hombres,,Colombia,Cauca,,,,

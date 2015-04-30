@@ -1,5 +1,5 @@
 Sector/Cluster,Subsector,Organización,Sex,Targeted,País,Departamento/Provincia/Estado
-#sector,#subsector,#org,#sex,#targeted_num,#country,#adm1
+#sector,#subsector,#org,#population+sex,#targeted,#country,#adm1
 wash,higiene,ACNUR,Hombres,100,Panamá,Los Santos
 wash,higiene,ACNUR,Mujeres,100,Panamá,Los Santos
 salud,vacunación,OMS,Hombres,,Colombia,Cauca

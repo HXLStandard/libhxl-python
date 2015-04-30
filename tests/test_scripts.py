@@ -109,7 +109,7 @@ class TestCount(BaseTest):
         self.assertOutput(['--tags', 'org,adm1'], 'count-output-simple.csv')
 
     def test_aggregated(self):
-        self.assertOutput(['-t', 'org,adm1', '-a', 'targeted_num'], 'count-output-aggregated.csv')
+        self.assertOutput(['-t', 'org,adm1', '-a', 'targeted'], 'count-output-aggregated.csv')
 
 
 class TestCut(BaseTest):
@@ -126,8 +126,8 @@ class TestCut(BaseTest):
         self.assertOutput(['--include', 'sector,org,adm1'], 'cut-output-whitelist.csv')
 
     def test_blacklist(self):
-        self.assertOutput(['-x', 'sex,targeted_num'], 'cut-output-blacklist.csv')
-        self.assertOutput(['--exclude', 'sex,targeted_num'], 'cut-output-blacklist.csv')
+        self.assertOutput(['-x', 'population+sex,targeted'], 'cut-output-blacklist.csv')
+        self.assertOutput(['--exclude', 'population+sex,targeted'], 'cut-output-blacklist.csv')
 
 
 class TestMerge(BaseTest):
@@ -163,14 +163,14 @@ class TestRename(BaseTest):
         self.input_file = 'input-simple.csv'
 
     def test_single(self):
-        self.assertOutput(['-r', 'targeted_num:affected_num'], 'rename-output-single.csv')
-        self.assertOutput(['--rename', 'targeted_num:affected_num'], 'rename-output-single.csv')
+        self.assertOutput(['-r', 'targeted:affected'], 'rename-output-single.csv')
+        self.assertOutput(['--rename', 'targeted:affected'], 'rename-output-single.csv')
 
     def test_header(self):
-        self.assertOutput(['-r', 'targeted_num:Affected#affected_num'], 'rename-output-header.csv')
+        self.assertOutput(['-r', 'targeted:Affected#affected'], 'rename-output-header.csv')
 
     def test_multiple(self):
-        self.assertOutput(['-r', 'targeted_num:affected_num', '-r', 'org:funding'], 'rename-output-multiple.csv')
+        self.assertOutput(['-r', 'targeted:affected', '-r', 'org:funding'], 'rename-output-multiple.csv')
 
 
 class TestSelect(BaseTest):
@@ -190,16 +190,16 @@ class TestSelect(BaseTest):
         self.assertOutput(['-q', 'sector!=WASH'], 'select-output-ne.csv')
 
     def test_lt(self):
-        self.assertOutput(['-q', 'targeted_num<200'], 'select-output-lt.csv')
+        self.assertOutput(['-q', 'targeted<200'], 'select-output-lt.csv')
 
     def test_le(self):
-        self.assertOutput(['-q', 'targeted_num<=100'], 'select-output-le.csv')
+        self.assertOutput(['-q', 'targeted<=100'], 'select-output-le.csv')
 
     def test_gt(self):
-        self.assertOutput(['-q', 'targeted_num>100'], 'select-output-gt.csv')
+        self.assertOutput(['-q', 'targeted>100'], 'select-output-gt.csv')
 
     def test_ge(self):
-        self.assertOutput(['-q', 'targeted_num>=100'], 'select-output-ge.csv')
+        self.assertOutput(['-q', 'targeted>=100'], 'select-output-ge.csv')
 
     def test_re(self):
         self.assertOutput(['-q', 'sector~^W..H'], 'select-output-re.csv')
@@ -232,7 +232,7 @@ class TestSort(BaseTest):
         self.assertOutput(['--tags', 'country'], 'sort-output-tags.csv')
 
     def test_numeric(self):
-        self.assertOutput(['-t', 'targeted_num'], 'sort-output-numeric.csv')
+        self.assertOutput(['-t', 'targeted'], 'sort-output-numeric.csv')
 
     def test_date(self):
         self.input_file = 'input-date.csv'
