@@ -17,8 +17,8 @@ from hxl import hxl
 DATA = [
     ['Organisation', 'Cluster', 'District', 'Affected'],
     ['#org', '#sector', '#adm1', '#affected'],
-    ['NGO A', 'WASH', 'Coast', '100'],
-    ['NGO B', 'Education', 'Plains', '200'],
+    ['NGO A', 'WASH', 'Coast', '200'],
+    ['NGO B', 'Education', 'Plains', '100'],
     ['NGO B', 'Education', 'Coast', '300']
 ]
 
@@ -90,8 +90,8 @@ class TestCountFilter(AbstractFilterTest):
 
     def test_aggregation_values(self):
         expected = [
-            ['Education', 2, 500, 250, 200, 300],
-            ['WASH', 1, 100, 100, 100, 100]
+            ['Education', 2, 400, 200, 100, 300],
+            ['WASH', 1, 200, 200, 200, 200]
         ]
         self.assertEqual(expected, self.source.count('#sector', '#affected').values)
 
