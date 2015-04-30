@@ -396,12 +396,12 @@ class CountFilter(Dataset):
                 else:
                     header = None
                 cols.append(Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-            cols.append(Column(tag='#meta+count', header='Count'))
+            cols.append(Column.parse('#meta+count', 'Count'))
             if self.aggregate_pattern is not None:
-                cols.append(Column(tag='#meta+sum', header='Sum'))
-                cols.append(Column(tag='#meta+average', header='Average (mean)'))
-                cols.append(Column(tag='#meta+min', header='Minimum value'))
-                cols.append(Column(tag='#meta+max', header='Maximum value'))
+                cols.append(Column.parse('#meta+sum', header='Sum'))
+                cols.append(Column.parse('#meta+average', header='Average (mean)'))
+                cols.append(Column.parse('#meta+min', header='Minimum value'))
+                cols.append(Column.parse('#meta+max', header='Maximum value'))
             self._saved_columns = cols
         return self._saved_columns
 

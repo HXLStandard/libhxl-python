@@ -74,7 +74,7 @@ class TestRowFilter(AbstractFilterTest):
 class TestCountFilter(AbstractFilterTest):
 
     def test_tags(self):
-        expected = ['#sector', '#meta+count']
+        expected = ['#sector', '#meta']
         self.assertEqual(expected, self.source.count('#sector').tags)
 
     def test_values(self):
@@ -86,7 +86,7 @@ class TestCountFilter(AbstractFilterTest):
 
     def test_aggregation_tags(self):
         expected = ['#sector', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
-        self.assertEqual(expected, self.source.count('#sector', '#meta').tags)
+        self.assertEqual(expected, self.source.count('#sector', '#meta').display_tags)
 
     def test_aggregation_values(self):
         expected = [
