@@ -58,8 +58,14 @@ class TestPattern(unittest.TestCase):
         pattern = TagPattern.parse('#tag+foo-xxx')
         self.assertEqual(pattern.tag, '#tag')
         self.assertTrue('foo' in pattern.include_attributes)
+
         pattern = TagPattern.parse('tag+foo-xxx')
         self.assertEqual(pattern.tag, '#tag')
+
+        pattern = TagPattern.parse('   tag +foo  -xxx  ')
+        self.assertEqual(pattern.tag, '#tag')
+        self.assertEqual(['foo'], pattern.include_attributes)
+        self.assertEqual(['xxx'], pattern.exclude_attributes)
 
     def test_parse_list(self):
         patterns = TagPattern.parse_list('tag+foo,tag-xxx')

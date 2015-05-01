@@ -29,7 +29,7 @@ class TagPattern(object):
     """
 
     # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
-    PATTERN = r'^\s*#?({token})((?:[+-]{token})*)\s*$'.format(token=hxl.common.TOKEN)
+    PATTERN = r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
     def __init__(self, tag, include_attributes=None, exclude_attributes=None):
         """Like a column, but has a whitelist and a blacklist."""
@@ -103,7 +103,7 @@ class TagPattern(object):
             tag = '#' + result.group(1)
             include_attributes = []
             exclude_attributes = []
-            attribute_specs = re.split(r'([+-])', result.group(2))
+            attribute_specs = re.split(r'\s*([+-])', result.group(2))
             for i in range(1, len(attribute_specs), 2):
                 if attribute_specs[i] == '+':
                     include_attributes.append(attribute_specs[i + 1])
