@@ -701,7 +701,7 @@ class MergeDataFilter(Dataset):
             """
             values = []
             for pattern in self.outer.keys:
-                values.append(pattern.get_value(row))
+                values.append(normalise_string(pattern.get_value(row)))
             return tuple(values)
 
         def _read_merge(self):

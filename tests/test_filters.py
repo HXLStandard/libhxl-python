@@ -163,8 +163,8 @@ class TestMergeDataFilter(AbstractFilterTest):
     MERGE_IN = [
         ['District', 'P-code'],
         ['#adm1', '#adm1+code'],
-        ['Coast', '001'],
-        ['Plains', '002']
+        ['coaST', '001'],         # deliberate case variation
+        ['   Plains', '002']      # deliberate whitespace variation
     ]
 
     MERGE_OUT = [
@@ -187,7 +187,7 @@ class TestMergeDataFilter(AbstractFilterTest):
 
     def test_values(self):
         self.assertEqual(self.MERGE_OUT[2:], self.merged.values)
-        
+
 
 class TestRenameFilter(AbstractFilterTest):
 
