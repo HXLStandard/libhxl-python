@@ -35,6 +35,33 @@ class AbstractFilterTest(unittest.TestCase):
 # Test classes
 #
 
+class TestAppendFilter(AbstractFilterTest):
+
+    APPEND_DATA = [
+        ['Org', 'Targeted', 'Sector'],
+        ['#org', '#targeted', '#sector'],
+        ['NGO A', '200', 'WASH'],
+        ['NGO C', '500', 'Health']
+    ]
+
+    COMBINED_DATA = [
+        ['Organisation', 'Cluster', 'District', 'Count', 'Targeted'],
+        ['#org', '#sector', '#adm1', '#meta+count', '#targeted'],
+        ['NGO A', 'WASH', 'Coast', '200', ''],
+        ['NGO B', 'Education', 'Plains', '100', ''],
+        ['NGO B', 'Education', 'Coast', '300', ''],
+        ['NGO A', 'WASH', '', '', '200'],
+        ['NGO C', 'Health', '', '', '500']
+    ]
+
+    def setUp(self):
+        super(TestAppendFilter, self).setUp()
+        self.append_source = hxl(TestAppendFilter.APPEND_DATA)
+    
+    def test_columns(self):
+        self.assertEqual(self.source.columns, self.source.append(self.append_source).columns)
+
+        
 class TestCacheFilter(AbstractFilterTest):
 
     def test_headers(self):

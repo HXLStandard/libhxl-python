@@ -107,6 +107,30 @@ class AddColumnsFilter(Dataset):
             raise HXLFilterException("Badly formatted new-column spec: " + s)
 
 
+class AppendFilter(Dataset):
+    """Composable filter class to concatenate two datasets."""
+
+    def __init__(self, source, append_source):
+        """
+        Constructor
+        @param source the HXL data source
+        @param patterns a possibly-empty list of tag patterns
+        """
+        self.source = source
+        self.append_source = append_source
+        self._saved_columns = None
+        self._append_column_map = {}
+
+    @property
+    def columns(self):
+        if self._saved_columns is None:
+            self._saved_columns = list(self.source.columns)
+        return self._saved_columns
+
+    def __iter__(self):
+        pass
+
+        
 class CacheFilter(Dataset):
     """Composable filter class to cache HXL data in memory."""
 
@@ -720,7 +744,7 @@ class RowFilter(Dataset):
         @param reverse True to reverse the sense of the select
         """
         self.source = source
-        if not hasattr(queries, '__len__') or isinstance(queries, str):
+        if not hasattr(queries, '__len__') or isinstance(queries, six.string_types):
             # make a list if needed
             queries = [queries]
         self.queries = [RowFilter.Query.parse(query) for query in queries]
