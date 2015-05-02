@@ -54,12 +54,23 @@ class TestAppendFilter(AbstractFilterTest):
         ['NGO C', 'Health', '', '', '500', 'Food']
     ]
 
+    COMBINED_DATA_ORIG_COLUMNS = [
+        ['Organisation', 'Cluster', 'District', 'Count'],
+        ['#org', '#sector', '#adm1', '#meta+count'],
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO A', 'WASH', '', ''],
+        ['NGO C', 'Health', '', '']
+    ]
+
     def setUp(self):
         super(TestAppendFilter, self).setUp()
         self.append_source = hxl(TestAppendFilter.APPEND_DATA)
     
     def test_headers(self):
         self.assertEqual(self.COMBINED_DATA[0], self.source.append(self.append_source).headers)
+        self.assertEqual(self.COMBINED_DATA_ORIG_COLUMNS[0], self.source.append(self.append_source, False).headers)
 
     def test_columns(self):
         self.assertEqual(self.COMBINED_DATA[1], self.source.append(self.append_source).display_tags)

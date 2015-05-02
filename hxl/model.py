@@ -238,9 +238,9 @@ class Dataset(object):
     # Filters
     #
 
-    def append(self, append_source):
+    def append(self, append_source, add_columns=True):
         """Append a second dataset."""
-        return hxl.filters.AppendFilter(self, append_source)
+        return hxl.filters.AppendFilter(self, append_source, add_columns)
 
     def cache(self):
         """Add a caching filter to the dataset."""

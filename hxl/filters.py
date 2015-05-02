@@ -110,14 +110,16 @@ class AddColumnsFilter(Dataset):
 class AppendFilter(Dataset):
     """Composable filter class to concatenate two datasets."""
 
-    def __init__(self, source, append_source):
+    def __init__(self, source, append_source, add_columns=True):
         """
         Constructor
         @param source the HXL data source
-        @param patterns a possibly-empty list of tag patterns
+        @param append_source the HXL source to append
+        @param add_columns flag for adding extra columns in append_source but not source (default True)
         """
         self.source = source
         self.append_source = append_source
+        self.add_columns = add_columns
         self._saved_columns = None
         self._column_positions = None
         self._template_row = None
@@ -141,8 +143,11 @@ class AppendFilter(Dataset):
                         break
                 else:
                     # no -- we need to add a new column
-                    column_positions[i] = len(saved_columns)
-                    saved_columns.append(copy(column))
+                    if self.add_columns:
+                        column_positions[i] = len(saved_columns)
+                        saved_columns.append(copy(column))
+                    else:
+                        column_positions[i] = None
             self._column_positions = column_positions
             self._saved_columns = saved_columns
 
@@ -187,7 +192,9 @@ class AppendFilter(Dataset):
             row_out = copy(row_in)
             row_out.values = copy(self.outer._template_row)
             for i, value in enumerate(row_in):
-                row_out.values[self.outer._column_positions[i]] = value
+                pos = self.outer._column_positions[i]
+                if pos is not None:
+                    row_out.values[pos] = value
             return row_out
 
         next = __next__
