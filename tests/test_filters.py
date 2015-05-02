@@ -64,6 +64,9 @@ class TestAppendFilter(AbstractFilterTest):
     def test_columns(self):
         self.assertEqual(self.COMBINED_DATA[1], self.source.append(self.append_source).display_tags)
 
+    def test_values(self):
+        self.assertEqual(self.COMBINED_DATA[2:], self.source.append(self.append_source).values)
+
         
 class TestCacheFilter(AbstractFilterTest):
 

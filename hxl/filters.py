@@ -119,27 +119,78 @@ class AppendFilter(Dataset):
         self.source = source
         self.append_source = append_source
         self._saved_columns = None
-        self._append_column_map = {}
+        self._column_positions = None
+        self._template_row = None
 
     @property
     def columns(self):
         if self._saved_columns is None:
             # Merge the columns from the second source into the first,
             # appending if necessary (display tag is the key)
-            column_list = list(self.source.columns)
+            saved_columns = list(self.source.columns)
+            column_positions = {}
             original_tags = self.source.display_tags
-            for column in self.append_source.columns:
-                for i, tag in enumerate(original_tags):
+
+            # see if there's a corresponding column in the source
+            for i, column in enumerate(self.append_source.columns):
+                for j, tag in enumerate(original_tags):
                     if tag and (column.display_tag == tag):
-                        original_tags[i] = None
+                        # yes, there is one; clear it, so it's not reused
+                        original_tags[j] = None
+                        column_positions[i] = j
                         break
                 else:
-                    column_list.append(copy(column))
-            self._saved_columns = column_list
+                    # no -- we need to add a new column
+                    column_positions[i] = len(saved_columns)
+                    saved_columns.append(copy(column))
+            self._column_positions = column_positions
+            self._saved_columns = saved_columns
+
+            # make an empty template for each row
+            self._template_row = [''] * len(saved_columns)
+
+        # return the (usually cached) columns
         return self._saved_columns
 
     def __iter__(self):
-        pass
+        self.columns # make sure this is triggered first
+        return AppendFilter.Iterator(self)
+
+    class Iterator:
+        """Custom iterator to return the contents of both sources, in sequence."""
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.source_iter = iter(outer.source)
+            self.append_iter = iter(outer.append_source)
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+
+            # Read from the original source first
+            if self.source_iter is not None:
+                try:
+                    row_in = next(self.source_iter)
+                    row_out = copy(row_in)
+                    row_out.values = copy(self.outer._template_row)
+                    for i, value in enumerate(row_in):
+                        row_out.values[i] = row_in.values[i]
+                    return row_out
+                except StopIteration:
+                    # don't let the end of the first source finish the iteration
+                    self.source_iter = None
+
+            # Fall through to the append source
+            row_in = next(self.append_iter)
+            row_out = copy(row_in)
+            row_out.values = copy(self.outer._template_row)
+            for i, value in enumerate(row_in):
+                row_out.values[self.outer._column_positions[i]] = value
+            return row_out
+
+        next = __next__
 
         
 class CacheFilter(Dataset):
