@@ -31,6 +31,10 @@ def hxladd():
     """Console script for hxladd."""
     run_script(hxladd_main)
 
+def hxlappend():
+    """Console script for hxlappend."""
+    run_script(hxlappend_main)
+
 def hxlbounds():
     """Console script for hxlbounds."""
     run_script(hxlbounds_main)
@@ -117,6 +121,49 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = AddColumnsFilter(source, specs=args.spec, before=args.before)
+        write_hxl(output.output, filter)
+
+
+def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlappend with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Concatenate two HXL datasets')
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-a',
+        '--append',
+        help='HXL file to append.',
+        metavar='file_or_url',
+        required=True
+        )
+    parser.add_argument(
+        '-x',
+        '--exclude-extra-columns',
+        help='Don not add extra columns not in the original dataset.',
+        action='store_const',
+        const=True,
+        default=False
+    )
+        
+    args = parser.parse_args(args)
+
+    with hxl(args.infile or stdin, True) as source, hxl(args.append, True) as append_source, make_output(args.outfile, stdout) as output:
+        filter = AppendFilter(source, append_source, not args.exclude_extra_columns)
         write_hxl(output.output, filter)
 
 
