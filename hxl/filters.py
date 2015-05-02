@@ -8,7 +8,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import sys, re, six, operator
-from copy import copy
+from copy import copy, deepcopy
 import dateutil.parser
 
 import hxl
@@ -81,7 +81,7 @@ class AddColumnsFilter(Dataset):
             """
             Return the next row, with constant values added.
             """
-            row = copy(next(self.iterator))
+            row = deepcopy(next(self.iterator))
             row.columns = self.outer.columns
             if self.outer.before:
                 row.values = self.outer._const_values + row.values
@@ -145,7 +145,7 @@ class AppendFilter(Dataset):
                     # no -- we need to add a new column
                     if self.add_columns:
                         column_positions[i] = len(saved_columns)
-                        saved_columns.append(copy(column))
+                        saved_columns.append(deepcopy(column))
                     else:
                         column_positions[i] = None
             self._column_positions = column_positions
@@ -178,8 +178,8 @@ class AppendFilter(Dataset):
             if self.source_iter is not None:
                 try:
                     row_in = next(self.source_iter)
-                    row_out = copy(row_in)
-                    row_out.values = copy(self.outer._template_row)
+                    row_out = deepcopy(row_in)
+                    row_out.values = deepcopy(self.outer._template_row)
                     for i, value in enumerate(row_in):
                         row_out.values[i] = row_in.values[i]
                     return row_out
@@ -189,8 +189,8 @@ class AppendFilter(Dataset):
 
             # Fall through to the append source
             row_in = next(self.append_iter)
-            row_out = copy(row_in)
-            row_out.values = copy(self.outer._template_row)
+            row_out = deepcopy(row_in)
+            row_out.values = deepcopy(self.outer._template_row)
             for i, value in enumerate(row_in):
                 pos = self.outer._column_positions[i]
                 if pos is not None:
@@ -210,8 +210,8 @@ class CacheFilter(Dataset):
         """
         self.source = source
         self.max_rows = max_rows
-        self.cached_columns = copy(source.columns)
-        self.cached_rows = [copy(row) for row in source]
+        self.cached_columns = deepcopy(source.columns)
+        self.cached_rows = [deepcopy(row) for row in source]
         self.overflow = False
 
     @property
@@ -224,7 +224,7 @@ class CacheFilter(Dataset):
     def _load(self):
         if self.cached_rows is None:
             self.cached_rows = []
-            self.cached_columns = copy(self.source.columns)
+            self.cached_columns = deepcopy(self.source.columns)
             row_count = 0
             for row in self.source:
                 row_count += 1
@@ -232,7 +232,7 @@ class CacheFilter(Dataset):
                     self.overflow = True
                     break
                 else:
-                    self.cached_rows.append(copy(row))
+                    self.cached_rows.append(deepcopy(row))
 
 
 class CleanDataFilter(Dataset):
@@ -279,7 +279,7 @@ class CleanDataFilter(Dataset):
         def __next__(self):
             """Return the next row, with values cleaned as needed."""
             # TODO implement a lazy copy
-            row = copy(next(self.iterator))
+            row = deepcopy(next(self.iterator))
             for i in range(min(len(row.values), len(row.columns))):
                 row.values[i] = self._clean_value(row.values[i], row.columns[i])
             return row
@@ -674,7 +674,7 @@ class MergeDataFilter(Dataset):
                 self.merge_map = self._read_merge()
 
             # Make a copy of the next row from the source
-            row = copy(next(self.iterator))
+            row = deepcopy(next(self.iterator))
 
             # Look up the merge values, based on the --keys
             merge_values = self.merge_map.get(self._make_key(row), {})
@@ -759,7 +759,7 @@ class RenameFilter(Dataset):
             def rename_column(column):
                 for spec in self.rename:
                     if spec[0].match(column):
-                        new_column = copy(spec[1])
+                        new_column = deepcopy(spec[1])
                         if new_column.header is None:
                             new_column.header = column.header
                         return new_column
@@ -785,6 +785,84 @@ class RenameFilter(Dataset):
         else:
             return s
 
+
+class ReplaceDataFilter(Dataset):
+    """
+    Composable filter class to replace values in a HXL dataset.
+
+    This is the class supporting the hxlreplace console script.
+
+    Because this class is a {@link hxl.model.Dataset}, you can use
+    it as the source to an instance of another filter class to build a
+    dynamic, single-threaded processing pipeline.
+    """
+
+    def __init__(self, source, original, replacement, patterns=[], use_regex=False):
+        """
+        Constructor
+        @param source the HXL data source
+        @param original a string or regular expression to replace (string must match the whole value, not just part)
+        @param replacement the replacement string (if using a regex, may contain substitution patterns)
+        @param patterns (optional) a tag pattern or list of tag patterns - if present, constrain replacement to just these columns
+        @param use_regex (optional) if True, then original is a regular expression rather than a string constant
+        """
+        
+        self.source = source
+        if use_regex:
+            self.original = original
+        else:
+            self.original = normalise_string(original)
+        self.replacement = replacement
+        self.patterns = TagPattern.parse_list(patterns)
+        self.use_regex = use_regex
+        self._column_indices = None
+
+    @property
+    def columns(self):
+        """Return the source columns, and build a table of indices for replacement."""
+        if self.patterns and self._column_indices is None:
+            indices = []
+            for index, column in enumerate(self.source.columns):
+                for pattern in self.patterns:
+                    if pattern.match(column):
+                        indices.append(index)
+                        break
+            self._column_indices = indices
+        return self.source.columns
+
+    def __iter__(self):
+        """Return a custom iterator that replaces values."""
+        self.columns # make sure this fires to build cache
+        return ReplaceDataFilter.Iterator(self)
+
+    class Iterator:
+        """Custom iterator for on-the-fly replacement"""
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            # Deep copy of row, so that we can replace values
+            row = deepcopy(next(self.iterator))
+            
+            for index, value in enumerate(row):
+                # see if we're restricted to specific rows
+                if (not self.outer._column_indices) or (index in self.outer._column_indices):
+                    if self.outer.use_regex:
+                        # using a regular expression
+                        row.values[index] = re.sub(self.outer.original, self.outer.replacement, value)
+                    else:
+                        # trying a regular string substitution
+                        if self.outer.original == normalise_string(value):
+                            row.values[index] = self.outer.replacement
+            return row
+
+        next = __next__
+        
 
 class RowFilter(Dataset):
     """
@@ -1083,7 +1161,7 @@ class ValidateFilter(Dataset):
             while row:
                 if not self.outer.schema.validate_row(row) or self.outer.show_all:
                     # append error data to row
-                    error_row = copy(row)
+                    error_row = deepcopy(row)
                     messages = "\n".join(map(lambda e: e.message, validation_errors))
                     tags = "\n".join(map(lambda e: str(e.rule.tag_pattern) if e.rule else '', validation_errors))
                     rows = "\n".join(map(lambda e: str(e.row.source_row_number) if e.row else '', validation_errors))

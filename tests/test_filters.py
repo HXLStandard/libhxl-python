@@ -206,6 +206,39 @@ class TestRenameFilter(AbstractFilterTest):
         )
 
 
+class TestReplaceFilter(AbstractFilterTest):
+
+    def test_basic_replace(self):
+        # should be replaced
+        self.assertEqual('Plains District', self.source.replace_data('Plains', 'Plains District', '#adm1').values[1][2])
+
+    def test_column_ignored(self):
+        # shouldn't be replaced
+        self.assertEqual('Plains', self.source.replace_data('Plains', 'Plains District', '#org').values[1][2])
+
+    def test_normalised_replace(self):
+        # should ignore character case
+        self.assertEqual('Plains District', self.source.replace_data('  PLainS   ', 'Plains District', '#adm1').values[1][2])
+
+    def test_all_columns_replace(self):
+        # should be replaced (anywhere in row)
+        self.assertEqual('Plains District', self.source.replace_data('  PLainS   ', 'Plains District').values[1][2])
+
+    def test_regex_replace(self):
+        # not a regex
+        self.assertEqual('Plains', self.source.replace_data(r'ains$', 'ains District', '#adm1', use_regex=False).values[1][2])
+
+        # regex
+        self.assertEqual('Plains District', self.source.replace_data(r'ains$', 'ains District', '#adm1', True).values[1][2])
+
+        # non-matching regex
+        self.assertEqual('Plains', self.source.replace_data(r'^ains', 'ains District', '#adm1', True).values[1][2])
+
+        # substitution
+        self.assertEqual('Plains District', self.source.replace_data('(ains)$', r'\1 District', '#adm1', use_regex=True).values[1][2])
+
+
+        
 class TestRowFilter(AbstractFilterTest):
 
     def test_with_rows(self):
