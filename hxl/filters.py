@@ -124,7 +124,18 @@ class AppendFilter(Dataset):
     @property
     def columns(self):
         if self._saved_columns is None:
-            self._saved_columns = list(self.source.columns)
+            # Merge the columns from the second source into the first,
+            # appending if necessary (display tag is the key)
+            column_list = list(self.source.columns)
+            original_tags = self.source.display_tags
+            for column in self.append_source.columns:
+                for i, tag in enumerate(original_tags):
+                    if tag and (column.display_tag == tag):
+                        original_tags[i] = None
+                        break
+                else:
+                    column_list.append(copy(column))
+            self._saved_columns = column_list
         return self._saved_columns
 
     def __iter__(self):

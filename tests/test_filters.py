@@ -38,28 +38,31 @@ class AbstractFilterTest(unittest.TestCase):
 class TestAppendFilter(AbstractFilterTest):
 
     APPEND_DATA = [
-        ['Org', 'Targeted', 'Sector'],
-        ['#org', '#targeted', '#sector'],
-        ['NGO A', '200', 'WASH'],
-        ['NGO C', '500', 'Health']
+        ['Org', 'Targeted', 'Sector 1', 'Sector 2'],
+        ['#org', '#targeted', '#sector', '#sector'],
+        ['NGO A', '200', 'WASH', ''],
+        ['NGO C', '500', 'Health', 'Food']
     ]
 
     COMBINED_DATA = [
-        ['Organisation', 'Cluster', 'District', 'Count', 'Targeted'],
-        ['#org', '#sector', '#adm1', '#meta+count', '#targeted'],
-        ['NGO A', 'WASH', 'Coast', '200', ''],
-        ['NGO B', 'Education', 'Plains', '100', ''],
-        ['NGO B', 'Education', 'Coast', '300', ''],
-        ['NGO A', 'WASH', '', '', '200'],
-        ['NGO C', 'Health', '', '', '500']
+        ['Organisation', 'Cluster', 'District', 'Count', 'Targeted', 'Sector 2'],
+        ['#org', '#sector', '#adm1', '#meta+count', '#targeted', '#sector'],
+        ['NGO A', 'WASH', 'Coast', '200', '', ''],
+        ['NGO B', 'Education', 'Plains', '100', '', ''],
+        ['NGO B', 'Education', 'Coast', '300', '', ''],
+        ['NGO A', 'WASH', '', '', '200', ''],
+        ['NGO C', 'Health', '', '', '500', 'Food']
     ]
 
     def setUp(self):
         super(TestAppendFilter, self).setUp()
         self.append_source = hxl(TestAppendFilter.APPEND_DATA)
     
+    def test_headers(self):
+        self.assertEqual(self.COMBINED_DATA[0], self.source.append(self.append_source).headers)
+
     def test_columns(self):
-        self.assertEqual(self.source.columns, self.source.append(self.append_source).columns)
+        self.assertEqual(self.COMBINED_DATA[1], self.source.append(self.append_source).display_tags)
 
         
 class TestCacheFilter(AbstractFilterTest):
