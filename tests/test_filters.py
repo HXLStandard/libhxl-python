@@ -35,6 +35,35 @@ class AbstractFilterTest(unittest.TestCase):
 # Test classes
 #
 
+class TestAddColumnsFilter(AbstractFilterTest):
+
+    spec = 'Country#country=Country A'
+
+    def test_before(self):
+        self.assertEqual(
+            ['#country', '#org', '#sector', '#adm1', '#meta'],
+            self.source.add_columns(self.spec, True).tags
+        )
+
+    def test_after(self):
+        self.assertEqual(
+            ['#org', '#sector', '#adm1', '#meta', '#country'],
+            self.source.add_columns(self.spec).tags
+        )
+
+    def test_headers(self):
+        self.assertEqual(
+            DATA[0] + ['Country'],
+            self.source.add_columns(self.spec).headers
+        )
+
+    def test_rows(self):
+        self.assertEqual(
+            [values + ['Country A'] for values in DATA[2:]],
+            self.source.add_columns(self.spec).values
+        )
+
+
 class TestAppendFilter(AbstractFilterTest):
 
     APPEND_DATA = [
@@ -104,17 +133,6 @@ class TestColumnFilter(AbstractFilterTest):
         self.assertEqual(expected, self.source.without_columns(['#sector']).tags)
 
 
-class TestRowFilter(AbstractFilterTest):
-
-    def test_with_rows(self):
-        self.assertEqual(DATA[3:], self.source.with_rows(['#sector=education']).values)
-        self.assertEqual(DATA[3:], self.source.with_rows('#sector=education').values)
-
-    def test_without_rows(self):
-        self.assertEqual(DATA[3:], self.source.without_rows(['#sector=wash']).values)
-        self.assertEqual(DATA[3:], self.source.without_rows('#sector=wash').values)
-
-
 class TestCountFilter(AbstractFilterTest):
 
     def test_tags(self):
@@ -140,6 +158,65 @@ class TestCountFilter(AbstractFilterTest):
         self.assertEqual(expected, self.source.count('#sector', '#meta').values)
 
 
+class TestMergeDataFilter(AbstractFilterTest):
+
+    MERGE_IN = [
+        ['District', 'P-code'],
+        ['#adm1', '#adm1+code'],
+        ['Coast', '001'],
+        ['Plains', '002']
+    ]
+
+    MERGE_OUT = [
+        ['Organisation', 'Cluster', 'District', 'Count', 'P-code'],
+        ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code'],
+        ['NGO A', 'WASH', 'Coast', '200', '001'],
+        ['NGO B', 'Education', 'Plains', '100', '002'],
+        ['NGO B', 'Education', 'Coast', '300', '001']
+    ]
+
+    def setUp(self):
+        super(TestMergeDataFilter, self).setUp()
+        self.merged = self.source.merge_data(hxl(self.MERGE_IN), '#adm1-code', '#adm1+code')
+
+    def test_headers(self):
+        self.assertEqual(self.MERGE_OUT[0], self.merged.headers)
+
+    def test_tags(self):
+        self.assertEqual(self.MERGE_OUT[1], self.merged.display_tags)
+
+    def test_values(self):
+        self.assertEqual(self.MERGE_OUT[2:], self.merged.values)
+        
+
+class TestRenameFilter(AbstractFilterTest):
+
+    spec = '#sector:Sub-sector#subsector'
+
+    def test_tags(self):
+        self.assertEqual(
+            ['#org', '#subsector', '#adm1', '#meta'],
+            self.source.rename_columns(self.spec).tags
+        )
+
+    def test_headers(self):
+        self.assertEqual(
+            ['Organisation', 'Sub-sector', 'District', 'Count'],
+            self.source.rename_columns(self.spec).headers
+        )
+
+
+class TestRowFilter(AbstractFilterTest):
+
+    def test_with_rows(self):
+        self.assertEqual(DATA[3:], self.source.with_rows(['#sector=education']).values)
+        self.assertEqual(DATA[3:], self.source.with_rows('#sector=education').values)
+
+    def test_without_rows(self):
+        self.assertEqual(DATA[3:], self.source.without_rows(['#sector=wash']).values)
+        self.assertEqual(DATA[3:], self.source.without_rows('#sector=wash').values)
+
+
 class TestSortFilter(AbstractFilterTest):
 
     def test_forward(self):
@@ -157,51 +234,6 @@ class TestSortFilter(AbstractFilterTest):
         def key(r):
             return float(r[3])
         self.assertEqual(sorted(DATA[2:], key=key), self.source.sort('#meta+count').values)
-
-class TestAddColumnsFilter(AbstractFilterTest):
-
-    spec = 'Country#country=Country A'
-
-    def test_before(self):
-        self.assertEqual(
-            ['#country', '#org', '#sector', '#adm1', '#meta'],
-            self.source.add_columns(self.spec, True).tags
-        )
-
-    def test_after(self):
-        self.assertEqual(
-            ['#org', '#sector', '#adm1', '#meta', '#country'],
-            self.source.add_columns(self.spec).tags
-        )
-
-    def test_headers(self):
-        self.assertEqual(
-            DATA[0] + ['Country'],
-            self.source.add_columns(self.spec).headers
-        )
-
-    def test_rows(self):
-        self.assertEqual(
-            [values + ['Country A'] for values in DATA[2:]],
-            self.source.add_columns(self.spec).values
-        )
-
-
-class TestRenameFilter(AbstractFilterTest):
-
-    spec = '#sector:Sub-sector#subsector'
-
-    def test_tags(self):
-        self.assertEqual(
-            ['#org', '#subsector', '#adm1', '#meta'],
-            self.source.rename_columns(self.spec).tags
-        )
-
-    def test_headers(self):
-        self.assertEqual(
-            ['Organisation', 'Sub-sector', 'District', 'Count'],
-            self.source.rename_columns(self.spec).headers
-        )
 
 
 class TestChaining(AbstractFilterTest):

@@ -622,8 +622,8 @@ class MergeDataFilter(Dataset):
         """
         self.source = source
         self.merge_source = merge_source
-        self.keys = keys
-        self.merge_tags = tags
+        self.keys = TagPattern.parse_list(keys)
+        self.merge_tags = TagPattern.parse_list(tags)
         self.replace = replace
         self.overwrite = overwrite
 
