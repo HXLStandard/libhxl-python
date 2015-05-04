@@ -79,7 +79,7 @@ def make_stream(origin, allow_local=False):
             return urllib.request.urlopen(origin)
 
     elif allow_local:
-        return open(origin, 'rb')
+        return open(origin, 'rt')
 
     else:
         raise IOError('Only http(s) and ftp URLs allowed.')

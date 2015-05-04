@@ -9,8 +9,11 @@ License: Public Domain
 
 import unittest
 import os
-import codecs
-from urllib2 import HTTPError
+import sys
+if sys.version_info < (3,):
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
 from hxl import hxl
 from hxl.io import StreamInput, HXLParseException, HXLReader, CSVInput
 
