@@ -19,7 +19,7 @@ from shapely.geometry import shape
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
 
-from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, ColumnFilter, CountFilter, MergeDataFilter, RenameFilter, RowFilter, SortFilter, ValidateFilter
+from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, ColumnFilter, CountFilter, MergeDataFilter, RenameFilter, ReplaceDataFilter, RowFilter, SortFilter, ValidateFilter
 from hxl.converters import Tagger
 
 
@@ -58,6 +58,10 @@ def hxlmerge():
 def hxlrename():
     """Console script for hxlrename."""
     run_script(hxlrename_main)
+
+def hxlreplace():
+    """Console script for hxlreplace."""
+    run_script(hxlreplace_main)
 
 def hxlselect():
     """Console script for hxlselect."""
@@ -466,7 +470,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
 def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
-    Run hxlcut with command-line arguments.
+    Run hxlrename with command-line arguments.
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -497,6 +501,62 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
         filter = RenameFilter(source, args.rename)
+        write_hxl(output.output, filter)
+
+
+def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlreplace with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = argparse.ArgumentParser(description = 'Replace strings in a HXL dataset')
+    parser.add_argument(
+        'original',
+        help='String or regular expression to search for'
+        )
+    parser.add_argument(
+        'replacement',
+        help='Replacement string'
+        )
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '-i',
+        '--input',
+        help='String or regular expression to replace',
+        metavar='TEXT'
+        )
+    parser.add_argument(
+        '-r',
+        '--regex',
+        help='Use a regular expression instead of a string',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of tag patterns to include in error reports',
+        metavar='tag,tag...',
+        type=TagPattern.parse_list
+        )
+    args = parser.parse_args(args)
+
+    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+        filter = ReplaceDataFilter(source, args.original, args.replacement, args.tags, args.regex)
         write_hxl(output.output, filter)
 
 
