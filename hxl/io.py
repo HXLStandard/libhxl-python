@@ -174,7 +174,7 @@ class ExcelInput(AbstractInput):
 
     def __next__(self):
         if self._row_index < self._sheet.nrows:
-            row = [encode(cell.value) for cell in self._sheet.row(self._row_index)]
+            row = [self._fix_value(cell) for cell in self._sheet.row(self._row_index)]
             self._row_index += 1
             return row
         else:
@@ -184,6 +184,13 @@ class ExcelInput(AbstractInput):
 
     def __exit__(self, value, type, traceback):
         pass
+
+    def _fix_value(self, cell):
+        if cell.ctype == 3: # FIXME - use constant
+            data = xlrd.xldate_as_tuple(cell.value, 0)
+            return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
+        else:
+            return cell.value
 
 
 class ArrayInput(AbstractInput):
