@@ -40,7 +40,7 @@ else:
         return value
 
 
-def make_input(data, allow_local=False):
+def make_input(data, allow_local=False, sheet_index=0):
     """Figure out what kind of input to create."""
 
     if isinstance(data, AbstractInput):
@@ -54,8 +54,8 @@ def make_input(data, allow_local=False):
         # it's an array
         return ArrayInput(data)
 
-    elif re.match(r'\.xlsx?', data):
-        return ExcelInput(data, allow_local)
+    elif re.match(r'.*\.xlsx?$', str(data).lower()):
+        return ExcelInput(data, sheet_index=sheet_index, allow_local=allow_local)
     
     else:
         return CSVInput(data, allow_local)
@@ -292,7 +292,7 @@ class HXLReader(Dataset):
             else:
                 header = None
             if raw_string:
-                raw_string = raw_string.strip()
+                raw_string = str(raw_string).strip()
                 nonEmptyCount += 1
                 column = Column.parse(raw_string, header=header)
                 if column:

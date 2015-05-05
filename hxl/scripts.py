@@ -236,6 +236,14 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         nargs='?'
         )
     parser.add_argument(
+        '--sheet',
+        help='Select sheet from a workbook',
+        metavar='number',
+        default=0,
+        type=int,
+        nargs='?'
+        )
+    parser.add_argument(
         '-W',
         '--whitespace-all',
         help='Normalise whitespace in all columns',
@@ -304,8 +312,10 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
     
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_input(args.infile or stdin, sheet_index=args.sheet, allow_local=True) as input, make_output(args.outfile, stdout) as output:
 
+        source = hxl(input)
+        
         if args.whitespace_all:
             whitespace_arg = True
         else:
