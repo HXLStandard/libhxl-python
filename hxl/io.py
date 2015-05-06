@@ -186,11 +186,19 @@ class ExcelInput(AbstractInput):
         pass
 
     def _fix_value(self, cell):
-        if cell.ctype == 3: # FIXME - use constant
+        if not cell.value:
+            return ''
+        elif cell.ctype == 3: # FIXME - use constant
             data = xlrd.xldate_as_tuple(cell.value, 0)
             return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
         else:
-            return cell.value
+            if sys.version_info < (3,):
+                try:
+                    return cell.value.encode('utf8')
+                except:
+                    return cell.value
+            else:
+                return cell.value
 
 
 class ArrayInput(AbstractInput):

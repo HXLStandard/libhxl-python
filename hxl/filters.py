@@ -291,6 +291,8 @@ class CleanDataFilter(Dataset):
 
             # TODO prescan columns at start for matches
 
+            value = str(value)
+
             # Whitespace (-w or -W)
             if self._match_patterns(self.outer.whitespace, column):
                 value = re.sub('^\s+', '', value)
