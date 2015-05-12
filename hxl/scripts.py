@@ -123,7 +123,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = AddColumnsFilter(source, specs=args.spec, before=args.before)
         write_hxl(output.output, filter)
 
@@ -166,7 +166,7 @@ def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, hxl(args.append, True) as append_source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, hxl(args.append, True) as append_source, make_output(args, stdout) as output:
         filter = AppendFilter(source, append_source, not args.exclude_extra_columns)
         write_hxl(output.output, filter)
 
@@ -312,10 +312,8 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
     
-    with make_input(args.infile or stdin, sheet_index=args.sheet, allow_local=True) as input, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
 
-        source = hxl(input)
-        
         if args.whitespace_all:
             whitespace_arg = True
         else:
@@ -373,7 +371,7 @@ def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
 
     args = parser.parse_args(args)
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = CountFilter(source, args.tags, args.aggregate)
         write_hxl(output.output, filter)
 
@@ -406,7 +404,7 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = ColumnFilter(source, args.include, args.exclude)
         write_hxl(output.output, filter)
 
@@ -472,7 +470,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output, hxl(args.merge, True) if args.merge else None as merge_source:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl(args.merge, True) if args.merge else None as merge_source:
         filter = MergeDataFilter(source, merge_source=merge_source,
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         write_hxl(output.output, filter)
@@ -509,7 +507,7 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = RenameFilter(source, args.rename)
         write_hxl(output.output, filter)
 
@@ -565,7 +563,7 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = ReplaceDataFilter(source, args.original, args.replacement, args.tags, args.regex)
         write_hxl(output.output, filter)
 
@@ -609,7 +607,7 @@ def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = RowFilter(source, queries=args.query, reverse=args.reverse)
         write_hxl(output.output, filter)
 
@@ -651,7 +649,7 @@ def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl(args.infile or stdin, True) as source, make_output(args.outfile, stdout) as output:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = SortFilter(source, args.tags, args.reverse)
         write_hxl(output.output, filter)
 
@@ -687,7 +685,7 @@ def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with make_input(args.infile or stdin) as input, make_output(args.outfile, stdout) as output:
+    with make_input(args.infile or stdin) as input, make_output(args, stdout) as output:
         tagger = Tagger(input, args.map)
         write_hxl(output.output, hxl(tagger))
 
@@ -762,9 +760,39 @@ def run_script(func):
         print >>sys.stderr, "Interrupted"
         sys.exit(2)
 
-def make_output(filename, stdout=sys.stdout):
-    if filename:
-        return FileOutput(filename)
+def make_args(description):
+    """Set up parser with default arguments."""
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        'infile',
+        help='HXL file to read (if omitted, use standard input).',
+        nargs='?'
+        )
+    parser.add_argument(
+        'outfile',
+        help='HXL file to write (if omitted, use standard output).',
+        nargs='?'
+        )
+    parser.add_argument(
+        '--sheet',
+        help='Select sheet from a workbook',
+        metavar='number',
+        default=0,
+        type=int,
+        nargs='?'
+        )
+    return parser
+
+def make_source(args, stdin=sys.stdin):
+    """Create a HXL input source."""
+#    input = make_input(args.infile or stdin, sheet_index=args.sheet, allow_local=True)
+    input = make_input(args.infile or stdin, allow_local=True)
+    return hxl(input)
+
+def make_output(args, stdout=sys.stdout):
+    """Create an output stream."""
+    if args.outfile:
+        return FileOutput(args.outfile)
     else:
         return StreamOutput(stdout)
 
