@@ -93,17 +93,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Add new columns with constant values to a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Add new columns with constant values to a HXL dataset.')
     parser.add_argument(
         '-s',
         '--spec',
@@ -137,17 +127,7 @@ def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Concatenate two HXL datasets')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Concatenate two HXL datasets')
     parser.add_argument(
         '-a',
         '--append',
@@ -172,22 +152,9 @@ def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxlbounds_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Perform bounds checking on a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?',
-        type=argparse.FileType('r'),
-        default=stdin
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?',
-        type=argparse.FileType('w'),
-        default=stdout
-        )
+    """Check that all lat/lon coordinates appear within bounds."""
+    
+    parser = make_args('Perform bounds checking on a HXL dataset.')
     parser.add_argument(
         '-b',
         '--bounds',
@@ -223,26 +190,7 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Clean data in a HXL file.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
-    parser.add_argument(
-        '--sheet',
-        help='Select sheet from a workbook',
-        metavar='number',
-        default=0,
-        type=int,
-        nargs='?'
-        )
+    parser = make_args('Clean data in a HXL file.')
     parser.add_argument(
         '-W',
         '--whitespace-all',
@@ -343,17 +291,7 @@ def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
 
     # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Generate aggregate counts for a HXL dataset')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Generate aggregate counts for a HXL dataset')
     parser.add_argument(
         '-t',
         '--tags',
@@ -377,17 +315,7 @@ def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
-    parser = argparse.ArgumentParser(description = 'Cut columns from a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Cut columns from a HXL dataset.')
     parser.add_argument(
         '-i',
         '--include',
@@ -418,17 +346,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Merge part of one HXL dataset into another.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Merge part of one HXL dataset into another.')
     parser.add_argument(
         '-m',
         '--merge',
@@ -485,17 +403,7 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Rename and retag columns in a HXL dataset')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Rename and retag columns in a HXL dataset')
     parser.add_argument(
         '-r',
         '--rename',
@@ -521,6 +429,7 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     @param stderr Standard error for the script
     """
 
+    # can't use make_args() -- special usage
     parser = argparse.ArgumentParser(description = 'Replace strings in a HXL dataset')
     parser.add_argument(
         'original',
@@ -578,17 +487,7 @@ def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     """
 
     # Command-line arguments
-    parser = argparse.ArgumentParser(description = 'Filter rows in a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Filter rows in a HXL dataset.')
     parser.add_argument(
         '-q',
         '--query',
@@ -621,17 +520,7 @@ def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Sort a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Sort a HXL dataset.')
     parser.add_argument(
         '-t',
         '--tags',
@@ -663,17 +552,7 @@ def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Add HXL tags to a raw CSV file.')
-    parser.add_argument(
-        'infile',
-        help='CSV file to read (if omitted, use standard input).',
-        nargs='?'
-        )
-    parser.add_argument(
-        'outfile',
-        help='CSV file to write (if omitted, use standard output).',
-        nargs='?'
-        )
+    parser = make_args('Add HXL tags to a raw CSV file.')
     parser.add_argument(
         '-m',
         '--map',
@@ -699,21 +578,7 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
     @param stderr Standard error for the script
     """
 
-    parser = argparse.ArgumentParser(description = 'Validate a HXL dataset.')
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
-        nargs='?',
-        type=argparse.FileType('r'),
-        default=stdin
-        )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?',
-        type=argparse.FileType('w'),
-        default=stdout
-        )
+    parser = make_args('Validate a HXL dataset.')
     parser.add_argument(
         '-s',
         '--schema',
@@ -785,8 +650,7 @@ def make_args(description):
 
 def make_source(args, stdin=sys.stdin):
     """Create a HXL input source."""
-#    input = make_input(args.infile or stdin, sheet_index=args.sheet, allow_local=True)
-    input = make_input(args.infile or stdin, allow_local=True)
+    input = make_input(args.infile or stdin, sheet_index=args.sheet, allow_local=True)
     return hxl(input)
 
 def make_output(args, stdout=sys.stdout):
