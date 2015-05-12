@@ -110,8 +110,15 @@ class HXLParseException(HXLException):
         self.source_row_number = source_row_number
         self.source_column_number = source_column_number
 
-    def __str__(self):
-        return '<HXLException: ' + str(self.message) + ' @ ' + str(self.source_row_number) + ', ' + str(self.source_column_number) + '>'
+
+class HXLTagsNotFoundException(HXLParseException):
+    """
+    Specific parsing exception: no HXL tags.
+    """
+
+    def __init__(self, message='HXL tags not found in first 25 rows'):
+        super(HXLTagsNotFoundException, self).__init__(message)
+        
 
 class AbstractInput(object):
     """Abstract base class for input classes."""
@@ -287,7 +294,7 @@ class HXLReader(Dataset):
                 previous_row = raw_row
         except StopIteration:
             pass
-        raise HXLParseException("HXL hashtags not found in first 25 rows")
+        raise HXLTagsNotFoundException()
     
     def _parse_tags(self, raw_row, previous_row):
         """
