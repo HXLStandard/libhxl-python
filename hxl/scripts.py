@@ -642,7 +642,6 @@ def make_args(description):
         '--sheet',
         help='Select sheet from a workbook (1 is first sheet)',
         metavar='number',
-        default=0,
         type=int,
         nargs='?'
         )

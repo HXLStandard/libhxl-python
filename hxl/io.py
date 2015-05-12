@@ -168,14 +168,26 @@ class CSVInput(AbstractInput):
 
 
 class ExcelInput(AbstractInput):
-    """Read raw XLS input from a URL or filename."""
+    """
+    Read raw XLS input from a URL or filename.
+    If sheet number is not specified, will scan for the first tab with a HXL tag row.
+    """
 
-    def __init__(self, url, sheet_index=0, allow_local=False):
+    def __init__(self, url, sheet_index=None, allow_local=False):
+        """
+        Constructor
+        @param url the URL or filename
+        @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
+        @param allow_local (optional) iff True, allow opening local files
+        """
         try:
             input = make_stream(url, allow_local)
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
             input.close()
+        print(sheet_index)
+        if sheet_index is None:
+            sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)
         self._row_index = 0
 
@@ -206,6 +218,17 @@ class ExcelInput(AbstractInput):
                     return cell.value
             else:
                 return cell.value
+
+    def _find_hxl_sheet_index(self):
+        """Scan for a tab containing a HXL dataset."""
+        for sheet_index in range(0, self._workbook.nsheets):
+            sheet = self._workbook.sheet_by_index(sheet_index)
+            for row_index in range(0, min(25, sheet.nrows)):
+                raw_row = [cell.value for cell in sheet.row(row_index)]
+                # FIXME nasty violation of encapsulation
+                if HXLReader.parse_tags(raw_row):
+                    return sheet_index
+        raise HXLTagsNotFoundException('Cannot find an Excel sheet with HXL tags in the first 25 rows')
 
 
 class ArrayInput(AbstractInput):
@@ -288,17 +311,18 @@ class HXLReader(Dataset):
         try:
             for n in range(0,25):
                 raw_row = self._get_row()
-                columns = self._parse_tags(raw_row, previous_row)
+                columns = self.parse_tags(raw_row, previous_row)
                 if columns is not None:
                     return columns
                 previous_row = raw_row
         except StopIteration:
             pass
         raise HXLTagsNotFoundException()
-    
-    def _parse_tags(self, raw_row, previous_row):
+
+    @staticmethod
+    def parse_tags(raw_row, previous_row=None):
         """
-        Try parsing the current raw CSV data row as a HXL hashtag row.
+        Try parsing a raw CSV data row as a HXL hashtag row.
         """
         # how many values we've seen
         nonEmptyCount = 0
@@ -309,7 +333,7 @@ class HXLReader(Dataset):
         columns = []
 
         for source_column_number, raw_string in enumerate(raw_row):
-            if source_column_number < len(previous_row):
+            if previous_row and source_column_number < len(previous_row):
                 header = previous_row[source_column_number]
             else:
                 header = None
