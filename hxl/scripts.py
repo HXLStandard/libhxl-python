@@ -640,7 +640,7 @@ def make_args(description):
         )
     parser.add_argument(
         '--sheet',
-        help='Select sheet from a workbook',
+        help='Select sheet from a workbook (1 is first sheet)',
         metavar='number',
         default=0,
         type=int,
@@ -650,7 +650,10 @@ def make_args(description):
 
 def make_source(args, stdin=sys.stdin):
     """Create a HXL input source."""
-    input = make_input(args.infile or stdin, sheet_index=args.sheet, allow_local=True)
+    sheet_index = args.sheet
+    if sheet_index is not None:
+        sheet_index -= 1
+    input = make_input(args.infile or stdin, sheet_index=sheet_index, allow_local=True)
     return hxl(input)
 
 def make_output(args, stdout=sys.stdout):
