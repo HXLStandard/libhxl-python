@@ -26,23 +26,67 @@ else:
 from hxl.common import HXLException
 from hxl.model import Dataset, Column, Row
 
+
+########################################################################
+# Constants
+########################################################################
+
 # Cut off for fuzzy detection of a hashtag row
 # At least this percentage of cells must parse as HXL hashtags
 FUZZY_HASHTAG_PERCENTAGE = 0.5
 
-if sys.version_info < (3,):
-    def encode(value):
-        """Encode a string into UTF-8 for Python2"""
-        try:
-            return value.encode('utf-8')
-        except:
-            return value
-else:
-    def encode(value):
-        """Leave a Unicode string as-is for Python3"""
+# opening signatures for well-known file types
+XLSX_SIG = ['P', 'K', '\x03', '\x04']
+XLS_SIG = ['\xD0', '\xcf', '\x11', '\xE0']
+
+
+########################################################################
+# Exported functions
+########################################################################
+
+
+def hxl(data, allow_local=False):
+    """
+    Convenience method for reading a HXL dataset.
+    If passed an existing Dataset, simply returns it.
+    @param data a HXL data provider, file object, array, or string (representing a URL or file name).
+    """
+
+    if isinstance(data, Dataset):
+        # it's already HXL data
+        return data
+
+    else:
+        return HXLReader(make_input(data, allow_local))
+
+def write_hxl(output, source, show_headers=True, show_tags=True):
+    """Serialize a HXL dataset to an output stream."""
+    for line in source.gen_csv(show_headers, show_tags):
+        output.write(line)
+
+def write_json(output, source, show_headers=True, show_tags=True):
+    """Serialize a dataset to JSON."""
+    for line in source.gen_json(show_headers, show_tags):
+        output.write(line)
+
+
+def _encode_py2(value):
+    """Encode a string into UTF-8 for Python2"""
+    try:
+        return value.encode('utf-8')
+    except:
         return value
 
+def _encode_py3(value):
+    """Leave a Unicode string as-is for Python3"""
+    return value
 
+if sys.version_info < (3,):
+    encode = _encode_py2
+else:
+    encode = _encode_py3
+
+    
 def make_input(data, allow_local=False, sheet_index=0):
     """Figure out what kind of input to create."""
 
@@ -60,10 +104,12 @@ def make_input(data, allow_local=False, sheet_index=0):
     else:
         input = make_stream(data, allow_local=allow_local)
 
-        if re.match(r'.*\.xlsx?$', str(data).lower()):
-            return ExcelInput(input, sheet_index=sheet_index)
-        else:
-            return CSVInput(input)
+        if hasattr(input, 'peek'):
+            peek = list(input.peek(10))
+            if peek[:4] in [XLSX_SIG, XLS_SIG]:
+                return ExcelInput(input, sheet_index=sheet_index)
+
+        return CSVInput(input)
 
 
 def make_stream(origin, allow_local=False):
@@ -90,20 +136,9 @@ def make_stream(origin, allow_local=False):
         raise IOError('Only http(s) and ftp URLs allowed.')
 
 
-def hxl(data, allow_local=False):
-    """
-    Convenience method for reading a HXL dataset.
-    If passed an existing Dataset, simply returns it.
-    @param data a HXL data provider, file object, array, or string (representing a URL or file name).
-    """
-
-    if isinstance(data, Dataset):
-        # it's already HXL data
-        return data
-
-    else:
-        return HXLReader(make_input(data, allow_local))
-
+########################################################################
+# Exported classes
+########################################################################
 
 class HXLParseException(HXLException):
     """
@@ -372,16 +407,6 @@ class HXLReader(Dataset):
         """Context-end support."""
         if self._input:
             self._input.__exit__(value, type, traceback)
-
-def write_hxl(output, source, show_headers=True, show_tags=True):
-    """Serialize a HXL dataset to an output stream."""
-    for line in source.gen_csv(show_headers, show_tags):
-        output.write(line)
-
-def write_json(output, source, show_headers=True, show_tags=True):
-    """Serialize a dataset to JSON."""
-    for line in source.gen_json(show_headers, show_tags):
-        output.write(line)
 
 # end
 
