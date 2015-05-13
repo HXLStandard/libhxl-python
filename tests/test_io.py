@@ -15,7 +15,7 @@ if sys.version_info < (3,):
 else:
     from urllib.error import HTTPError
 from hxl import hxl
-from hxl.io import StreamInput, HXLParseException, HXLReader, CSVInput
+from hxl.io import make_input, StreamInput, HXLParseException, HXLReader, CSVInput
 
 
 def _resolve_file(filename):
@@ -30,11 +30,11 @@ class TestCSVInput(unittest.TestCase):
 
     def test_bad_file(self):
         with self.assertRaises(IOError):
-            input = CSVInput('XXXXX')
+            input = make_input('XXXXX')
 
     def test_bad_url(self):
         with self.assertRaises(HTTPError):
-            input = CSVInput('http://example.org/XXXXX.csv')
+            input = make_input('http://example.org/XXXXX.csv')
 
 
 class TestHXL(unittest.TestCase):

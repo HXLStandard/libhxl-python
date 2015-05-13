@@ -57,11 +57,13 @@ def make_input(data, allow_local=False, sheet_index=0):
         # it's an array
         return ArrayInput(data)
 
-    elif re.match(r'.*\.xlsx?$', str(data).lower()):
-        return ExcelInput(data, sheet_index=sheet_index, allow_local=allow_local)
-    
     else:
-        return CSVInput(data, allow_local)
+        input = make_stream(data, allow_local=allow_local)
+
+        if re.match(r'.*\.xlsx?$', str(data).lower()):
+            return ExcelInput(input, sheet_index=sheet_index)
+        else:
+            return CSVInput(input)
 
 
 def make_stream(origin, allow_local=False):
@@ -157,8 +159,8 @@ class StreamInput(AbstractInput):
 class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    def __init__(self, origin, allow_local=False):
-        self._input = make_stream(origin, allow_local)
+    def __init__(self, input):
+        self._input = input
         self._reader = csv.reader(self._input)
 
     def __next__(self):
@@ -176,7 +178,7 @@ class ExcelInput(AbstractInput):
     If sheet number is not specified, will scan for the first tab with a HXL tag row.
     """
 
-    def __init__(self, url, sheet_index=None, allow_local=False):
+    def __init__(self, input, sheet_index=None):
         """
         Constructor
         @param url the URL or filename
@@ -184,7 +186,6 @@ class ExcelInput(AbstractInput):
         @param allow_local (optional) iff True, allow opening local files
         """
         try:
-            input = make_stream(url, allow_local)
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
             input.close()
