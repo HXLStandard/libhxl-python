@@ -7,6 +7,8 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
+from __future__ import absolute_import
+
 import abc
 import csv
 import json
@@ -14,6 +16,7 @@ import sys
 import re
 import xlrd
 import six
+import io
 
 if sys.version_info < (3,):
     import urllib2
@@ -79,7 +82,7 @@ def make_stream(origin, allow_local=False):
             return urllib.request.urlopen(origin)
 
     elif allow_local:
-        return open(origin, 'rt')
+        return io.open(origin, 'rb')
 
     else:
         raise IOError('Only http(s) and ftp URLs allowed.')
@@ -185,7 +188,6 @@ class ExcelInput(AbstractInput):
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
             input.close()
-        print(sheet_index)
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)
