@@ -598,7 +598,7 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
     args = parser.parse_args(args)
 
     with args.infile, args.outfile:
-        source = HXLReader(StreamInput(args.infile))
+        source = HXLReader(args.infile)
         if args.schema:
             with args.schema:
                 schema = hxl_schema(args.schema)

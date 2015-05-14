@@ -15,7 +15,7 @@ if sys.version_info < (3,):
 else:
     from urllib.error import HTTPError
 from hxl import hxl
-from hxl.io import make_input, StreamInput, HXLParseException, HXLReader, CSVInput
+from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
 
 
 def _resolve_file(filename):

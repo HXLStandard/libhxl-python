@@ -176,18 +176,6 @@ class AbstractInput(object):
         pass
 
 
-class StreamInput(AbstractInput):
-    """Read raw input from a file object."""
-
-    def __init__(self, input):
-        self._reader = csv.reader(input)
-
-    def __next__(self):
-        return next(self._reader)
-
-    next = __next__
-
-
 class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
