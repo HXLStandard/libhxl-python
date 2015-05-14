@@ -87,7 +87,7 @@ else:
     encode = _encode_py3
 
     
-def make_input(data, allow_local=False, sheet_index=0):
+def make_input(data, allow_local=False, sheet_index=None):
     """Figure out what kind of input to create."""
 
     if isinstance(data, AbstractInput):
