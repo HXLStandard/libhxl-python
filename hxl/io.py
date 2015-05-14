@@ -7,8 +7,6 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-from __future__ import absolute_import
-
 import abc
 import csv
 import json
@@ -16,7 +14,6 @@ import sys
 import re
 import xlrd
 import six
-import io
 
 if sys.version_info < (3,):
     import urllib2
@@ -59,11 +56,13 @@ def hxl(data, allow_local=False):
     else:
         return HXLReader(make_input(data, allow_local))
 
+    
 def write_hxl(output, source, show_headers=True, show_tags=True):
     """Serialize a HXL dataset to an output stream."""
     for line in source.gen_csv(show_headers, show_tags):
         output.write(line)
 
+        
 def write_json(output, source, show_headers=True, show_tags=True):
     """Serialize a dataset to JSON."""
     for line in source.gen_json(show_headers, show_tags):
@@ -77,6 +76,7 @@ def _encode_py2(value):
     except:
         return value
 
+    
 def _encode_py3(value):
     """Leave a Unicode string as-is for Python3"""
     return value
@@ -102,15 +102,12 @@ def make_input(data, allow_local=False, sheet_index=0):
         return ArrayInput(data)
 
     else:
-        input = make_stream(data, allow_local=allow_local)
+        input = Sniffer(make_stream(data, allow_local=allow_local))
 
-        if hasattr(input, 'peek'):
-            peek = list(input.peek(10))
-            if peek[:4] in [XLSX_SIG, XLS_SIG]:
-                return ExcelInput(input, sheet_index=sheet_index)
-
-        return CSVInput(input)
-
+        if list(input.sig) in [XLSX_SIG, XLS_SIG]:
+            return ExcelInput(input, sheet_index=sheet_index)
+        else:
+            return CSVInput(input)
 
 def make_stream(origin, allow_local=False):
     """Figure out whether to open a file or a URL."""
@@ -130,7 +127,7 @@ def make_stream(origin, allow_local=False):
             return urllib.request.urlopen(origin)
 
     elif allow_local:
-        return io.open(origin, 'rb')
+        return open(origin, 'rb')
 
     else:
         raise IOError('Only http(s) and ftp URLs allowed.')
@@ -408,8 +405,53 @@ class HXLReader(Dataset):
         if self._input:
             self._input.__exit__(value, type, traceback)
 
+
+class Sniffer:
+    """
+    Extremely simple class to sniff the first four bytes of a file.
+
+    Supports only the methods required by the CSV and Excel libraries
+    That we're using. After wrapping an input source, the sig property
+    will hold the file signature until someone invokes the read()
+    or __next__() methods.
+    """
+
+    def __init__(self, raw_input):
+        """Wrap an existing input source, caching the first four bytes"""
+        self.raw_input = raw_input
+        self.sig = raw_input.read(4)
+
+    def read(self):
+        """Read the entire contents of the file."""
+        try:
+            return self.sig + self.raw_input.read()
+        finally:
+            self.sig = ''
+
+    def close(self):
+        """Close the wrapped input object."""
+        return self.raw_input.close()
+
+    def __iter__(self):
+        """Return this object as an iterator."""
+        return self
+
+    def __next__(self):
+        """Return the next line in the file."""
+        if self.sig != '':
+            # must be able to deal with newlines in the first 4 bytes
+            index = self.sig.find("\n")
+            if index >= 0:
+                retval = self.sig[:index]
+                self.sig = self.sig[index+1:]
+                return retval
+            else:
+                retval = self.sig + next(self.raw_input)
+                self.sig = ''
+                return retval
+        else:
+            return next(self.raw_input)
+
+    next = __next__
+            
 # end
-
-
-
-
