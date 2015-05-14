@@ -93,21 +93,21 @@ def make_input(data, allow_local=False, sheet_index=0):
     if isinstance(data, AbstractInput):
         return data
 
-    elif hasattr(data, 'read'):
-        # it's a file stream
-        return StreamInput(data)
-
     elif hasattr(data, '__len__') and (not isinstance(data, six.string_types)):
         # it's an array
         return ArrayInput(data)
 
     else:
-        input = Sniffer(make_stream(data, allow_local=allow_local))
-
+        if hasattr(data, 'read'):
+            input = Sniffer(data)
+        else:
+            input = Sniffer(make_stream(data, allow_local=allow_local))
+            
         if list(input.sig) in [XLSX_SIG, XLS_SIG]:
             return ExcelInput(input, sheet_index=sheet_index)
         else:
             return CSVInput(input)
+
 
 def make_stream(origin, allow_local=False):
     """Figure out whether to open a file or a URL."""
