@@ -450,6 +450,20 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
         nargs='?'
         )
     parser.add_argument(
+        '--sheet',
+        help='Select sheet from a workbook (1 is first sheet)',
+        metavar='number',
+        type=int,
+        nargs='?'
+        )
+    parser.add_argument(
+        '--strip-tags',
+        help='Strip HXL tags from the CSV output',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    parser.add_argument(
         '-i',
         '--input',
         help='String or regular expression to replace',
@@ -473,7 +487,8 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = ReplaceDataFilter(source, args.original, args.replacement, args.tags, args.regex)
+        replacement = ReplaceDataFilter.Replacement(args.original, args.replacement, args.tags, args.regex)
+        filter = ReplaceDataFilter(source, [replacement])
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 

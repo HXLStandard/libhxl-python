@@ -814,6 +814,10 @@ class ReplaceDataFilter(Dataset):
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
 
+    @property
+    def columns(self):
+        return self.source.columns
+
     def __iter__(self):
         """Return a custom iterator that replaces values."""
         self.columns # make sure this fires to build cache
