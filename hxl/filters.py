@@ -799,7 +799,7 @@ class ReplaceDataFilter(Dataset):
     dynamic, single-threaded processing pipeline.
     """
 
-    def __init__(self, source, original, replacement, patterns=[], use_regex=False):
+    def __init__(self, source, replacements):
         """
         Constructor
         @param source the HXL data source
@@ -810,27 +810,9 @@ class ReplaceDataFilter(Dataset):
         """
         
         self.source = source
-        if use_regex:
-            self.original = original
-        else:
-            self.original = normalise_string(original)
-        self.replacement = replacement
-        self.patterns = TagPattern.parse_list(patterns)
-        self.use_regex = use_regex
-        self._column_indices = None
-
-    @property
-    def columns(self):
-        """Return the source columns, and build a table of indices for replacement."""
-        if self.patterns and self._column_indices is None:
-            indices = []
-            for index, column in enumerate(self.source.columns):
-                for pattern in self.patterns:
-                    if pattern.match(column):
-                        indices.append(index)
-                        break
-            self._column_indices = indices
-        return self.source.columns
+        self.replacements = replacements
+        if isinstance(self.replacements, ReplaceDataFilter.Replacement):
+            self.replacements = [self.replacements]
 
     def __iter__(self):
         """Return a custom iterator that replaces values."""
@@ -852,15 +834,8 @@ class ReplaceDataFilter(Dataset):
             row = deepcopy(next(self.iterator))
             
             for index, value in enumerate(row):
-                # see if we're restricted to specific rows
-                if (not self.outer._column_indices) or (index in self.outer._column_indices):
-                    if self.outer.use_regex:
-                        # using a regular expression
-                        row.values[index] = re.sub(self.outer.original, self.outer.replacement, value)
-                    else:
-                        # trying a regular string substitution
-                        if self.outer.original == normalise_string(value):
-                            row.values[index] = self.outer.replacement
+                for replacement in self.outer.replacements:
+                    row.values[index] = replacement.sub(row.columns[index], value)
             return row
 
         next = __next__
@@ -869,20 +844,37 @@ class ReplaceDataFilter(Dataset):
         """Replacement specification."""
 
         def __init__(self, original, replacement, pattern=None, is_regex=False):
+            """
+            @param original a string (case- and space-insensitive) or regular expression (sensitive) to replace
+            @param replacement the replacement string or regular expression substitution
+            @param pattern (optional) a tag pattern to limit the replacement to specific columns
+            @param is_regex (optional) True to use regular-expression processing (defaults to False)
+            """
             self.original = original
             self.replacement = replacement
-            self.pattern = pattern
+            if pattern:
+                self.pattern = TagPattern.parse(pattern)
+            else:
+                self.pattern = None
             self.is_regex = is_regex
-            if self.is_regex:
+            if not self.is_regex:
                 self.original = normalise_string(self.original)
 
-        def match(self, column, value):
+        def sub(self, column, value):
+            """
+            Substitute inside the value, if appropriate.
+            @param column the column definition
+            @param value the cell value
+            @return the value, possibly changed
+            """
             if self.pattern and not self.pattern.match(column):
-                return False
-                if self.is_regex:
-                    return re.match(self.original, value)
-                else:
-                    return self.original == normalise_string(value)
+                return value
+            elif self.is_regex:
+                return re.sub(self.original, self.replacement, value)
+            elif self.original == normalise_string(value):
+                return self.replacement
+            else:
+                return value
             
         
 

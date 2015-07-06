@@ -270,9 +270,10 @@ class Dataset(object):
         """Count values in the dataset (caching)."""
         return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
 
-    def replace_data(self, original, replacement, patterns=None, use_regex=False):
+    def replace_data(self, original, replacement, pattern=None, use_regex=False):
         """Replace values in a HXL dataset."""
-        return hxl.filters.ReplaceDataFilter(self, original, replacement, patterns, use_regex)
+        replacement = hxl.filters.ReplaceDataFilter.Replacement(original, replacement, pattern, use_regex)
+        return hxl.filters.ReplaceDataFilter(self, [replacement])
 
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
