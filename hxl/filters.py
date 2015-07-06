@@ -839,7 +839,8 @@ class ReplaceDataFilter(Dataset):
             
             for index, value in enumerate(row):
                 for replacement in self.outer.replacements:
-                    row.values[index] = replacement.sub(row.columns[index], value)
+                    value = replacement.sub(row.columns[index], value)
+                    row.values[index] = value
             return row
 
         next = __next__
@@ -854,6 +855,7 @@ class ReplaceDataFilter(Dataset):
             @param pattern (optional) a tag pattern to limit the replacement to specific columns
             @param is_regex (optional) True to use regular-expression processing (defaults to False)
             """
+            print([original, replacement, pattern, is_regex])
             self.original = original
             self.replacement = replacement
             if pattern:
