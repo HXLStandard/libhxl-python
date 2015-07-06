@@ -429,45 +429,19 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     @param stderr Standard error for the script
     """
 
-    # can't use make_args() -- special usage
-    parser = argparse.ArgumentParser(description = 'Replace strings in a HXL dataset')
+    parser = make_args('Replace strings in a HXL dataset')
+
     parser.add_argument(
-        'original',
-        help='String or regular expression to search for'
-        )
-    parser.add_argument(
-        'replacement',
-        help='Replacement string'
-        )
-    parser.add_argument(
-        'infile',
-        help='HXL file to read (if omitted, use standard input).',
+        '-p',
+        '--pattern',
+        help='String or regular expression to search for',
         nargs='?'
         )
     parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
+        '-s',
+        '--substitution',
+        help='Replacement string',
         nargs='?'
-        )
-    parser.add_argument(
-        '--sheet',
-        help='Select sheet from a workbook (1 is first sheet)',
-        metavar='number',
-        type=int,
-        nargs='?'
-        )
-    parser.add_argument(
-        '--strip-tags',
-        help='Strip HXL tags from the CSV output',
-        action='store_const',
-        const=True,
-        default=False
-        )
-    parser.add_argument(
-        '-i',
-        '--input',
-        help='String or regular expression to replace',
-        metavar='TEXT'
         )
     parser.add_argument(
         '-r',
@@ -480,14 +454,21 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     parser.add_argument(
         '-t',
         '--tags',
-        help='Comma-separated list of tag patterns to include in error reports',
+        help='Tag pattern to match',
         metavar='tag,tag...',
-        type=TagPattern.parse_list
+        type=TagPattern.parse
+        )
+    parser.add_argument(
+        '-m',
+        '--map',
+        help='Filename or URL of a mapping table',
+        metavar='PATH',
+        nargs='?'
         )
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        replacement = ReplaceDataFilter.Replacement(args.original, args.replacement, args.tags, args.regex)
+        replacement = ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex)
         filter = ReplaceDataFilter(source, [replacement])
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
