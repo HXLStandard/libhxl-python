@@ -855,7 +855,6 @@ class ReplaceDataFilter(Dataset):
             @param pattern (optional) a tag pattern to limit the replacement to specific columns
             @param is_regex (optional) True to use regular-expression processing (defaults to False)
             """
-            print([original, replacement, pattern, is_regex])
             self.original = original
             self.replacement = replacement
             if pattern:
