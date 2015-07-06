@@ -864,6 +864,26 @@ class ReplaceDataFilter(Dataset):
             return row
 
         next = __next__
+
+    class Replacement:
+        """Replacement specification."""
+
+        def __init__(self, original, replacement, pattern=None, is_regex=False):
+            self.original = original
+            self.replacement = replacement
+            self.pattern = pattern
+            self.is_regex = is_regex
+            if self.is_regex:
+                self.original = normalise_string(self.original)
+
+        def match(self, column, value):
+            if self.pattern and not self.pattern.match(column):
+                return False
+                if self.is_regex:
+                    return re.match(self.original, value)
+                else:
+                    return self.original == normalise_string(value)
+            
         
 
 class RowFilter(Dataset):
