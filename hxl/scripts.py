@@ -115,7 +115,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = AddColumnsFilter(source, specs=args.spec, before=args.before)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -148,7 +148,7 @@ def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, hxl(args.append, True) as append_source, make_output(args, stdout) as output:
         filter = AppendFilter(source, append_source, not args.exclude_extra_columns)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlbounds_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -278,7 +278,7 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
             number_arg = args.number
 
         filter = CleanDataFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
-        write_hxl(output.output, filter, args.remove_headers)
+        write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
 
 
 def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -311,7 +311,7 @@ def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = CountFilter(source, args.tags, args.aggregate)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -334,7 +334,7 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = ColumnFilter(source, args.include, args.exclude)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -391,7 +391,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl(args.merge, True) if args.merge else None as merge_source:
         filter = MergeDataFilter(source, merge_source=merge_source,
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -417,7 +417,7 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = RenameFilter(source, args.rename)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -474,7 +474,7 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = ReplaceDataFilter(source, args.original, args.replacement, args.tags, args.regex)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -508,7 +508,7 @@ def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = RowFilter(source, queries=args.query, reverse=args.reverse)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -540,7 +540,7 @@ def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = SortFilter(source, args.tags, args.reverse)
-        write_hxl(output.output, filter)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -566,7 +566,7 @@ def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args.infile or stdin) as input, make_output(args, stdout) as output:
         tagger = Tagger(input, args.map)
-        write_hxl(output.output, hxl(tagger))
+        write_hxl(output.output, hxl(tagger), show_tags=not args.strip_tags)
 
 
 def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
@@ -605,7 +605,7 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
         else:
             schema = hxl_schema()
         filter = ValidateFilter(source, schema, args.all)
-        write_hxl(args.outfile, filter)
+        write_hxl(args.outfile, filter, show_tags=not args.strip_tags)
 
 
 
@@ -644,6 +644,13 @@ def make_args(description):
         metavar='number',
         type=int,
         nargs='?'
+        )
+    parser.add_argument(
+        '--strip-tags',
+        help='Strip HXL tags from the CSV output',
+        action='store_const',
+        const=True,
+        default=False
         )
     return parser
 
