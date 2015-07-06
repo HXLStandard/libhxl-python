@@ -247,7 +247,7 @@ class ExcelInput(AbstractInput):
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._workbook.sheet_by_index(sheet_index)
             for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [cell.value for cell in sheet.row(row_index)]
+                raw_row = [self._fix_value(cell) for cell in sheet.row(row_index)]
                 # FIXME nasty violation of encapsulation
                 if HXLReader.parse_tags(raw_row):
                     return sheet_index
