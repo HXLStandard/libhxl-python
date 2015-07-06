@@ -429,21 +429,40 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     @param stderr Standard error for the script
     """
 
+    def parse_map(map_path):
+        """Parse a substitution map."""
+        replacements = []
+        for row in hxl(map_path, True):
+            if row.get('#x_pattern'):
+                replacements.append(ReplaceDataFilter.Replacement(row.get('#x_pattern'), row.get('#x_substitution'), row.get('#x_tag'), row.get('#x_regex')))
+        return replacements
+
+
     parser = make_args('Replace strings in a HXL dataset')
 
-    parser.add_argument(
+    inline_group = parser.add_argument_group('Inline replacement')
+    map_group = parser.add_argument_group('External substitution map')
+
+    inline_group.add_argument(
         '-p',
         '--pattern',
         help='String or regular expression to search for',
         nargs='?'
         )
-    parser.add_argument(
+    inline_group.add_argument(
         '-s',
         '--substitution',
         help='Replacement string',
         nargs='?'
         )
-    parser.add_argument(
+    inline_group.add_argument(
+        '-t',
+        '--tags',
+        help='Tag pattern to match',
+        metavar='tag,tag...',
+        type=TagPattern.parse
+        )
+    inline_group.add_argument(
         '-r',
         '--regex',
         help='Use a regular expression instead of a string',
@@ -451,25 +470,23 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
         const=True,
         default=False
         )
-    parser.add_argument(
-        '-t',
-        '--tags',
-        help='Tag pattern to match',
-        metavar='tag,tag...',
-        type=TagPattern.parse
-        )
-    parser.add_argument(
+    map_group.add_argument(
         '-m',
         '--map',
-        help='Filename or URL of a mapping table',
+        help='Filename or URL of a mapping table using the tags #x_pattern (required), #x_substitution (required), #x_tag (optional), and #x_regex (optional), corresponding to the inline options above, for multiple substitutions.',
         metavar='PATH',
         nargs='?'
         )
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        replacement = ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex)
-        filter = ReplaceDataFilter(source, [replacement])
+        if args.map:
+            replacements = parse_map(args.map)
+        else:
+            replacements = []
+        if args.pattern:
+            replacements.append(ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex))
+        filter = ReplaceDataFilter(source, replacements)
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
