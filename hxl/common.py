@@ -3,6 +3,8 @@ Common information for HXL.
 """
 
 import six
+import re
+import sys
 
 TOKEN = r'[A-Za-z][_0-9A-Za-z]*'
 
@@ -16,9 +18,11 @@ class HXLException(Exception):
     def __str__(self):
         return "<HXException: " + str(self.message) + ">"
 
+WS = re.compile('\s\s+', re.MULTILINE)
+    
 def normalise_string(s):
     if s:
-        return s.strip().lower().replace(r'\s\s+', ' ')
+        return re.sub(WS, ' ', s.strip().lower().replace("\n", " "))
     else:
         return ''
 
