@@ -98,7 +98,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         '-s',
         '--spec',
         help='Constant value to add to each row',
-        metavar='[[Text header]#]<tag>=<value>',
+        metavar='header#<tag>=<value>',
         action='append',
         required=True
         )
