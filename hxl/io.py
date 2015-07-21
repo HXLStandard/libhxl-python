@@ -32,9 +32,19 @@ from hxl.model import Dataset, Column, Row
 # At least this percentage of cells must parse as HXL hashtags
 FUZZY_HASHTAG_PERCENTAGE = 0.5
 
+# Patterns for URL munging
+GOOGLE_SHEETS_URL = r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+)).*$'
+DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
+
 # opening signatures for well-known file types
-XLSX_SIG = ['P', 'K', '\x03', '\x04']
-XLS_SIG = ['\xD0', '\xcf', '\x11', '\xE0']
+EXCEL_SIGS = [
+    ['P', 'K', '\x03', '\x04'],
+    ['\xD0', '\xcf', '\x11', '\xE0']
+]
+HTML5_SIGS = [
+    ['<', '!', 'D', 'O'],
+    ["\n", '<', '!', 'D']
+]
 
 
 ########################################################################
@@ -99,11 +109,15 @@ def make_input(data, allow_local=False, sheet_index=None):
 
     else:
         if hasattr(data, 'read'):
+            # it's a stream
             input = Sniffer(data)
         else:
+            # assume a URL or filename
             input = Sniffer(make_stream(data, allow_local=allow_local))
-            
-        if list(input.sig) in [XLSX_SIG, XLS_SIG]:
+
+        if list(input.sig) in HTML5_SIGS:
+            raise HXLException("Received HTML5 input.\nCheck that resource (e.g. Google Sheet) is publicly readable.")
+        elif list(input.sig) in EXCEL_SIGS:
             return ExcelInput(input, sheet_index=sheet_index)
         else:
             return CSVInput(input)
@@ -112,20 +126,28 @@ def make_input(data, allow_local=False, sheet_index=None):
 def make_stream(origin, allow_local=False):
     """Figure out whether to open a file or a URL."""
 
-    # Pre-filter to get CSV for public Google Sheets
-    result = re.match(r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+)).*$', origin)
+    is_google = False
+
+    # Pre-filter to get CSV for public Google Sheets or direct download for Dropbox
+    result = re.match(GOOGLE_SHEETS_URL, origin)
     if result:
         if result.group(2):
             origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
         else:
             origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
+    else:
+        result = re.match(DROPBOX_URL, origin)
+        if result:
+            origin = 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
 
+    # Does it look like a url?
     if re.match(r'^(?:https?|ftp)://', origin):
         if sys.version_info < (3,):
             return urllib2.urlopen(origin)
         else:
             return urllib.request.urlopen(origin)
 
+    # Are we allowed to open local files?
     elif allow_local:
         return open(origin, 'rb')
 
