@@ -18,6 +18,7 @@ from shapely.geometry import shape
 
 from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
+from hxl.schema import hxl_schema
 
 from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, ColumnFilter, CountFilter, MergeDataFilter, RenameFilter, ReplaceDataFilter, RowFilter, SortFilter, ValidateFilter
 from hxl.converters import Tagger
@@ -597,7 +598,6 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
         '--schema',
         help='Schema file for validating the HXL dataset (if omitted, use the default core schema).',
         metavar='schema',
-        type=argparse.FileType('r'),
         default=None
         )
     parser.add_argument(
@@ -610,16 +610,44 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
         )
     args = parser.parse_args(args)
 
-    with args.infile, args.outfile:
-        source = HXLReader(args.infile)
-        if args.schema:
-            with args.schema:
-                schema = hxl_schema(args.schema)
-        else:
-            schema = hxl_schema()
-        filter = ValidateFilter(source, schema, args.all)
-        write_hxl(args.outfile, filter, show_tags=not args.strip_tags)
+    with make_input(args.infile or stdin, True) as input, make_output(args, stdout) as output:
 
+        class Counter:
+            error_count = 0
+
+        def callback(e):
+            """Show a validation error message."""
+            Counter.error_count += 1
+            message = ''
+            if e.row:
+                if e.column:
+                    message = "{},{}: ".format(e.row.row_number, e.column.display_tag)
+                else:
+                    message = "{}: "
+            elif e.column:
+                message = "<dataset>,{}: ".format(e.column.display_tag)
+            else:
+                message = "<dataset>: "
+            if e.value:
+                message += '"{}" '.format(e.value)
+            if e.message:
+                message += e.message
+            message += "\n"
+            output.write(message)
+
+        output.write("Validating {} with schema {} ...\n".format(args.infile or "<standard input>", args.schema or "<default>"))
+        source = hxl(input)
+        if args.schema:
+            with make_input(args.schema, True) as schema_input:
+                schema = hxl_schema(schema_input, callback=callback)
+        else:
+            schema = hxl_schema(callback=callback)
+
+        schema.validate(source)
+        if Counter.error_count > 0:
+            output.write("{} error(s)\n".format(Counter.error_count))
+        else:
+            output.write("No errors found with this schema.")
 
 
 #
@@ -630,10 +658,10 @@ def run_script(func):
     """Try running a command-line script, with exception handling."""
     try:
         func(sys.argv[1:], sys.stdin, sys.stdout)
-    except HXLException as e:
-        print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + str(e.message)
-        print >>sys.stderr, "Exiting ..."
-        sys.exit(2)
+    # except HXLException as e:
+    #     print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + str(e.message)
+    #     print >>sys.stderr, "Exiting ..."
+    #     sys.exit(2)
     except KeyboardInterrupt:
         print >>sys.stderr, "Interrupted"
         sys.exit(2)
@@ -703,5 +731,8 @@ class StreamOutput(object):
 
     def __exit__(self, value, type, traceback):
         pass
+
+    def write(self, s):
+        self.output.write(s)
             
     
