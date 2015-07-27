@@ -104,7 +104,7 @@ class AddColumnsFilter(Dataset):
             value = result.group(3)
             return (Column(tag=tag, header=header), value)
         else:
-            raise HXLFilterException("Badly formatted new-column spec: " + s)
+            raise HXLFilterException("Badly formatted new-column spec: " + spec)
 
 
 class AppendFilter(Dataset):

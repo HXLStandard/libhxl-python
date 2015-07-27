@@ -599,7 +599,7 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
         help='Schema file for validating the HXL dataset (if omitted, use the default core schema).',
         metavar='schema',
         default=None
-        )
+    )
     parser.add_argument(
         '-a',
         '--all',
@@ -607,27 +607,47 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
         action='store_const',
         const=True,
         default=False
-        )
+    )
+    parser.add_argument(
+        '-e',
+        '--error-level',
+        help='Minimum error level to show (defaults to "info") ',
+        choices=['info', 'warning', 'error'],
+        metavar='info|warning|error',
+        default='info'
+    )
     args = parser.parse_args(args)
 
     with make_input(args.infile or stdin, True) as input, make_output(args, stdout) as output:
 
         class Counter:
-            error_count = 0
+            infos = 0
+            warnings = 0
+            errors = 0
 
         def callback(e):
             """Show a validation error message."""
-            Counter.error_count += 1
-            message = ''
-            if e.row:
-                if e.column:
-                    message = "{},{}: ".format(e.row.row_number, e.column.display_tag)
-                else:
-                    message = "{}: "
-            elif e.column:
-                message = "<dataset>,{}: ".format(e.column.display_tag)
+            if e.rule.severity == 'info':
+                if args.error_level != 'info':
+                    return
+                Counter.infos += 1
+            elif e.rule.severity == 'warning':
+                if args.error_level == 'error':
+                    return
+                Counter.warnings += 1
             else:
-                message = "<dataset>: "
+                Counter.errors += 1
+
+            message = '[{}] '.format(e.rule.severity)
+            if e.row:
+                if e.rule:
+                    message += "{},{}: ".format(e.row.row_number + 1, e.rule.tag_pattern)
+                else:
+                    message += "{}: ".format(e.row.row_number + 1)
+            elif e.rule:
+                message += "<dataset>,{}: ".format(e.rule.tag_pattern)
+            else:
+                message += "<dataset>: "
             if e.value:
                 message += '"{}" '.format(e.value)
             if e.message:
@@ -644,11 +664,19 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
             schema = hxl_schema(callback=callback)
 
         schema.validate(source)
-        if Counter.error_count > 0:
-            output.write("{} error(s)\n".format(Counter.error_count))
-        else:
-            output.write("No errors found with this schema.")
 
+        if args.error_level == 'info':
+            output.write("{:,} error(s), {:,} warnings, {:,} suggestions\n".format(Counter.errors, Counter.warnings, Counter.infos))
+        elif args.error_level == 'warning':
+            output.write("{:,} error(s), {:,} warnings\n".format(Counter.errors, Counter.warnings))
+        else:
+            output.write("{:,} error(s)\n".format(Counter.errors))
+            
+        if Counter.errors > 0:
+            output.write("Validation failed.\n")
+            exit(2)
+        else:
+            output.write("Validation succeeded.\n")
 
 #
 # Utility functions
