@@ -596,6 +596,10 @@ class CountFilter(Dataset):
 class DeduplicationFilter(Dataset):
     """
     Composable filter to deduplicate a HXL dataset.
+
+    Supports the hxldedup command-line script.
+
+    TODO: add more-sophisticated matching, edit distance, etc.
     """
 
     def __init__(self, source, patterns=None):
