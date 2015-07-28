@@ -592,6 +592,43 @@ class CountFilter(Dataset):
                     except:
                         pass
 
+
+class DeduplicationFilter(Dataset):
+    """
+    Composable filter to deduplicate a HXL dataset.
+    """
+
+    def __init__(self, source):
+        self.source = source
+
+    @property
+    def columns(self):
+        return self.source.columns
+
+    def __iter__(self):
+        return DeduplicationFilter.Iterator(self)
+
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+            self.seen_map = {}
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            row = next(self.iterator)
+            key = tuple(row.values)
+            while row and key in self.seen_map:
+                row = next(self.iterator)
+            self.seen_map[key] = True
+            return row
+
+        next = __next__
+
+        
 class MergeDataFilter(Dataset):
     """
     Composable filter class to merge values from two HXL datasets.

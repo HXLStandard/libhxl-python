@@ -246,6 +246,10 @@ class Dataset(object):
         """Add a caching filter to the dataset."""
         return hxl.filters.CacheFilter(self)
 
+    def dedup(self):
+        """Deduplicate a dataset."""
+        return hxl.filters.DeduplicateFilter(self)
+
     def with_columns(self, whitelist):
         """Select matching columns."""
         return hxl.filters.ColumnFilter(self, include_tags=whitelist)

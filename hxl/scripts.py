@@ -20,7 +20,7 @@ from hxl import hxl, TagPattern, HXLException
 from hxl.io import write_hxl, make_input
 from hxl.schema import hxl_schema
 
-from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, ColumnFilter, CountFilter, MergeDataFilter, RenameFilter, ReplaceDataFilter, RowFilter, SortFilter, ValidateFilter
+from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, ColumnFilter, CountFilter, DeduplicationFilter, MergeDataFilter, RenameFilter, ReplaceDataFilter, RowFilter, SortFilter, ValidateFilter
 from hxl.converters import Tagger
 
 
@@ -51,6 +51,10 @@ def hxlcount():
 def hxlcut():
     """Console script for hxlcut."""
     run_script(hxlcut_main)
+
+def hxldedup():
+    """Console script for hxldedup."""
+    run_script(hxldedup_main)
 
 def hxlmerge():
     """Console script for hxlmerge."""
@@ -335,6 +339,15 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = ColumnFilter(source, args.include, args.exclude)
+        write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+
+def hxldedup_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args('Remove duplicate rows from a HXL dataset.')
+    args = parser.parse_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = DeduplicationFilter(source)
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
