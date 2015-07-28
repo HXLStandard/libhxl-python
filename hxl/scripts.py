@@ -344,10 +344,17 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
 
 def hxldedup_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     parser = make_args('Remove duplicate rows from a HXL dataset.')
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of column tags to use for deduplication (by default, use all values).',
+        metavar='tag,tag...',
+        type=TagPattern.parse_list
+        )
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = DeduplicationFilter(source)
+        filter = DeduplicationFilter(source, args.tags)
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 

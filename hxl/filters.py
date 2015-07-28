@@ -598,8 +598,9 @@ class DeduplicationFilter(Dataset):
     Composable filter to deduplicate a HXL dataset.
     """
 
-    def __init__(self, source):
+    def __init__(self, source, patterns=None):
         self.source = source
+        self.patterns = TagPattern.parse_list(patterns)
 
     @property
     def columns(self):
@@ -620,13 +621,31 @@ class DeduplicationFilter(Dataset):
 
         def __next__(self):
             row = next(self.iterator)
-            key = tuple(row.values)
+            if not row:
+                return None
+            key = self._make_key(row)
             while row and key in self.seen_map:
                 row = next(self.iterator)
             self.seen_map[key] = True
             return row
 
         next = __next__
+
+        def _is_key(self, col):
+            if self.outer.patterns:
+                for pattern in self.outer.patterns:
+                    if pattern.match(col):
+                        return True
+                return False
+            else:
+                return True
+
+        def _make_key(self, row):
+            key = []
+            for i, value in enumerate(row.values):
+                if self._is_key(row.columns[i]):
+                    key.append(normalise_string(value))
+            return tuple(key)
 
         
 class MergeDataFilter(Dataset):
