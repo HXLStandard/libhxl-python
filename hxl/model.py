@@ -328,10 +328,15 @@ class Dataset(object):
 
     def gen_json(self, show_headers=True, show_tags=True):
         """Generate a JSON representation of a HXL dataset, one row at a time."""
+        is_first = True
         yield "[\n"
         for raw in self.gen_raw():
-            yield json.dumps(raw)
-        yield "]\n"
+            if is_first:
+                is_first = False
+                yield json.dumps(raw)
+            else:
+                yield ",\n" + json.dumps(raw)
+        yield "\n]\n"
 
 class Column(object):
     """
