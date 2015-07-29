@@ -16,9 +16,15 @@ import xlrd
 import six
 
 if sys.version_info < (3,):
+    # Customisation for Python 2.x
     import urllib2
+    def decode(s):
+        return s
 else:
+    # Customisation for Python 3.x
     import urllib.request
+    def decode(s):
+        return s.decode('utf-8')
 
 from hxl.common import HXLException
 from hxl.model import Dataset, Column, Row
@@ -38,12 +44,12 @@ DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 
 # opening signatures for well-known file types
 EXCEL_SIGS = [
-    ['P', 'K', '\x03', '\x04'],
-    ['\xD0', '\xcf', '\x11', '\xE0']
+    b"PK\x03\x04",
+    b"\xd0\xcf\x11\xe0"
 ]
 HTML5_SIGS = [
-    ['<', '!', 'D', 'O'],
-    ["\n", '<', '!', 'D']
+    b"<!DO",
+    b"\n<!D"
 ]
 
 
@@ -115,9 +121,9 @@ def make_input(data, allow_local=False, sheet_index=None):
             # assume a URL or filename
             input = Sniffer(make_stream(data, allow_local=allow_local))
 
-        if list(input.sig) in HTML5_SIGS:
+        if input.sig in HTML5_SIGS:
             raise HXLException("Received HTML5 input.\nCheck that resource (e.g. Google Sheet) is publicly readable.")
-        elif list(input.sig) in EXCEL_SIGS:
+        elif input.sig in EXCEL_SIGS:
             return ExcelInput(input, sheet_index=sheet_index)
         else:
             return CSVInput(input)
@@ -436,7 +442,7 @@ class Sniffer:
         try:
             return self.sig + self.raw_input.read()
         finally:
-            self.sig = ''
+            self.sig = b''
 
     def close(self):
         """Close the wrapped input object."""
@@ -448,19 +454,18 @@ class Sniffer:
 
     def __next__(self):
         """Return the next line in the file."""
-        if self.sig != '':
+        if self.sig:
             # must be able to deal with newlines in the first 4 bytes
-            index = self.sig.find("\n")
-            if index >= 0:
+            if b"\n" in self.sig:
                 retval = self.sig[:index]
                 self.sig = self.sig[index+1:]
-                return retval
+                return decode(retval)
             else:
                 retval = self.sig + next(self.raw_input)
                 self.sig = ''
-                return retval
+                return decode(retval)
         else:
-            return next(self.raw_input)
+            return decode(next(self.raw_input))
 
     next = __next__
             
