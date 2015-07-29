@@ -136,7 +136,7 @@ def make_stream(origin, allow_local=False):
 
     # Pre-filter to get CSV for public Google Sheets or direct download for Dropbox
     result = re.match(GOOGLE_SHEETS_URL, origin)
-    if result:
+    if result and not re.match(r'/pub', origin):
         if result.group(2):
             origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
         else:
