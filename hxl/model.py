@@ -330,7 +330,7 @@ class Dataset(object):
         """Generate a JSON representation of a HXL dataset, one row at a time."""
         is_first = True
         yield "[\n"
-        for raw in self.gen_raw():
+        for raw in self.gen_raw(show_headers, show_tags):
             if is_first:
                 is_first = False
                 yield json.dumps(raw)
