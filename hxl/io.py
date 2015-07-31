@@ -14,15 +14,14 @@ import sys
 import re
 import xlrd
 import six
+import requests
 
 if sys.version_info < (3,):
     # Customisation for Python 2.x
-    import urllib2
     def decode(s):
         return s
 else:
     # Customisation for Python 3.x
-    import urllib.request
     def decode(s):
         return s.decode('utf-8')
 
@@ -148,10 +147,8 @@ def make_stream(origin, allow_local=False):
 
     # Does it look like a url?
     if re.match(r'^(?:https?|ftp)://', origin):
-        if sys.version_info < (3,):
-            return urllib2.urlopen(origin)
-        else:
-            return urllib.request.urlopen(origin)
+        response = requests.get(origin, stream=True)
+        return response.raw
 
     # Are we allowed to open local files?
     elif allow_local:
