@@ -830,7 +830,7 @@ class RenameFilter(Dataset):
         return self._saved_columns
 
     def __iter__(self):
-        return iter(self.source)
+        return RenameFilter.Iterator(self)
 
     RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
@@ -847,6 +847,23 @@ class RenameFilter(Dataset):
         else:
             return s
 
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.iterator = iter(outer.source)
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            """
+            @return the next merged row of data, with new columns
+            """
+            row = next(self.iterator)
+            return Row(self.outer.columns, copy(row.values), row.row_number)
+
+        next = __next__
 
 class ReplaceDataFilter(Dataset):
     """
