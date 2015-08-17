@@ -1156,27 +1156,35 @@ class SortFilter(Dataset):
         def make_key(row):
             """Closure: use the requested tags as keys (if provided). """
 
-            def get_value(pattern):
-                """Closure: extract a sort key"""
-                raw_value = pattern.get_value(row)
+            key = []
 
-                # is this a date?
-                if pattern.tag == '#date':
-                    return dateutil.parser.parse(raw_value).strftime('%Y-%m-%d')
-
-                # is this a number?
-                try:
-                    return float(raw_value)
-                except:
-                    pass
-
-                # normalise a string value
-                return normalise_string(raw_value)
+            def add_value(tag, value):
+                """
+                Split each value into a numeric and non-numeric representation.
+                Non-numeric values sort as infinity (after all numeric ones).
+                """
+                norm = normalise_string(value)
+                if tag == '#date':
+                    key.append(float('inf'))
+                    key.append(dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
+                else:
+                    try:
+                        key.append(float(norm))
+                        key.append(norm)
+                    except:
+                        key.append(float('inf'))
+                        key.append(norm)
 
             if self.sort_tags:
-                return [get_value(pattern) for pattern in self.sort_tags]
+                # Specific sort tags chosen
+                for pattern in self.sort_tags:
+                    add_value(pattern.tag, pattern.get_value(row))
             else:
-                return row.values
+                # Sort everything, left to right
+                for index, value in enumerate(row):
+                    add_value(row.columns[index].tag, value)
+
+            return tuple(key)
 
         # Main method
         return iter(sorted(self.source, key=make_key, reverse=self.reverse))

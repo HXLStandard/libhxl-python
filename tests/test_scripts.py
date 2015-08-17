@@ -302,7 +302,7 @@ def try_script(script_function, args, input_file, expected_output_file):
     @return True if the actual output matches the expected output
     """
 
-    with open(resolve_file(input_file), 'r') as input:
+    with open(resolve_file(input_file), 'rb') as input:
         if sys.version_info[0] > 2:
             output = tempfile.NamedTemporaryFile(mode='w', newline='', delete=False)
         else:
@@ -326,8 +326,8 @@ def diff(file1, file2):
     @param file2 The full pathname of the second file to compare
     @return True if the files are the same, o
     """
-    with open(file1, 'r') as input1:
-        with open(file2, 'r') as input2:
+    with open(file1, 'rb') as input1:
+        with open(file2, 'rb') as input2:
             diffs = difflib.unified_diff(
                 input1.read().splitlines(),
                 input2.read().splitlines()
