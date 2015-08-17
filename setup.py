@@ -35,6 +35,5 @@ setup(name='libhxl',
               'hxltag = hxl.scripts:hxltag',
               'hxlvalidate = hxl.scripts:hxlvalidate'
           ]
-      },
-      tests_require = ['mock']
+      }
 )
