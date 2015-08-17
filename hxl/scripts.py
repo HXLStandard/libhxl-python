@@ -479,9 +479,9 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     inline_group.add_argument(
         '-t',
         '--tags',
-        help='Tag pattern to match',
+        help='Tag patterns to match',
         metavar='tag,tag...',
-        type=TagPattern.parse
+        type=TagPattern.parse_list
         )
     inline_group.add_argument(
         '-r',
@@ -506,7 +506,8 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
         else:
             replacements = []
         if args.pattern:
-            replacements.append(ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex))
+            for tag in args.tags:
+                replacements.append(ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
         filter = ReplaceDataFilter(source, replacements)
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 

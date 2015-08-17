@@ -544,7 +544,7 @@ class CountFilter(Dataset):
             """
             aggregators = {}
             for row in self.iterator:
-                values = [pattern.get_value(row) for pattern in self.outer.patterns]
+                values = [str(pattern.get_value(row)) for pattern in self.outer.patterns]
                 if values:
                     key = tuple(values)
                     if not key in aggregators:

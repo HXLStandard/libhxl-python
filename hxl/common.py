@@ -21,8 +21,9 @@ class HXLException(Exception):
 WS = re.compile('\s\s+', re.MULTILINE)
     
 def normalise_string(s):
+    """Normalise a string."""
     if s:
-        return re.sub(WS, ' ', s.strip().lower().replace("\n", " "))
+        return re.sub(WS, ' ', str(s).strip().lower().replace("\n", " "))
     else:
         return ''
 

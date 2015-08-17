@@ -25,26 +25,14 @@ FILE_VALID = _resolve_file('./files/test_parser/input-valid.csv')
 FILE_FUZZY = _resolve_file('./files/test_parser/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_parser/input-invalid.csv')
 
-
-class TestCSVInput(unittest.TestCase):
-
-    def test_bad_file(self):
-        with self.assertRaises(IOError):
-            input = make_input('XXXXX')
-
-    def test_bad_url(self):
-        with self.assertRaises(HTTPError):
-            input = make_input('http://example.org/XXXXX.csv')
-
-
-class TestHXL(unittest.TestCase):
+class TestBadInput(unittest.TestCase):
 
     def test_bad_file(self):
         with self.assertRaises(IOError):
-            source = hxl('XXXXX')
+            source = hxl('XXXXX', True)
 
     def test_bad_url(self):
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(IOError):
             source = hxl('http://example.org/XXXXX')
 
 class TestParser(unittest.TestCase):

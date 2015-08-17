@@ -148,6 +148,8 @@ def make_stream(origin, allow_local=False):
     # Does it look like a url?
     if re.match(r'^(?:https?|ftp)://', origin):
         response = requests.get(origin, stream=True)
+        if response.status_code != 200:
+            raise IOError('Received HTTP response code {}'.format(response.status_code))
         return response.raw
 
     # Are we allowed to open local files?
