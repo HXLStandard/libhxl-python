@@ -144,7 +144,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--append',
         help='HXL file to append.',
         metavar='file_or_url',
-        required=True
+        nargs='+'
         )
     parser.add_argument(
         '-x',
@@ -157,9 +157,18 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
-    with make_source(args, stdin) as source, hxl(args.append, True) as append_source, make_output(args, stdout) as output:
-        filter = AppendFilter(source, append_source, not args.exclude_extra_columns)
-        write_hxl(output.output, filter, show_tags=not args.strip_tags)
+    def append_data(source, output, urls):
+        """Recursively process all append files."""
+        if not urls:
+            write_hxl(output.output, source, not args.strip_tags)
+        else:
+            with hxl(urls.pop(), True) as append_source:
+                filter = AppendFilter(source, append_source, not args.exclude_extra_columns)
+                append_data(filter, output, urls)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        # use a recursive function so that we can close all sources on the way out
+        append_data(source, output, args.append)
 
 
 def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
