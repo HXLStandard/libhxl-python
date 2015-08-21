@@ -291,14 +291,14 @@ def resolve_file(name):
     """
     Resolve a file name in the test directory.
     """
-    return os.path.join(root_dir, 'tests', 'files', 'test_filters', name)
+    return os.path.join(root_dir, 'tests', 'files', 'test_scripts', name)
 
 def try_script(script_function, args, input_file, expected_output_file):
     """
     Test run a script in its own subprocess.
     @param args A list of arguments, including the script name first
-    @param input_file The name of the input HXL file in ./files/test_filters/
-    @param expected_output_file The name of the expected output HXL file in ./files/test_filters
+    @param input_file The name of the input HXL file in ./files/test_scripts/
+    @param expected_output_file The name of the expected output HXL file in ./files/test_scripts
     @return True if the actual output matches the expected output
     """
 

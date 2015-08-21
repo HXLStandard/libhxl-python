@@ -21,9 +21,10 @@ from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
 def _resolve_file(filename):
     return os.path.join(os.path.dirname(__file__), filename)
 
-FILE_VALID = _resolve_file('./files/test_parser/input-valid.csv')
-FILE_FUZZY = _resolve_file('./files/test_parser/input-fuzzy.csv')
-FILE_INVALID = _resolve_file('./files/test_parser/input-invalid.csv')
+FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
+FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
+FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
+FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 
 class TestBadInput(unittest.TestCase):
 
@@ -56,44 +57,55 @@ class TestParser(unittest.TestCase):
 
     def test_row_count(self):
         row_count = 0
-        with hxl(FILE_VALID, True) as source:
+        with hxl(FILE_CSV, True) as source:
             # logical row count
             for row in source:
                 row_count += 1
         self.assertEqual(TestParser.EXPECTED_ROW_COUNT, row_count)
 
     def test_headers(self):
-        with hxl(FILE_VALID, True) as source:
+        with hxl(FILE_CSV, True) as source:
             headers = source.headers
         self.assertEqual(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
-        with hxl(FILE_VALID, True) as source:
+        with hxl(FILE_CSV, True) as source:
             tags = source.tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
     def test_attributes(self):
-        with hxl(FILE_VALID, True) as source:
+        with hxl(FILE_CSV, True) as source:
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(set(TestParser.EXPECTED_ATTRIBUTES[column_number]), column.attributes)
 
     def test_column_count(self):
-        with hxl(FILE_VALID, True) as source:
+        with hxl(FILE_CSV, True) as source:
             for row in source:
                 self.assertEqual(len(TestParser.EXPECTED_TAGS), len(row.values))
 
     def test_columns(self):
-        with hxl(FILE_VALID, True) as source:
+        with hxl(FILE_CSV, True) as source:
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
 
-    def test_content(self):
-        with hxl(FILE_VALID, True) as source:
+    def test_local_csv(self):
+        with hxl(FILE_CSV, True) as source:
             for i, row in enumerate(source):
                 for j, value in enumerate(row):
                     self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
+
+    def test_local_excel(self):
+        """Test reading from a local Excel file."""
+        with hxl(FILE_EXCEL, True) as source:
+            for i, row in enumerate(source):
+                for j, value in enumerate(row):
+                    # For Excel, numbers may be pre-parsed
+                    try:
+                        self.assertEqual(float(TestParser.EXPECTED_CONTENT[i][j]), float(value))
+                    except:
+                        self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
 
     def test_fuzzy(self):
         """Imperfect hashtag row should still work."""
@@ -105,6 +117,3 @@ class TestParser(unittest.TestCase):
         with self.assertRaises(HXLParseException):
             with hxl(FILE_INVALID, True) as source:
                 source.tags
-
-
-
