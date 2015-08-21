@@ -25,6 +25,8 @@ FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
+URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
+URL_EXCEL = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
 
 class TestBadInput(unittest.TestCase):
 
@@ -91,21 +93,24 @@ class TestParser(unittest.TestCase):
                     self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
 
     def test_local_csv(self):
+        """Test reading from a local CSV file."""
         with hxl(FILE_CSV, True) as source:
-            for i, row in enumerate(source):
-                for j, value in enumerate(row):
-                    self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
+            self.compare_input(source)
 
     def test_local_excel(self):
         """Test reading from a local Excel file."""
         with hxl(FILE_EXCEL, True) as source:
-            for i, row in enumerate(source):
-                for j, value in enumerate(row):
-                    # For Excel, numbers may be pre-parsed
-                    try:
-                        self.assertEqual(float(TestParser.EXPECTED_CONTENT[i][j]), float(value))
-                    except:
-                        self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
+            self.compare_input(source)
+
+    def test_remote_csv(self):
+        """Test reading from a remote CSV file (will fail without connectivity)."""
+        with hxl(URL_CSV, True) as source:
+            self.compare_input(source)
+
+    def test_remote_excel(self):
+        """Test reading from a local Excel file (will fail without connectivity)."""
+        with hxl(URL_EXCEL, True) as source:
+            self.compare_input(source)
 
     def test_fuzzy(self):
         """Imperfect hashtag row should still work."""
@@ -117,3 +122,13 @@ class TestParser(unittest.TestCase):
         with self.assertRaises(HXLParseException):
             with hxl(FILE_INVALID, True) as source:
                 source.tags
+
+    def compare_input(self, source):
+        """Compare an external source to the expected content."""
+        for i, row in enumerate(source):
+            for j, value in enumerate(row):
+                # For Excel, numbers may be pre-parsed
+                try:
+                    self.assertEqual(float(TestParser.EXPECTED_CONTENT[i][j]), float(value))
+                except:
+                    self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)

@@ -31,7 +31,8 @@ def hxl_schema(origin=None, callback=None):
 
     if not origin:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
-        return parse_schema(hxl(path, True), callback)
+        with hxl(path, True) as source:
+            return parse_schema(source, callback)
 
     if isinstance(origin, Schema):
         # it's already a HXL schema
