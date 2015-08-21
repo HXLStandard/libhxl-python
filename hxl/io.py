@@ -14,14 +14,21 @@ import sys
 import re
 import xlrd
 import six
-import requests
 
 if sys.version_info < (3,):
     # Customisation for Python 2.x
+    import urllib2
+    open_url = urllib2.urlopen
     def decode(s):
-        return s
+        return str(s)
+    def get_status(response):
+        return response.getcode()
 else:
     # Customisation for Python 3.x
+    import urllib.request
+    open_url = urllib.request.urlopen
+    def get_status(response):
+        return response.status
     def decode(s):
         return s.decode('utf-8')
 
@@ -147,10 +154,10 @@ def make_stream(origin, allow_local=False):
 
     # Does it look like a url?
     if re.match(r'^(?:https?|ftp)://', origin):
-        response = requests.get(origin, stream=True)
-        if response.status_code != 200:
+        response = open_url(origin)
+        if get_status(response) != 200:
             raise IOError('Received HTTP response code {}'.format(response.status_code))
-        return response.raw
+        return response
 
     # Are we allowed to open local files?
     elif allow_local:
@@ -431,17 +438,22 @@ class Sniffer:
     or __next__() methods.
     """
 
+    BUFFER_SIZE = 4096
+
     def __init__(self, raw_input):
         """Wrap an existing input source, caching the first four bytes"""
         self.raw_input = raw_input
-        self.sig = raw_input.read(4)
+        self.buffer = bytearray(raw_input.read(self.BUFFER_SIZE))
+        self.sig = self.buffer[:4]
 
     def read(self):
         """Read the entire contents of the file."""
-        try:
-            return self.sig + self.raw_input.read()
-        finally:
-            self.sig = b''
+        file = self.buffer
+        chunk = self.raw_input.read(self.BUFFER_SIZE)
+        while chunk:
+            file.extend(chunk)
+            chunk = self.raw_input.read(self.BUFFER_SIZE)
+        return file
 
     def close(self):
         """Close the wrapped input object."""
@@ -453,18 +465,24 @@ class Sniffer:
 
     def __next__(self):
         """Return the next line in the file."""
-        if self.sig:
-            # must be able to deal with newlines in the first 4 bytes
-            if b"\n" in self.sig:
-                retval = self.sig[:index]
-                self.sig = self.sig[index+1:]
-                return decode(retval)
+        pos = self.buffer.find(b"\n")
+        while pos == -1:
+            chunk = self.raw_input.read(self.BUFFER_SIZE)
+            if chunk:
+                self.buffer.extend(chunk)
+                pos = self.buffer.find(b"\n")
             else:
-                retval = self.sig + next(self.raw_input)
-                self.sig = ''
-                return decode(retval)
+                break
+        if pos == -1:
+            if not self.buffer:
+                raise StopIteration()
+            s = decode(self.buffer)
+            self.buffer = bytearray()
+            return s
         else:
-            return decode(next(self.raw_input))
+            s = decode(self.buffer[:pos])
+            self.buffer = self.buffer[pos+1:]
+            return s
 
     next = __next__
             
