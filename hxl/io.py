@@ -443,6 +443,7 @@ class Sniffer:
     def __init__(self, raw_input):
         """Wrap an existing input source, caching the first four bytes"""
         self.raw_input = raw_input
+        # read the first chunk right away, so that we can sniff
         self.buffer = bytearray(raw_input.read(self.BUFFER_SIZE))
         self.sig = self.buffer[:4]
 
@@ -451,6 +452,7 @@ class Sniffer:
         file = self.buffer
         chunk = self.raw_input.read(self.BUFFER_SIZE)
         while chunk:
+            # use extend to avoid copying big buffers
             file.extend(chunk)
             chunk = self.raw_input.read(self.BUFFER_SIZE)
         return file
@@ -465,21 +467,30 @@ class Sniffer:
 
     def __next__(self):
         """Return the next line in the file."""
+
+        # scan for a newline
         pos = self.buffer.find(b"\n")
         while pos == -1:
+            # keep reading until we get a newline or end of file
             chunk = self.raw_input.read(self.BUFFER_SIZE)
             if chunk:
                 self.buffer.extend(chunk)
                 pos = self.buffer.find(b"\n")
             else:
+                # we hit the end of the file; stop reading
                 break
         if pos == -1:
+            # we never found a newline;
             if not self.buffer:
+                # didn't read anything, so we're done
                 raise StopIteration()
-            s = decode(self.buffer)
-            self.buffer = bytearray()
-            return s
+            else:
+                # return what we read up to EOF
+                s = decode(self.buffer)
+                self.buffer = bytearray()
+                return s
         else:
+            # we found a newline: return the line, and adjust the buffer
             s = decode(self.buffer[:pos])
             self.buffer = self.buffer[pos+1:]
             return s

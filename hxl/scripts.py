@@ -23,7 +23,13 @@ from hxl.schema import hxl_schema
 from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, ColumnFilter, CountFilter, DeduplicationFilter, MergeDataFilter, RenameFilter, ReplaceDataFilter, RowFilter, SortFilter, ValidateFilter
 from hxl.converters import Tagger
 
+# In Python2, sys.stdin is a byte stream; in Python3, it's a text stream
+if sys.version_info < (3,):
+    STDIN = sys.stdin
+else:
+    STDIN = sys.stdin.buffer
 
+    
 #
 # Console script entry points
 #
@@ -89,7 +95,7 @@ def hxlvalidate():
 # Main scripts for command-line tools.
 #
 
-def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxladd with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -123,7 +129,7 @@ def hxladd_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlappend with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -156,7 +162,7 @@ def hxlappend_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlbounds_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """Check that all lat/lon coordinates appear within bounds."""
     
     parser = make_args('Perform bounds checking on a HXL dataset.')
@@ -186,7 +192,7 @@ def hxlbounds_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
     hxl.converters.hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
 
 
-def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlclean with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -286,7 +292,7 @@ def hxlclean_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
 
 
-def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlcount with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -319,7 +325,7 @@ def hxlcount_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser = make_args('Cut columns from a HXL dataset.')
     parser.add_argument(
         '-i',
@@ -342,7 +348,7 @@ def hxlcut_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxldedup_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser = make_args('Remove duplicate rows from a HXL dataset.')
     parser.add_argument(
         '-t',
@@ -358,7 +364,7 @@ def hxldedup_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlmerge with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -415,7 +421,7 @@ def hxlmerge_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlrename with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -441,7 +447,7 @@ def hxlrename_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlreplace with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -512,7 +518,7 @@ def hxlreplace_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlselect with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -546,7 +552,7 @@ def hxlselect_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlcut with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -578,7 +584,7 @@ def hxlsort_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
-def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxltag with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -604,7 +610,7 @@ def hxltag_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
         write_hxl(output.output, hxl(tagger), show_tags=not args.strip_tags)
 
 
-def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlvalidate with command-line arguments.
     @param args A list of arguments, excluding the script name
@@ -706,7 +712,7 @@ def hxlvalidate_main(args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
 def run_script(func):
     """Try running a command-line script, with exception handling."""
     try:
-        func(sys.argv[1:], sys.stdin, sys.stdout)
+        func(sys.argv[1:], STDIN, sys.stdout)
     # except HXLException as e:
     #     print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + str(e.message)
     #     print >>sys.stderr, "Exiting ..."
@@ -744,7 +750,7 @@ def make_args(description):
         )
     return parser
 
-def make_source(args, stdin=sys.stdin):
+def make_source(args, stdin=STDIN):
     """Create a HXL input source."""
     sheet_index = args.sheet
     if sheet_index is not None:
