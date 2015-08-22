@@ -13,6 +13,7 @@ import re
 import csv
 import json
 import six
+import operator
 
 import hxl
 from hxl.common import HXLException, normalise_string
@@ -490,5 +491,88 @@ class Row(object):
             s += "\n  " + str(self.columns[column_number]) + "=" + str(value)
         s += "\n>"
         return s
+
+
+class RowQuery(object):
+    """Query to execute against a row of HXL data."""
+
+    def __init__(self, pattern, op, value):
+        self.pattern = pattern
+        self.op = op
+        self.value = value
+        self._saved_indices = None
+        try:
+            float(value)
+            self._is_numeric = True
+        except:
+            self._is_numeric = False
+
+    def match_row(self, row):
+        """Check if a key-value pair appears in a HXL row"""
+        indices = self._get_saved_indices(row.columns)
+        length = len(row.values)
+        for i in indices:
+            if i < length and row.values[i] and self.match_value(row.values[i]):
+                    return True
+        return False
+
+    def match_value(self, value):
+        """Try an operator as numeric first, then string"""
+        # TODO add dates
+        # TODO use knowledge about HXL tags
+        if self._is_numeric:
+            try:
+                return self.op(float(value), float(self.value))
+            except ValueError:
+                pass
+        return self.op(normalise_string(value), normalise_string(self.value))
+
+    def _get_saved_indices(self, columns):
+        """Cache the column tests, so that we run them only once."""
+        # FIXME - assuming that the columns never change
+        if self._saved_indices is None:
+            self._saved_indices = []
+            for i in range(len(columns)):
+                if self.pattern.match(columns[i]):
+                    self._saved_indices.append(i)
+        return self._saved_indices
+
+    @staticmethod
+    def parse(s):
+        """Parse a filter expression"""
+        if isinstance(s, RowQuery):
+            # already parsed
+            return s
+        parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
+        pattern = TagPattern.parse(parts[0])
+        op = RowQuery.OPERATOR_MAP[parts[1]]
+        value = parts[2]
+        return RowQuery(pattern, op, value)
+
+    @staticmethod
+    def operator_re(s, pattern):
+        """Regular-expression comparison operator."""
+        return re.match(pattern, s)
+
+    @staticmethod
+    def operator_nre(s, pattern):
+        """Regular-expression negative comparison operator."""
+        return not re.match(pattern, s)
+
+    # Constant map of comparison operators
+    OPERATOR_MAP = {
+        '=': operator.eq,
+        '!=': operator.ne,
+        '<': operator.lt,
+        '<=': operator.le,
+        '>': operator.gt,
+        '>=': operator.ge
+    }
+
+
+# Extra static initialisation
+RowQuery.OPERATOR_MAP['~'] = RowQuery.operator_re
+RowQuery.OPERATOR_MAP['!~'] = RowQuery.operator_nre
+
 
 # end

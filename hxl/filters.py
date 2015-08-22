@@ -7,13 +7,13 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys, re, six, operator
+import sys, re, six
 from copy import copy, deepcopy
 import dateutil.parser
 
 import hxl
 from hxl.common import normalise_string
-from hxl.model import TagPattern, Dataset, Column, Row
+from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
 
 
 #
@@ -990,7 +990,7 @@ class RowFilter(Dataset):
         if not hasattr(queries, '__len__') or isinstance(queries, six.string_types):
             # make a list if needed
             queries = [queries]
-        self.queries = [RowFilter.Query.parse(query) for query in queries]
+        self.queries = [RowQuery.parse(query) for query in queries]
         self.reverse = reverse
 
     @property
@@ -1027,88 +1027,6 @@ class RowFilter(Dataset):
                 if query.match_row(row):
                     return not self.outer.reverse
             return self.outer.reverse
-
-    class Query(object):
-        """Query to execute against a row of HXL data."""
-
-        def __init__(self, pattern, op, value):
-            self.pattern = pattern
-            self.op = op
-            self.value = value
-            self._saved_indices = None
-            try:
-                float(value)
-                self._is_numeric = True
-            except:
-                self._is_numeric = False
-
-        def match_row(self, row):
-            """Check if a key-value pair appears in a HXL row"""
-            indices = self._get_saved_indices(row.columns)
-            length = len(row.values)
-            for i in indices:
-                if i < length and row.values[i] and self.match_value(row.values[i]):
-                        return True
-            return False
-
-        def match_value(self, value):
-            """Try an operator as numeric first, then string"""
-            # TODO add dates
-            # TODO use knowledge about HXL tags
-            if self._is_numeric:
-                try:
-                    return self.op(float(value), float(self.value))
-                except ValueError:
-                    pass
-            return self.op(normalise_string(value), normalise_string(self.value))
-
-        def _get_saved_indices(self, columns):
-            """Cache the column tests, so that we run them only once."""
-            # FIXME - assuming that the columns never change
-            if self._saved_indices is None:
-                self._saved_indices = []
-                for i in range(len(columns)):
-                    if self.pattern.match(columns[i]):
-                        self._saved_indices.append(i)
-            return self._saved_indices
-
-        @staticmethod
-        def parse(s):
-            """Parse a filter expression"""
-            if isinstance(s, RowFilter.Query):
-                # already parsed
-                return s
-            parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
-            pattern = TagPattern.parse(parts[0])
-            op = RowFilter.Query.OPERATOR_MAP[parts[1]]
-            value = parts[2]
-            return RowFilter.Query(pattern, op, value)
-
-        @staticmethod
-        def operator_re(s, pattern):
-            """Regular-expression comparison operator."""
-            return re.match(pattern, s)
-
-        @staticmethod
-        def operator_nre(s, pattern):
-            """Regular-expression negative comparison operator."""
-            return not re.match(pattern, s)
-
-        # Constant map of comparison operators
-        OPERATOR_MAP = {
-            '=': operator.eq,
-            '!=': operator.ne,
-            '<': operator.lt,
-            '<=': operator.le,
-            '>': operator.gt,
-            '>=': operator.ge
-        }
-
-
-# Extra static initialisation
-RowFilter.Query.OPERATOR_MAP['~'] = RowFilter.Query.operator_re
-RowFilter.Query.OPERATOR_MAP['!~'] = RowFilter.Query.operator_nre
-
 
 class SortFilter(Dataset):
     """
