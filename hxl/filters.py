@@ -898,7 +898,7 @@ class ReplaceDataFilter(Dataset):
     def __iter__(self):
         """Return a custom iterator that replaces values."""
         self.columns # make sure this fires to build cache
-        return ReplaceDataFilter.Iterator(self)
+        return ReplaceDataFilter.Iterator(self)    
 
     class Iterator:
         """Custom iterator for on-the-fly replacement"""
@@ -957,8 +957,15 @@ class ReplaceDataFilter(Dataset):
                 return self.replacement
             else:
                 return value
-            
-        
+
+        @staticmethod
+        def parse_map(source):
+            """Parse a substitution map."""
+            replacements = []
+            for row in source:
+                if row.get('#x_pattern'):
+                    replacements.append(ReplaceDataFilter.Replacement(row.get('#x_pattern'), row.get('#x_substitution'), row.get('#x_tag'), row.get('#x_regex')))
+            return replacements
 
 class RowFilter(Dataset):
     """

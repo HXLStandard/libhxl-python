@@ -467,15 +467,6 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     @param stderr Standard error for the script
     """
 
-    def parse_map(map_path):
-        """Parse a substitution map."""
-        replacements = []
-        for row in hxl(map_path, True):
-            if row.get('#x_pattern'):
-                replacements.append(ReplaceDataFilter.Replacement(row.get('#x_pattern'), row.get('#x_substitution'), row.get('#x_tag'), row.get('#x_regex')))
-        return replacements
-
-
     parser = make_args('Replace strings in a HXL dataset')
 
     inline_group = parser.add_argument_group('Inline replacement')
@@ -519,7 +510,7 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         if args.map:
-            replacements = parse_map(args.map)
+            replacements = ReplaceDataFilter.Replacement.parse_map(hxl(args.map, True))
         else:
             replacements = []
         if args.pattern:
