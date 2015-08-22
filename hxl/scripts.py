@@ -108,7 +108,7 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-s',
         '--spec',
-        help='Constant value to add to each row',
+        help='Constant value to add to each row (may repeat option)',
         metavar='header#<tag>=<value>',
         action='append',
         required=True
@@ -139,12 +139,14 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
 
     parser = make_args('Concatenate two HXL datasets')
+    # repeatable argument
     parser.add_argument(
         '-a',
         '--append',
-        help='HXL file to append.',
+        help='HXL file to append (may repeat option).',
         metavar='file_or_url',
-        nargs='+'
+        action='append',
+        required=True
         )
     parser.add_argument(
         '-x',
@@ -443,7 +445,7 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-r',
         '--rename',
-        help='Rename an old tag to a new one (with an optional new text header).',
+        help='Rename an old tag to a new one, with an optional new text header (may repeat option).',
         action='append',
         metavar='#?<original_tag>:<Text header>?#?<new_tag>',
         default=[],
@@ -541,10 +543,10 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-q',
         '--query',
-        help='query expression for selecting rows (use multiple times for logical OR): <hashtag><op><value>, where <op> is =, !=, <, <=, >, >=, ~, or !~',
+        help='Query expression for selecting rows (may repeat option for logical OR). <op> may be =, !=, <, <=, >, >=, ~, or !~',
         action='append',
-        metavar='tag=value, etc.',
-        default=[]
+        metavar='<hashtag><op><value>',
+        required=True
         )
     parser.add_argument(
         '-r',
