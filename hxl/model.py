@@ -280,6 +280,11 @@ class Dataset(object):
         replacement = hxl.filters.ReplaceDataFilter.Replacement(original, replacement, pattern, use_regex)
         return hxl.filters.ReplaceDataFilter(self, [replacement])
 
+    def replace_data_map(self, map_source):
+        """Replace values in a HXL dataset."""
+        replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(map_source)
+        return hxl.filters.ReplaceDataFilter(self, replacements)
+
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
         return hxl.filters.AddColumnsFilter(self, specs=specs, before=before)
