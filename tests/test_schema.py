@@ -10,12 +10,13 @@ License: Public Domain
 import unittest
 import sys
 import os
-from hxl import hxl
+
+import hxl
 from hxl.model import Column, Row
-from hxl.schema import Schema, SchemaRule, hxl_schema
+from hxl.validation import Schema, SchemaRule
 
 class TestSchema(unittest.TestCase):
-    """Test the hxl.schema.Schema class."""
+    """Test the hxl.validation.Schema class."""
 
     def setUp(self):
         self.errors = []
@@ -51,7 +52,7 @@ class TestSchema(unittest.TestCase):
         
 
 class TestSchemaRule(unittest.TestCase):
-    """Test the hxl.schema.SchemaRule class."""
+    """Test the hxl.validation.SchemaRule class."""
 
     def setUp(self):
         self.errors = []
@@ -173,29 +174,29 @@ class TestSchemaLoad(unittest.TestCase):
     """Test schema I/O support."""
 
     def test_load_default(self):
-        schema = hxl_schema()
+        schema = hxl.schema()
         self.assertTrue(0 < len(schema.rules))
-        self.assertTrue(schema.validate(hxl(DATA_GOOD)))
+        self.assertTrue(schema.validate(hxl.data(DATA_GOOD)))
 
     def test_load_good(self):
-        schema = hxl_schema(SCHEMA_BASIC)
-        self.assertTrue(schema.validate(hxl(DATA_GOOD)))
+        schema = hxl.schema(SCHEMA_BASIC)
+        self.assertTrue(schema.validate(hxl.data(DATA_GOOD)))
 
     def test_load_bad(self):
-        schema = hxl_schema(SCHEMA_BASIC)
-        self.assertFalse(schema.validate(hxl(DATA_BAD)))
+        schema = hxl.schema(SCHEMA_BASIC)
+        self.assertFalse(schema.validate(hxl.data(DATA_BAD)))
 
     # def test_taxonomy_good(self):
-    #     schema = hxl_schema(SCHEMA_TAXONOMY)
-    #     self.assertTrue(schema.validate(hxl(DATA_TAXONOMY_GOOD)))
+    #     schema = hxl.schema(SCHEMA_TAXONOMY)
+    #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_GOOD)))
 
     # def test_taxonomy_bad(self):
-    #     schema = hxl_schema(SCHEMA_TAXONOMY)
-    #     self.assertFalse(schema.validate(hxl(DATA_TAXONOMY_BAD)))
+    #     schema = hxl.schema(SCHEMA_TAXONOMY)
+    #     self.assertFalse(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
 
     # def test_taxonomy_all(self):
-    #     schema = hxl_schema(SCHEMA_TAXONOMY_ALL)
-    #     self.assertTrue(schema.validate(hxl(DATA_TAXONOMY_BAD)))
+    #     schema = hxl.schema(SCHEMA_TAXONOMY_ALL)
+    #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
 
 
 #

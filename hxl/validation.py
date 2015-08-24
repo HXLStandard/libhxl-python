@@ -13,16 +13,15 @@ import os
 from copy import copy
 from email.utils import parseaddr
 
-from hxl.common import HXLException
-from hxl.model import TagPattern
-from hxl.io import hxl
+import hxl
+
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
 else:
     from urlparse import urlparse
 
-def hxl_schema(origin=None, callback=None):
+def schema(origin=None, callback=None):
     """
     Convenience method for reading a HXL schema.
     If passed an existing Schema, simply returns it.
@@ -31,7 +30,7 @@ def hxl_schema(origin=None, callback=None):
 
     if not origin:
         path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
-        with hxl(path, True) as source:
+        with hxl.data(path, True) as source:
             return parse_schema(source, callback)
 
     if isinstance(origin, Schema):
@@ -40,10 +39,10 @@ def hxl_schema(origin=None, callback=None):
 
     else:
         # create a schema
-        return parse_schema(hxl(origin), callback)
+        return parse_schema(hxl.data(origin), callback)
 
 
-class HXLValidationException(HXLException):
+class HXLValidationException(hxl.HXLException):
     """Data structure to hold a HXL validation error."""
 
     def __init__(self, message, rule=None, value=None, row=None, column=None):
@@ -78,16 +77,16 @@ class SchemaRule(object):
                  regex=None, enum=None, case_sensitive=True,
                  callback=None, severity="error", description=None,
                  required=False):
-        if type(tag) is TagPattern:
+        if type(tag) is hxl.TagPattern:
             self.tag_pattern = tag
         else:
-            self.tag_pattern = TagPattern.parse(tag)
+            self.tag_pattern = hxl.TagPattern.parse(tag)
         self.min_occur = min_occur
         self.max_occur = max_occur
         if data_type is None or data_type in self.DATATYPES:
             self.data_type = data_type
         else:
-            raise HXLException('Unknown data type: {}'.format(data_type))
+            raise hxl.HXLException('Unknown data type: {}'.format(data_type))
         self.min_value = min_value
         self.max_value = max_value
         self.regex = regex
@@ -352,7 +351,7 @@ def parse_schema(source, callback):
         elif s.lower() in ['y', 'yes', 't', 'true']:
             return True
         else:
-            raise HXLException('Unrecognised true/false value: {}'.format(s))
+            raise hxl.HXLException('Unrecognised true/false value: {}'.format(s))
 
 
     def to_regex(s):
@@ -381,7 +380,7 @@ def parse_schema(source, callback):
             if row.get('#valid_value+list'):
                 rule.enum = set(re.split(r'\s*\|\s*', row.get('#valid_value+list')))
             elif row.get('#valid_value+url'):
-                value_source = hxl(row.get('#valid_value+url'), True)
+                value_source = hxl.data(row.get('#valid_value+url'), True)
                 rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
 
             schema.rules.append(rule)

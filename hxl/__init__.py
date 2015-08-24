@@ -10,9 +10,9 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 # Flatten out common items for easier access
 
 from hxl.common import HXLException
-from hxl.model import TagPattern, Dataset, Column, Row
-from hxl.io import hxl, HXLParseException
-from hxl.schema import hxl_schema, HXLValidationException
+from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
+from hxl.io import data, HXLParseException, write_hxl, make_input
+from hxl.validation import schema, HXLValidationException
 
 # end
 

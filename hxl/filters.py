@@ -13,7 +13,6 @@ import dateutil.parser
 
 import hxl
 from hxl.common import normalise_string
-from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
 
 
 #
@@ -26,7 +25,7 @@ class HXLFilterException(hxl.HXLException):
 # Filter classes
 #
 
-class AddColumnsFilter(Dataset):
+class AddColumnsFilter(hxl.Dataset):
     """
     Composable filter class to add constant values to every row of a HXL dataset.
 
@@ -102,12 +101,12 @@ class AddColumnsFilter(Dataset):
             header = result.group(1)
             tag = '#' + result.group(2)
             value = result.group(3)
-            return (Column(tag=tag, header=header), value)
+            return (hxl.Column(tag=tag, header=header), value)
         else:
             raise HXLFilterException("Badly formatted new-column spec: " + spec)
 
 
-class AppendFilter(Dataset):
+class AppendFilter(hxl.Dataset):
     """Composable filter class to concatenate two datasets."""
 
     def __init__(self, source, append_source, add_columns=True):
@@ -200,7 +199,7 @@ class AppendFilter(Dataset):
         next = __next__
 
         
-class CacheFilter(Dataset):
+class CacheFilter(hxl.Dataset):
     """Composable filter class to cache HXL data in memory."""
 
     def __init__(self, source, max_rows=None):
@@ -235,7 +234,7 @@ class CacheFilter(Dataset):
                     self.cached_rows.append(deepcopy(row))
 
 
-class CleanDataFilter(Dataset):
+class CleanDataFilter(hxl.Dataset):
     """
     Filter for cleaning values in HXL data.
     Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.
@@ -342,7 +341,7 @@ class CleanDataFilter(Dataset):
                 return False
 
 
-class ColumnFilter(Dataset):
+class ColumnFilter(hxl.Dataset):
     """
     Composable filter class to cut columns from a HXL dataset.
 
@@ -367,8 +366,8 @@ class ColumnFilter(Dataset):
         @param exclude_tags a blacklist of TagPattern objects to exclude
         """
         self.source = source
-        self.include_tags = TagPattern.parse_list(include_tags)
-        self.exclude_tags = TagPattern.parse_list(exclude_tags)
+        self.include_tags = hxl.TagPattern.parse_list(include_tags)
+        self.exclude_tags = hxl.TagPattern.parse_list(exclude_tags)
         self.indices = [] # saved indices for columns to include
         self.columns_out = None
 
@@ -428,7 +427,7 @@ class ColumnFilter(Dataset):
             Return the next row, with appropriate columns filtered out.
             """
             row_in = next(self.iterator)
-            row_out = Row(columns=self.outer.columns)
+            row_out = hxl.Row(columns=self.outer.columns)
             values_out = []
             for i in self.outer.indices:
                 values_out.append(row_in.values[i])
@@ -438,7 +437,7 @@ class ColumnFilter(Dataset):
         next = __next__
 
 
-class CountFilter(Dataset):
+class CountFilter(hxl.Dataset):
     """
     Composable filter class to aggregate rows in a HXL dataset.
 
@@ -473,8 +472,8 @@ class CountFilter(Dataset):
         @param aggregate_pattern an optional tag pattern calculating numeric aggregate values.
         """
         self.source = source
-        self.patterns = TagPattern.parse_list(patterns)
-        self.aggregate_pattern = TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
+        self.patterns = hxl.TagPattern.parse_list(patterns)
+        self.aggregate_pattern = hxl.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
         self._saved_columns = None
 
     @property
@@ -490,13 +489,13 @@ class CountFilter(Dataset):
                     header = column.header
                 else:
                     header = None
-                cols.append(Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-            cols.append(Column.parse('#meta+count', 'Count'))
+                cols.append(hxl.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
+            cols.append(hxl.Column.parse('#meta+count', 'Count'))
             if self.aggregate_pattern is not None:
-                cols.append(Column.parse('#meta+sum', header='Sum'))
-                cols.append(Column.parse('#meta+average', header='Average (mean)'))
-                cols.append(Column.parse('#meta+min', header='Minimum value'))
-                cols.append(Column.parse('#meta+max', header='Maximum value'))
+                cols.append(hxl.Column.parse('#meta+sum', header='Sum'))
+                cols.append(hxl.Column.parse('#meta+average', header='Average (mean)'))
+                cols.append(hxl.Column.parse('#meta+min', header='Minimum value'))
+                cols.append(hxl.Column.parse('#meta+max', header='Maximum value'))
             self._saved_columns = cols
         return self._saved_columns
 
@@ -532,7 +531,7 @@ class CountFilter(Dataset):
                 else:
                     values = values + ([''] * 4)
 
-            row = Row(self.outer.columns)
+            row = hxl.Row(self.outer.columns)
             row.values = values
             return row
 
@@ -593,7 +592,7 @@ class CountFilter(Dataset):
                         pass
 
 
-class DeduplicationFilter(Dataset):
+class DeduplicationFilter(hxl.Dataset):
     """
     Composable filter to deduplicate a HXL dataset.
 
@@ -604,7 +603,7 @@ class DeduplicationFilter(Dataset):
 
     def __init__(self, source, patterns=None):
         self.source = source
-        self.patterns = TagPattern.parse_list(patterns)
+        self.patterns = hxl.TagPattern.parse_list(patterns)
 
     @property
     def columns(self):
@@ -652,7 +651,7 @@ class DeduplicationFilter(Dataset):
             return tuple(key)
 
         
-class MergeDataFilter(Dataset):
+class MergeDataFilter(hxl.Dataset):
     """
     Composable filter class to merge values from two HXL datasets.
 
@@ -684,8 +683,8 @@ class MergeDataFilter(Dataset):
         """
         self.source = source
         self.merge_source = merge_source
-        self.keys = TagPattern.parse_list(keys)
-        self.merge_tags = TagPattern.parse_list(tags)
+        self.keys = hxl.TagPattern.parse_list(keys)
+        self.merge_tags = hxl.TagPattern.parse_list(tags)
         self.replace = replace
         self.overwrite = overwrite
 
@@ -708,7 +707,7 @@ class MergeDataFilter(Dataset):
                         header = column.header
                     else:
                         header = None
-                    new_columns.append(Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
+                    new_columns.append(hxl.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
             self.saved_columns = self.source.columns + new_columns
         return self.saved_columns
 
@@ -780,7 +779,7 @@ class MergeDataFilter(Dataset):
                 merge_map[self._make_key(row)] = values
             return merge_map
 
-class RenameFilter(Dataset):
+class RenameFilter(hxl.Dataset):
     """
     Composable filter class to rename columns in a HXL dataset.
 
@@ -794,7 +793,7 @@ class RenameFilter(Dataset):
 
     <pre>
     source = HXLReader(sys.stdin)
-    filter = RenameFilter(source, rename=[[TagPattern.parse('#foo'), Column.parse('#bar')]])
+    filter = RenameFilter(source, rename=[[TagPattern.parse('#foo'), hxl.Column.parse('#bar')]])
     write_hxl(sys.stdout, filter)
     </pre>
     """
@@ -839,8 +838,8 @@ class RenameFilter(Dataset):
         if isinstance(s, six.string_types):
             result = re.match(RenameFilter.RENAME_PATTERN, s)
             if result:
-                pattern = TagPattern.parse(result.group(1))
-                column = Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
+                pattern = hxl.TagPattern.parse(result.group(1))
+                column = hxl.Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
                 return (pattern, column)
             else:
                 raise HXLFilterException("Bad rename expression: " + s)
@@ -861,11 +860,11 @@ class RenameFilter(Dataset):
             @return the next merged row of data, with new columns
             """
             row = next(self.iterator)
-            return Row(self.outer.columns, copy(row.values), row.row_number)
+            return hxl.Row(self.outer.columns, copy(row.values), row.row_number)
 
         next = __next__
 
-class ReplaceDataFilter(Dataset):
+class ReplaceDataFilter(hxl.Dataset):
     """
     Composable filter class to replace values in a HXL dataset.
 
@@ -935,7 +934,7 @@ class ReplaceDataFilter(Dataset):
             self.original = original
             self.replacement = replacement
             if pattern:
-                self.pattern = TagPattern.parse(pattern)
+                self.pattern = hxl.TagPattern.parse(pattern)
             else:
                 self.pattern = None
             self.is_regex = is_regex
@@ -967,7 +966,7 @@ class ReplaceDataFilter(Dataset):
                     replacements.append(ReplaceDataFilter.Replacement(row.get('#x_pattern'), row.get('#x_substitution'), row.get('#x_tag'), row.get('#x_regex')))
             return replacements
 
-class RowFilter(Dataset):
+class RowFilter(hxl.Dataset):
     """
     Composable filter class to select rows from a HXL dataset.
 
@@ -997,7 +996,7 @@ class RowFilter(Dataset):
         if not hasattr(queries, '__len__') or isinstance(queries, six.string_types):
             # make a list if needed
             queries = [queries]
-        self.queries = [RowQuery.parse(query) for query in queries]
+        self.queries = [hxl.RowQuery.parse(query) for query in queries]
         self.reverse = reverse
 
     @property
@@ -1035,7 +1034,7 @@ class RowFilter(Dataset):
                     return not self.outer.reverse
             return self.outer.reverse
 
-class SortFilter(Dataset):
+class SortFilter(hxl.Dataset):
     """
     Composable filter class to sort a HXL dataset.
 
@@ -1061,7 +1060,7 @@ class SortFilter(Dataset):
         @param reverse True to reverse the sort order
         """
         self.source = source
-        self.sort_tags = TagPattern.parse_list(tags)
+        self.sort_tags = hxl.TagPattern.parse_list(tags)
         self.reverse = reverse
         self._iter = None
 
@@ -1115,7 +1114,7 @@ class SortFilter(Dataset):
         return iter(sorted(self.source, key=make_key, reverse=self.reverse))
 
 
-class ValidateFilter(Dataset):
+class ValidateFilter(hxl.Dataset):
     """Composable filter class to validate a HXL dataset against a schema.
 
     This is the class supporting the hxlvalidate command-line utility.
@@ -1128,7 +1127,7 @@ class ValidateFilter(Dataset):
 
     <pre>
     source = HXLReader(sys.stdin)
-    schema = hxl_schema('my-schema.csv')
+    schema = hxl.schema('my-schema.csv')
     filter = ValidateFilter(source, schema)
     write_hxl(sys.stdout, filter)
     </pre>
@@ -1152,10 +1151,10 @@ class ValidateFilter(Dataset):
         """
         if self._saved_columns is None:
             # append error columns
-            err_col = Column(tag='#x_errors', header='Error messages')
-            tag_col = Column(tag='#x_tags', header='Error tag')
-            row_col = Column(tag='#x_rows', header='Error row number (source)')
-            col_col = Column(tag='#x_cols', header='Error column number (source)')
+            err_col = hxl.Column(tag='#x_errors', header='Error messages')
+            tag_col = hxl.Column(tag='#x_tags', header='Error tag')
+            row_col = hxl.Column(tag='#x_rows', header='Error row number (source)')
+            col_col = hxl.Column(tag='#x_cols', header='Error column number (source)')
             self._saved_columns = self.source.columns + [err_col, tag_col, row_col, col_col]
         return self._saved_columns
 

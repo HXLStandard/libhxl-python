@@ -8,7 +8,7 @@ License: Public Domain
 
 import unittest
 
-from hxl import hxl
+import hxl
 
 #
 # Base data for tests
@@ -28,7 +28,7 @@ class AbstractFilterTest(unittest.TestCase):
 
     def setUp(self):
         # use a cache filter so that we can run tests multiple times
-        self.source = hxl(DATA).cache()
+        self.source = hxl.data(DATA).cache()
 
 
 #
@@ -95,7 +95,7 @@ class TestAppendFilter(AbstractFilterTest):
 
     def setUp(self):
         super(TestAppendFilter, self).setUp()
-        self.append_source = hxl(TestAppendFilter.APPEND_DATA)
+        self.append_source = hxl.data(TestAppendFilter.APPEND_DATA)
     
     def test_headers(self):
         self.assertEqual(self.COMBINED_DATA[0], self.source.append(self.append_source).headers)
@@ -177,7 +177,7 @@ class TestMergeDataFilter(AbstractFilterTest):
 
     def setUp(self):
         super(TestMergeDataFilter, self).setUp()
-        self.merged = self.source.merge_data(hxl(self.MERGE_IN), '#adm1-code', '#adm1+code')
+        self.merged = self.source.merge_data(hxl.data(self.MERGE_IN), '#adm1-code', '#adm1+code')
 
     def test_headers(self):
         self.assertEqual(self.MERGE_OUT[0], self.merged.headers)

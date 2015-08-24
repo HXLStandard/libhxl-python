@@ -287,11 +287,13 @@ class TestTag(BaseTest):
 # Support functions
 ########################################################################
 
+
 def resolve_file(name):
     """
     Resolve a file name in the test directory.
     """
     return os.path.join(root_dir, 'tests', 'files', 'test_scripts', name)
+
 
 def try_script(script_function, args, input_file, expected_output_file):
     """
@@ -315,6 +317,7 @@ def try_script(script_function, args, input_file, expected_output_file):
             # Not using with, because Windows won't allow file to be opened twice
             os.remove(output.name)
         return result
+
 
 def diff(file1, file2):
     """

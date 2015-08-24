@@ -16,7 +16,7 @@ import six
 import operator
 
 import hxl
-from hxl.common import HXLException, normalise_string
+from hxl.common import normalise_string
 
 
 class TagPattern(object):
@@ -94,7 +94,7 @@ class TagPattern(object):
 
         if not s:
             # edge case: null value
-            raise HXLException('Attempt to parse empty tag pattern')
+            raise hxl.HXLException('Attempt to parse empty tag pattern')
         elif isinstance(s, TagPattern):
             # edge case: already parsed
             return s
@@ -233,7 +233,7 @@ class Dataset(object):
         @param schema (optional) the pre-compiled schema, schema filename, URL, file object, etc. Defaults to a built-in schema.
         @param callback (optional) a function to call with each error or warning. Defaults to collecting errors in an array and returning them.
         """
-        return hxl.schema.hxl_schema(schema, callback).validate(self)
+        return hxl.schema(schema, callback).validate(self)
 
     #
     # Filters

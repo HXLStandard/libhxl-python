@@ -7,7 +7,7 @@ License: Public Domain
 """
 
 import unittest
-from hxl import hxl
+import hxl
 from hxl.common import normalise_string
 from hxl.model import TagPattern, Column, Row
 
@@ -79,14 +79,14 @@ class TestPattern(unittest.TestCase):
 class TestDataset(unittest.TestCase):
 
     def setUp(self):
-        self.source = hxl(DATA)
+        self.source = hxl.data(DATA)
 
     def test_headers(self):
         self.assertEqual(DATA[0], self.source.headers)
 
     def test_has_headers(self):
         self.assertTrue(self.source.has_headers)
-        self.assertFalse(hxl(DATA[1:]).has_headers)
+        self.assertFalse(hxl.data(DATA[1:]).has_headers)
 
     def test_tags(self):
         self.assertEqual([Column.parse(s).tag for s in DATA[1]], self.source.tags)

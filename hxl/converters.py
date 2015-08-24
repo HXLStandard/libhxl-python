@@ -5,7 +5,6 @@ HXL converters (to/from other formats)
 import re
 import hxl
 from hxl.common import normalise_string
-from hxl.model import Column
 
 
 class Tagger(hxl.io.AbstractInput):
@@ -85,7 +84,7 @@ class Tagger(hxl.io.AbstractInput):
     def parse_spec(s):
         result = re.match(Tagger.SPEC_PATTERN, s)
         if result:
-            return (result.group(1), Column.parse(result.group(2), use_exception=True).display_tag)
+            return (result.group(1), hxl.Column.parse(result.group(2), use_exception=True).display_tag)
         else:
             raise HXLFilterException("Bad tagging spec: " + s)
 

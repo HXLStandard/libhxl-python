@@ -14,7 +14,8 @@ if sys.version_info < (3,):
     from urllib2 import HTTPError
 else:
     from urllib.error import HTTPError
-from hxl import hxl
+
+import hxl
 from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
 
 
@@ -32,11 +33,11 @@ class TestBadInput(unittest.TestCase):
 
     def test_bad_file(self):
         with self.assertRaises(IOError):
-            source = hxl('XXXXX', True)
+            source = hxl.data('XXXXX', True)
 
     def test_bad_url(self):
         with self.assertRaises(IOError):
-            source = hxl('http://example.org/XXXXX')
+            source = hxl.data('http://example.org/XXXXX')
 
 class TestParser(unittest.TestCase):
 
@@ -59,68 +60,68 @@ class TestParser(unittest.TestCase):
 
     def test_row_count(self):
         row_count = 0
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             # logical row count
             for row in source:
                 row_count += 1
         self.assertEqual(TestParser.EXPECTED_ROW_COUNT, row_count)
 
     def test_headers(self):
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             headers = source.headers
         self.assertEqual(TestParser.EXPECTED_HEADERS, headers)
 
     def test_tags(self):
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             tags = source.tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
     def test_attributes(self):
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(set(TestParser.EXPECTED_ATTRIBUTES[column_number]), column.attributes)
 
     def test_column_count(self):
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             for row in source:
                 self.assertEqual(len(TestParser.EXPECTED_TAGS), len(row.values))
 
     def test_columns(self):
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
 
     def test_local_csv(self):
         """Test reading from a local CSV file."""
-        with hxl(FILE_CSV, True) as source:
+        with hxl.data(FILE_CSV, True) as source:
             self.compare_input(source)
 
     def test_local_excel(self):
         """Test reading from a local Excel file."""
-        with hxl(FILE_EXCEL, True) as source:
+        with hxl.data(FILE_EXCEL, True) as source:
             self.compare_input(source)
 
     def test_remote_csv(self):
         """Test reading from a remote CSV file (will fail without connectivity)."""
-        with hxl(URL_CSV, True) as source:
+        with hxl.data(URL_CSV, True) as source:
             self.compare_input(source)
 
     def test_remote_excel(self):
         """Test reading from a local Excel file (will fail without connectivity)."""
-        with hxl(URL_EXCEL, True) as source:
+        with hxl.data(URL_EXCEL, True) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):
         """Imperfect hashtag row should still work."""
-        with hxl(FILE_FUZZY, True) as source:
+        with hxl.data(FILE_FUZZY, True) as source:
             source.tags
 
     def test_invalid(self):
         """Missing hashtag row should raise an exception."""
         with self.assertRaises(HXLParseException):
-            with hxl(FILE_INVALID, True) as source:
+            with hxl.data(FILE_INVALID, True) as source:
                 source.tags
 
     def compare_input(self, source):
