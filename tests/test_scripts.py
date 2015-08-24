@@ -17,7 +17,6 @@ import tempfile
 
 import hxl
 import hxl.scripts
-from hxl.model import Column
 
 root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
