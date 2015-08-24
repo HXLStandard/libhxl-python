@@ -16,12 +16,11 @@ import argparse
 import json
 from shapely.geometry import shape
 
-import hxl
+# Do not import hxl, to avoid circular imports
 
-from hxl.filters import AddColumnsFilter, AppendFilter, CleanDataFilter, \
-    ColumnFilter, CountFilter, DeduplicationFilter, MergeDataFilter, RenameFilter, \
-    ReplaceDataFilter, RowFilter, SortFilter, ValidateFilter
-from hxl.converters import Tagger
+import hxl.filters
+import hxl.io
+import hxl.converters
 
 # In Python2, sys.stdin is a byte stream; in Python3, it's a text stream
 if sys.version_info < (3,):
@@ -125,8 +124,8 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = AddColumnsFilter(source, specs=args.spec, before=args.before)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.AddColumnsFilter(source, specs=args.spec, before=args.before)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -162,10 +161,10 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     def append_data(source, output, urls):
         """Recursively process all append files."""
         if not urls:
-            hxl.write_hxl(output.output, source, not args.strip_tags)
+            hxl.io.write_hxl(output.output, source, not args.strip_tags)
         else:
-            with hxl.data(urls.pop(), True) as append_source:
-                filter = AppendFilter(source, append_source, not args.exclude_extra_columns)
+            with hxl.io.data(urls.pop(), True) as append_source:
+                filter = hxl.filters.AppendFilter(source, append_source, not args.exclude_extra_columns)
                 append_data(filter, output, urls)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
@@ -189,7 +188,7 @@ def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Comma-separated list of column tags to include in error reports',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list,
+        type=hxl.model.TagPattern.parse_list,
         default='loc,org,sector,adm1,adm2,adm3'
         )
     args = parser.parse_args(args)
@@ -226,21 +225,21 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--whitespace',
         help='Comma-separated list of tags for normalised whitespace.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-u',
         '--upper',
         help='Comma-separated list of tags to convert to uppercase.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-l',
         '--lower',
         help='Comma-separated list of tags to convert to lowercase.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-D',
@@ -255,7 +254,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--date',
         help='Comma-separated list of tags for date normalisation.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-N',
@@ -270,7 +269,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--number',
         help='Comma-separated list of tags for number normalisation.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-r',
@@ -299,8 +298,8 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         else:
             number_arg = args.number
 
-        filter = CleanDataFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
-        hxl.write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
+        filter = hxl.filters.CleanDataFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
+        hxl.io.write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
 
 
 def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -319,7 +318,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Comma-separated list of column tags to count.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list,
+        type=hxl.model.TagPattern.parse_list,
         default='loc,org,sector,adm1,adm2,adm3'
         )
     parser.add_argument(
@@ -327,13 +326,13 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--aggregate',
         help='Hashtag to aggregate.',
         metavar='tag',
-        type=hxl.TagPattern.parse
+        type=hxl.model.TagPattern.parse
         )
 
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = CountFilter(source, args.tags, args.aggregate)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -343,20 +342,20 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--include',
         help='Comma-separated list of column tags to include',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-x',
         '--exclude',
         help='Comma-separated list of column tags to exclude',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = ColumnFilter(source, args.include, args.exclude)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.ColumnFilter(source, args.include, args.exclude)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -366,13 +365,13 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Comma-separated list of column tags to use for deduplication (by default, use all values).',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = DeduplicationFilter(source, args.tags)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.DeduplicationFilter(source, args.tags)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -398,7 +397,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         help='HXL tag(s) to use as a shared key.',
         metavar='tag,tag...',
         required=True,
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-t',
@@ -406,7 +405,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         help='Comma-separated list of column tags to include from the merge dataset.',
         metavar='tag,tag...',
         required=True,
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-r',
@@ -426,10 +425,10 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.data(args.merge, True) if args.merge else None as merge_source:
-        filter = MergeDataFilter(source, merge_source=merge_source,
+    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.io.data(args.merge, True) if args.merge else None as merge_source:
+        filter = hxl.filters.MergeDataFilter(source, merge_source=merge_source,
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -449,13 +448,13 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         action='append',
         metavar='#?<original_tag>:<Text header>?#?<new_tag>',
         default=[],
-        type=RenameFilter.parse_rename
+        type=hxl.filters.RenameFilter.parse_rename
         )
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = RenameFilter(source, args.rename)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.RenameFilter(source, args.rename)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -489,7 +488,7 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Tag patterns to match',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     inline_group.add_argument(
         '-r',
@@ -510,14 +509,14 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         if args.map:
-            replacements = ReplaceDataFilter.Replacement.parse_map(hxl.data(args.map, True))
+            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.io.data(args.map, True))
         else:
             replacements = []
         if args.pattern:
             for tag in args.tags:
-                replacements.append(ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
-        filter = ReplaceDataFilter(source, replacements)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+                replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
+        filter = hxl.filters.ReplaceDataFilter(source, replacements)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -550,8 +549,8 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = RowFilter(source, queries=args.query, reverse=args.reverse)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.RowFilter(source, queries=args.query, reverse=args.reverse)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -569,7 +568,7 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--tags',
         help='Comma-separated list of tags to for columns to use as sort keys.',
         metavar='tag,tag...',
-        type=hxl.TagPattern.parse_list
+        type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-r',
@@ -582,8 +581,8 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = SortFilter(source, args.tags, args.reverse)
-        hxl.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        filter = hxl.filters.SortFilter(source, args.tags, args.reverse)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -603,13 +602,13 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         required=True,
         action='append',
         metavar='Header Text#tag',
-        type=Tagger.parse_spec
+        type=hxl.converters.Tagger.parse_spec
         )
     args = parser.parse_args(args)
 
-    with hxl.make_input(args.infile or stdin) as input, make_output(args, stdout) as output:
-        tagger = Tagger(input, args.map)
-        hxl.write_hxl(output.output, hxl.data(tagger), show_tags=not args.strip_tags)
+    with hxl.io.make_input(args.infile or stdin) as input, make_output(args, stdout) as output:
+        tagger = hxl.converters.Tagger(input, args.map)
+        hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
 
 
 def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -647,7 +646,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    with hxl.make_input(args.infile or stdin, True) as input, make_output(args, stdout) as output:
+    with hxl.io.make_input(args.infile or stdin, True) as input, make_output(args, stdout) as output:
 
         class Counter:
             infos = 0
@@ -685,12 +684,12 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             output.write(message)
 
         output.write("Validating {} with schema {} ...\n".format(args.infile or "<standard input>", args.schema or "<default>"))
-        source = hxl.data(input)
+        source = hxl.io.data(input)
         if args.schema:
-            with hxl.make_input(args.schema, True) as schema_input:
-                schema = hxl.schema(schema_input, callback=callback)
+            with hxl.io.make_input(args.schema, True) as schema_input:
+                schema = hxl.validation.schema(schema_input, callback=callback)
         else:
-            schema = hxl.schema(callback=callback)
+            schema = hxl.validation.schema(callback=callback)
 
         schema.validate(source)
 
@@ -715,7 +714,7 @@ def run_script(func):
     """Try running a command-line script, with exception handling."""
     try:
         func(sys.argv[1:], STDIN, sys.stdout)
-    # except hxl.HXLException as e:
+    # except hxl.common.HXLException as e:
     #     print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + str(e.message)
     #     print >>sys.stderr, "Exiting ..."
     #     sys.exit(2)
@@ -757,8 +756,8 @@ def make_source(args, stdin=STDIN):
     sheet_index = args.sheet
     if sheet_index is not None:
         sheet_index -= 1
-    input = hxl.make_input(args.infile or stdin, sheet_index=sheet_index, allow_local=True)
-    return hxl.data(input)
+    input = hxl.io.make_input(args.infile or stdin, sheet_index=sheet_index, allow_local=True)
+    return hxl.io.data(input)
 
 def make_output(args, stdout=sys.stdout):
     """Create an output stream."""

@@ -15,9 +15,8 @@ import json
 import six
 import operator
 
-import hxl
-from hxl.common import normalise_string
 
+import hxl
 
 class TagPattern(object):
     """
@@ -94,7 +93,7 @@ class TagPattern(object):
 
         if not s:
             # edge case: null value
-            raise hxl.HXLException('Attempt to parse empty tag pattern')
+            raise hxl.common.HXLException('Attempt to parse empty tag pattern')
         elif isinstance(s, TagPattern):
             # edge case: already parsed
             return s
@@ -112,7 +111,7 @@ class TagPattern(object):
                     exclude_attributes.append(attribute_specs[i + 1])
             return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
         else:
-            raise hxl.HXLException('Malformed tag: ' + s)
+            raise hxl.common.HXLException('Malformed tag: ' + s)
 
     @staticmethod
     def parse_list(specs):
@@ -218,7 +217,7 @@ class Dataset(object):
             else:
                 new_values = row.values
             if normalise:
-                new_values = [normalise_string(s) for s in new_values]
+                new_values = [hxl.common.normalise_string(s) for s in new_values]
             value_set.update(new_values)
         return value_set
 
@@ -233,7 +232,7 @@ class Dataset(object):
         @param schema (optional) the pre-compiled schema, schema filename, URL, file object, etc. Defaults to a built-in schema.
         @param callback (optional) a function to call with each error or warning. Defaults to collecting errors in an array and returning them.
         """
-        return hxl.schema(schema, callback).validate(self)
+        return hxl.validation.schema(schema, callback).validate(self)
 
     #
     # Filters
@@ -402,7 +401,7 @@ class Column(object):
             return Column(tag=tag, attributes=attributes, header=header)
         else:
             if use_exception:
-                raise hxl.HXLException("Malformed tag expression: " + raw_string)
+                raise hxl.common.HXLException("Malformed tag expression: " + raw_string)
             else:
                 return None
 
@@ -530,7 +529,7 @@ class RowQuery(object):
                 return self.op(float(value), float(self.value))
             except ValueError:
                 pass
-        return self.op(normalise_string(value), normalise_string(self.value))
+        return self.op(hxl.common.normalise_string(value), hxl.common.normalise_string(self.value))
 
     def _get_saved_indices(self, columns):
         """Cache the column tests, so that we run them only once."""

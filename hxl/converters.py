@@ -3,8 +3,8 @@ HXL converters (to/from other formats)
 """
 
 import re
+
 import hxl
-from hxl.common import normalise_string
 
 
 class Tagger(hxl.io.AbstractInput):
@@ -20,7 +20,7 @@ class Tagger(hxl.io.AbstractInput):
     """
 
     def __init__(self, input, specs=[]):
-        self.specs = [(normalise_string(spec[0]), spec[1]) for spec in specs]
+        self.specs = [(hxl.common.normalise_string(spec[0]), spec[1]) for spec in specs]
         self.input = iter(input)
         self._cache = []
         self._found_tags = False
@@ -33,7 +33,7 @@ class Tagger(hxl.io.AbstractInput):
                 self._found_tags = True
             else:
                 # if no match, through an exception
-                raise hxl.HXLException("Tagging failed")
+                raise hxl.common.HXLException("Tagging failed")
         if len(self._cache) > 0:
             # read from the cache, first
             return self._cache.pop(0)
@@ -60,7 +60,7 @@ class Tagger(hxl.io.AbstractInput):
         tags = []
         tag_count = 0
         for index, value in enumerate(raw_row):
-            value = normalise_string(value)
+            value = hxl.common.normalise_string(value)
             for spec in self.specs:
                 if spec[0] in value:
                     tags.append(spec[1])
@@ -84,7 +84,7 @@ class Tagger(hxl.io.AbstractInput):
     def parse_spec(s):
         result = re.match(Tagger.SPEC_PATTERN, s)
         if result:
-            return (result.group(1), hxl.Column.parse(result.group(2), use_exception=True).display_tag)
+            return (result.group(1), hxl.model.Column.parse(result.group(2), use_exception=True).display_tag)
         else:
             raise HXLFilterException("Bad tagging spec: " + s)
 

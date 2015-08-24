@@ -13,13 +13,13 @@ import os
 from copy import copy
 from email.utils import parseaddr
 
-import hxl
-
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
 else:
     from urlparse import urlparse
+
+import hxl.common
 
 def schema(origin=None, callback=None):
     """
@@ -42,7 +42,7 @@ def schema(origin=None, callback=None):
         return parse_schema(hxl.data(origin), callback)
 
 
-class HXLValidationException(hxl.HXLException):
+class HXLValidationException(hxl.common.HXLException):
     """Data structure to hold a HXL validation error."""
 
     def __init__(self, message, rule=None, value=None, row=None, column=None):

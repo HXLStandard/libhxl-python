@@ -70,7 +70,7 @@ def data(data, allow_local=False):
     @param data a HXL data provider, file object, array, or string (representing a URL or file name).
     """
 
-    if isinstance(data, hxl.Dataset):
+    if isinstance(data, hxl.model.Dataset):
         # it's already HXL data
         return data
 
@@ -127,7 +127,7 @@ def make_input(data, allow_local=False, sheet_index=None):
             input = Sniffer(make_stream(data, allow_local=allow_local))
 
         if input.sig in HTML5_SIGS:
-            raise hxl.HXLException("Received HTML5 input.\nCheck that resource (e.g. Google Sheet) is publicly readable.")
+            raise hxl.common.HXLException("Received HTML5 input.\nCheck that resource (e.g. Google Sheet) is publicly readable.")
         elif input.sig in EXCEL_SIGS:
             return ExcelInput(input, sheet_index=sheet_index)
         else:
@@ -170,7 +170,7 @@ def make_stream(origin, allow_local=False):
 # Exported classes
 ########################################################################
 
-class HXLParseException(hxl.HXLException):
+class HXLParseException(hxl.common.HXLException):
     """
     A parsing error in a HXL dataset.
     """
@@ -299,7 +299,7 @@ class ArrayInput(AbstractInput):
     next = __next__
 
 
-class HXLReader(hxl.Dataset):
+class HXLReader(hxl.model.Dataset):
     """Read HXL data from a file
 
     This class acts as both an iterator and a context manager. If
@@ -342,7 +342,7 @@ class HXLReader(hxl.Dataset):
 
     def __iter__(self):
         if self._used_iter:
-            raise hxl.HXLException("Cannot read a stream twice")
+            raise hxl.common.HXLException("Cannot read a stream twice")
         else:
             return self
 
@@ -354,7 +354,7 @@ class HXLReader(hxl.Dataset):
         columns = self.columns
         values = self._get_row()
         self._row_number += 1
-        return hxl.Row(columns=columns, values=values, row_number=self._row_number)
+        return hxl.model.Row(columns=columns, values=values, row_number=self._row_number)
 
     # for compatibility
     next = __next__
@@ -396,13 +396,13 @@ class HXLReader(hxl.Dataset):
             if raw_string:
                 raw_string = str(raw_string).strip()
                 nonEmptyCount += 1
-                column = hxl.Column.parse(raw_string, header=header)
+                column = hxl.model.Column.parse(raw_string, header=header)
                 if column:
                     columns.append(column)
                     column_number += 1
                     continue
 
-            columns.append(hxl.Column(header=header))
+            columns.append(hxl.model.Column(header=header))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
