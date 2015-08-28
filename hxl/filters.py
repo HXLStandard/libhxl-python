@@ -616,7 +616,7 @@ class DeduplicationFilter(hxl.model.Dataset):
         def __init__(self, outer):
             self.outer = outer
             self.iterator = iter(outer.source)
-            self.seen_map = {}
+            self.seen_map = set()
 
         def __iter__(self):
             return self
@@ -626,9 +626,12 @@ class DeduplicationFilter(hxl.model.Dataset):
             if not row:
                 return None
             key = self._make_key(row)
-            while row and key in self.seen_map:
+            while key in self.seen_map:
                 row = next(self.iterator)
-            self.seen_map[key] = True
+                if not row:
+                    return None
+                key = self._make_key(row)
+            self.seen_map.add(key)
             return row
 
         next = __next__
