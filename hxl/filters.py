@@ -988,22 +988,16 @@ class RowFilter(AbstractStreamingFilter):
         return self.reverse
 
     
-class SortFilter(hxl.model.Dataset):
+class SortFilter(AbstractCachingFilter):
     """
     Composable filter class to sort a HXL dataset.
 
     This is the class supporting the hxlsort command-line utility.
 
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
-
     Usage:
 
     <pre>
-    source = HXLReader(sys.stdin)
-    filter = SortFilter(source, tags=[TagPattern.parse('#sector'), TagPattern.parse('#org'), TagPattern.parse('#adm1']))
-    write_hxl(sys.stdout, filter)
+    hxl.data(url).sort('sector,org,adm1')
     </pre>
     """
 
@@ -1013,17 +1007,10 @@ class SortFilter(hxl.model.Dataset):
         @param tags list of TagPattern objects for sorting
         @param reverse True to reverse the sort order
         """
-        self.source = source
+        super(SortFilter, self).__init__(source)
         self.sort_tags = hxl.model.TagPattern.parse_list(tags)
         self.reverse = reverse
         self._iter = None
-
-    @property
-    def columns(self):
-        """
-        Return the same columns as the source.
-        """
-        return self.source.columns
 
     def __iter__(self):
         """
