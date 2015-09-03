@@ -217,9 +217,9 @@ class TestMergeDataFilter(AbstractFilterTest):
     def test_values(self):
         self.assertEqual(self.MERGE_OUT[2:], self.merged.values)
 
-    # def test_chaining(self):
-    #     merged_extra = self.merged.merge_data(hxl.data(self.MERGE_EXTRA), '#adm1+code', '#population')
-    #     self.assertEqual(self.MERGE_EXTRA_OUT[2:], merged_extra.values)
+    def test_chaining(self):
+        merged_extra = self.merged.merge_data(hxl.data(self.MERGE_EXTRA), '#adm1+code', '#population')
+        self.assertEqual(self.MERGE_EXTRA_OUT[2:], merged_extra.values)
 
 
 class TestRenameFilter(AbstractFilterTest):

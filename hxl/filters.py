@@ -54,7 +54,7 @@ class AbstractFilter(hxl.model.Dataset):
         Return a new list of columns for the filtered dataset.
         @return a list of hxl.model.Column objects
         """
-        return copy.deepcopy(self.source.columns)
+        return self.source.columns
 
     
 class AbstractStreamingFilter(AbstractFilter):
@@ -81,7 +81,7 @@ class AbstractStreamingFilter(AbstractFilter):
         @param row A hxl.model.Row object to filter.
         @return An array of new values (not a Row object) or None to skip the row.
         """
-        return copy.deepcopy(row.values)
+        return row.values
 
     def __iter__(self):
         return AbstractStreamingFilter.Iterator(self)
