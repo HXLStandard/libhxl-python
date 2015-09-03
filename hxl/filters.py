@@ -1044,32 +1044,33 @@ class SortFilter(AbstractCachingFilter):
         # Start the key as an array, then make a tuple out of it at the end
         key = []
 
-        def add_value(tag, value):
-            """
-            Closure: split each value into a numeric and non-numeric representation.
-            Non-numeric values sort as infinity (after all numeric ones).
-            """
-            norm = hxl.common.normalise_string(value)
-            if tag == '#date':
-                key.append(float('inf'))
-                key.append(dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
-            else:
-                try:
-                    key.append(float(norm))
-                    key.append(norm)
-                except:
-                    key.append(float('inf'))
-                    key.append(norm)
-
         if indices:
             for index in indices:
-                add_value(self.columns[index].tag, values[index])
+                SortFilter._add_key_value(key, self.columns[index].tag, values[index])
         else:
             # Sort everything, left to right
             for index, value in enumerate(values):
-                add_value(self.columns[index].tag, value)
+                SortFilter._add_key_value(key, self.columns[index].tag, value)
 
         return tuple(key)
+
+    @staticmethod
+    def _add_key_value(key, tag, value):
+        """
+        Closure: split each value into a numeric and non-numeric representation.
+        Non-numeric values sort as infinity (after all numeric ones).
+        """
+        norm = hxl.common.normalise_string(value)
+        if tag == '#date':
+            key.append(float('inf'))
+            key.append(dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
+        else:
+            try:
+                key.append(float(norm))
+                key.append(norm)
+            except:
+                key.append(float('inf'))
+                key.append(norm)
 
 # end
 
