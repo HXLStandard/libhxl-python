@@ -49,7 +49,6 @@ class AbstractFilter(hxl.model.Dataset):
             self.filtered_columns = self.filter_columns()
         return self.filtered_columns
 
-    @abc.abstractmethod
     def filter_columns(self):
         """
         Return a new list of columns for the filtered dataset.
@@ -114,6 +113,8 @@ class AbstractStreamingFilter(AbstractFilter):
             # if we've finished the iteration, then we're out of rows, so stop
             raise StopIteration()
 
+        next = __next__
+
 
 class AbstractCachingFilter(AbstractFilter):
     """
@@ -127,7 +128,7 @@ class AbstractCachingFilter(AbstractFilter):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, source):
-        super(AbstractStreamingFilter, self).__init__(source)
+        super(AbstractCachingFilter, self).__init__(source)
 
     def filter_rows(self):
         return self.source.values
@@ -151,6 +152,8 @@ class AbstractCachingFilter(AbstractFilter):
             self.row_number += 1
             return hxl.model.Row(outer.columns, next(self.values_iter), self.row_number)
         
+        next = __next__
+
 
 #
 # Filter classes
@@ -428,19 +431,16 @@ class CleanDataFilter(AbstractStreamingFilter):
 
 class ColumnFilter(AbstractStreamingFilter):
     """
-    Composable filter class to cut columns from a HXL dataset.
-
-    This is the class supporting the hxlcut command-line utility.
-
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
+    Composable filter class to filter columns in a HXL dataset.
 
     Usage:
 
     <pre>
-    filter = ColumnFilter(source, include_tags=['#org', '#sector', '#adm1'])
-    write_hxl(sys.stdout, filter)
+    # blacklist columns
+    hxl.data(url).without_columns('contact+email')
+
+    # whitelist columns
+    hxl.data(url).with_columns(['org', 'sector', 'adm1'])
     </pre>
     """
 
@@ -456,6 +456,10 @@ class ColumnFilter(AbstractStreamingFilter):
         self.indices = [] # saved indices for columns to include
 
     def filter_columns(self):
+        """
+        Remove any columns in the blacklist or not in the whitelist.
+        Save the indices in self.cached_indices for row filtering.
+        """
         columns_in = self.source.columns
         columns_out = []
         for i in range(len(columns_in)):
@@ -465,6 +469,7 @@ class ColumnFilter(AbstractStreamingFilter):
         return columns_out
 
     def filter_row(self, row):
+        """Remove values from a row for any column that's been removed."""
         values = []
         for i in self.indices:
             values.append(row.values[i])
@@ -650,7 +655,7 @@ class CountFilter(hxl.model.Dataset):
                         pass
 
 
-class DeduplicationFilter(hxl.model.Dataset):
+class DeduplicationFilter(AbstractStreamingFilter):
     """
     Composable filter to deduplicate a HXL dataset.
 
@@ -660,56 +665,43 @@ class DeduplicationFilter(hxl.model.Dataset):
     """
 
     def __init__(self, source, patterns=None):
-        self.source = source
+        """
+        Constructor
+        @param source the upstream source dataset
+        @param patterns if provided, a list of tag patterns for columns to use for uniqueness testing.
+        """
+        super(DeduplicationFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
+        self.seen_map = set() # row signatures that we've seen so far
 
-    @property
-    def columns(self):
-        return self.source.columns
+    def filter_row(self, row):
+        """Filter out any rows we've seen before."""
+        if not row:
+            return None
+        key = self._make_key(row)
+        if key in self.seen_map:
+            return None
+        # if we get to here, we haven't seen the row before
+        self.seen_map.add(key)
+        return copy.copy(row.values)
 
-    def __iter__(self):
-        return DeduplicationFilter.Iterator(self)
+    def _is_key(self, col):
+        """Check if a column is part of the key for deduplication."""
+        if self.patterns:
+            for pattern in self.patterns:
+                if pattern.match(col):
+                    return True
+            return False
+        else:
+            return True
 
-    class Iterator:
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-            self.seen_map = set()
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            row = next(self.iterator)
-            if not row:
-                return None
-            key = self._make_key(row)
-            while key in self.seen_map:
-                row = next(self.iterator)
-                if not row:
-                    return None
-                key = self._make_key(row)
-            self.seen_map.add(key)
-            return row
-
-        next = __next__
-
-        def _is_key(self, col):
-            if self.outer.patterns:
-                for pattern in self.outer.patterns:
-                    if pattern.match(col):
-                        return True
-                return False
-            else:
-                return True
-
-        def _make_key(self, row):
-            key = []
-            for i, value in enumerate(row.values):
-                if self._is_key(row.columns[i]):
-                    key.append(hxl.common.normalise_string(value))
-            return tuple(key)
+    def _make_key(self, row):
+        """Create a tuple key for a row."""
+        key = []
+        for i, value in enumerate(row.values):
+            if self._is_key(row.columns[i]):
+                key.append(hxl.common.normalise_string(value))
+        return tuple(key)
 
         
 class MergeDataFilter(hxl.model.Dataset):
