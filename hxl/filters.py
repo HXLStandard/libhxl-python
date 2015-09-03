@@ -803,22 +803,16 @@ class MergeDataFilter(AbstractStreamingFilter):
         return merge_map
 
 
-class RenameFilter(hxl.model.Dataset):
+class RenameFilter(AbstractStreamingFilter):
     """
     Composable filter class to rename columns in a HXL dataset.
 
     This is the class supporting the hxlrename command-line utility.
 
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
-
     Usage:
 
     <pre>
-    source = HXLReader(sys.stdin)
-    filter = RenameFilter(source, rename=[[TagPattern.parse('#foo'), hxl.model.Column.parse('#bar')]])
-    write_hxl(sys.stdout, filter)
+    hxl.data(url).rename_columns('#foo:New header#bar')
     </pre>
     """
 
@@ -828,29 +822,25 @@ class RenameFilter(hxl.model.Dataset):
         @param source the Dataset for the data.
         @param rename_map map of tags to rename
         """
-        self.source = source
+        super(RenameFilter, self).__init__(source)
         if isinstance(rename, six.string_types):
             rename = [rename]
         self.rename = [self.parse_rename(spec) for spec in rename]
-        self._saved_columns = None
 
-    @property
-    def columns(self):
-        """
-        Return the renamed columns.
-        """
+    def filter_columns(self):
+        """Rename requested columns."""
+        return [self._rename_column(column) for column in self.source.columns]
 
-        if self._saved_columns is None:
-            def rename_column(column):
-                for spec in self.rename:
-                    if spec[0].match(column):
-                        new_column = copy.deepcopy(spec[1])
-                        if new_column.header is None:
-                            new_column.header = column.header
-                        return new_column
-                return column
-            self._saved_columns = [rename_column(column) for column in self.source.columns]
-        return self._saved_columns
+    def _rename_column(self, column):
+        """Rename a column if requested."""
+        for spec in self.rename:
+            if spec[0].match(column):
+                new_column = copy.deepcopy(spec[1])
+                if new_column.header is None:
+                    new_column.header = column.header
+                return new_column
+        return copy.deepcopy(column)
+
 
     def __iter__(self):
         return RenameFilter.Iterator(self)
