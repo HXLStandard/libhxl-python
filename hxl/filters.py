@@ -500,27 +500,17 @@ class ColumnFilter(AbstractStreamingFilter):
             return True
 
 
-class CountFilter(hxl.model.Dataset):
+class CountFilter(AbstractCachingFilter):
     """
     Composable filter class to aggregate rows in a HXL dataset.
 
     This is the class supporting the hxlcount command-line utility.
-
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
 
     WARNING: this filter reads the entire source dataset before
     producing output, and may need to hold a large amount of data in
     memory, depending on the number of unique combinations counted.
 
     Usage:
-
-    <pre>
-    filter = CountFilter(source, patterns=['#org', '#sector'])
-    </pre>
-
-    or
 
     <pre>
     filter = source.count(['#org', '#sector'])
@@ -534,33 +524,32 @@ class CountFilter(hxl.model.Dataset):
         @param patterns a list of strings or TagPattern objects that form a unique key together
         @param aggregate_pattern an optional tag pattern calculating numeric aggregate values.
         """
-        self.source = source
+        super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
         self._saved_columns = None
 
-    @property
-    def columns(self):
-        """
-        @return the column definitions used in the aggregation report
-        """
-        if self._saved_columns is None:
-            cols = []
-            for pattern in self.patterns:
-                column = pattern.find_column(self.source.columns)
-                if column is not None:
-                    header = column.header
-                else:
-                    header = None
-                cols.append(hxl.model.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-            cols.append(hxl.model.Column.parse('#meta+count', 'Count'))
-            if self.aggregate_pattern is not None:
-                cols.append(hxl.model.Column.parse('#meta+sum', header='Sum'))
-                cols.append(hxl.model.Column.parse('#meta+average', header='Average (mean)'))
-                cols.append(hxl.model.Column.parse('#meta+min', header='Minimum value'))
-                cols.append(hxl.model.Column.parse('#meta+max', header='Maximum value'))
-            self._saved_columns = cols
-        return self._saved_columns
+    def filter_columns(self):
+        """Generate the columns for the report."""
+        columns = []
+
+        # Add columns being counted
+        for pattern in self.patterns:
+            column = pattern.find_column(self.source.columns)
+            if column is not None:
+                columns.append(copy.deepcopy(column))
+
+        # Add column to hold count
+        columns.append(hxl.model.Column.parse('#meta+count', 'Count'))
+
+        # If we're aggregating, add the aggregate columns
+        if self.aggregate_pattern is not None:
+            columns.append(hxl.model.Column.parse('#meta+sum', header='Sum'))
+            columns.append(hxl.model.Column.parse('#meta+average', header='Average (mean)'))
+            columns.append(hxl.model.Column.parse('#meta+min', header='Minimum value'))
+            columns.append(hxl.model.Column.parse('#meta+max', header='Maximum value'))
+            
+        return columns
 
     def __iter__(self):
         return CountFilter.Iterator(self)
