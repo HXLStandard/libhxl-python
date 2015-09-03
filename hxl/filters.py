@@ -148,9 +148,9 @@ class AbstractCachingFilter(AbstractFilter):
 
         def __next__(self):
             if self.values_iter is None:
-                self.values_iter = iter(outer.filter_rows())
+                self.values_iter = iter(self.outer.filter_rows())
             self.row_number += 1
-            return hxl.model.Row(outer.columns, next(self.values_iter), self.row_number)
+            return hxl.model.Row(self.outer.columns, next(self.values_iter), self.row_number)
         
         next = __next__
 
@@ -1012,20 +1012,26 @@ class SortFilter(AbstractCachingFilter):
         self.reverse = reverse
         self._iter = None
 
-    def __iter__(self):
-        """
-        Sort the dataset first, then return it row by row.
-        """
+    def filter_rows(self):
+        """Return a sorted list of values, row by row."""
+        
+        indices = self._make_indices()
 
-        # Closures
-        def make_key(row):
+        def make_key(values):
+            self.make_key(values)
+
+        
+        def make_key(values):
             """Closure: use the requested tags as keys (if provided). """
+
+            # FIXME - this is too convoluted, with a closure within a closure
 
             key = []
 
+
             def add_value(tag, value):
                 """
-                Split each value into a numeric and non-numeric representation.
+                Closure: split each value into a numeric and non-numeric representation.
                 Non-numeric values sort as infinity (after all numeric ones).
                 """
                 norm = hxl.common.normalise_string(value)
@@ -1040,19 +1046,30 @@ class SortFilter(AbstractCachingFilter):
                         key.append(float('inf'))
                         key.append(norm)
 
-            if self.sort_tags:
-                # Specific sort tags chosen
-                for pattern in self.sort_tags:
-                    add_value(pattern.tag, pattern.get_value(row))
+
+            if indices:
+                for index in indices:
+                    add_value(self.columns[index].tag, values[index])
             else:
                 # Sort everything, left to right
-                for index, value in enumerate(row):
-                    add_value(row.columns[index].tag, value)
+                for index, value in enumerate(values):
+                    add_value(self.columns[index].tag, value)
 
             return tuple(key)
 
-        # Main method
-        return iter(sorted(self.source, key=make_key, reverse=self.reverse))
+        # Done defining closures -- sort the data
+        return sorted(self.source.values, key=make_key, reverse=self.reverse)
+
+    def _make_indices(self):
+        """Determine the indices of the data to sort."""
+        indices = []
+        for pattern in self.sort_tags:
+            index = pattern.find_column_index(self.columns)
+            if index is not None:
+                indices.append(index)
+        return indices
+            
+
 
 # end
 
