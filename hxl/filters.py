@@ -704,7 +704,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
         return tuple(key)
 
         
-class MergeDataFilter(hxl.model.Dataset):
+class MergeDataFilter(AbstractStreamingFilter):
     """
     Composable filter class to merge values from two HXL datasets.
 
@@ -712,17 +712,10 @@ class MergeDataFilter(hxl.model.Dataset):
 
     Warning: this filter may store a large amount of data in memory, depending on the merge.
 
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
-
     Usage:
 
     <pre>
-    source = HXLReader(sys.stdin)
-    merge_source = HXLReader(open('file-to-merge.csv', 'r'))
-    filter = MergeDataFilter(source, merge_source=merge_source, keys=['adm1_id'], tags=['adm1'])
-    write_hxl(sys.stdout, filter)
+    hxl.data(url).merge(merge_source=merge_source, keys='adm1_id', tags='adm1')
     </pre>
     """
 
@@ -734,103 +727,81 @@ class MergeDataFilter(hxl.model.Dataset):
         @param keys the shared key hashtags to use for the merge
         @param tags the tags to include from the second dataset
         """
-        self.source = source
+        super(MergeDataFilter, self).__init__(source)
         self.merge_source = merge_source
         self.keys = hxl.model.TagPattern.parse_list(keys)
         self.merge_tags = hxl.model.TagPattern.parse_list(tags)
         self.replace = replace
         self.overwrite = overwrite
 
-        self.saved_columns = None
+        self.merge_map = None
 
-    @property
-    def columns(self):
-        """
-        @return column definitions for the merged dataset
-        """
-        if self.saved_columns is None:
-            new_columns = []
-            for pattern in self.merge_tags:
-                if self.replace and pattern.find_column(self.source.columns):
-                    # will use existing column
-                    continue
+    def filter_columns(self):
+        """Filter the columns to add newly-merged ones."""
+        new_columns = []
+        for pattern in self.merge_tags:
+            if self.replace and pattern.find_column(self.source.columns):
+                # will use existing column
+                continue
+            else:
+                column = pattern.find_column(self.merge_source.columns)
+                if column:
+                    header = column.header
                 else:
-                    column = pattern.find_column(self.merge_source.columns)
-                    if column:
-                        header = column.header
-                    else:
-                        header = None
-                    new_columns.append(hxl.model.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-            self.saved_columns = self.source.columns + new_columns
-        return self.saved_columns
+                    header = None
+                new_columns.append(hxl.model.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
+        return self.source.columns + new_columns
 
-    def __iter__(self):
-        return MergeDataFilter.Iterator(self)
+    def filter_row(self, row):
+        """Set up a merged data row, replacing existing values if requested."""
+        
+        # First, check if we already have the merge map, and read it if not
+        if self.merge_map is None:
+            self.merge_map = self._read_merge()
 
-    class Iterator:
+        # Make a copy of the values
+        values = copy.copy(row.values)
 
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-            self.merge_iterator = iter(outer.merge_source)
-            self.merge_map = None
+        # Look up the merge values, based on the --keys
+        merge_values = self.merge_map.get(self._make_key(row), {})
 
-        def __iter__(self):
-            return self
+        # Go through the merge tags
+        for pattern in self.merge_tags:
+            # Try to substitute in place?
+            if self.replace:
+                index = pattern.find_column_index(self.source.columns)
+                if index is not None:
+                    if self.overwrite or not row.values[index]:
+                        values[index] = merge_values.get(pattern)
+                    continue
 
-        def __next__(self):
-            """
-            @return the next merged row of data
-            """
+            # otherwise, fall through
+            values.append(merge_values.get(pattern, ''))
+        return values
 
-            # First, check if we already have the merge map, and read it if not
-            if self.merge_map is None:
-                self.merge_map = self._read_merge()
+    def _make_key(self, row):
+        """
+        Make a tuple key for a row.
+        """
+        values = []
+        for pattern in self.keys:
+            values.append(hxl.common.normalise_string(pattern.get_value(row)))
+        return tuple(values)
 
-            # Make a copy of the next row from the source
-            row = copy.deepcopy(next(self.iterator))
+    def _read_merge(self):
+        """
+        Read the second (merging) dataset into memory.
+        Stores only the values necessary for the merge.
+        @return a map of merge values
+        """
+        merge_map = {}
+        for row in self.merge_source:
+            values = {}
+            for pattern in self.merge_tags:
+                values[pattern] = pattern.get_value(row)
+            merge_map[self._make_key(row)] = values
+        return merge_map
 
-            # Look up the merge values, based on the --keys
-            merge_values = self.merge_map.get(self._make_key(row), {})
-
-            # Go through the --tags
-            for pattern in self.outer.merge_tags:
-                # Try to substitute in place?
-                if self.outer.replace:
-                    index = pattern.find_column_index(self.outer.source.columns)
-                    if index is not None:
-                        if self.outer.overwrite or not row.values[index]:
-                            row.values[index] = merge_values.get(pattern)
-                        continue
-
-                # otherwise, fall through
-                row.append(merge_values.get(pattern, ''))
-            return row
-
-        next = __next__
-
-        def _make_key(self, row):
-            """
-            Make a tuple key for a row.
-            """
-            values = []
-            for pattern in self.outer.keys:
-                values.append(hxl.common.normalise_string(pattern.get_value(row)))
-            return tuple(values)
-
-        def _read_merge(self):
-            """
-            Read the second (merging) dataset into memory.
-            Stores only the values necessary for the merge.
-            @return a map of merge values
-            """
-            merge_map = {}
-            for row in self.merge_iterator:
-                values = {}
-                for pattern in self.outer.merge_tags:
-                    values[pattern] = pattern.get_value(row)
-                merge_map[self._make_key(row)] = values
-            return merge_map
 
 class RenameFilter(hxl.model.Dataset):
     """
