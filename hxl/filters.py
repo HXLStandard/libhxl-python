@@ -825,7 +825,7 @@ class RenameFilter(AbstractStreamingFilter):
         super(RenameFilter, self).__init__(source)
         if isinstance(rename, six.string_types):
             rename = [rename]
-        self.rename = [self.parse_rename(spec) for spec in rename]
+        self.rename = [RenameFilter.parse_rename(spec) for spec in rename]
 
     def filter_columns(self):
         """Rename requested columns."""
@@ -848,6 +848,7 @@ class RenameFilter(AbstractStreamingFilter):
 
     @staticmethod
     def parse_rename(s):
+        """Parse a rename specification from the parameters."""
         if isinstance(s, six.string_types):
             result = re.match(RenameFilter.RENAME_PATTERN, s)
             if result:
