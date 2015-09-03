@@ -945,22 +945,18 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             return replacements
 
         
-class RowFilter(hxl.model.Dataset):
+class RowFilter(AbstractStreamingFilter):
     """
     Composable filter class to select rows from a HXL dataset.
-
-    This is the class supporting the hxlselect command-line utility.
-
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
 
     Usage:
 
     <pre>
-    source = HXLReader(sys.stdin)
-    filter = RowFilter(source, queries=[(TagPattern.parse('#org'), operator.eq, 'OXFAM')])
-    write_hxl(sys.stdout, filter)
+    # whitelist
+    hxl.data(url).with_rows('org=OXFAM')
+
+    # blacklist
+    hxl.data(url).without_rows('org=OXFAM')
     </pre>
     """
 
@@ -971,48 +967,27 @@ class RowFilter(hxl.model.Dataset):
         @param queries a series for parsed queries
         @param reverse True to reverse the sense of the select
         """
-        self.source = source
+        super(RowFilter, self).__init__(source)
         if not hasattr(queries, '__len__') or isinstance(queries, six.string_types):
             # make a list if needed
             queries = [queries]
         self.queries = [hxl.model.RowQuery.parse(query) for query in queries]
         self.reverse = reverse
 
-    @property
-    def columns(self):
-        """Pass on the source columns unmodified."""
-        return self.source.columns
+    def filter_row(self, row):
+        if self.match_row(row):
+            return row.values
+        else:
+            return None
 
-    def __iter__(self):
-        return RowFilter.Iterator(self)
+    def match_row(self, row):
+        """Check if any of the queries matches the row (implied OR)."""
+        for query in self.queries:
+            if query.match_row(row):
+                return not self.reverse
+        return self.reverse
 
-    class Iterator(object):
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            """
-            Return the next row that matches the select.
-            """
-            row = next(self.iterator)
-            while not self.match_row(row):
-                row = next(self.iterator)
-            return row
-
-        next = __next__
-
-        def match_row(self, row):
-            """Check if any of the queries matches the row (implied OR)."""
-            for query in self.outer.queries:
-                if query.match_row(row):
-                    return not self.outer.reverse
-            return self.outer.reverse
-
+    
 class SortFilter(hxl.model.Dataset):
     """
     Composable filter class to sort a HXL dataset.
