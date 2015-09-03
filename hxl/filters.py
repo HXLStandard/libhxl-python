@@ -1014,50 +1014,14 @@ class SortFilter(AbstractCachingFilter):
 
     def filter_rows(self):
         """Return a sorted list of values, row by row."""
-        
+
+        # Figure out the indices for sort keys
         indices = self._make_indices()
 
         def make_key(values):
-            self.make_key(values)
+            """Closure, to get the object reference into the key method."""
+            return self._make_key(indices, values)
 
-        
-        def make_key(values):
-            """Closure: use the requested tags as keys (if provided). """
-
-            # FIXME - this is too convoluted, with a closure within a closure
-
-            key = []
-
-
-            def add_value(tag, value):
-                """
-                Closure: split each value into a numeric and non-numeric representation.
-                Non-numeric values sort as infinity (after all numeric ones).
-                """
-                norm = hxl.common.normalise_string(value)
-                if tag == '#date':
-                    key.append(float('inf'))
-                    key.append(dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
-                else:
-                    try:
-                        key.append(float(norm))
-                        key.append(norm)
-                    except:
-                        key.append(float('inf'))
-                        key.append(norm)
-
-
-            if indices:
-                for index in indices:
-                    add_value(self.columns[index].tag, values[index])
-            else:
-                # Sort everything, left to right
-                for index, value in enumerate(values):
-                    add_value(self.columns[index].tag, value)
-
-            return tuple(key)
-
-        # Done defining closures -- sort the data
         return sorted(self.source.values, key=make_key, reverse=self.reverse)
 
     def _make_indices(self):
@@ -1068,8 +1032,37 @@ class SortFilter(AbstractCachingFilter):
             if index is not None:
                 indices.append(index)
         return indices
-            
 
+    def _make_key(self, indices, values):
+        """Make a sort key from a row."""
+        key = []
+
+        def add_value(tag, value):
+            """
+            Closure: split each value into a numeric and non-numeric representation.
+            Non-numeric values sort as infinity (after all numeric ones).
+            """
+            norm = hxl.common.normalise_string(value)
+            if tag == '#date':
+                key.append(float('inf'))
+                key.append(dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
+            else:
+                try:
+                    key.append(float(norm))
+                    key.append(norm)
+                except:
+                    key.append(float('inf'))
+                    key.append(norm)
+
+        if indices:
+            for index in indices:
+                add_value(self.columns[index].tag, values[index])
+        else:
+            # Sort everything, left to right
+            for index, value in enumerate(values):
+                add_value(self.columns[index].tag, value)
+
+        return tuple(key)
 
 # end
 
