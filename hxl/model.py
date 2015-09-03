@@ -251,7 +251,7 @@ class Dataset(object):
     def dedup(self, patterns=[]):
         """Deduplicate a dataset."""
         import hxl.filters
-        return hxl.filters.DeduplicateFilter(self, patterns)
+        return hxl.filters.DeduplicationFilter(self, patterns)
 
     def with_columns(self, whitelist):
         """Select matching columns."""
