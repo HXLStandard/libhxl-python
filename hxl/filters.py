@@ -1034,7 +1034,14 @@ class SortFilter(AbstractCachingFilter):
         return indices
 
     def _make_key(self, indices, values):
-        """Make a sort key from a row."""
+        """
+        Make a sort key from a an array of values.
+        @param indices - an array of indices for the sort key (if empty, use all values).
+        @param values - an array of values to sort
+        @return a sort key as a tuple
+        """
+
+        # Start the key as an array, then make a tuple out of it at the end
         key = []
 
         def add_value(tag, value):
