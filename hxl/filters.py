@@ -357,7 +357,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param lower list of TagPatterns for normalising dates, or True to normalise all ending in "_date"
         @param lower list of TagPatterns for normalising numbers, or True to normalise all ending in "_num"
         """
-        super(AbstractStreamingFilter, self).__init__(source)
+        super(CleanDataFilter, self).__init__(source)
         self.whitespace = whitespace
         self.upper = upper
         self.lower = lower
@@ -426,7 +426,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             return False
 
 
-class ColumnFilter(hxl.model.Dataset):
+class ColumnFilter(AbstractStreamingFilter):
     """
     Composable filter class to cut columns from a HXL dataset.
 
@@ -450,29 +450,25 @@ class ColumnFilter(hxl.model.Dataset):
         @param include_tags a whitelist of TagPattern objects to include
         @param exclude_tags a blacklist of TagPattern objects to exclude
         """
-        self.source = source
+        super(ColumnFilter, self).__init__(source)
         self.include_tags = hxl.model.TagPattern.parse_list(include_tags)
         self.exclude_tags = hxl.model.TagPattern.parse_list(exclude_tags)
         self.indices = [] # saved indices for columns to include
-        self.columns_out = None
 
-    @property
-    def columns(self):
-        """
-        Filter out the columns that should be removed.
-        """
-        if self.columns_out is None:
-            self.columns_out = []
-            columns = self.source.columns
-            for i in range(len(columns)):
-                column = columns[i]
-                if self._test_column(column):
-                    self.columns_out.append(column)
-                    self.indices.append(i) # save index to avoid retesting for data
-        return self.columns_out
+    def filter_columns(self):
+        columns_in = self.source.columns
+        columns_out = []
+        for i in range(len(columns_in)):
+            if self._test_column(columns_in[i]):
+                columns_out.append(copy.deepcopy(columns_in[i]))
+                self.indices.append(i) # save index to avoid retesting for data
+        return columns_out
 
-    def __iter__(self):
-        return ColumnFilter.Iterator(self)
+    def filter_row(self, row):
+        values = []
+        for i in self.indices:
+            values.append(row.values[i])
+        return values
 
     def _test_column(self, column):
         """
@@ -497,29 +493,6 @@ class ColumnFilter(hxl.model.Dataset):
         else:
             # no whitelist
             return True
-
-    class Iterator:
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            """
-            Return the next row, with appropriate columns filtered out.
-            """
-            row_in = next(self.iterator)
-            row_out = hxl.model.Row(columns=self.outer.columns)
-            values_out = []
-            for i in self.outer.indices:
-                values_out.append(row_in.values[i])
-            row_out.values = values_out
-            return row_out
-
-        next = __next__
 
 
 class CountFilter(hxl.model.Dataset):
