@@ -175,6 +175,21 @@ class TestMergeDataFilter(AbstractFilterTest):
         ['NGO B', 'Education', 'Coast', '300', '001']
     ]
 
+    MERGE_EXTRA = [
+        ['P-code', 'Population'],
+        ['#adm1+code', '#population'],
+        ['001', '10000'],
+        ['002', '20000']
+    ]
+
+    MERGE_EXTRA_OUT = [
+        ['Organisation', 'Cluster', 'District', 'Count', 'P-code', 'Population'],
+        ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code', '#population'],
+        ['NGO A', 'WASH', 'Coast', '200', '001', '10000'],
+        ['NGO B', 'Education', 'Plains', '100', '002', '20000'],
+        ['NGO B', 'Education', 'Coast', '300', '001', '10000']
+    ]
+
     def setUp(self):
         super(TestMergeDataFilter, self).setUp()
         self.merged = self.source.merge_data(hxl.data(self.MERGE_IN), '#adm1-code', '#adm1+code')
@@ -187,6 +202,10 @@ class TestMergeDataFilter(AbstractFilterTest):
 
     def test_values(self):
         self.assertEqual(self.MERGE_OUT[2:], self.merged.values)
+
+    def test_chaining(self):
+        merged_extra = self.merged.merge_data(hxl.data(self.MERGE_EXTRA), '#adm1+code', '#population')
+        self.assertEqual(self.MERGE_EXTRA_OUT[2:], merged_extra.values)
 
 
 class TestRenameFilter(AbstractFilterTest):
