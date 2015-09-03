@@ -25,11 +25,21 @@ class HXLFilterException(hxl.common.HXLException):
 class AbstractFilter(hxl.model.Dataset):
     """
     Abstract base class for composable filters.
+
+    This class stores the upstream source, and provides a
+    filter_columns() method that child classes can implement. It will
+    be called precisely once for each instantiation, giving the child
+    a chance to provide a different set of columns than those in the
+    source.
     """
 
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, source):
+        """
+        Construct a new abstract filter.
+        @param source the source dataset
+        """
         self.source = source
         self.filtered_columns = None
 
@@ -39,7 +49,12 @@ class AbstractFilter(hxl.model.Dataset):
             self.filtered_columns = self.filter_columns()
         return self.filtered_columns
 
+    @abc.abstractmethod
     def filter_columns(self):
+        """
+        Return a new list of columns for the filtered dataset.
+        @return a list of hxl.model.Column objects
+        """
         return copy.deepcopy(self.source.columns)
 
     
@@ -47,19 +62,25 @@ class AbstractStreamingFilter(AbstractFilter):
     """
     Abstract base class for streaming filters.
 
-    A streaming filter processes one row at a time.
-    It can skip rows, but it never reorders them.
+    A streaming filter processes one row at a time.  It can skip rows,
+    but it never reorders them.  Child classes will implement the
+    filter_columns() method from the AbstractFilter class, as well as
+    the filter_row(row) method from this class.
     """
 
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, source):
+        super(AbstractStreamingFilter, self).__init__(source)
 
     @abc.abstractmethod
     def filter_row(self, row):
         """
         Filter a single row of data.
         A return value of None will cause the row to be skipped.
-        @param row A hxl.model.Row object
-        @return An array of new values (not a Row object) or None.
+
+        @param row A hxl.model.Row object to filter.
+        @return An array of new values (not a Row object) or None to skip the row.
         """
         return copy.deepcopy(row.values)
 
@@ -67,20 +88,30 @@ class AbstractStreamingFilter(AbstractFilter):
         return AbstractStreamingFilter.Iterator(self)
 
     class Iterator:
+        """
+        Iterator to return the filtered rows.
+        """
 
         def __init__(self, outer):
             self.outer = outer
+            self.source_iter = iter(self.outer.source)
             self.row_number = -1
 
         def __iter__(self):
             return self
 
         def __next__(self):
-            for row in outer.source:
-                values = outer.filter_row(row)
+            # call this here, in case it caches any useful information
+            columns = self.outer.columns
+            for row in self.source_iter:
+                # get a new list of filtered values
+                values = self.outer.filter_row(row)
                 if values is not None:
+                    # keep looping if filter_row(row) returned None
                     self.row_number += 1
-                    return Row(outer.columns, values, self.row_number)
+                    # create a new Row object
+                    return hxl.model.Row(columns, values, self.row_number)
+            # if we've finished the iteration, then we're out of rows, so stop
             raise StopIteration()
 
 
@@ -94,6 +125,9 @@ class AbstractCachingFilter(AbstractFilter):
     """
 
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, source):
+        super(AbstractStreamingFilter, self).__init__(source)
 
     def filter_rows(self):
         return self.source.values
@@ -115,14 +149,14 @@ class AbstractCachingFilter(AbstractFilter):
             if self.values_iter is None:
                 self.values_iter = iter(outer.filter_rows())
             self.row_number += 1
-            return Row(outer.columns, next(self.values_iter), self.row_number)
+            return hxl.model.Row(outer.columns, next(self.values_iter), self.row_number)
         
 
 #
 # Filter classes
 #
 
-class AddColumnsFilter(hxl.model.Dataset):
+class AddColumnsFilter(AbstractStreamingFilter):
     """
     Composable filter class to add constant values to every row of a HXL dataset.
 
@@ -139,53 +173,28 @@ class AddColumnsFilter(hxl.model.Dataset):
         @param specs a sequence of pairs of Column objects and constant values
         @param before True to add new columns before existing ones
         """
-        self.source = source
+        super(AddColumnsFilter, self).__init__(source)
         if isinstance(specs, six.string_types):
             specs = [specs]
         self.specs = [AddColumnsFilter.parse_spec(spec) for spec in specs]
         self.before = before
-        self._columns_out = None
+        self.const_values = None
 
-    @property
-    def columns(self):
-        """
-        Add the constant columns to the end.
-        """
-        if self._columns_out is None:
-            new_columns = [spec[0] for spec in self.specs]
-            if self.before:
-                self._columns_out = new_columns + self.source.columns
-            else:
-                self._columns_out = self.source.columns + new_columns
-            # constant values to add
-            self._const_values = [spec[1] for spec in self.specs]
-        return self._columns_out
+    def filter_columns(self):
+        new_columns = [spec[0] for spec in self.specs]
+        if self.before:
+            new_columns = new_columns + self.source.columns
+        else:
+            new_columns = self.source.columns + new_columns
+        self.const_values = [spec[1] for spec in self.specs]
+        return new_columns
 
-    def __iter__(self):
-        return AddColumnsFilter.Iterator(self)
-
-    class Iterator:
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            """
-            Return the next row, with constant values added.
-            """
-            row = copy.deepcopy(next(self.iterator))
-            row.columns = self.outer.columns
-            if self.outer.before:
-                row.values = self.outer._const_values + row.values
-            else:
-                row.values = row.values + self.outer._const_values
-            return row
-
-        next = __next__
+    def filter_row(self, row):
+        values = copy.copy(row.values)
+        if self.before:
+            return self.const_values + values
+        else:
+            return values + self.const_values
 
     VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN)
 
@@ -331,7 +340,7 @@ class CacheFilter(hxl.model.Dataset):
                     self.cached_rows.append(copy.deepcopy(row))
 
 
-class CleanDataFilter(hxl.model.Dataset):
+class CleanDataFilter(AbstractStreamingFilter):
     """
     Filter for cleaning values in HXL data.
     Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.
@@ -348,94 +357,73 @@ class CleanDataFilter(hxl.model.Dataset):
         @param lower list of TagPatterns for normalising dates, or True to normalise all ending in "_date"
         @param lower list of TagPatterns for normalising numbers, or True to normalise all ending in "_num"
         """
-        self.source = source
+        super(AbstractStreamingFilter, self).__init__(source)
         self.whitespace = whitespace
         self.upper = upper
         self.lower = lower
         self.date = date
         self.number = number
 
-    @property
-    def columns(self):
-        """Pass on the source columns unmodified."""
-        return self.source.columns
+    def filter_row(self, row):
+        """Clean up values and pass on the row data."""
+        columns = self.columns
+        values = copy.copy(row.values)
+        for i in range(min(len(values), len(columns))):
+            values[i] = self._clean_value(values[i], columns[i])
+        return values
 
-    def __iter__(self):
-        return CleanDataFilter.Iterator(self)
+    def _clean_value(self, value, column):
+        """Clean a single HXL value."""
 
-    class Iterator:
+        value = str(value)
 
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
+        # Whitespace (-w or -W)
+        if self._match_patterns(self.whitespace, column):
+            value = re.sub('^\s+', '', value)
+            value = re.sub('\s+$', '', value)
+            value = re.sub('\s+', ' ', value)
 
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            """Return the next row, with values cleaned as needed."""
-            # TODO implement a lazy copy
-            row = copy.deepcopy(next(self.iterator))
-            for i in range(min(len(row.values), len(row.columns))):
-                row.values[i] = self._clean_value(row.values[i], row.columns[i])
-            return row
-
-        next = __next__
-
-        def _clean_value(self, value, column):
-            """Clean a single HXL value."""
-
-            # TODO prescan columns at start for matches
-
-            value = str(value)
-
-            # Whitespace (-w or -W)
-            if self._match_patterns(self.outer.whitespace, column):
-                value = re.sub('^\s+', '', value)
-                value = re.sub('\s+$', '', value)
-                value = re.sub('\s+', ' ', value)
-
-            # Uppercase (-u)
-            if self._match_patterns(self.outer.upper, column):
-                if sys.version_info[0] > 2:
-                    value = value.upper()
-                else:
-                    value = value.decode('utf8').upper().encode('utf8')
-
-            # Lowercase (-l)
-            if self._match_patterns(self.outer.lower, column):
-                if sys.version_info[0] > 2:
-                    value = value.lower()
-                else:
-                    value = value.decode('utf8').lower().encode('utf8')
-
-            # Date (-d or -D)
-            if self._match_patterns(self.outer.date, column, '_date'):
-                if value:
-                    value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
-
-            # Number (-n or -N)
-            if self._match_patterns(self.outer.number, column, '_num') and re.match('\d', value):
-                if value:
-                    value = re.sub('[^\d.]', '', value)
-                    value = re.sub('^0+', '', value)
-                    value = re.sub('(\..*)0+$', '\g<1>', value)
-                    value = re.sub('\.$', '', value)
-
-            return value
-
-        def _match_patterns(self, patterns, column, extension=None):
-            """Test if a column matches a list of patterns."""
-            if not patterns:
-                return False
-            elif patterns is True:
-                # if there's an extension specific like "_date", must match it
-                return (column.tag and (not extension or column.tag.endswith(extension)))
+        # Uppercase (-u)
+        if self._match_patterns(self.upper, column):
+            if sys.version_info[0] > 2:
+                value = value.upper()
             else:
-                for pattern in patterns:
-                    if pattern.match(column):
-                        return True
-                return False
+                value = value.decode('utf8').upper().encode('utf8')
+
+        # Lowercase (-l)
+        if self._match_patterns(self.lower, column):
+            if sys.version_info[0] > 2:
+                value = value.lower()
+            else:
+                value = value.decode('utf8').lower().encode('utf8')
+
+        # Date (-d or -D)
+        if self._match_patterns(self.date, column, '_date'):
+            if value:
+                value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+
+        # Number (-n or -N)
+        if self._match_patterns(self.number, column, '_num') and re.match('\d', value):
+            if value:
+                value = re.sub('[^\d.]', '', value)
+                value = re.sub('^0+', '', value)
+                value = re.sub('(\..*)0+$', '\g<1>', value)
+                value = re.sub('\.$', '', value)
+
+        return value
+
+    def _match_patterns(self, patterns, column, extension=None):
+        """Test if a column matches a list of patterns."""
+        if not patterns:
+            return False
+        elif patterns is True:
+            # if there's an extension specific like "_date", must match it
+            return (column.tag and (not extension or column.tag.endswith(extension)))
+        else:
+            for pattern in patterns:
+                if pattern.match(column):
+                    return True
+            return False
 
 
 class ColumnFilter(hxl.model.Dataset):
