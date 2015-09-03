@@ -861,7 +861,7 @@ class RenameFilter(AbstractStreamingFilter):
             return s
 
 
-class ReplaceDataFilter(hxl.model.Dataset):
+class ReplaceDataFilter(AbstractStreamingFilter):
     """
     Composable filter class to replace values in a HXL dataset.
 
@@ -881,42 +881,19 @@ class ReplaceDataFilter(hxl.model.Dataset):
         @param patterns (optional) a tag pattern or list of tag patterns - if present, constrain replacement to just these columns
         @param use_regex (optional) if True, then original is a regular expression rather than a string constant
         """
-        
-        self.source = source
+        super(ReplaceDataFilter, self).__init__(source)
         self.replacements = replacements
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
 
-    @property
-    def columns(self):
-        return self.source.columns
+    def filter_row(self, row):
+        values = copy.copy(row.values)
+        for index, value in enumerate(values):
+            for replacement in self.replacements:
+                value = replacement.sub(row.columns[index], value)
+                values[index] = value
+        return values
 
-    def __iter__(self):
-        """Return a custom iterator that replaces values."""
-        self.columns # make sure this fires to build cache
-        return ReplaceDataFilter.Iterator(self)    
-
-    class Iterator:
-        """Custom iterator for on-the-fly replacement"""
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            # Deep copy of row, so that we can replace values
-            row = copy.deepcopy(next(self.iterator))
-            
-            for index, value in enumerate(row):
-                for replacement in self.outer.replacements:
-                    value = replacement.sub(row.columns[index], value)
-                    row.values[index] = value
-            return row
-
-        next = __next__
 
     class Replacement:
         """Replacement specification."""
