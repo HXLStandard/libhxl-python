@@ -937,9 +937,14 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             replacements = []
             for row in source:
                 if row.get('#x_pattern'):
-                    replacements.append(ReplaceDataFilter.Replacement(row.get('#x_pattern'), row.get('#x_substitution'), row.get('#x_tag'), row.get('#x_regex')))
+                    replacements.append(
+                        ReplaceDataFilter.Replacement(
+                            row.get('#x_pattern'), row.get('#x_substitution'),
+                            row.get('#x_tag'), row.get('#x_regex')
+                        ))
             return replacements
 
+        
 class RowFilter(hxl.model.Dataset):
     """
     Composable filter class to select rows from a HXL dataset.
