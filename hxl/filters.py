@@ -7,8 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys, re, six
-from copy import copy, deepcopy
+import sys, re, six, abc, copy
 import dateutil.parser
 
 import hxl
@@ -19,6 +18,105 @@ import hxl
 #
 class HXLFilterException(hxl.common.HXLException):
     pass
+
+#
+# Base class for filters
+
+class AbstractFilter(hxl.model.Dataset):
+    """
+    Abstract base class for composable filters.
+    """
+
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, source):
+        self.source = source
+        self.filtered_columns = None
+
+    @property
+    def columns(self):
+        if self.filtered_columns is None:
+            self.filtered_columns = self.filter_columns()
+        return self.filtered_columns
+
+    def filter_columns(self):
+        return copy.deepcopy(self.source.columns)
+
+    
+class AbstractStreamingFilter(AbstractFilter):
+    """
+    Abstract base class for streaming filters.
+
+    A streaming filter processes one row at a time.
+    It can skip rows, but it never reorders them.
+    """
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def filter_row(self, row):
+        """
+        Filter a single row of data.
+        A return value of None will cause the row to be skipped.
+        @param row A hxl.model.Row object
+        @return An array of new values (not a Row object) or None.
+        """
+        return copy.deepcopy(row.values)
+
+    def __iter__(self):
+        return AbstractStreamingFilter.Iterator(self)
+
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.row_number = -1
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            for row in outer.source:
+                values = outer.filter_row(row)
+                if values is not None:
+                    self.row_number += 1
+                    return Row(outer.columns, values, self.row_number)
+            raise StopIteration()
+
+
+class AbstractCachingFilter(AbstractFilter):
+    """
+    Abstract base class for caching filters.
+
+    A caching filter reads all of the input data first,
+    then returns it, possibly in a different order
+    or even completely transformed.
+    """
+
+    __metaclass__ = abc.ABCMeta
+
+    def filter_rows(self):
+        return self.source.values
+
+    def __iter__(self):
+        return AbstractCachingFilter.Iterator(self)
+
+    class Iterator:
+
+        def __init__(self, outer):
+            self.outer = outer
+            self.values_iter = None
+            self.row_number = -1
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.values_iter is None:
+                self.values_iter = iter(outer.filter_rows())
+            self.row_number += 1
+            return Row(outer.columns, next(self.values_iter), self.row_number)
+        
 
 #
 # Filter classes
@@ -79,7 +177,7 @@ class AddColumnsFilter(hxl.model.Dataset):
             """
             Return the next row, with constant values added.
             """
-            row = deepcopy(next(self.iterator))
+            row = copy.deepcopy(next(self.iterator))
             row.columns = self.outer.columns
             if self.outer.before:
                 row.values = self.outer._const_values + row.values
@@ -143,7 +241,7 @@ class AppendFilter(hxl.model.Dataset):
                     # no -- we need to add a new column
                     if self.add_columns:
                         column_positions[i] = len(saved_columns)
-                        saved_columns.append(deepcopy(column))
+                        saved_columns.append(copy.deepcopy(column))
                     else:
                         column_positions[i] = None
             self._column_positions = column_positions
@@ -176,8 +274,8 @@ class AppendFilter(hxl.model.Dataset):
             if self.source_iter is not None:
                 try:
                     row_in = next(self.source_iter)
-                    row_out = deepcopy(row_in)
-                    row_out.values = deepcopy(self.outer._template_row)
+                    row_out = copy.deepcopy(row_in)
+                    row_out.values = copy.deepcopy(self.outer._template_row)
                     for i, value in enumerate(row_in):
                         row_out.values[i] = row_in.values[i]
                     return row_out
@@ -187,8 +285,8 @@ class AppendFilter(hxl.model.Dataset):
 
             # Fall through to the append source
             row_in = next(self.append_iter)
-            row_out = deepcopy(row_in)
-            row_out.values = deepcopy(self.outer._template_row)
+            row_out = copy.deepcopy(row_in)
+            row_out.values = copy.deepcopy(self.outer._template_row)
             for i, value in enumerate(row_in):
                 pos = self.outer._column_positions[i]
                 if pos is not None:
@@ -208,8 +306,8 @@ class CacheFilter(hxl.model.Dataset):
         """
         self.source = source
         self.max_rows = max_rows
-        self.cached_columns = deepcopy(source.columns)
-        self.cached_rows = [deepcopy(row) for row in source]
+        self.cached_columns = copy.deepcopy(source.columns)
+        self.cached_rows = [copy.deepcopy(row) for row in source]
         self.overflow = False
 
     @property
@@ -222,7 +320,7 @@ class CacheFilter(hxl.model.Dataset):
     def _load(self):
         if self.cached_rows is None:
             self.cached_rows = []
-            self.cached_columns = deepcopy(self.source.columns)
+            self.cached_columns = copy.deepcopy(self.source.columns)
             row_count = 0
             for row in self.source:
                 row_count += 1
@@ -230,7 +328,7 @@ class CacheFilter(hxl.model.Dataset):
                     self.overflow = True
                     break
                 else:
-                    self.cached_rows.append(deepcopy(row))
+                    self.cached_rows.append(copy.deepcopy(row))
 
 
 class CleanDataFilter(hxl.model.Dataset):
@@ -277,7 +375,7 @@ class CleanDataFilter(hxl.model.Dataset):
         def __next__(self):
             """Return the next row, with values cleaned as needed."""
             # TODO implement a lazy copy
-            row = deepcopy(next(self.iterator))
+            row = copy.deepcopy(next(self.iterator))
             for i in range(min(len(row.values), len(row.columns))):
                 row.values[i] = self._clean_value(row.values[i], row.columns[i])
             return row
@@ -737,7 +835,7 @@ class MergeDataFilter(hxl.model.Dataset):
                 self.merge_map = self._read_merge()
 
             # Make a copy of the next row from the source
-            row = deepcopy(next(self.iterator))
+            row = copy.deepcopy(next(self.iterator))
 
             # Look up the merge values, based on the --keys
             merge_values = self.merge_map.get(self._make_key(row), {})
@@ -822,7 +920,7 @@ class RenameFilter(hxl.model.Dataset):
             def rename_column(column):
                 for spec in self.rename:
                     if spec[0].match(column):
-                        new_column = deepcopy(spec[1])
+                        new_column = copy.deepcopy(spec[1])
                         if new_column.header is None:
                             new_column.header = column.header
                         return new_column
@@ -862,7 +960,7 @@ class RenameFilter(hxl.model.Dataset):
             @return the next merged row of data, with new columns
             """
             row = next(self.iterator)
-            return hxl.model.Row(self.outer.columns, copy(row.values), row.row_number)
+            return hxl.model.Row(self.outer.columns, copy.copy(row.values), row.row_number)
 
         next = __next__
 
@@ -913,7 +1011,7 @@ class ReplaceDataFilter(hxl.model.Dataset):
 
         def __next__(self):
             # Deep copy of row, so that we can replace values
-            row = deepcopy(next(self.iterator))
+            row = copy.deepcopy(next(self.iterator))
             
             for index, value in enumerate(row):
                 for replacement in self.outer.replacements:
@@ -1191,7 +1289,7 @@ class ValidateFilter(hxl.model.Dataset):
             while row:
                 if not self.outer.schema.validate_row(row) or self.outer.show_all:
                     # append error data to row
-                    error_row = deepcopy(row)
+                    error_row = copy.deepcopy(row)
                     messages = "\n".join(map(lambda e: e.message, validation_errors))
                     tags = "\n".join(map(lambda e: str(e.rule.tag_pattern) if e.rule else '', validation_errors))
                     rows = "\n".join(map(lambda e: str(e.row.row_number) if e.row else '', validation_errors))
