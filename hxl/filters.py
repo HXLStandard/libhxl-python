@@ -831,6 +831,10 @@ class RenameFilter(AbstractStreamingFilter):
         """Rename requested columns."""
         return [self._rename_column(column) for column in self.source.columns]
 
+    def filter_row(self, row):
+        """Row will be rebuilt with proper columns."""
+        return copy.copy(row.values)
+
     def _rename_column(self, column):
         """Rename a column if requested."""
         for spec in self.rename:
@@ -840,11 +844,6 @@ class RenameFilter(AbstractStreamingFilter):
                     new_column.header = column.header
                 return new_column
         return copy.deepcopy(column)
-
-
-    def __iter__(self):
-        return RenameFilter.Iterator(self)
-
     RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN)
 
     @staticmethod
@@ -860,23 +859,6 @@ class RenameFilter(AbstractStreamingFilter):
         else:
             return s
 
-    class Iterator:
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            """
-            @return the next merged row of data, with new columns
-            """
-            row = next(self.iterator)
-            return hxl.model.Row(self.outer.columns, copy.copy(row.values), row.row_number)
-
-        next = __next__
 
 class ReplaceDataFilter(hxl.model.Dataset):
     """
