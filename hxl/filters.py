@@ -221,55 +221,104 @@ class AddColumnsFilter(AbstractStreamingFilter):
             raise HXLFilterException("Badly formatted new-column spec: " + spec)
 
 
-class AppendFilter(hxl.model.Dataset):
-    """Composable filter class to concatenate two datasets."""
+class AppendFilter(AbstractFilter):
+    """Composable filter class to concatenate two datasets.
+
+    Usage:
+
+    <pre>
+    hxl.data(url).append(url2, add_columns=False)
+    </pre>
+
+    This filter adds a second dataset to the end of the first one.  It
+    preserves the order of the columns in the original, and adds any
+    extra columns in the second if the add_columns option is True (the
+    default).  Columns must match exactly, including attributes, or
+    else they're considered different columns.
+
+    A common use case would be to start with an empty dataset as a
+    template, providing the order and headers desired, then set the
+    add_columns option to False so that any extra columns are ignored.
+
+    To append multiple datasets, chain the filters:
+
+    <pre>
+    hxl.data(url).append(url2, False).append(url3, False)
+    </pre>
+
+    If you have an unknown number of URLs to append, try something
+    like this:
+
+    <pre>
+    source = hxl.data(template_url)
+    for url in my_list_of_urls:
+        source = source.append(url, true)
+    </pre>
+
+    This class derives directly from AbstractFilter rather than
+    AbstractStreamingFilter, because it's a special case (streaming
+    from two different datasets), and still needs to implement its own
+    row iterator.
+    """
 
     def __init__(self, source, append_source, add_columns=True):
         """
         Constructor
         @param source the HXL data source
-        @param append_source the HXL source to append
+        @param append_source the HXL source to append (or a plain-old URL)
         @param add_columns flag for adding extra columns in append_source but not source (default True)
         """
-        self.source = source
-        self.append_source = append_source
+        super(AppendFilter, self).__init__(source)
+        # parameters
+        self.append_source = hxl.data(append_source) # so that we can take a plain URL
         self.add_columns = add_columns
-        self._saved_columns = None
+        # internal properties
         self._column_positions = None
         self._template_row = None
 
-    @property
-    def columns(self):
-        if self._saved_columns is None:
-            # Merge the columns from the second source into the first,
-            # appending if necessary (display tag is the key)
-            saved_columns = list(self.source.columns)
-            column_positions = {}
-            original_tags = self.source.display_tags
+    def filter_columns(self):
+        """
+        Generate the columns for the combined dataset
 
-            # see if there's a corresponding column in the source
-            for i, column in enumerate(self.append_source.columns):
-                for j, tag in enumerate(original_tags):
-                    if tag and (column.display_tag == tag):
-                        # yes, there is one; clear it, so it's not reused
-                        original_tags[j] = None
-                        column_positions[i] = j
-                        break
+        If add_columns is True, extend with any columns from the
+        second dataset that don't appear in the first; otherwise,
+        just return a copy of the columns from the source
+        dataset.
+
+        As a side-effect, create an empty template for each
+        row of values, and create a position map from column
+        numbers in the second (appended) dataset to column numbers
+        in the output, for faster mapping.
+        """
+        
+        columns_out = copy.deepcopy(self.source.columns)
+        column_positions = {}
+        original_tags = self.source.display_tags
+
+        # see if there's a corresponding column in the source
+        for i, column in enumerate(self.append_source.columns):
+            for j, tag in enumerate(original_tags):
+                if tag and (column.display_tag == tag):
+                    # yes, there is one; clear it, so it's not reused
+                    original_tags[j] = None
+                    column_positions[i] = j
+                    break
+            else:
+                # no -- we need to add a new column
+                if self.add_columns:
+                    column_positions[i] = len(columns_out)
+                    columns_out.append(copy.deepcopy(column))
                 else:
-                    # no -- we need to add a new column
-                    if self.add_columns:
-                        column_positions[i] = len(saved_columns)
-                        saved_columns.append(copy.deepcopy(column))
-                    else:
-                        column_positions[i] = None
-            self._column_positions = column_positions
-            self._saved_columns = saved_columns
+                    column_positions[i] = None
 
-            # make an empty template for each row
-            self._template_row = [''] * len(saved_columns)
+        # save the position map
+        self._column_positions = column_positions
+
+        # make an empty template for each row
+        self._template_row = [''] * len(columns_out)
 
         # return the (usually cached) columns
-        return self._saved_columns
+        return columns_out
 
     def __iter__(self):
         self.columns # make sure this is triggered first
@@ -537,7 +586,6 @@ class CountFilter(AbstractCachingFilter):
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
-        self._saved_columns = None
 
     def filter_columns(self):
         """Generate the columns for the report."""
