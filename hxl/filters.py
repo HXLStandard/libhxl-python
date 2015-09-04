@@ -252,7 +252,7 @@ class AppendFilter(AbstractFilter):
     <pre>
     source = hxl.data(template_url)
     for url in my_list_of_urls:
-        source = source.append(url, true)
+        source = source.append(url, True)
     </pre>
 
     This class derives directly from AbstractFilter rather than
