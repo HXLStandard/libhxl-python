@@ -318,6 +318,8 @@ class CacheFilter(AbstractCachingFilter):
     """
     Composable filter class to cache HXL data in memory.
 
+    Caching the data allows you to iterate over it more than once.
+
     This filter does nothing *but* cache the data, for cases where you
     plan to process it more than once.  You have the option to cache
     only part of the dataset (e.g. for a preview), in which case,
@@ -334,9 +336,11 @@ class CacheFilter(AbstractCachingFilter):
         self.overflow = False
 
     def filter_columns(self):
+        # local copy of the columns
         return copy.deepcopy(self.source.columns)
 
     def filter_rows(self):
+        # may be limiting the number of rows read
         values = []
         max_rows = self.max_rows
         for row in self.source:
