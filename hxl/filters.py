@@ -867,9 +867,11 @@ class ReplaceDataFilter(AbstractStreamingFilter):
 
     This is the class supporting the hxlreplace console script.
 
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
+    Usage:
+
+    <pre>
+    hxl.data(url).replace_data('foo', 'bar', '#activity')
+    </pre>
     """
 
     def __init__(self, source, replacements):
