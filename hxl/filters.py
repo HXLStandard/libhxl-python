@@ -129,6 +129,8 @@ class AbstractCachingFilter(AbstractFilter):
 
     def __init__(self, source):
         super(AbstractCachingFilter, self).__init__(source)
+        # save the rows here, for multiple iterations
+        self.saved_rows = None
 
     def filter_rows(self):
         return self.source.values
@@ -148,7 +150,9 @@ class AbstractCachingFilter(AbstractFilter):
 
         def __next__(self):
             if self.values_iter is None:
-                self.values_iter = iter(self.outer.filter_rows())
+                if self.outer.saved_rows is None:
+                    self.outer.saved_rows = self.outer.filter_rows()
+                self.values_iter = iter(self.outer.saved_rows)
             self.row_number += 1
             return hxl.model.Row(self.outer.columns, next(self.values_iter), self.row_number)
         
@@ -165,9 +169,11 @@ class AddColumnsFilter(AbstractStreamingFilter):
 
     This is the class supporting the hxladd command-line utility.
 
-    Because this class is a {@link hxl.model.Dataset}, you can use
-    it as the source to an instance of another filter class to build a
-    dynamic, single-threaded processing pipeline.
+    Usage:
+
+    <pre>
+    hxl.data(url).add_columns('Country name#country=Malaysia')
+    </pre>
     """
 
     def __init__(self, source, specs, before=False):
@@ -308,39 +314,39 @@ class AppendFilter(hxl.model.Dataset):
         next = __next__
 
         
-class CacheFilter(hxl.model.Dataset):
-    """Composable filter class to cache HXL data in memory."""
+class CacheFilter(AbstractCachingFilter):
+    """
+    Composable filter class to cache HXL data in memory.
+
+    This filter does nothing *but* cache the data, for cases where you
+    plan to process it more than once.  You have the option to cache
+    only part of the dataset (e.g. for a preview), in which case,
+    the "overflow" property will be True if there were more columns.
+    """
 
     def __init__(self, source, max_rows=None):
         """
         Constructor
         @param max_rows If >0, maximum number of rows to cache.
         """
-        self.source = source
+        super(CacheFilter, self).__init__(source)
         self.max_rows = max_rows
-        self.cached_columns = copy.deepcopy(source.columns)
-        self.cached_rows = [copy.deepcopy(row) for row in source]
         self.overflow = False
 
-    @property
-    def columns(self):
-        return self.cached_columns
+    def filter_columns(self):
+        return copy.deepcopy(self.source.columns)
 
-    def __iter__(self):
-        return iter(self.cached_rows)
-
-    def _load(self):
-        if self.cached_rows is None:
-            self.cached_rows = []
-            self.cached_columns = copy.deepcopy(self.source.columns)
-            row_count = 0
-            for row in self.source:
-                row_count += 1
-                if self.max_rows > 1 and row_count >= self.max_rows:
+    def filter_rows(self):
+        values = []
+        max_rows = self.max_rows
+        for row in self.source:
+            if max_rows is not None:
+                max_rows -= 1
+                if max_rows < 0:
                     self.overflow = True
                     break
-                else:
-                    self.cached_rows.append(copy.deepcopy(row))
+            values.append(row.values)
+        return values
 
 
 class CleanDataFilter(AbstractStreamingFilter):
@@ -550,6 +556,7 @@ class CountFilter(AbstractCachingFilter):
             columns.append(hxl.model.Column.parse('#meta+max', header='Maximum value'))
             
         return columns
+
 
     def __iter__(self):
         return CountFilter.Iterator(self)
