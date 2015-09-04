@@ -7,7 +7,7 @@ dependency_links=[
 ]
 
 setup(name='libhxl',
-      version='1.20',
+      version='2.0',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       author_email='contact@megginson.com',
