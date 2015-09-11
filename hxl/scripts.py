@@ -144,8 +144,14 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--append',
         help='HXL file to append (may repeat option).',
         metavar='file_or_url',
-        action='append',
-        required=True
+        action='append'
+        )
+    parser.add_argument(
+        '-f',
+        '--file',
+        help='File listing HXL datasets to merge (one per line).',
+        metavar='file_or_url',
+        required=False
         )
     parser.add_argument(
         '-x',
@@ -169,7 +175,11 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         # use a recursive function so that we can close all sources on the way out
-        append_data(source, output, args.append)
+        datasets = args.append or []
+        if args.file:
+            with open(args.file, 'r') as input:
+                datasets += [line.strip("\n") for line in input.readlines()]
+        append_data(source, output, datasets)
 
 
 def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):

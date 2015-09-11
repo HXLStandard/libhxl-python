@@ -1115,7 +1115,10 @@ class SortFilter(AbstractCachingFilter):
         """
         norm = hxl.common.normalise_string(value)
         if tag == '#date':
-            return (float('inf'), dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
+            try:
+                return (float('inf'), dateutil.parser.parse(norm).strftime('%Y-%m-%d'))
+            except:
+                return (float('inf'), norm)
         else:
             try:
                 return (float(norm), norm)
