@@ -271,6 +271,14 @@ class TestReplaceFilter(AbstractFilterTest):
         self.assertEqual('Plains District', self.source.replace_data('(ains)$', r'\1 District', '#adm1', use_regex=True).values[1][2])
 
 
+class TestRowCountFilter(AbstractFilterTest):
+
+    def test_count(self):
+        counter = self.source.row_counter()
+        for row in counter:
+            pass
+        self.assertEqual(3, counter.row_count)
+
         
 class TestRowFilter(AbstractFilterTest):
 

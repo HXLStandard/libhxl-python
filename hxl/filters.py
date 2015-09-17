@@ -995,6 +995,32 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             return replacements
 
         
+class RowCountFilter(AbstractStreamingFilter):
+    """
+    Composable filter class to count lines.
+
+    The output is identical to the input; the line count is
+    stored in the filter itself.  As a result, there is no corresponding
+    command-line utility.
+    
+    Usage:
+
+    <pre>
+    counter = hxl.data(url).row_counter();
+    // process the filter
+    print("{} lines".format(counter.row_count);
+    </pre>
+    """
+
+    def __init__(self, source):
+        super(RowCountFilter, self).__init__(source)
+        self.row_count = 0
+
+    def filter_row(self, row):
+        self.row_count += 1
+        return row
+
+
 class RowFilter(AbstractStreamingFilter):
     """
     Composable filter class to select rows from a HXL dataset.
@@ -1124,6 +1150,7 @@ class SortFilter(AbstractCachingFilter):
                 return (float(norm), norm)
             except:
                 return (float('inf'), norm)
+
 
 # end
 

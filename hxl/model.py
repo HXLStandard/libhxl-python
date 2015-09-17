@@ -283,6 +283,11 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
 
+    def row_counter(self):
+        """Count the number of rows while streaming."""
+        import hxl.filters
+        return hxl.filters.RowCountFilter(self)
+
     def replace_data(self, original, replacement, pattern=None, use_regex=False):
         """Replace values in a HXL dataset."""
         import hxl.filters
