@@ -1018,8 +1018,8 @@ class RowCountFilter(AbstractStreamingFilter):
 
     def filter_row(self, row):
         self.row_count += 1
-        return row
-
+        return row.values
+    
 
 class RowFilter(AbstractStreamingFilter):
     """
