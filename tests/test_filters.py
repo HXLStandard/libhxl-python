@@ -270,6 +270,20 @@ class TestReplaceFilter(AbstractFilterTest):
         # substitution
         self.assertEqual('Plains District', self.source.replace_data('(ains)$', r'\1 District', '#adm1', use_regex=True).values[1][2])
 
+    def test_replace_after_append(self):
+        # will test with different lengths of value arrays
+        NEW_DATA = [
+            ['#adm1', '#org'],
+            ['Mountains', 'NGO C'],
+            ['Plains', 'NGO A']
+        ]
+        MAPPING = [
+            ['#x_pattern', '#x_replacement', '#x_tag'],
+            ['NGO C', 'NGO Charlie', 'org']
+        ]
+        source = self.source.append(NEW_DATA)
+        self.assertEqual('NGO Charlie', source.replace_data_map(hxl.data(MAPPING)).values[3][0])
+
 
 class TestRowCountFilter(AbstractFilterTest):
 
