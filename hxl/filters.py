@@ -337,12 +337,16 @@ class AppendFilter(AbstractFilter):
 
         def __next__(self):
 
+            # Make a new row with the new columns
+            row_out = hxl.model.Row(
+                columns=self.outer.columns,
+                values=copy.deepcopy(self.outer._template_row)
+            )
+
             # Read from the original source first
             if self.source_iter is not None:
                 try:
                     row_in = next(self.source_iter)
-                    row_out = copy.deepcopy(row_in)
-                    row_out.values = copy.deepcopy(self.outer._template_row)
                     for i, value in enumerate(row_in):
                         row_out.values[i] = row_in.values[i]
                     return row_out
@@ -352,8 +356,6 @@ class AppendFilter(AbstractFilter):
 
             # Fall through to the append source
             row_in = next(self.append_iter)
-            row_out = copy.deepcopy(row_in)
-            row_out.values = copy.deepcopy(self.outer._template_row)
             for i, value in enumerate(row_in):
                 pos = self.outer._column_positions[i]
                 if pos is not None:

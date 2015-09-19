@@ -278,7 +278,7 @@ class TestReplaceFilter(AbstractFilterTest):
             ['Plains', 'NGO A']
         ]
         MAPPING = [
-            ['#x_pattern', '#x_replacement', '#x_tag'],
+            ['#x_pattern', '#x_substitution', '#x_tag'],
             ['NGO C', 'NGO Charlie', 'org']
         ]
         source = self.source.append(NEW_DATA)
