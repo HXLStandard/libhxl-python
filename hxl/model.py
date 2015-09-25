@@ -397,7 +397,7 @@ class Column(object):
                 s += '+' + attribute
             return s
         else:
-            return None
+            return ''
 
     def __repr__(self):
         return self.display_tag
