@@ -193,14 +193,14 @@ class TestMergeDataFilter(AbstractFilterTest):
         ['P-code', 'Population'],
         ['#adm1+code', '#population'],
         ['001', '10000'],
-        ['002', '20000']
+        ['002', None] # deliberately blank
     ]
 
     MERGE_EXTRA_OUT = [
         ['Organisation', 'Cluster', 'District', 'Count', 'P-code', 'Population'],
         ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code', '#population'],
         ['NGO A', 'WASH', 'Coast', '200', '001', '10000'],
-        ['NGO B', 'Education', 'Plains', '100', '002', '20000'],
+        ['NGO B', 'Education', 'Plains', '100', '002', ''],
         ['NGO B', 'Education', 'Coast', '300', '001', '10000']
     ]
 

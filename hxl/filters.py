@@ -817,16 +817,20 @@ class MergeDataFilter(AbstractStreamingFilter):
 
         # Go through the merge tags
         for pattern in self.merge_tags:
+            value = merge_values.get(pattern)
+            # force always to empty string (not None)
+            if not value:
+                value = ''
             # Try to substitute in place?
             if self.replace:
                 index = pattern.find_column_index(self.source.columns)
                 if index is not None:
                     if self.overwrite or not row.values[index]:
-                        values[index] = merge_values.get(pattern)
+                        values[index] = value
                     continue
 
             # otherwise, fall through
-            values.append(merge_values.get(pattern, ''))
+            values.append(value)
         return values
 
     def _make_key(self, row):
