@@ -656,7 +656,7 @@ class CountFilter(AbstractCachingFilter):
             """
             aggregators = {}
             for row in self.iterator:
-                values = [str(pattern.get_value(row)) for pattern in self.outer.patterns]
+                values = [str(row.get(pattern, default='')) for pattern in self.outer.patterns]
                 if values:
                     key = tuple(values)
                     if not key in aggregators:
@@ -690,7 +690,7 @@ class CountFilter(AbstractCachingFilter):
             """
             self.count += 1
             if self.pattern:
-                value = self.pattern.get_value(row)
+                value = row.get(self.pattern, default='')
                 if value:
                     try:
                         n = float(value)
@@ -839,7 +839,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         """
         values = []
         for pattern in self.keys:
-            values.append(hxl.common.normalise_string(pattern.get_value(row)))
+            values.append(hxl.common.normalise_string(row.get(pattern, default='')))
         return tuple(values)
 
     def _read_merge(self):
@@ -852,7 +852,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         for row in self.merge_source:
             values = {}
             for pattern in self.merge_tags:
-                values[pattern] = pattern.get_value(row)
+                values[pattern] = row.get(pattern, default='')
             merge_map[self._make_key(row)] = values
         return merge_map
 

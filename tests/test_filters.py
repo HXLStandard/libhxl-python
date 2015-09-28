@@ -221,6 +221,23 @@ class TestMergeDataFilter(AbstractFilterTest):
         merged_extra = self.merged.merge_data(hxl.data(self.MERGE_EXTRA), '#adm1+code', '#population')
         self.assertEqual(self.MERGE_EXTRA_OUT[2:], merged_extra.values)
 
+    def test_blank_merge(self):
+        data1 = hxl.data([
+            ['#sector', '#org+name', '#org+name'],
+            ['Health', '', 'Red Cross']
+            ])
+        data2 = hxl.data([
+            ['#org+name', '#org+code'],
+            ['XX', 'YY'],
+            ['Red Cross', 'IFRC']
+            ])
+        expected = [
+            ['#sector', '#org+name', '#org+name', '#org+code'],
+            ['Health', '', 'Red Cross', 'IFRC']
+            ]
+        merged = data1.merge_data(data2, '#org+name', '#org+code')
+        self.assertEqual(expected[1:], merged.values)
+
 
 class TestRenameFilter(AbstractFilterTest):
 

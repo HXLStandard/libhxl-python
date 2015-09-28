@@ -68,13 +68,6 @@ class TagPattern(object):
                 return column
         return None
 
-    def get_value(self, row):
-        """Return the first matching value for this pattern."""
-        for i in range(min(len(row.columns), len(row.values))):
-            if self.match(row.columns[i]):
-                return row.values[i]
-        return None
-
     def __repr__(self):
         s = self.tag
         if self.include_attributes:
@@ -453,11 +446,12 @@ class Row(object):
         self.values.append(value)
         return value
 
-    def get(self, tag, index=0, default=None):
+    def get(self, tag, index=None, default=None):
         """
         Get a single value for a tag in a row.
+        If no index is provided ("None"), return the first non-empty value.
         @param tag A TagPattern or a string value for a tag.
-        @param index The zero-based index if there are multiple values for the tag (default: 0)
+        @param index The zero-based index if there are multiple values for the tag (default: None)
         @param default The default value if not found (default: None)
         @return The value found, or the default value provided.
         """
@@ -471,10 +465,17 @@ class Row(object):
             if i >= len(self.values):
                 break
             if pattern.match(column):
-                if index == 0:
-                    return self.values[i]
+                if index is None:
+                    # None (the default) is a special case: it means look
+                    # for the first truthy value
+                    if self.values[i]:
+                        return self.values[i]
                 else:
-                    index = index - 1
+                    # Otherwise, look for a specific index
+                    if index == 0:
+                        return self.values[i]
+                    else:
+                        index = index - 1
         return default
 
     def get_all(self, tag):

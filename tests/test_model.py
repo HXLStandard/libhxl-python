@@ -174,6 +174,12 @@ class TestRow(unittest.TestCase):
     def test_get(self):
         self.assertEqual('WFP', self.row.get('#org'))
 
+    def test_get_skip_blanks(self):
+        columns = [Column.parse(tag) for tag in ['#sector', '#org', '#org']]
+        row = Row(columns=columns, values=['Health', '', 'WFP'])
+        # Test that row.get() returns first non-blank value
+        self.assertEqual('WFP', row.get('org'))
+
     def test_get_all(self):
         result = self.row.get_all('#org')
         self.assertTrue(type(result) is list)
