@@ -284,7 +284,8 @@ class ExcelInput(AbstractInput):
                 # FIXME nasty violation of encapsulation
                 if HXLReader.parse_tags(raw_row):
                     return sheet_index
-        raise HXLTagsNotFoundException('Cannot find an Excel sheet with HXL tags in the first 25 rows')
+        # if no sheet has tags, default to the first one for now
+        return 0
 
 
 class ArrayInput(AbstractInput):
