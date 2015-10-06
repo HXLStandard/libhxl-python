@@ -11,12 +11,13 @@ TOKEN = r'[A-Za-z][_0-9A-Za-z]*'
 class HXLException(Exception):
     """Base class for all HXL-related exceptions."""
 
-    def __init__(self, message):
+    def __init__(self, message, data={}):
         super(Exception, self).__init__(message)
         self.message = message
+        self.data = data
 
     def __str__(self):
-        return "<HXException: " + str(self.message) + ">"
+        return "<HXLException: " + str(self.message) + ">"
 
 WS = re.compile('\s\s+', re.MULTILINE)
     

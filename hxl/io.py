@@ -127,7 +127,10 @@ def make_input(data, allow_local=False, sheet_index=None):
             input = Sniffer(make_stream(data, allow_local=allow_local))
 
         if input.sig in HTML5_SIGS:
-            raise hxl.common.HXLException("Received HTML5 input.\nCheck that resource (e.g. Google Sheet) is publicly readable.")
+            raise hxl.common.HXLException(
+                "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
+                {'input': input}
+            )
         elif input.sig in EXCEL_SIGS:
             return ExcelInput(input, sheet_index=sheet_index)
         else:
