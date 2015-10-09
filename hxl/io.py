@@ -22,18 +22,22 @@ if sys.version_info < (3,):
     # Customisation for Python 2.x
     import urllib2
     open_url = urllib2.urlopen
-    def decode(s):
-        return str(s)
     def get_status(response):
         return response.getcode()
+    def wrap_stream(stream):
+        return io.open(stream.fileno(), mode='rb', buffering=4096, closefd=False)
+    def wrap_input(input):
+        return input
 else:
     # Customisation for Python 3.x
     import urllib.request
     open_url = urllib.request.urlopen
     def get_status(response):
         return response.status
-    def decode(s):
-        return s.decode('utf-8')
+    def wrap_stream(stream):
+        return io.BufferedReader(stream)
+    def wrap_input(input):
+        return io.TextIOWrapper(input, newline='')
 
 import hxl
 
@@ -124,10 +128,10 @@ def make_input(data, allow_local=False, sheet_index=None):
     else:
         if hasattr(data, 'read'):
             # it's a stream
-            input = io.BufferedReader(data)
+            input = wrap_stream(data)
         else:
             # assume a URL or filename
-            input = io.BufferedReader(make_stream(data, allow_local=allow_local))
+            input = wrap_stream(make_stream(data, allow_local=allow_local))
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
@@ -220,7 +224,7 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input):
-        self._input = io.TextIOWrapper(input, newline='')
+        self._input = wrap_input(input)
         self._reader = csv.reader(self._input)
 
     def __next__(self):
