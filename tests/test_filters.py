@@ -204,6 +204,13 @@ class TestMergeDataFilter(AbstractFilterTest):
         ['NGO B', 'Education', 'Coast', '300', '001', '10000']
     ]
 
+    MERGE_DISPLACED_KEY = [
+        ['District 1', 'District 2', 'P-code'],
+        ['#adm1', '#adm1', '#adm1+code'],
+        ['coaST', 'xxx', '001'],         # deliberate case variation
+        ['yyy', '   Plains', '002']      # deliberate whitespace variation
+    ]
+
     def setUp(self):
         super(TestMergeDataFilter, self).setUp()
         self.merged = self.source.merge_data(hxl.data(self.MERGE_IN), '#adm1-code', '#adm1+code')
@@ -237,6 +244,24 @@ class TestMergeDataFilter(AbstractFilterTest):
             ]
         merged = data1.merge_data(data2, '#org+name', '#org+code')
         self.assertEqual(expected[1:], merged.values)
+
+    # def test_values_displaced_key(self):
+    #     """Test that the filter scans all candidate keys."""
+    #     data1 = hxl.data([
+    #         ['#sector', '#org+name', '#org+name'],
+    #         ['Health', 'xxx', 'Red Cross']
+    #         ])
+    #     data2 = hxl.data([
+    #         ['#org+name', '#org+code'],
+    #         ['XX', 'YY'],
+    #         ['Red Cross', 'IFRC']
+    #         ])
+    #     expected = [
+    #         ['#sector', '#org+name', '#org+name', '#org+code'],
+    #         ['Health', 'xxx', 'Red Cross', 'IFRC']
+    #         ]
+    #     merged = data1.merge_data(data2, '#org+name', '#org+code')
+    #     self.assertEqual(expected[1:], merged.values)
 
 
 class TestRenameFilter(AbstractFilterTest):
