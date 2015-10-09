@@ -24,6 +24,7 @@ def _resolve_file(filename):
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
+FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
@@ -92,6 +93,11 @@ class TestParser(unittest.TestCase):
             for row in source:
                 for column_number, column in enumerate(row.columns):
                     self.assertEqual(TestParser.EXPECTED_TAGS[column_number], column.tag)
+
+    def test_multiline(self):
+        with hxl.data(FILE_MULTILINE, True) as source:
+            for row in source:
+                self.assertEqual("Line 1\nLine 2\nLine 3", row.get('description'))
 
     def test_local_csv(self):
         """Test reading from a local CSV file."""
