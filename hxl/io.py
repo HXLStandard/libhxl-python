@@ -8,6 +8,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
 import abc
+import io
 import csv
 import json
 import sys
@@ -121,17 +122,18 @@ def make_input(data, allow_local=False, sheet_index=None):
     else:
         if hasattr(data, 'read'):
             # it's a stream
-            input = Sniffer(data)
+            input = io.BufferedReader(data)
         else:
             # assume a URL or filename
-            input = Sniffer(make_stream(data, allow_local=allow_local))
+            input = io.BufferedReader(make_stream(data, allow_local=allow_local))
 
-        if input.sig in HTML5_SIGS:
+        sig = input.peek(4)[:4]
+        if sig in HTML5_SIGS:
             raise hxl.common.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {'input': input}
             )
-        elif input.sig in EXCEL_SIGS:
+        elif sig in EXCEL_SIGS:
             return ExcelInput(input, sheet_index=sheet_index)
         else:
             return CSVInput(input)
@@ -216,7 +218,7 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input):
-        self._input = input
+        self._input = io.TextIOWrapper(input, newline='')
         self._reader = csv.reader(self._input)
 
     def __next__(self):
@@ -430,74 +432,4 @@ class HXLReader(hxl.model.Dataset):
         if self._input:
             self._input.__exit__(value, type, traceback)
 
-
-class Sniffer:
-    """
-    Extremely simple class to sniff the first four bytes of a file.
-
-    Supports only the methods required by the CSV and Excel libraries
-    That we're using. After wrapping an input source, the sig property
-    will hold the file signature until someone invokes the read()
-    or __next__() methods.
-    """
-
-    BUFFER_SIZE = 4096
-
-    def __init__(self, raw_input):
-        """Wrap an existing input source, caching the first four bytes"""
-        self.raw_input = raw_input
-        # read the first chunk right away, so that we can sniff
-        self.buffer = bytearray(raw_input.read(self.BUFFER_SIZE))
-        self.sig = self.buffer[:4]
-
-    def read(self):
-        """Read the entire contents of the file."""
-        file = self.buffer
-        chunk = self.raw_input.read(self.BUFFER_SIZE)
-        while chunk:
-            # use extend to avoid copying big buffers
-            file.extend(chunk)
-            chunk = self.raw_input.read(self.BUFFER_SIZE)
-        return file
-
-    def close(self):
-        """Close the wrapped input object."""
-        return self.raw_input.close()
-
-    def __iter__(self):
-        """Return this object as an iterator."""
-        return self
-
-    def __next__(self):
-        """Return the next line in the file."""
-
-        # scan for a newline
-        pos = self.buffer.find(b"\n")
-        while pos == -1:
-            # keep reading until we get a newline or end of file
-            chunk = self.raw_input.read(self.BUFFER_SIZE)
-            if chunk:
-                self.buffer.extend(chunk)
-                pos = self.buffer.find(b"\n")
-            else:
-                # we hit the end of the file; stop reading
-                break
-        if pos == -1:
-            # we never found a newline;
-            if not self.buffer:
-                # didn't read anything, so we're done
-                raise StopIteration()
-            else:
-                # return what we read up to EOF
-                s = decode(self.buffer)
-                self.buffer = bytearray()
-                return s
-        else:
-            # we found a newline: return the line, and adjust the buffer
-            s = decode(self.buffer[:pos])
-            self.buffer = self.buffer[pos+1:]
-            return s
-
-    next = __next__
-            
 # end
