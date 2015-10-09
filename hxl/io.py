@@ -7,6 +7,8 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
+from __future__ import absolute_import
+
 import abc
 import io
 import csv
