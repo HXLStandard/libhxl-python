@@ -177,7 +177,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         # use a recursive function so that we can close all sources on the way out
         datasets = args.append or []
         if args.file:
-            with open(args.file, 'r') as input:
+            with io.open(args.file, 'rb') as input:
                 datasets += [line.strip("\n") for line in input.readlines()]
         append_data(source, output, datasets)
 

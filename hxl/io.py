@@ -25,7 +25,10 @@ if sys.version_info < (3,):
     def get_status(response):
         return response.getcode()
     def wrap_stream(stream):
-        return io.open(stream.fileno(), mode='rb', buffering=4096, closefd=False)
+        if not hasattr(stream, 'readable'):
+            return io.open(stream.fileno(), mode='rb', buffering=4096, closefd=False)
+        else:
+            return stream
     def wrap_input(input):
         return input
 else:
@@ -171,7 +174,7 @@ def make_stream(origin, allow_local=False):
 
     # Are we allowed to open local files?
     elif allow_local:
-        return open(origin, 'rb')
+        return io.open(origin, 'rb')
 
     else:
         raise IOError('Only http(s) and ftp URLs allowed.')
