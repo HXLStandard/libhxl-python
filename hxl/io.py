@@ -19,16 +19,15 @@ import xlrd
 import six
 
 if sys.version_info < (3,):
+
     # Customisation for Python 2.x
+    import hxl.py2compat
     import urllib2
     open_url = urllib2.urlopen
     def get_status(response):
         return response.getcode()
     def wrap_stream(stream):
-        if not hasattr(stream, 'readable'):
-            return io.open(stream.fileno(), mode='rb', buffering=4096, closefd=False)
-        else:
-            return stream
+        return io.BufferedReader(hxl.py2compat.InputStreamWrapper(stream))
     def wrap_input(input):
         return input
 else:
