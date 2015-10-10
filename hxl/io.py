@@ -48,7 +48,10 @@ else:
         else:
             return io.BufferedReader(stream)
     def wrap_input(input):
-        return io.TextIOWrapper(input, newline='')
+        if hasattr(input, 'encoding'):
+            return input
+        else:
+            return io.TextIOWrapper(input, encoding='utf-8', newline='')
 
 import hxl
 
