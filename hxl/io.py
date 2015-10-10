@@ -19,7 +19,6 @@ import xlrd
 import six
 
 if sys.version_info < (3,):
-
     # Customisation for Python 2.x
     import hxl.py2compat
     import urllib2
@@ -27,7 +26,14 @@ if sys.version_info < (3,):
     def get_status(response):
         return response.getcode()
     def wrap_stream(stream):
-        return io.BufferedReader(hxl.py2compat.InputStreamWrapper(stream))
+        # Need an io object
+        if not hasattr(stream, 'readable'):
+            stream = hxl.py2compat.InputStreamWrapper(stream)
+        # Already buffered?
+        if hasattr(stream, 'peek'):
+            return stream
+        else:
+            return io.BufferedReader(stream)
     def wrap_input(input):
         return input
 else:
@@ -37,7 +43,10 @@ else:
     def get_status(response):
         return response.status
     def wrap_stream(stream):
-        return io.BufferedReader(stream)
+        if hasattr(stream, 'peek'):
+            return stream
+        else:
+            return io.BufferedReader(stream)
     def wrap_input(input):
         return io.TextIOWrapper(input, newline='')
 

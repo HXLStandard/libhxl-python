@@ -1,8 +1,17 @@
+"""
+Compatibility classes for Python2
+David megginson
+Started October 2015
+
+License: Public Domain
+"""
+
 from __future__ import absolute_import
 
 import io
 
 class InputStreamWrapper(io.BufferedIOBase):
+    """Wrap a Python2 input file object in a Python3 io object."""
 
     def __init__(self, stream):
         self.stream = stream
@@ -22,7 +31,7 @@ class InputStreamWrapper(io.BufferedIOBase):
 
     def flush(self):
         if hasattr(self.stream, 'flush'):
-            return self.stream.flush()
+            self.stream.flush()
 
     def isatty(self):
         return self.stream.isatty()
@@ -42,22 +51,10 @@ class InputStreamWrapper(io.BufferedIOBase):
     def tell(self):
         return self.stream.tell()
 
-    def truncate(self, size=None):
-        return self.stream.truncate(size)
-
     def writable(self):
         return False
-
-    def writelines(self, lines):
-        return self.stream.writelines(lines)
 
     def read(self, n=-1):
         return self.stream.read(n)
 
-    # def readinto(self, b):
-    #     return self.stream.readinto(b)
-
-    # def write(self, b):
-    #     return self.stream.write(b)
-
-
+# end
