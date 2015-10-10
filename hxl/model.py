@@ -374,9 +374,11 @@ class Column(object):
         @param attributes a sequence of attributes (default: ())
         @param header the original plaintext header for the column (default: None)
         """
+        if tag:
+            tag = tag.lower()
         self.tag = tag
         self.header = header
-        self.attributes = set(attributes)
+        self.attributes = set([a.lower() for a in attributes])
 
     @property
     def display_tag(self):

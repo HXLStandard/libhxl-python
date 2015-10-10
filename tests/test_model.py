@@ -54,6 +54,12 @@ class TestPattern(unittest.TestCase):
         pattern = TagPattern('#tag', exclude_attributes=['foo'])
         self.assertFalse(pattern.match(self.column))
 
+    def test_caseinsensitive(self):
+        pattern = TagPattern('#Tag')
+        self.assertTrue(pattern.match(self.column))
+        pattern = TagPattern('#tag', include_attributes=['fOO'])
+        self.assertTrue(pattern.match(self.column))
+
     def test_parse(self):
         pattern = TagPattern.parse('#tag+foo-xxx')
         self.assertEqual(pattern.tag, '#tag')
@@ -138,6 +144,11 @@ class TestColumn(unittest.TestCase):
         # order is not fixed
         #self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.display_tag)
         pass
+
+    def test_case_insensitive(self):
+        column = Column(tag='Foo', attributes=['X', 'y'])
+        self.assertEquals('foo', column.tag)
+        self.assertEquals(set(['x', 'y']), column.attributes)
 
 
 class TestRow(unittest.TestCase):
