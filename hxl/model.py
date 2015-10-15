@@ -271,10 +271,10 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
-    def count(self, patterns, aggregate_pattern=None):
+    def count(self, patterns, aggregate_pattern=None, count_spec='Count#meta+count'):
         """Count values in the dataset (caching)."""
         import hxl.filters
-        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern)
+        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern, count_spec=count_spec)
 
     def row_counter(self):
         """Count the number of rows while streaming."""

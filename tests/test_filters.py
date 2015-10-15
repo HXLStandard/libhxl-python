@@ -157,6 +157,23 @@ class TestCountFilter(AbstractFilterTest):
         ]
         self.assertEqual(expected, self.source.count('#sector', '#meta').values)
 
+    def test_custom_tag(self):
+        input = [
+            ['Organisation'],
+            ['#org'],
+            ['UNICEF'],
+            ['WHO'],
+            ['UNICEF']
+        ]
+        expected = [
+            ['Organisation', 'Activities'],
+            ['#org', '#output+activities'],
+            ['UNICEF', 2],
+            ['WHO', 1]
+        ]
+        source = hxl.data(input).count('org', count_spec='Activities#output+activities')
+        self.assertEqual(expected, [row for row in source.gen_raw(show_headers=True)])
+
 
 class TestDeduplicationFilter (AbstractFilterTest):
 

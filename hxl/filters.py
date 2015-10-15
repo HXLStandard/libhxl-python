@@ -216,7 +216,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
             header = result.group(1)
             tag = '#' + result.group(2)
             value = result.group(3)
-            return (hxl.model.Column(tag=tag, header=header), value)
+            return (hxl.model.Column.parse(tag, header=header), value)
         else:
             raise HXLFilterException("Badly formatted new-column spec: " + spec)
 
@@ -578,7 +578,7 @@ class CountFilter(AbstractCachingFilter):
     </pre>
     """
 
-    def __init__(self, source, patterns, aggregate_pattern=None):
+    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count'):
         """
         Constructor
         @param source the HXL data source
@@ -588,6 +588,7 @@ class CountFilter(AbstractCachingFilter):
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
+        self.count_column = CountFilter.parse_spec(count_spec)
 
     def filter_columns(self):
         """Generate the columns for the report."""
@@ -600,7 +601,7 @@ class CountFilter(AbstractCachingFilter):
                 columns.append(copy.deepcopy(column))
 
         # Add column to hold count
-        columns.append(hxl.model.Column.parse('#meta+count', 'Count'))
+        columns.append(self.count_column)
 
         # If we're aggregating, add the aggregate columns
         if self.aggregate_pattern is not None:
@@ -614,6 +615,21 @@ class CountFilter(AbstractCachingFilter):
 
     def __iter__(self):
         return CountFilter.Iterator(self)
+
+    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN)
+
+    @staticmethod
+    def parse_spec(spec):
+        if not isinstance(spec, six.string_types):
+            return spec
+        result = re.match(CountFilter.SPEC_PATTERN, spec)
+        if result:
+            header = result.group(1)
+            tag = '#' + result.group(2)
+            return hxl.model.Column.parse(tag, header=header)
+        else:
+            raise HXLFilterException("Badly formatted column spec: " + spec)
+
 
     class Iterator:
 
