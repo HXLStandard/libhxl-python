@@ -6,6 +6,8 @@ December 2014
 License: Public Domain
 """
 
+from __future__ import print_function
+
 import unittest
 import os
 import sys
