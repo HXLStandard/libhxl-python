@@ -5,7 +5,6 @@ December 2014
 
 License: Public Domain
 """
-from __future__ import print_function
 
 import unittest
 import os
@@ -106,6 +105,9 @@ class TestCount(BaseTest):
 
     def test_aggregated(self):
         self.assertOutput(['-t', 'org,adm1', '-a', 'targeted'], 'count-output-aggregated.csv')
+
+    def test_count_colspec(self):
+        self.assertOutput(['-t', 'org,adm1', '-C', 'Activities#output+activities'], 'count-output-colspec.csv')
 
 
 class TestCut(BaseTest):
@@ -328,8 +330,8 @@ def diff(file1, file2):
     @param file2 The full pathname of the second file to compare
     @return True if the files are the same, o
     """
-    with open(file1, 'rb') as input1:
-        with open(file2, 'rb') as input2:
+    with open(file1, 'r') as input1:
+        with open(file2, 'r') as input2:
             diffs = difflib.unified_diff(
                 input1.read().splitlines(),
                 input2.read().splitlines()

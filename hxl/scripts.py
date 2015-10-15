@@ -338,10 +338,17 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag',
         type=hxl.model.TagPattern.parse
         )
+    parser.add_argument(
+        '-C',
+        '--count-column',
+        help='Column spec for count column.',
+        metavar='Header#tag',
+        default='Count#meta+count'
+        )
 
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate)
+        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate, count_spec=args.count_column)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
 
