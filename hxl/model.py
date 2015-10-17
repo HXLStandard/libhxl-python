@@ -159,21 +159,21 @@ class Dataset(object):
         """
         Return a list of header strings (for a spreadsheet row).
         """
-        return [column.header for column in self.columns]
+        return [column.header if column else '' for column in self.columns]
 
     @property
     def tags(self):
         """
         Return a list of tags.
         """
-        return [column.tag for column in self.columns]
+        return [column.tag if column else '' for column in self.columns]
 
     @property
     def display_tags(self):
         """
         Return a list of display tags.
         """
-        return [column.display_tag for column in self.columns]
+        return [column.display_tag if column else '' for column in self.columns]
 
     @property
     def has_headers(self):
