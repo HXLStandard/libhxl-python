@@ -147,8 +147,11 @@ class TestCountFilter(AbstractFilterTest):
         self.assertEqual(expected, self.source.count('#sector').values)
 
     def test_missing_column(self):
-        expected = ['', '#sector', '#meta']
-        self.assertEqual(expected, self.source.count('region,sector').tags)
+        expected_headers = [None, 'Cluster', 'Count']
+        expected_tags = [None, '#sector', '#meta']
+        source = self.source.count('region,sector')
+        self.assertEqual(expected_headers, source.headers)
+        self.assertEqual(expected_tags, source.tags)
 
     def test_aggregation_tags(self):
         expected = ['#sector', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
@@ -213,7 +216,7 @@ class TestMergeDataFilter(AbstractFilterTest):
         ['P-code', 'Population'],
         ['#adm1+code', '#population'],
         ['001', '10000'],
-        ['002', None] # deliberately blank
+        ['002', ''] # deliberately blank
     ]
 
     MERGE_EXTRA_OUT = [

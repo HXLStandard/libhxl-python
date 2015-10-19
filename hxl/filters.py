@@ -597,8 +597,10 @@ class CountFilter(AbstractCachingFilter):
         # Add columns being counted
         for pattern in self.patterns:
             column = pattern.find_column(self.source.columns)
-            if column is not None:
+            if column:
                 columns.append(copy.deepcopy(column))
+            else:
+                columns.append(hxl.Column())
 
         # Add column to hold count
         columns.append(self.count_column)
