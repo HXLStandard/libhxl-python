@@ -146,6 +146,10 @@ class TestCountFilter(AbstractFilterTest):
         ]
         self.assertEqual(expected, self.source.count('#sector').values)
 
+    def test_missing_column(self):
+        expected = ['', '#sector', '#meta']
+        self.assertEqual(expected, self.source.count('region,sector').tags)
+
     def test_aggregation_tags(self):
         expected = ['#sector', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
         self.assertEqual(expected, self.source.count('#sector', '#meta').display_tags)
@@ -173,7 +177,6 @@ class TestCountFilter(AbstractFilterTest):
         ]
         source = hxl.data(input).count('org', count_spec='Activities#output+activities')
         self.assertEqual(expected, [row for row in source.gen_raw(show_headers=True)])
-
 
 class TestDeduplicationFilter (AbstractFilterTest):
 
