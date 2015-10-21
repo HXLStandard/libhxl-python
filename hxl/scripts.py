@@ -623,7 +623,7 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
-    with hxl.io.make_input(args.infile or stdin) as input, make_output(args, stdout) as output:
+    with hxl.io.make_input(args.infile or stdin, allow_local=True) as input, make_output(args, stdout) as output:
         tagger = hxl.converters.Tagger(input, args.map)
         hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
 
