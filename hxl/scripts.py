@@ -771,6 +771,14 @@ def run_script(func):
     except KeyboardInterrupt:
         print("Interrupted", file=sys.stderr)
         sys.exit(EXIT_ERROR)
+    except BaseException as e:
+        # show a generic error message
+        if hasattr(e, 'args') and hasattr(e.args, '__len__'):
+            message = str(e.args[0])
+        else:
+            message = str(e)
+        print("Error: {}".format(message), file=sys.stderr)
+        sys.exit(EXIT_ERROR)
 
 def make_args(description):
     """Set up parser with default arguments."""
