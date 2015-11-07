@@ -318,6 +318,11 @@ class TestValidate(BaseTest):
         # from the command line, this will get intercepted
         self.assertRaises(hxl.io.HXLTagsNotFoundException, try_script)
 
+    def test_default_valid_status(self):
+        self.assertExitStatus([
+            '--schema', resolve_file('validation-schema-valid.csv')
+        ], hxl.scripts.EXIT_OK)
+
     def test_default_invalid_status(self):
         self.assertExitStatus([
             '--schema', resolve_file('validation-schema-invalid.csv')
