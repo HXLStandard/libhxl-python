@@ -311,6 +311,18 @@ class TestValidate(BaseTest):
     def test_default_valid_status(self):
         self.assertExitStatus([])
 
+    def test_bad_hxl_status(self):
+        self.input_file = 'input-untagged.csv'
+        def try_script():
+            self.assertExitStatus([], exit_status = hxl.scripts.EXIT_ERROR),
+        # from the command line, this will get intercepted
+        self.assertRaises(hxl.io.HXLTagsNotFoundException, try_script)
+
+    def test_default_invalid_status(self):
+        self.assertExitStatus([
+            '--schema', resolve_file('validation-schema-invalid.csv')
+        ])
+
 
 ########################################################################
 # Support functions
