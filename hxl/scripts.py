@@ -10,6 +10,8 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
+from __future__ import print_function
+
 import sys
 import re
 import argparse
