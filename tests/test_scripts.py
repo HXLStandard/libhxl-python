@@ -39,9 +39,21 @@ class BaseTest(unittest.TestCase):
                 self.function,
                 options,
                 input_file,
-                output_file
+                expected_output_file = output_file
                 )
             )
+
+    def assertExitStatus(self, options, exit_status=hxl.scripts.EXIT_OK, input_file=None):
+        if not input_file:
+            input_file = self.input_file
+        self.assertTrue(
+            try_script(
+                self.function,
+                options,
+                input_file,
+                expected_exit_status = exit_status
+            )
+        )
 
 
 class TestAdd(BaseTest):
@@ -287,6 +299,19 @@ class TestTag(BaseTest):
         ], 'tag-output-ambiguous.csv')
 
 
+class TestValidate(BaseTest):
+    """
+    Test the hxltag command-line tool.
+    """
+
+    def setUp(self):
+        self.function = hxl.scripts.hxlvalidate_main
+        self.input_file = 'input-simple.csv'
+
+    def test_default_valid_status(self):
+        self.assertExitStatus([])
+
+
 ########################################################################
 # Support functions
 ########################################################################
@@ -316,10 +341,11 @@ def try_script(script_function, args, input_file, expected_output_file=None, exp
             output = tempfile.NamedTemporaryFile(delete=False)
         try:
             status = script_function(args, stdin=input, stdout=output)
-            if expected_output_file:
-                output.close()
             if status == expected_exit_status:
-                result = diff(output.name, resolve_file(expected_output_file))
+                result = True
+                if expected_output_file:
+                    output.close()
+                    result = diff(output.name, resolve_file(expected_output_file))
             else:
                 print("Script exit status: {}".format(status))
                 result = False
