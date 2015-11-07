@@ -16,6 +16,7 @@ import argparse
 import json
 from shapely.geometry import shape
 
+
 # Do not import hxl, to avoid circular imports
 
 import hxl.filters
@@ -27,6 +28,12 @@ if sys.version_info < (3,):
     STDIN = sys.stdin
 else:
     STDIN = sys.stdin.buffer
+
+# Posix exit codes
+
+EXIT_OK = 0
+EXIT_ERROR = 1
+EXIT_SYNTAX = 2
 
     
 #
@@ -127,6 +134,8 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.AddColumnsFilter(source, specs=args.spec, before=args.before)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -177,9 +186,12 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         # use a recursive function so that we can close all sources on the way out
         datasets = args.append or []
         if args.file:
-            with io.open(args.file, 'rb') as input:
+            # FIXME works only with Python3
+            with open(args.file, 'r') as input:
                 datasets += [line.strip("\n") for line in input.readlines()]
         append_data(source, output, datasets)
+
+    return EXIT_OK
 
 
 def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -210,6 +222,8 @@ def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     # Call the command function
     hxl.converters.hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
+
+    return EXIT_OK
 
 
 def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -311,6 +325,8 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.CleanDataFilter(source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower, date=date_arg, number=number_arg)
         hxl.io.write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -351,6 +367,8 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.CountFilter(source, args.tags, args.aggregate, count_spec=args.count_column)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser = make_args('Cut columns from a HXL dataset.')
@@ -374,6 +392,8 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.ColumnFilter(source, args.include, args.exclude)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser = make_args('Remove duplicate rows from a HXL dataset.')
@@ -389,6 +409,8 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.DeduplicationFilter(source, args.tags)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
 
 
 def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -447,6 +469,8 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
                              keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -472,6 +496,8 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.RenameFilter(source, args.rename)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
 
 
 def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -535,6 +561,8 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.ReplaceDataFilter(source, replacements)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -569,6 +597,8 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.RowFilter(source, queries=args.query, reverse=args.reverse)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -601,6 +631,8 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.SortFilter(source, args.tags, args.reverse)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
+    return EXIT_OK
+
 
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
@@ -626,6 +658,8 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     with hxl.io.make_input(args.infile or stdin, allow_local=True) as input, make_output(args, stdout) as output:
         tagger = hxl.converters.Tagger(input, args.map)
         hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
+
+    return EXIT_OK
 
 
 def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -719,9 +753,10 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             
         if Counter.errors > 0:
             output.write("Validation failed.\n")
-            exit(2)
+            return EXIT_ERROR
         else:
             output.write("Validation succeeded.\n")
+            return EXIT_OK
 
 #
 # Utility functions
@@ -730,14 +765,10 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def run_script(func):
     """Try running a command-line script, with exception handling."""
     try:
-        func(sys.argv[1:], STDIN, sys.stdout)
-    # except hxl.common.HXLException as e:
-    #     print >>sys.stderr, "Fatal error (" + e.__class__.__name__ + "): " + str(e.message)
-    #     print >>sys.stderr, "Exiting ..."
-    #     sys.exit(2)
+        sys.exit(func(sys.argv[1:], STDIN, sys.stdout))
     except KeyboardInterrupt:
-        print >>sys.stderr, "Interrupted"
-        sys.exit(2)
+        print("Interrupted", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
 
 def make_args(description):
     """Set up parser with default arguments."""

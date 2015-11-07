@@ -43,6 +43,7 @@ class BaseTest(unittest.TestCase):
                 )
             )
 
+
 class TestAdd(BaseTest):
     """
     Test the hxladd command-line tool.
@@ -297,8 +298,7 @@ def resolve_file(name):
     """
     return os.path.join(root_dir, 'tests', 'files', 'test_scripts', name)
 
-
-def try_script(script_function, args, input_file, expected_output_file):
+def try_script(script_function, args, input_file, expected_output_file=None, expected_exit_status=hxl.scripts.EXIT_OK):
     """
     Test run a script in its own subprocess.
     @param args A list of arguments, including the script name first
@@ -308,14 +308,21 @@ def try_script(script_function, args, input_file, expected_output_file):
     """
 
     with open(resolve_file(input_file), 'rb') as input:
+        if expected_output_file is None:
+            output = sys.stdout
         if sys.version_info[0] > 2:
             output = tempfile.NamedTemporaryFile(mode='w', newline='', delete=False)
         else:
             output = tempfile.NamedTemporaryFile(delete=False)
         try:
-            script_function(args, stdin=input, stdout=output)
-            output.close()
-            result = diff(output.name, resolve_file(expected_output_file))
+            status = script_function(args, stdin=input, stdout=output)
+            if expected_output_file:
+                output.close()
+            if status == expected_exit_status:
+                result = diff(output.name, resolve_file(expected_output_file))
+            else:
+                print("Script exit status: {}".format(status))
+                result = False
         finally:
             # Not using with, because Windows won't allow file to be opened twice
             os.remove(output.name)
