@@ -322,10 +322,16 @@ class TestValidate(BaseTest):
         self.assertExitStatus([
             '--schema', resolve_file('validation-schema-valid.csv')
         ], hxl.scripts.EXIT_OK)
+        self.assertExitStatus([
+            '-s', resolve_file('validation-schema-valid.csv')
+        ], hxl.scripts.EXIT_OK)
 
     def test_default_invalid_status(self):
         self.assertExitStatus([
             '--schema', resolve_file('validation-schema-invalid.csv')
+        ], hxl.scripts.EXIT_ERROR)
+        self.assertExitStatus([
+            '-s', resolve_file('validation-schema-invalid.csv')
         ], hxl.scripts.EXIT_ERROR)
 
 
