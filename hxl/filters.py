@@ -1068,10 +1068,7 @@ class RowFilter(AbstractStreamingFilter):
         @param reverse True to reverse the sense of the select
         """
         super(RowFilter, self).__init__(source)
-        if not hasattr(queries, '__len__') or isinstance(queries, six.string_types):
-            # make a list if needed
-            queries = [queries]
-        self.queries = [hxl.model.RowQuery.parse(query) for query in queries]
+        self.queries = hxl.model.RowQuery.parse_list(queries)
         self.reverse = reverse
 
     def filter_row(self, row):

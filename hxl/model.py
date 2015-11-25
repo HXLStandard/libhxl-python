@@ -565,16 +565,27 @@ class RowQuery(object):
         return self._saved_indices
 
     @staticmethod
-    def parse(s):
+    def parse(query):
         """Parse a filter expression"""
-        if isinstance(s, RowQuery):
+        if isinstance(query, RowQuery):
             # already parsed
-            return s
-        parts = re.split(r'([<>]=?|!?=|!?~)', s, maxsplit=1)
+            return query
+        parts = re.split(r'([<>]=?|!?=|!?~)', query, maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op = RowQuery.OPERATOR_MAP[parts[1]]
         value = parts[2]
         return RowQuery(pattern, op, value)
+
+    @staticmethod
+    def parse_list(queries):
+        """Parse a single query spec or a list of specs."""
+        if queries:
+            if not hasattr(queries, '__len__') or isinstance(queries, six.string_types):
+                # make a list if needed
+                queries = [queries]
+            return [hxl.model.RowQuery.parse(query) for query in queries]
+        else:
+            return []
 
     @staticmethod
     def operator_re(s, pattern):
