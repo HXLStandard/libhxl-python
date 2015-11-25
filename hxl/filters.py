@@ -261,17 +261,19 @@ class AppendFilter(AbstractFilter):
     row iterator.
     """
 
-    def __init__(self, source, append_source, add_columns=True):
+    def __init__(self, source, append_source, add_columns=True, filters=[]):
         """
         Constructor
         @param source the HXL data source
         @param append_source the HXL source to append (or a plain-old URL)
         @param add_columns flag for adding extra columns in append_source but not source (default True)
+        @param filters optional list of filter queries for rows to append from other datasets
         """
         super(AppendFilter, self).__init__(source)
         # parameters
         self.append_source = hxl.data(append_source) # so that we can take a plain URL
         self.add_columns = add_columns
+        self.filters = hxl.model.RowQuery.parse_list(filters)
         # internal properties
         self._column_positions = None
         self._template_row = None
@@ -411,7 +413,7 @@ class CleanDataFilter(AbstractStreamingFilter):
     TODO: clean up lat/lon coordinates
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[]):
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[], filters=[]):
         """
         Construct a new data-cleaning filter.
         @param source the HXLDataSource
@@ -420,6 +422,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param lower list of TagPatterns for converting to lowercase, or True to convert all.
         @param lower list of TagPatterns for normalising dates, or True to normalise all ending in "_date"
         @param lower list of TagPatterns for normalising numbers, or True to normalise all ending in "_num"
+        @param filters optional list of filter queries matching rows to be cleaned.
         """
         super(CleanDataFilter, self).__init__(source)
         self.whitespace = whitespace
@@ -427,6 +430,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.lower = lower
         self.date = date
         self.number = number
+        self.filters = hxl.model.RowQuery.parse_list(filters)
 
     def filter_row(self, row):
         """Clean up values and pass on the row data."""
@@ -578,17 +582,20 @@ class CountFilter(AbstractCachingFilter):
     </pre>
     """
 
-    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count'):
+    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', filters=[]):
         """
         Constructor
         @param source the HXL data source
         @param patterns a list of strings or TagPattern objects that form a unique key together
         @param aggregate_pattern an optional tag pattern calculating numeric aggregate values.
+        @param count_spec the tag spec for the count column (defaults to 'Count#meta+count').
+        @param filters an optional list of query filters for rows to be counted.
         """
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
         self.count_column = CountFilter.parse_spec(count_spec)
+        self.filters = hxl.model.RowQuery.parse_list(filters)
 
     def filter_columns(self):
         """Generate the columns for the report."""
@@ -732,15 +739,17 @@ class DeduplicationFilter(AbstractStreamingFilter):
     TODO: add more-sophisticated matching, edit distance, etc.
     """
 
-    def __init__(self, source, patterns=None):
+    def __init__(self, source, patterns=None, filters=[]):
         """
         Constructor
         @param source the upstream source dataset
         @param patterns if provided, a list of tag patterns for columns to use for uniqueness testing.
+        @param filters optional list of filter queries for columns to be considered for deduplication.
         """
         super(DeduplicationFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.seen_map = set() # row signatures that we've seen so far
+        self.filters = hxl.model.RowQuery.parse_list(filters)
 
     def filter_row(self, row):
         """Filter out any rows we've seen before."""
@@ -787,13 +796,14 @@ class MergeDataFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False):
+    def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, filters=[]):
         """
         Constructor.
         @param source the HXL data source.
         @param merge_source a second HXL data source to merge into the first.
         @param keys the shared key hashtags to use for the merge
         @param tags the tags to include from the second dataset
+        @param filters optional list of filter queries for rows to be considered from the merge dataset.
         """
         super(MergeDataFilter, self).__init__(source)
         self.merge_source = merge_source
@@ -801,6 +811,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         self.merge_tags = hxl.model.TagPattern.parse_list(tags)
         self.replace = replace
         self.overwrite = overwrite
+        self.filters = hxl.model.RowQuery.parse_list(filters)
 
         self.merge_map = None
 
@@ -946,19 +957,19 @@ class ReplaceDataFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source, replacements):
+    def __init__(self, source, replacements, filters=[]):
         """
         Constructor
         @param source the HXL data source
         @param original a string or regular expression to replace (string must match the whole value, not just part)
-        @param replacement the replacement string (if using a regex, may contain substitution patterns)
-        @param patterns (optional) a tag pattern or list of tag patterns - if present, constrain replacement to just these columns
-        @param use_regex (optional) if True, then original is a regular expression rather than a string constant
+        @param replacements list of replacement objects
+        @param filters optional list of filter queries for rows where replacements should be applied.
         """
         super(ReplaceDataFilter, self).__init__(source)
         self.replacements = replacements
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
+        self.filters = hxl.model.RowQuery.parse_list(filters)
 
     def filter_row(self, row):
         values = copy.copy(row.values)
@@ -1036,9 +1047,10 @@ class RowCountFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source):
+    def __init__(self, source, filters=[]):
         super(RowCountFilter, self).__init__(source)
         self.row_count = 0
+        self.filters = hxl.model.RowQuery.parse_list(filters)
 
     def filter_row(self, row):
         self.row_count += 1

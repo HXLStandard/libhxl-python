@@ -231,20 +231,20 @@ class Dataset(object):
     # Filters
     #
 
-    def append(self, append_source, add_columns=True):
+    def append(self, append_source, add_columns=True, filters=[]):
         """Append a second dataset."""
         import hxl.filters
-        return hxl.filters.AppendFilter(self, append_source, add_columns)
+        return hxl.filters.AppendFilter(self, append_source, add_columns, filters=filters)
 
     def cache(self):
         """Add a caching filter to the dataset."""
         import hxl.filters
         return hxl.filters.CacheFilter(self)
 
-    def dedup(self, patterns=[]):
+    def dedup(self, patterns=[], filters=[]):
         """Deduplicate a dataset."""
         import hxl.filters
-        return hxl.filters.DeduplicationFilter(self, patterns)
+        return hxl.filters.DeduplicationFilter(self, patterns=patterns, filters=filters)
 
     def with_columns(self, whitelist):
         """Select matching columns."""
@@ -271,27 +271,27 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
-    def count(self, patterns, aggregate_pattern=None, count_spec='Count#meta+count'):
+    def count(self, patterns, aggregate_pattern=None, count_spec='Count#meta+count', filters=[]):
         """Count values in the dataset (caching)."""
         import hxl.filters
-        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern, count_spec=count_spec)
+        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern, count_spec=count_spec, filters=filters)
 
-    def row_counter(self):
+    def row_counter(self, filters=[]):
         """Count the number of rows while streaming."""
         import hxl.filters
-        return hxl.filters.RowCountFilter(self)
+        return hxl.filters.RowCountFilter(self, filters=filters)
 
-    def replace_data(self, original, replacement, pattern=None, use_regex=False):
+    def replace_data(self, original, replacement, pattern=None, use_regex=False, filters=[]):
         """Replace values in a HXL dataset."""
         import hxl.filters
         replacement = hxl.filters.ReplaceDataFilter.Replacement(original, replacement, pattern, use_regex)
-        return hxl.filters.ReplaceDataFilter(self, [replacement])
+        return hxl.filters.ReplaceDataFilter(self, [replacement], filters=filters)
 
-    def replace_data_map(self, map_source):
+    def replace_data_map(self, map_source, filters=[]):
         """Replace values in a HXL dataset."""
         import hxl.filters
         replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(map_source)
-        return hxl.filters.ReplaceDataFilter(self, replacements)
+        return hxl.filters.ReplaceDataFilter(self, replacements, filters=filters)
 
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
@@ -303,15 +303,15 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.RenameFilter(self, specs)
 
-    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], number=[]):
+    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], number=[], filters=[]):
         """Clean data fields."""
         import hxl.filters
-        return hxl.filters.CleanDataFilter(self, whitespace=whitespace, upper=upper, lower=lower, date=date, number=number)
+        return hxl.filters.CleanDataFilter(self, whitespace=whitespace, upper=upper, lower=lower, date=date, number=number, filters=filters)
 
-    def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False):
+    def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, filters=[]):
         """Merges values from a second dataset."""
         import hxl.filters
-        return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite)
+        return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, filters=filters)
 
     #
     # Generators
