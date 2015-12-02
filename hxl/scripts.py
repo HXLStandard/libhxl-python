@@ -376,7 +376,7 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
-    add_queries_arg(parser)
+    add_queries_arg(parser, 'Leave rows alone if they don\'t match at least one query.')
 
     args = parser.parse_args(args)
 

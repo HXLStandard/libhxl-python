@@ -279,12 +279,24 @@ class TestDeduplicationFilter (AbstractFilterTest):
 
     DATA_OUT = DATA # should be the same as the original
 
+    DATA_OUT_FILTERED = [
+        ['Organisation', 'Cluster', 'District', 'Count'],
+        ['#org', '#sector', '#adm1', '#meta+count'],
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO A', 'WASH', 'Coast', '200']
+    ]
+
     def setUp(self):
         # use a cache filter so that we can run tests multiple times
-        self.source = hxl.data(DATA)
+        self.source = hxl.data(self.DATA_IN)
 
     def test_dedup(self):
-        self.assertEqual(DATA[2:], self.source.dedup().values)
+        self.assertEqual(self.DATA_OUT[2:], self.source.dedup().values)
+
+    def test_queries(self):
+        self.assertEqual(self.DATA_OUT_FILTERED[2:], self.source.dedup(queries='sector=Education').values)
 
 
 class TestMergeDataFilter(AbstractFilterTest):

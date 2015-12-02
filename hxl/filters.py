@@ -760,14 +760,17 @@ class DeduplicationFilter(AbstractStreamingFilter):
 
     def filter_row(self, row):
         """Filter out any rows we've seen before."""
-        if not row:
-            return None
-        key = self._make_key(row)
-        if key in self.seen_map:
-            return None
-        # if we get to here, we haven't seen the row before
-        self.seen_map.add(key)
-        return copy.copy(row.values)
+        if hxl.model.RowQuery.match_list(row, self.queries):
+            if not row:
+                return None
+            key = self._make_key(row)
+            if key in self.seen_map:
+                return None
+            # if we get to here, we haven't seen the row before
+            self.seen_map.add(key)
+            return copy.copy(row.values)
+        else:
+            return row.values
 
     def _is_key(self, col):
         """Check if a column is part of the key for deduplication."""
