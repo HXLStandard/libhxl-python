@@ -421,28 +421,34 @@ class CleanDataFilter(AbstractStreamingFilter):
         """
         Construct a new data-cleaning filter.
         @param source the HXLDataSource
-        @param whitespace list of TagPatterns for normalising whitespace, or True to normalise all.
-        @param upper list of TagPatterns for converting to uppercase, or True to convert all.
-        @param lower list of TagPatterns for converting to lowercase, or True to convert all.
-        @param lower list of TagPatterns for normalising dates, or True to normalise all ending in "_date"
-        @param lower list of TagPatterns for normalising numbers, or True to normalise all ending in "_num"
-        @param filters optional list of filter queries matching rows to be cleaned.
+        @param whitespace list of TagPatterns for normalising whitespace.
+        @param upper list of TagPatterns for converting to uppercase.
+        @param lower list of TagPatterns for converting to lowercase.
+        @param lower list of TagPatterns for normalising dates.
+        @param lower list of TagPatterns for normalising numbers.
+        @param queries optional list of queries to select rows to be cleaned.
         """
         super(CleanDataFilter, self).__init__(source)
-        self.whitespace = whitespace
-        self.upper = upper
-        self.lower = lower
-        self.date = date
-        self.number = number
+        self.whitespace = hxl.model.TagPattern.parse_list(whitespace)
+        self.upper = hxl.model.TagPattern.parse_list(upper)
+        self.lower = hxl.model.TagPattern.parse_list(lower)
+        self.date = hxl.model.TagPattern.parse_list(date)
+        self.number = hxl.model.TagPattern.parse_list(number)
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
         """Clean up values and pass on the row data."""
-        columns = self.columns
-        values = copy.copy(row.values)
-        for i in range(min(len(values), len(columns))):
-            values[i] = self._clean_value(values[i], columns[i])
-        return values
+        if hxl.model.RowQuery.match_list(row, self.queries):
+            # if there are no queries, or row matches at least one
+            columns = self.columns
+            values = copy.copy(row.values)
+            for i in range(min(len(values), len(columns))):
+                values[i] = self._clean_value(values[i], columns[i])
+            return values
+        else:
+            # otherwise, leave as-is
+            return row.values
+                
 
     def _clean_value(self, value, column):
         """Clean a single HXL value."""
@@ -469,19 +475,19 @@ class CleanDataFilter(AbstractStreamingFilter):
             else:
                 value = value.decode('utf8').lower().encode('utf8')
 
-        # Date (-d or -D)
-        if self._match_patterns(self.date, column, '_date'):
+        # Date
+        if self._match_patterns(self.date, column):
             if value:
                 value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
 
-        # Number (-n or -N)
-        if self._match_patterns(self.number, column, '_num') and re.match('\d', value):
+        # Number
+        if self._match_patterns(self.number, column) and re.search('\d', value):
+            # fixme - get much smarter about numbers
             if value:
-                value = re.sub('[^\d.]', '', value)
+                value = re.sub('[^\de.]+', '', value)
                 value = re.sub('^0+', '', value)
                 value = re.sub('(\..*)0+$', '\g<1>', value)
                 value = re.sub('\.$', '', value)
-
         return value
 
     def _match_patterns(self, patterns, column, extension=None):

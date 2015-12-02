@@ -131,6 +131,70 @@ class TestCacheFilter(AbstractFilterTest):
     def test_rows(self):
         self.assertEqual(DATA[2:], self.source.cache().values)
 
+class TestCleanFilter(AbstractFilterTest):
+
+    def test_whitespace(self):
+        DATA_IN = [
+            ['Organisation', 'Cluster', 'District', 'Count'],
+            ['#org', '#sector', '#adm1', '#meta+count'],
+            ['NGO A', '  WASH', 'Coast', '200'],
+            ['NGO B', 'Education  ', 'Plains', '100'],
+            ['NGO B', 'Child    Protection', 'Coast', '300']
+        ]
+        DATA_OUT = [
+            ['NGO A', 'WASH', 'Coast', '200'],
+            ['NGO B', 'Education', 'Plains', '100'],
+            ['NGO B', 'Child Protection', 'Coast', '300']
+        ]
+        self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(whitespace='sector').values)
+        
+    def test_numbers(self):
+        DATA_IN = [
+            ['Organisation', 'Cluster', 'District', 'Count'],
+            ['#org', '#sector', '#adm1', '#meta+count'],
+            ['NGO A', 'WASH', 'Coast', '  200'],
+            ['NGO B', 'Education', 'Plains', '1,100 '],
+            ['NGO B', 'Child Protection', 'Coast', '300.']
+        ]
+        DATA_OUT = [
+            ['NGO A', 'WASH', 'Coast', '200'],
+            ['NGO B', 'Education', 'Plains', '1100'],
+            ['NGO B', 'Child Protection', 'Coast', '300']
+        ]
+        self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(number='meta+count').values)
+        
+    def test_dates(self):
+        DATA_IN = [
+            ['Organisation', 'Cluster', 'District', 'Date'],
+            ['#org', '#sector', '#adm1', '#date'],
+            ['NGO A', 'WASH', 'Coast', 'January 1 2015'],
+            ['NGO B', 'Education', 'Plains', '1/1/15'],
+            ['NGO B', 'Child Protection', 'Coast', '1 Jan/15']
+        ]
+        DATA_OUT = [
+            ['NGO A', 'WASH', 'Coast', '2015-01-01'],
+            ['NGO B', 'Education', 'Plains', '2015-01-01'],
+            ['NGO B', 'Child Protection', 'Coast', '2015-01-01']
+        ]
+        self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(date='date').values)
+        
+    def test_upper_case(self):
+        DATA_OUT = [
+            ['NGO A', 'WASH', 'Coast', '200'],
+            ['NGO B', 'EDUCATION', 'Plains', '100'],
+            ['NGO B', 'EDUCATION', 'Coast', '300']
+        ]
+        self.assertEqual(DATA_OUT, self.source.clean_data(upper='sector').values)
+
+    def test_lower_case(self):
+        DATA_OUT = [
+            ['NGO A', 'wash', 'Coast', '200'],
+            ['NGO B', 'education', 'Plains', '100'],
+            ['NGO B', 'education', 'Coast', '300']
+        ]
+        self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector').values)
+
+
 
 class TestColumnFilter(AbstractFilterTest):
 

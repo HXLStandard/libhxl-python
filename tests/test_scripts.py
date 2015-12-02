@@ -95,7 +95,6 @@ class TestClean(BaseTest):
         self.assertOutput([], 'clean-output-headers.csv')
 
     def test_whitespace(self):
-        self.assertOutput(['-W'], 'clean-output-whitespace-all.csv', 'input-whitespace.csv')
         self.assertOutput(['-w', 'subsector'], 'clean-output-whitespace-tags.csv', 'input-whitespace.csv')
 
     def test_case(self):

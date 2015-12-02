@@ -172,7 +172,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
-    add_queries_arg(parser)
+    add_queries_arg(parser, 'From --append datasets, include only rows matching at least one query.')
         
     args = parser.parse_args(args)
 
@@ -242,14 +242,6 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     parser = make_args('Clean data in a HXL file.')
     parser.add_argument(
-        '-W',
-        '--whitespace-all',
-        help='Normalise whitespace in all columns',
-        action='store_const',
-        const=True,
-        default=False
-        )
-    parser.add_argument(
         '-w',
         '--whitespace',
         help='Comma-separated list of tags for normalised whitespace.',
@@ -271,27 +263,11 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
-        '-D',
-        '--date-all',
-        help='Normalise all dates.',
-        action='store_const',
-        const=True,
-        default=False
-        )
-    parser.add_argument(
         '-d',
         '--date',
         help='Comma-separated list of tags for date normalisation.',
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
-        )
-    parser.add_argument(
-        '-N',
-        '--number-all',
-        help='Normalise all numbers.',
-        action='store_const',
-        const=True,
-        default=False
         )
     parser.add_argument(
         '-n',
@@ -314,24 +290,9 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
 
-        if args.whitespace_all:
-            whitespace_arg = True
-        else:
-            whitespace_arg = args.whitespace
-
-        if args.date_all:
-            date_arg = True
-        else:
-            date_arg = args.date
-
-        if args.number_all:
-            number_arg = True
-        else:
-            number_arg = args.number
-
         filter = hxl.filters.CleanDataFilter(
-            source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower,
-            date=date_arg, number=number_arg, queries=args.query
+            source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
+            date=args.date, number=args.number, queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
 
