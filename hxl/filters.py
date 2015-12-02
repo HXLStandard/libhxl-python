@@ -448,14 +448,13 @@ class CleanDataFilter(AbstractStreamingFilter):
         else:
             # otherwise, leave as-is
             return row.values
-                
 
     def _clean_value(self, value, column):
         """Clean a single HXL value."""
 
         value = str(value)
 
-        # Whitespace (-w or -W)
+        # Whitespace (-w)
         if self._match_patterns(self.whitespace, column):
             value = re.sub('^\s+', '', value)
             value = re.sub('\s+$', '', value)
@@ -490,13 +489,10 @@ class CleanDataFilter(AbstractStreamingFilter):
                 value = re.sub('\.$', '', value)
         return value
 
-    def _match_patterns(self, patterns, column, extension=None):
+    def _match_patterns(self, patterns, column):
         """Test if a column matches a list of patterns."""
         if not patterns:
             return False
-        elif patterns is True:
-            # if there's an extension specific like "_date", must match it
-            return (column.tag and (not extension or column.tag.endswith(extension)))
         else:
             for pattern in patterns:
                 if pattern.match(column):

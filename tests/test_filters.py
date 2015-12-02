@@ -131,6 +131,7 @@ class TestCacheFilter(AbstractFilterTest):
     def test_rows(self):
         self.assertEqual(DATA[2:], self.source.cache().values)
 
+
 class TestCleanFilter(AbstractFilterTest):
 
     def test_whitespace(self):
@@ -193,6 +194,14 @@ class TestCleanFilter(AbstractFilterTest):
             ['NGO B', 'education', 'Coast', '300']
         ]
         self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector').values)
+
+    def test_queries(self):
+        DATA_OUT = [
+            ['NGO A', 'WASH', 'Coast', '200'],
+            ['NGO B', 'education', 'Plains', '100'],
+            ['NGO B', 'Education', 'Coast', '300']
+        ]
+        self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector', queries='adm1=Plains').values)
 
 
 
