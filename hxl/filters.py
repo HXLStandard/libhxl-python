@@ -261,19 +261,19 @@ class AppendFilter(AbstractFilter):
     row iterator.
     """
 
-    def __init__(self, source, append_source, add_columns=True, filters=[]):
+    def __init__(self, source, append_source, add_columns=True, queries=[]):
         """
         Constructor
         @param source the HXL data source
         @param append_source the HXL source to append (or a plain-old URL)
         @param add_columns flag for adding extra columns in append_source but not source (default True)
-        @param filters optional list of filter queries for rows to append from other datasets
+        @param queries optional list of filter queries for rows to append from other datasets
         """
         super(AppendFilter, self).__init__(source)
         # parameters
         self.append_source = hxl.data(append_source) # so that we can take a plain URL
         self.add_columns = add_columns
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
         # internal properties
         self._column_positions = None
         self._template_row = None
@@ -357,7 +357,12 @@ class AppendFilter(AbstractFilter):
                     self.source_iter = None
 
             # Fall through to the append source
+
+            # filtering through queries
             row_in = next(self.append_iter)
+            while not hxl.model.RowQuery.match_list(row_in, self.outer.queries):
+                row_in = next(self.append_iter)
+            
             for i, value in enumerate(row_in):
                 pos = self.outer._column_positions[i]
                 if pos is not None:
@@ -366,7 +371,6 @@ class AppendFilter(AbstractFilter):
 
         next = __next__
 
-        
 class CacheFilter(AbstractCachingFilter):
     """
     Composable filter class to cache HXL data in memory.
@@ -413,7 +417,7 @@ class CleanDataFilter(AbstractStreamingFilter):
     TODO: clean up lat/lon coordinates
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[], filters=[]):
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[], queries=[]):
         """
         Construct a new data-cleaning filter.
         @param source the HXLDataSource
@@ -430,7 +434,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.lower = lower
         self.date = date
         self.number = number
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
         """Clean up values and pass on the row data."""
@@ -582,7 +586,7 @@ class CountFilter(AbstractCachingFilter):
     </pre>
     """
 
-    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', filters=[]):
+    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', queries=[]):
         """
         Constructor
         @param source the HXL data source
@@ -595,7 +599,7 @@ class CountFilter(AbstractCachingFilter):
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
         self.count_column = CountFilter.parse_spec(count_spec)
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_columns(self):
         """Generate the columns for the report."""
@@ -739,7 +743,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
     TODO: add more-sophisticated matching, edit distance, etc.
     """
 
-    def __init__(self, source, patterns=None, filters=[]):
+    def __init__(self, source, patterns=None, queries=[]):
         """
         Constructor
         @param source the upstream source dataset
@@ -749,7 +753,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
         super(DeduplicationFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.seen_map = set() # row signatures that we've seen so far
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
         """Filter out any rows we've seen before."""
@@ -796,7 +800,7 @@ class MergeDataFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, filters=[]):
+    def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
         """
         Constructor.
         @param source the HXL data source.
@@ -811,7 +815,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         self.merge_tags = hxl.model.TagPattern.parse_list(tags)
         self.replace = replace
         self.overwrite = overwrite
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
 
         self.merge_map = None
 
@@ -957,7 +961,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source, replacements, filters=[]):
+    def __init__(self, source, replacements, queries=[]):
         """
         Constructor
         @param source the HXL data source
@@ -969,7 +973,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         self.replacements = replacements
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
         values = copy.copy(row.values)
@@ -1047,10 +1051,10 @@ class RowCountFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source, filters=[]):
+    def __init__(self, source, queries=[]):
         super(RowCountFilter, self).__init__(source)
         self.row_count = 0
-        self.filters = hxl.model.RowQuery.parse_list(filters)
+        self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
         self.row_count += 1

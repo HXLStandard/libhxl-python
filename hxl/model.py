@@ -231,20 +231,20 @@ class Dataset(object):
     # Filters
     #
 
-    def append(self, append_source, add_columns=True, filters=[]):
+    def append(self, append_source, add_columns=True, queries=[]):
         """Append a second dataset."""
         import hxl.filters
-        return hxl.filters.AppendFilter(self, append_source, add_columns, filters=filters)
+        return hxl.filters.AppendFilter(self, append_source, add_columns, queries=queries)
 
     def cache(self):
         """Add a caching filter to the dataset."""
         import hxl.filters
         return hxl.filters.CacheFilter(self)
 
-    def dedup(self, patterns=[], filters=[]):
+    def dedup(self, patterns=[], queries=[]):
         """Deduplicate a dataset."""
         import hxl.filters
-        return hxl.filters.DeduplicationFilter(self, patterns=patterns, filters=filters)
+        return hxl.filters.DeduplicationFilter(self, patterns=patterns, queries=queries)
 
     def with_columns(self, whitelist):
         """Select matching columns."""
@@ -271,27 +271,27 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
-    def count(self, patterns, aggregate_pattern=None, count_spec='Count#meta+count', filters=[]):
+    def count(self, patterns, aggregate_pattern=None, count_spec='Count#meta+count', queries=[]):
         """Count values in the dataset (caching)."""
         import hxl.filters
-        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern, count_spec=count_spec, filters=filters)
+        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern, count_spec=count_spec, queries=queries)
 
-    def row_counter(self, filters=[]):
+    def row_counter(self, queries=[]):
         """Count the number of rows while streaming."""
         import hxl.filters
-        return hxl.filters.RowCountFilter(self, filters=filters)
+        return hxl.filters.RowCountFilter(self, queries=queries)
 
-    def replace_data(self, original, replacement, pattern=None, use_regex=False, filters=[]):
+    def replace_data(self, original, replacement, pattern=None, use_regex=False, queries=[]):
         """Replace values in a HXL dataset."""
         import hxl.filters
         replacement = hxl.filters.ReplaceDataFilter.Replacement(original, replacement, pattern, use_regex)
-        return hxl.filters.ReplaceDataFilter(self, [replacement], filters=filters)
+        return hxl.filters.ReplaceDataFilter(self, [replacement], queries=queries)
 
-    def replace_data_map(self, map_source, filters=[]):
+    def replace_data_map(self, map_source, queries=[]):
         """Replace values in a HXL dataset."""
         import hxl.filters
         replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(map_source)
-        return hxl.filters.ReplaceDataFilter(self, replacements, filters=filters)
+        return hxl.filters.ReplaceDataFilter(self, replacements, queries=queries)
 
     def add_columns(self, specs, before=False):
         """Add fixed-value columns to a HXL dataset."""
@@ -303,15 +303,15 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.RenameFilter(self, specs)
 
-    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], number=[], filters=[]):
+    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], number=[], queries=[]):
         """Clean data fields."""
         import hxl.filters
-        return hxl.filters.CleanDataFilter(self, whitespace=whitespace, upper=upper, lower=lower, date=date, number=number, filters=filters)
+        return hxl.filters.CleanDataFilter(self, whitespace=whitespace, upper=upper, lower=lower, date=date, number=number, queries=queries)
 
-    def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, filters=[]):
+    def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
         """Merges values from a second dataset."""
         import hxl.filters
-        return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, filters=filters)
+        return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, queries=queries)
 
     #
     # Generators
@@ -586,6 +586,19 @@ class RowQuery(object):
             return [hxl.model.RowQuery.parse(query) for query in queries]
         else:
             return []
+
+    @staticmethod
+    def match_list(row, queries=None):
+        """See if any query in a list matches a row."""
+        if not queries:
+            # no queries = pass
+            return True
+        else:
+            # otherwise, must match at least one
+            for query in queries:
+                if query.match_row(row):
+                    return True
+            return False
 
     @staticmethod
     def operator_re(s, pattern):

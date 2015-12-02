@@ -17,6 +17,7 @@ import sys
 import re
 import xlrd
 import six
+import requests
 
 if sys.version_info < (3,):
     # Customisation for Python 2.x

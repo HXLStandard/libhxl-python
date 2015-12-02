@@ -172,7 +172,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
-    add_filters_arg(parser)
+    add_queries_arg(parser)
         
     args = parser.parse_args(args)
 
@@ -182,7 +182,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             hxl.io.write_hxl(output.output, source, not args.strip_tags)
         else:
             with hxl.io.data(urls.pop(), True) as append_source:
-                filter = hxl.filters.AppendFilter(source, append_source, not args.exclude_extra_columns, filters=arg.filter)
+                filter = hxl.filters.AppendFilter(source, append_source, not args.exclude_extra_columns, queries=arg.query)
                 append_data(filter, output, urls)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
@@ -216,7 +216,7 @@ def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         type=hxl.model.TagPattern.parse_list,
         default='loc,org,sector,adm1,adm2,adm3'
         )
-    add_filters_arg(parser)
+    add_queries_arg(parser)
 
     args = parser.parse_args(args)
 
@@ -308,7 +308,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=False,
         default=True
         )
-    add_filters_arg(parser)
+    add_queries_arg(parser)
 
     args = parser.parse_args(args)
     
@@ -331,7 +331,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
         filter = hxl.filters.CleanDataFilter(
             source, whitespace=whitespace_arg, upper=args.upper, lower=args.lower,
-            date=date_arg, number=number_arg, filters=args.filter
+            date=date_arg, number=number_arg, queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
 
@@ -371,11 +371,11 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='Header#tag',
         default='Count#meta+count'
         )
-    add_filters_arg(parser)
+    add_queries_arg(parser)
 
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate, count_spec=args.count_column, filters=args.filter)
+        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate, count_spec=args.count_column, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
@@ -415,7 +415,7 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
-    add_filters_arg(parser)
+    add_queries_arg(parser)
 
     args = parser.parse_args(args)
 
@@ -475,7 +475,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
-    add_filters_arg(parser)
+    add_queries_arg(parser)
 
     args = parser.parse_args(args)
 
@@ -483,7 +483,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.MergeDataFilter(
             source, merge_source=merge_source,
             keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
-            filters=args.filter
+            queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
@@ -576,7 +576,7 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         if args.pattern:
             for tag in args.tags:
                 replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
-        filter = hxl.filters.ReplaceDataFilter(source, replacements, filters=args.filter)
+        filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
@@ -825,10 +825,10 @@ def make_args(description):
         )
     return parser
 
-def add_filters_arg(parser, help='Apply only to rows matching at least one filter.'):
+def add_queries_arg(parser, help='Apply only to rows matching at least one query.'):
     parser.add_argument(
-        '-F',
-        '--filter',
+        '-q',
+        '--query',
         help=help,
         metavar='<tagspec><op><value>',
         action='append'

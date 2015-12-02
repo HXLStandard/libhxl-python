@@ -93,6 +93,15 @@ class TestAppendFilter(AbstractFilterTest):
         ['NGO C', 'Health', '', '']
     ]
 
+    COMBINED_DATA_FILTERED = [
+        ['Organisation', 'Cluster', 'District', 'Count', 'Targeted', 'Sector 2'],
+        ['#org', '#sector', '#adm1', '#meta+count', '#targeted', '#sector'],
+        ['NGO A', 'WASH', 'Coast', '200', '', ''],
+        ['NGO B', 'Education', 'Plains', '100', '', ''],
+        ['NGO B', 'Education', 'Coast', '300', '', ''],
+        ['NGO C', 'Health', '', '', '500', 'Food']
+    ]
+
     def setUp(self):
         super(TestAppendFilter, self).setUp()
         self.append_source = hxl.data(TestAppendFilter.APPEND_DATA)
@@ -106,6 +115,9 @@ class TestAppendFilter(AbstractFilterTest):
 
     def test_values(self):
         self.assertEqual(self.COMBINED_DATA[2:], self.source.append(self.append_source).values)
+
+    def test_filtered(self):
+        self.assertEqual(self.COMBINED_DATA_FILTERED[2:], self.source.append(self.append_source, queries='sector!=WASH').values)
 
         
 class TestCacheFilter(AbstractFilterTest):

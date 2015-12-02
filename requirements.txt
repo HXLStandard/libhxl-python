@@ -1,0 +1,4 @@
+shapely
+python-dateutil
+xlrd
+requests
