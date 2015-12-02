@@ -284,7 +284,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=False,
         default=True
         )
-    add_queries_arg(parser)
+    add_queries_arg(parser, 'Clean only rows matching at least one query.')
 
     args = parser.parse_args(args)
     
