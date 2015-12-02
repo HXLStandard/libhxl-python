@@ -687,12 +687,13 @@ class CountFilter(AbstractCachingFilter):
             """
             aggregators = {}
             for row in self.iterator:
-                values = [str(row.get(pattern, default='')) for pattern in self.outer.patterns]
-                if values:
-                    key = tuple(values)
-                    if not key in aggregators:
-                        aggregators[key] = CountFilter.Aggregator(self.outer.aggregate_pattern)
-                    aggregators[key].add(row)
+                if hxl.model.RowQuery.match_list(row, self.outer.queries):
+                    values = [str(row.get(pattern, default='')) for pattern in self.outer.patterns]
+                    if values:
+                        key = tuple(values)
+                        if not key in aggregators:
+                            aggregators[key] = CountFilter.Aggregator(self.outer.aggregate_pattern)
+                        aggregators[key].add(row)
             self.aggregate_iter = iter(sorted(aggregators.items()))
 
     class Aggregator(object):

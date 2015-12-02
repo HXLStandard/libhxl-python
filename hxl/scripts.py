@@ -332,7 +332,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='Header#tag',
         default='Count#meta+count'
         )
-    add_queries_arg(parser)
+    add_queries_arg(parser, 'Count only rows that match at least one query.')
 
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:

@@ -204,7 +204,6 @@ class TestCleanFilter(AbstractFilterTest):
         self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector', queries='adm1=Plains').values)
 
 
-
 class TestColumnFilter(AbstractFilterTest):
 
     def test_with_columns(self):
@@ -265,6 +264,14 @@ class TestCountFilter(AbstractFilterTest):
         ]
         source = hxl.data(input).count('org', count_spec='Activities#output+activities')
         self.assertEqual(expected, [row for row in source.gen_raw(show_headers=True)])
+
+    def test_queries(self):
+        expected = [
+            ['Education', 1],
+            ['WASH', 1]
+        ]
+        self.assertEqual(expected, self.source.count('#sector', queries='adm1=Coast').values)
+
 
 class TestDeduplicationFilter (AbstractFilterTest):
 
