@@ -1066,7 +1066,8 @@ class RowCountFilter(AbstractStreamingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
-        self.row_count += 1
+        if hxl.model.RowQuery.match_list(row, self.queries):
+            self.row_count += 1
         return row.values
     
 

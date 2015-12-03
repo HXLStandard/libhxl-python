@@ -485,6 +485,12 @@ class TestRowCountFilter(AbstractFilterTest):
             pass
         self.assertEqual(3, counter.row_count)
 
+    def test_queries(self):
+        counter = self.source.row_counter('org=NGO B')
+        for row in counter:
+            pass
+        self.assertEqual(2, counter.row_count)
+
         
 class TestRowFilter(AbstractFilterTest):
 
