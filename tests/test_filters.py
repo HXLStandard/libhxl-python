@@ -116,7 +116,7 @@ class TestAppendFilter(AbstractFilterTest):
     def test_values(self):
         self.assertEqual(self.COMBINED_DATA[2:], self.source.append(self.append_source).values)
 
-    def test_filtered(self):
+    def test_queries(self):
         self.assertEqual(self.COMBINED_DATA_FILTERED[2:], self.source.append(self.append_source, queries='sector!=WASH').values)
 
         
@@ -390,6 +390,23 @@ class TestMergeDataFilter(AbstractFilterTest):
     #     merged = data1.merge_data(data2, '#org+name', '#org+code')
     #     self.assertEqual(expected[1:], merged.values)
 
+    def test_queries(self):
+        MERGE_IN = [
+            ['District', 'P-code', 'Foo'],
+            ['#adm1', '#adm1+code', '#foo'],
+            ['Coast', '003', 'hack'],
+            ['Coast', '001', 'bar'],
+            ['Plains', '002', 'hack']
+        ]
+        MERGE_OUT = [
+            ['Organisation', 'Cluster', 'District', 'Count', 'P-code'],
+            ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code'],
+            ['NGO A', 'WASH', 'Coast', '200', '003'],
+            ['NGO B', 'Education', 'Plains', '100', '002'],
+            ['NGO B', 'Education', 'Coast', '300', '003']
+        ]
+        merged = self.source.merge_data(hxl.data(MERGE_IN), 'adm1-code', 'adm1+code', queries='foo=hack')
+        self.assertEqual(MERGE_OUT[2:], merged.values)
 
 class TestRenameFilter(AbstractFilterTest):
 

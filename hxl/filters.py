@@ -889,10 +889,11 @@ class MergeDataFilter(AbstractStreamingFilter):
         """
         merge_map = {}
         for row in self.merge_source:
-            values = {}
-            for pattern in self.merge_tags:
-                values[pattern] = row.get(pattern, default='')
-            merge_map[self._make_key(row)] = values
+            if hxl.model.RowQuery.match_list(row, self.queries):
+                values = {}
+                for pattern in self.merge_tags:
+                    values[pattern] = row.get(pattern, default='')
+                merge_map[self._make_key(row)] = values
         return merge_map
 
 

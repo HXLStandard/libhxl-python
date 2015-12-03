@@ -436,7 +436,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
-    add_queries_arg(parser)
+    add_queries_arg(parser, 'Merged data only from rows that match at least one query.')
 
     args = parser.parse_args(args)
 
