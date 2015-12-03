@@ -527,6 +527,9 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='PATH',
         nargs='?'
         )
+
+    add_queries_arg(parser, 'Replace only in rows that match at least one query.')
+    
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:

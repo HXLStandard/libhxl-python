@@ -408,6 +408,7 @@ class TestMergeDataFilter(AbstractFilterTest):
         merged = self.source.merge_data(hxl.data(MERGE_IN), 'adm1-code', 'adm1+code', queries='foo=hack')
         self.assertEqual(MERGE_OUT[2:], merged.values)
 
+
 class TestRenameFilter(AbstractFilterTest):
 
     spec = '#sector:Sub-sector#subsector'
@@ -469,6 +470,11 @@ class TestReplaceFilter(AbstractFilterTest):
         ]
         source = self.source.append(NEW_DATA)
         self.assertEqual('NGO Charlie', source.replace_data_map(hxl.data(MAPPING)).values[3][0])
+
+    def test_queries(self):
+        result = self.source.replace_data('Coast', 'Coastal District', '#adm1', queries='org=NGO A')
+        self.assertEqual('Coastal District', result.values[0][2])
+        self.assertEqual('Coast', result.values[2][2])
 
 
 class TestRowCountFilter(AbstractFilterTest):

@@ -983,13 +983,15 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
-        values = copy.copy(row.values)
-        for index, value in enumerate(values):
-            for replacement in self.replacements:
-                value = replacement.sub(row.columns[index], value)
-                values[index] = value
-        return values
-
+        if hxl.model.RowQuery.match_list(row, self.queries):
+            values = copy.copy(row.values)
+            for index, value in enumerate(values):
+                for replacement in self.replacements:
+                    value = replacement.sub(row.columns[index], value)
+                    values[index] = value
+            return values
+        else:
+            return row.values
 
     class Replacement:
         """Replacement specification."""
