@@ -132,16 +132,19 @@ class TestCacheFilter(AbstractFilterTest):
         self.assertEqual(DATA[2:], self.source.cache().values)
 
     def test_repeat(self):
-        source = hxl.data(DATA)
-        rows1 = [row.values for row in source]
-        rows2 = [row.values for row in source]
-        self.assertEqual(3, len(rows1))
-        self.assertEqual(0, len(rows2))
-                    
+        # Test repeating a cache filter directly
         source = hxl.data(DATA).cache()
         rows1 = [row.values for row in source]
         rows2 = [row.values for row in source]
         self.assertEqual(3, len(rows1))
+        self.assertEqual(rows1, rows2)
+
+    def test_repeat_sub(self):
+        # Test repeating a cache filter backing another filter
+        source = hxl.data(DATA).cache().with_rows('org=NGO A')
+        rows1 = [row.values for row in source]
+        rows2 = [row.values for row in source]
+        self.assertEqual(1, len(rows1))
         self.assertEqual(rows1, rows2)
 
 
