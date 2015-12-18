@@ -68,6 +68,7 @@ FUZZY_HASHTAG_PERCENTAGE = 0.5
 # Patterns for URL munging
 GOOGLE_SHEETS_URL = r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+))?.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
+CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)/resources/([a-z0-9-]{36}$'
 
 # opening signatures for well-known file types
 EXCEL_SIGS = [
@@ -110,6 +111,27 @@ def write_json(output, source, show_headers=True, show_tags=True):
     """Serialize a dataset to JSON."""
     for line in source.gen_json(show_headers, show_tags):
         output.write(line)
+
+
+def munge_url(url):
+    """Munge a URL to get at underlying data for well-known types."""
+
+    # Is it a Google URL?
+    result = re.match(GOOGLE_SHEETS_URL, url)
+    if result and not re.search(r'/pub', url):
+        if result.group(2):
+            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
+        else:
+            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
+
+    # Is it a Dropbox URL?
+    result = re.match(DROPBOX_URL, url)
+    if result:
+        return 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
+
+    # No changes
+    return url
+
 
 
 def _encode_py2(value):
@@ -165,17 +187,7 @@ def make_stream(origin, allow_local=False):
 
     is_google = False
 
-    # Pre-filter to get CSV for public Google Sheets or direct download for Dropbox
-    result = re.match(GOOGLE_SHEETS_URL, origin)
-    if result and not re.match(r'/pub', origin):
-        if result.group(2):
-            origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
-        else:
-            origin = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
-    else:
-        result = re.match(DROPBOX_URL, origin)
-        if result:
-            origin = 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
+    origin = munge_url(origin)
 
     # Does it look like a url?
     if re.match(r'^(?:https?|ftp)://', origin):

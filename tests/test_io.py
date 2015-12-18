@@ -29,6 +29,9 @@ FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
 URL_EXCEL = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
+URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
+URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
+
 
 class TestBadInput(unittest.TestCase):
 
@@ -111,12 +114,23 @@ class TestParser(unittest.TestCase):
 
     def test_remote_csv(self):
         """Test reading from a remote CSV file (will fail without connectivity)."""
-        with hxl.data(URL_CSV, True) as source:
+        with hxl.data(URL_CSV) as source:
             self.compare_input(source)
 
     def test_remote_excel(self):
-        """Test reading from a local Excel file (will fail without connectivity)."""
-        with hxl.data(URL_EXCEL, True) as source:
+        """Test reading from a remote Excel file (will fail without connectivity)."""
+        with hxl.data(URL_EXCEL) as source:
+            self.compare_input(source)
+
+    def test_remote_google(self):
+        """Test reading from a Google Sheet (will fail without connectivity)."""
+
+        # default tab
+        with hxl.data(URL_GOOGLE_NOHASH) as source:
+            self.compare_input(source)
+
+        # specific tab
+        with hxl.data(URL_GOOGLE_HASH) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):
