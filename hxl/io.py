@@ -68,7 +68,7 @@ FUZZY_HASHTAG_PERCENTAGE = 0.5
 # Patterns for URL munging
 GOOGLE_SHEETS_URL = r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+))?.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
-CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)/resources/([a-z0-9-]{36}$'
+CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'
 
 # opening signatures for well-known file types
 EXCEL_SIGS = [
@@ -129,9 +129,15 @@ def munge_url(url):
     if result:
         return 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
 
+    # Is it a CKAN resource? (Assumes the v.3 API for now)
+    result = re.match(CKAN_URL, url)
+    if result:
+        ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
+        ckan_api_result = requests.get(ckan_api_query).json()
+        return ckan_api_result['result']['url']
+
     # No changes
     return url
-
 
 
 def _encode_py2(value):
