@@ -543,7 +543,10 @@ class ColumnFilter(AbstractStreamingFilter):
         """Remove values from a row for any column that's been removed."""
         values = []
         for i in self.indices:
-            values.append(row.values[i])
+            try:
+                values.append(row.values[i])
+            except IndexError:
+                values.append(None)
         return values
 
     def _test_column(self, column):
