@@ -546,7 +546,7 @@ class ColumnFilter(AbstractStreamingFilter):
             try:
                 values.append(row.values[i])
             except IndexError:
-                values.append(None)
+                pass # don't add anything
         return values
 
     def _test_column(self, column):
