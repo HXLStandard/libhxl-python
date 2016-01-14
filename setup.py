@@ -2,18 +2,13 @@
 
 from setuptools import setup
 
-dependency_links=[
-    'git+https://github.com/Toblerity/Shapely.git@maint#egg=Shapely',
-]
-
 setup(name='libhxl',
-      version='2.4',
+      version='2.5',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       author_email='contact@megginson.com',
       url='http://hxlproject.org',
-      install_requires=['shapely', 'python-dateutil', 'xlrd', 'requests'],
-      dependency_links=dependency_links,
+      install_requires=['python-dateutil', 'xlrd', 'requests'],
       packages=['hxl'],
       package_data={'': ['*.csv']},
       include_package_data=True,
@@ -22,7 +17,6 @@ setup(name='libhxl',
           'console_scripts': [
               'hxladd = hxl.scripts:hxladd',
               'hxlappend = hxl.scripts:hxlappend',
-              'hxlbounds = hxl.scripts:hxlbounds',
               'hxlclean = hxl.scripts:hxlclean',
               'hxlcount = hxl.scripts:hxlcount',
               'hxlcut = hxl.scripts:hxlcut',

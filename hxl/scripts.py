@@ -16,7 +16,6 @@ import sys
 import re
 import argparse
 import json
-from shapely.geometry import shape
 
 
 # Do not import hxl, to avoid circular imports
@@ -49,10 +48,6 @@ def hxladd():
 def hxlappend():
     """Console script for hxlappend."""
     run_script(hxlappend_main)
-
-def hxlbounds():
-    """Console script for hxlbounds."""
-    run_script(hxlbounds_main)
 
 def hxlclean():
     """Console script for hxlclean."""
@@ -193,40 +188,6 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             with open(args.file, 'r') as input:
                 datasets += [line.strip("\n") for line in input.readlines()]
         append_data(source, output, datasets)
-
-    return EXIT_OK
-
-
-def hxlbounds_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
-    """Check that all lat/lon coordinates appear within bounds."""
-    
-    parser = make_args('Perform bounds checking on a HXL dataset.')
-    parser.add_argument(
-        '-b',
-        '--bounds',
-        help='GeoJSON file containing the boundary information.',
-        required=True,
-        type=argparse.FileType('r')
-        )
-    parser.add_argument(
-        '-c',
-        '--tags',
-        help='Comma-separated list of column tags to include in error reports',
-        metavar='tag,tag...',
-        type=hxl.model.TagPattern.parse_list,
-        default='loc,org,sector,adm1,adm2,adm3'
-        )
-    add_queries_arg(parser)
-
-    args = parser.parse_args(args)
-
-    data = json.load(args.bounds)
-    shapes = []
-    for d in data['features']:
-        shapes.append(shape(d['geometry']))
-
-    # Call the command function
-    hxl.converters.hxlbounds(args.infile, args.outfile, shapes, tags=args.tags)
 
     return EXIT_OK
 
