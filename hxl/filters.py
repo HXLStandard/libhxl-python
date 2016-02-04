@@ -205,7 +205,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
         else:
             return values + self.const_values
 
-    VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN)
+    VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     @staticmethod
     def parse_spec(spec):
@@ -634,7 +634,7 @@ class CountFilter(AbstractCachingFilter):
     def __iter__(self):
         return CountFilter.Iterator(self)
 
-    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN)
+    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     @staticmethod
     def parse_spec(spec):
@@ -941,7 +941,7 @@ class RenameFilter(AbstractStreamingFilter):
                     new_column.header = column.header
                 return new_column
         return copy.deepcopy(column)
-    RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN)
+    RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     @staticmethod
     def parse_rename(s):
