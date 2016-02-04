@@ -33,6 +33,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 @organization: UNOCHA
 @license: Public Domain
 @date: Started October 2014
+@see: http://hxlstandard.org
 
 """
 
@@ -97,7 +98,6 @@ class AbstractBaseFilter(hxl.model.Dataset):
 
     def __init__(self, source):
         """Construct a new abstract filter.
-
         @param source: the source dataset
         """
 
@@ -114,7 +114,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
         data. Child classes override the filter_columns() method to
         return something different.
 
-        @return: a list of hxl.model.Column objects
+        @return: a list of L{hxl.model.Column} objects
 
         """
         if self._filtered_column_cache is None:
@@ -135,40 +135,71 @@ class AbstractBaseFilter(hxl.model.Dataset):
 
     
 class AbstractStreamingFilter(AbstractBaseFilter):
-    """
-    Abstract base class for streaming filters.
+    """Abstract base class for streaming filters.
 
     A streaming filter processes one row at a time.  It can skip rows,
-    but it never reorders them.  Child classes will implement the
-    filter_columns() method from the AbstractBaseFilter class, as well as
-    the filter_row(row) method from this class.
+    but it never reorders them.  As a result, a streaming filter is
+    I{much} more efficient than a L{caching
+    filter<AbstractCachingFilter>}, since it needs to hold only one
+    row in memory at a time.
+
+    If you are implementing your own filter class, you should subclass
+    I{AbstractStreamingFilter} whenever possible. Child classes may
+    implement the L{AbstractBaseFilter.filter_columns} method to
+    change the columns and tags, and/or well as this class's
+    L{filter_row} method to change, add, or suppress individual rows,
+    like this::
+
+      class MyFilter(hxl.filters.AbstractStreamingFilter):
+
+          def __init__(self, source):
+              super(AbstractStreamingFilter, self).__init__(source)
+
+          def filter_row(self, row):
+              if row.get('org+name') == "Unknown":
+                  return None # remove from output
+              else:
+                  return row
+
+    This simple filter will produce a copy of the source data, but
+    omitting rows where the org name is "Unknown".
+
     """
 
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, source):
+        """Construct a new streaming filter.
+        @param source: the source dataset
+        """
         super(AbstractStreamingFilter, self).__init__(source)
 
     @abc.abstractmethod
     def filter_row(self, row):
-        """
-        Filter a single row of data.
-        A return value of None will cause the row to be skipped.
+        """Filter a single row of data.
 
-        @param row A hxl.model.Row object to filter.
-        @return An array of new values (not a Row object) or None to skip the row.
+        By default, this method returns the row's values,
+        unchanged. Subclasses can use it to replace, add or suppress
+        rows on the fly, without having to keep a copy of the entire
+        dataset in memory.
+
+        @param row: the original L{hxl.model.Row} object.  
+        @return: An array of new string values (I{not} a Row object)
+        or C{None} to skip the row.
+
         """
         return row.values
 
     def __iter__(self):
-        return AbstractStreamingFilter.Iterator(self)
+        return AbstractStreamingFilter._Iterator(self)
 
-    class Iterator:
-        """
-        Iterator to return the filtered rows.
-        """
+    class _Iterator:
+        """Internal iterator class to return the filtered rows."""
 
         def __init__(self, outer):
+            """Create an iterator for a streaming filter
+            @param outer: a reference to the parent object (an L{AbstractStreamingFilter}).
+            """
             self.outer = outer
             self.source_iter = iter(self.outer.source)
             self.row_number = -1
@@ -177,6 +208,16 @@ class AbstractStreamingFilter(AbstractBaseFilter):
             return self
 
         def __next__(self):
+            """Return the next filtered row of data.  
+
+            Uses the L{AbstractStreamingFilter.filter_row} method. The
+            returned row is always a new object, so that if the client
+            changes it, it won't change the version visible upstream
+            in the filter chain.
+
+            @return: a L{hxl.model.Row} object
+
+            """
             # call this here, in case it caches any useful information
             columns = self.outer.columns
             for row in self.source_iter:

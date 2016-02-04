@@ -4,6 +4,7 @@
 @organization: UNOCHA
 @license: Public Domain
 @date: Started April 2015
+@see: http://hxlstandard.org
 
 """
 
