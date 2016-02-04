@@ -1,10 +1,10 @@
 """Data filter classes for the Humanitarian Exchange Language (HXL) v1.0
 
-Filters are virtual L{datasets<hxl.model.Datasets>} that read from
+Filters are virtual L{datasets<hxl.model.Dataset>} that read from
 I{other} datasets and modify them on the fly. Most of the filter
 classes here have corresponding convenience methods in the
-L{hxl.model.Dataset} class, such as L{hxl.model.Dataset.sort} for
-L{SortFilter}::
+L{hxl.model.Dataset} class, such as L{sort()<hxl.model.Dataset.sort>}
+for L{SortFilter}::
 
   # Filter as a class
   source = SortFilter(hxl.data('http://example.org/data.csv'))
@@ -33,7 +33,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 @organization: UNOCHA
 @license: Public Domain
 @date: Started October 2014
-@see: http://hxlstandard.org
+@see: U{hxlstandard.org}
 
 """
 
@@ -92,6 +92,8 @@ class AbstractBaseFilter(hxl.model.Dataset):
     The output will be identical to the source, except that the
     columns will now be '#org' and '#adm1'.
 
+    @see: L{AbstractStreamingFilter}
+    @see: L{AbstractCachingFilter}
     """
 
     __metaclass__ = abc.ABCMeta
@@ -129,6 +131,8 @@ class AbstractBaseFilter(hxl.model.Dataset):
         different set of columns
 
         @return: a list of hxl.model.Column objects
+        @see: L{AbstractStreamingFilter.filter_row}
+        @see: L{AbstractCachingFilter.filter_rows}
 
         """
         return self.source.columns
@@ -143,12 +147,17 @@ class AbstractStreamingFilter(AbstractBaseFilter):
     filter<AbstractCachingFilter>}, since it needs to hold only one
     row in memory at a time.
 
+    It is not possible to replay the data from a streaming filter
+    (e.g. to run a second processing pass), unless it has a caching
+    filter higher up the filter chain; if you are reading directly
+    from disk or a URL, the data is gone once it has passed through
+    the filter once.
+
     If you are implementing your own filter class, you should subclass
     I{AbstractStreamingFilter} whenever possible. Child classes may
     implement the L{AbstractBaseFilter.filter_columns} method to
-    change the columns and tags, and/or well as this class's
-    L{filter_row} method to change, add, or suppress individual rows,
-    like this::
+    change the columns and tags, and/or this class's L{filter_row}
+    method to change, add, or suppress individual rows, like this::
 
       class MyFilter(hxl.filters.AbstractStreamingFilter):
 
@@ -163,6 +172,8 @@ class AbstractStreamingFilter(AbstractBaseFilter):
 
     This simple filter will produce a copy of the source data, but
     omitting rows where the org name is "Unknown".
+
+    @see: L{AbstractCachingFilter}
 
     """
 
@@ -184,9 +195,9 @@ class AbstractStreamingFilter(AbstractBaseFilter):
         dataset in memory.
 
         @param row: the original L{hxl.model.Row} object.  
-        @return: An array of new string values (I{not} a Row object)
-        or C{None} to skip the row.
-
+        @return: A list of string values (I{not} a Row object) or
+        C{None} to skip the row.
+        @see: L{AbstractBaseFilter.filter_columns}
         """
         return row.values
 
@@ -235,30 +246,81 @@ class AbstractStreamingFilter(AbstractBaseFilter):
 
 
 class AbstractCachingFilter(AbstractBaseFilter):
-    """
-    Abstract base class for caching filters.
+    """Abstract base class for caching filters.
 
-    A caching filter reads all of the input data first,
-    then returns it, possibly in a different order
-    or even completely transformed.
+    A caching filter processes the entire dataset together in
+    memory. This approach is much less efficient than a L{streaming
+    filter<AbstractStreamingFilter>}, but it's necessary when a filter
+    needs to reorder rows, or to change some rows that depend on
+    others. Examples of caching filters include L{SortFilter},
+    L{CountFilter}, and L{CacheFilter}.
+
+    Another important property of a caching filter is that it's
+    possible to replay it. As a result, caching filters are especially
+    useful for data that a client application needs to process more
+    than once, and the L{CacheFilter} class exists for precisely that
+    purpose. The filter will transform the data only once, then save a
+    copy of it for future use.
+
+    Child classes may implement the
+    L{AbstractBaseFilter.filter_columns} method to change the columns
+    and tags, and/or this class's L{filter_rows} method to change the
+    data all at once, like this::
+
+      class MyFilter(hxl.filters.AbstractCachingFilter):
+
+          def __init__(self, source):
+              super(AbstractStreamingFilter, self).__init__(source)
+
+          def filter_rows(self, row):
+              raw_data = self.source.values
+              # return a list of lists, one for each row
+              return raw_data.sort()
+
+    This simple filter will produce a copy of the source data sorted
+    using Python's default sorting method.
+
+    @see: L{AbstractStreamingFilter}
+
     """
 
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, source):
+        """Construct a new caching filter.
+        @param source: the source dataset
+        """
         super(AbstractCachingFilter, self).__init__(source)
         # save the rows here, for multiple iterations
-        self.saved_rows = None
+        self._saved_rows = None
 
     def filter_rows(self):
+        """Filter all of the data together.
+        
+        This method returns raw lists and strings, not objects from
+        the L{hxl.model} module; for example, it could return the
+        following for a three-row dataset::
+
+          [['UNICEF', '20'], ['UNHCR', '15'], ['OXFAM', '25']]
+
+        The I{AbstractCachingFilter} class will construct the
+        appropriate objects around the data.
+        
+        @return: a list of lists of strings, one list for each row.
+        @see: L{AbstractBaseFilter.filter_columns}
+        """
         return self.source.values
 
     def __iter__(self):
-        return AbstractCachingFilter.Iterator(self)
+        return AbstractCachingFilter._Iterator(self)
 
-    class Iterator:
+    class _Iterator:
+        """Internal iterator class to return the filtered rows."""
 
         def __init__(self, outer):
+            """Create an iterator for a caching filter
+            @param outer: a reference to the parent object (an L{AbstractStreamingFilter}).
+            """
             self.outer = outer
             self.values_iter = None
             self.row_number = -1
@@ -267,10 +329,19 @@ class AbstractCachingFilter(AbstractBaseFilter):
             return self
 
         def __next__(self):
+            """Return the next filtered row.
+
+            If we haven't called L{AbstractCachingFilter.filter_rows}
+            yet, call it now, and save the result in the parent's I{_saved_rows} property.
+
+            @return: a L{hxl.model.Row} object
+            """
+
             if self.values_iter is None:
-                if self.outer.saved_rows is None:
-                    self.outer.saved_rows = self.outer.filter_rows()
-                self.values_iter = iter(self.outer.saved_rows)
+                if self.outer._saved_rows is None:
+                    # filter rows only once, when requested
+                    self.outer._saved_rows = self.outer.filter_rows()
+                self.values_iter = iter(self.outer._saved_rows)
             self.row_number += 1
             return hxl.model.Row(self.outer.columns, next(self.values_iter), self.row_number)
         
@@ -287,18 +358,15 @@ class AddColumnsFilter(AbstractStreamingFilter):
 
     This is the class supporting the hxladd command-line utility.
 
-    Usage:
-
-    <pre>
-    hxl.data(url).add_columns('Country name#country=Malaysia')
-    </pre>
+    Usage::
+            hxl.data(url).add_columns('Country name#country=Malaysia')
     """
 
     def __init__(self, source, specs, before=False):
         """
-        @param source a HXL data source
-        @param specs a sequence of pairs of Column objects and constant values
-        @param before True to add new columns before existing ones
+        @param source: a HXL data source
+        @param specs: a sequence of pairs of Column objects and constant values
+        @param before: True to add new columns before existing ones
         """
         super(AddColumnsFilter, self).__init__(source)
         if isinstance(specs, six.string_types):
