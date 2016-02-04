@@ -1,10 +1,39 @@
-"""
-Filters for the Humanitarian Exchange Language (HXL) v1.0
-David Megginson
-Started October 2014
+"""Data filter classes for the Humanitarian Exchange Language (HXL) v1.0
 
-License: Public Domain
-Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+Filters are virtual L{datasets<hxl.model.Datasets>} that read from
+I{other} datasets and modify them on the fly. Most of the filter
+classes here have corresponding convenience methods in the
+L{hxl.model.Dataset} class, such as L{hxl.model.Dataset.sort} for
+L{SortFilter}::
+
+  # Filter as a class
+  source = SortFilter(hxl.data('http://example.org/data.csv'))
+
+  # Filter as a method
+  source = hxl.data('http://example.org/data.csv).sort()
+
+Most filters do not keep a copy of the data internally, so it is
+efficient to chain many filters together::
+
+  source = hxl.data(url).with_rows('org=UNICEF').with_rows('sector=Education')
+
+Some filters, however, do have to keep a cached version of the data
+internally, such as L{SortFilter}, L{CountFilter}, and
+L{CacheFilter}. If you are working with very large datasets, you
+should be aware of this limitation (for example, it is better to sort
+I{after} filtering out a lot of rows, so that there will be less held
+in memory).
+
+If you are creating your own filters, you should normally subclass
+them from L{AbstractStreamingFilter} (if they don't have to keep data
+internally) or L{AbstractCachingFilter}, but you can also subclass the
+lower-level L{AbstractFilter} directly for especially-complex cases.
+
+@author: David Megginson
+@organization: UNOCHA
+@license: Public Domain
+@date: Started October 2014
+
 """
 
 import sys, re, six, abc, copy
@@ -17,42 +46,83 @@ import hxl
 # Filter-specific exception
 #
 class HXLFilterException(hxl.common.HXLException):
+    """Base class for HXL filter exceptions.
+
+    This subclass of L{hxl.common.HXLException} exists only to make it
+    easier to distinguish filter-based exceptions in C{except:} clauses.
+
+    """
     pass
 
 #
 # Base class for filters
 
 class AbstractFilter(hxl.model.Dataset):
-    """
-    Abstract base class for composable filters.
+    """Abstract base class for composable filters.
+
+    This is the base class for all filters. A B{filter} is like a
+    L{hxl.model.Dataset}, except that it uses another dataset as its source, and
+    performs some kind of transformation on it before producing its
+    output.
 
     This class stores the upstream source, and provides a
-    filter_columns() method that child classes can implement. It will
-    be called precisely once for each instantiation, giving the child
-    a chance to provide a different set of columns than those in the
-    source.
+    L{filter_columns} method that child classes can implement. The
+    L{columns} method will call filter_columns() precisely once for
+    each instantiation, giving the child a chance to provide a
+    different set of columns than those in the source.
+
+    Subclassing works like this::
+    
+      class MyFilter(hxl.filters.AbstractFilter):
+
+          def __init__(self, source):
+              super(AbstractFilter, self).__init__(source)
+
+          def filter_columns(self):
+              return [Column.parse('#org'), Column.parse('#adm1')]
+
+    The output will be identical to the source, except that the
+    columns will now be '#org' and '#adm1'.
+
     """
 
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, source):
+        """Construct a new abstract filter.
+
+        @param source: the source dataset
         """
-        Construct a new abstract filter.
-        @param source the source dataset
-        """
+
         self.source = source
-        self.filtered_columns = None
+        """HXL data source for the filter"""
+
+        self._filtered_column_cache = None
 
     @property
     def columns(self):
-        if self.filtered_columns is None:
-            self.filtered_columns = self.filter_columns()
-        return self.filtered_columns
+        """Return the filter's (possibly-modified) columns.
+
+        By default, return the columns defined by the source HXL
+        data. Child classes override the filter_columns() method to
+        return something different.
+
+        @return: a list of hxl.model.Column objects
+
+        """
+        if self._filtered_column_cache is None:
+            self._filtered_column_cache = self.filter_columns()
+        return self._filtered_column_cache
 
     def filter_columns(self):
-        """
-        Return a new list of columns for the filtered dataset.
-        @return a list of hxl.model.Column objects
+        """Return a new list of columns for the filtered dataset.
+
+        By default, return the source HXL data's columns. Child
+        classes override the filter_columns() method to return a
+        different set of columns
+
+        @return: a list of hxl.model.Column objects
+
         """
         return self.source.columns
 

@@ -14,10 +14,10 @@ class Tagger(hxl.io.AbstractInput):
       specs = [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
       tagger = Tagger(input, specs)
 
-    The tagger object acts as an abstract input source, which you can
-    use with the hxl_data() function:
+    The tagger object acts as a L{hxl.io.AbstractInput} source, which you can
+    use with the L{hxl.data} function like this::
 
-      source = hxl(Tagger(input, specs)).with_rows('org=unicef').sort()
+      source = hxl.data(Tagger(input, specs)).with_rows('org=unicef').sort()
 
     """
 
@@ -39,7 +39,7 @@ class Tagger(hxl.io.AbstractInput):
         self._found_tags = False
 
     def __next__(self):
-        """Return the next line of input."""
+        """Return the next line of input (including the new tags)."""
         if not self._found_tags:
             # Search the first 25 rows for a match.
             if self._add_tags():
