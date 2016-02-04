@@ -448,49 +448,75 @@ class AppendFilter(AbstractBaseFilter):
 
     """Composable filter class to concatenate two datasets.
 
-    Usage:
+    Usage::
+    
+        filter = Appendfilter(hxl.data(url), hxl.data(url2))
 
-    <pre>
-    hxl.data(url).append(url2, add_columns=False)
-    </pre>
+    This filter concatenates a second dataset to the end of the first
+    one. It supports the L{hxl.model.Dataset.append} convenience
+    method, and the L{hxl.scripts.hxlappend} command-line script.
 
-    This filter adds a second dataset to the end of the first one.  It
-    preserves the order of the columns in the original, and adds any
-    extra columns in the second if the add_columns option is True (the
-    default).  Columns must match exactly, including attributes, or
-    else they're considered different columns.
+    The filter preserves the order of the columns in the first
+    dataset. If there are any columns in the second dataset that do
+    not appear in the first, then the behaviour depends on the value
+    of the I{add_columns} property:
 
-    A common use case would be to start with an empty dataset as a
-    template, providing the order and headers desired, then set the
-    add_columns option to False so that any extra columns are ignored.
+      - if C{True} (default), add extra columns from the second dataset
+        (and leave their values blank for the first).
+      - if C{False}, ignore extra columns from the second dataset.
 
-    To append multiple datasets, chain the filters:
+    Note that HXL tags must match exactly, including any tag
+    attributes, for two columns to be considered as matches.
 
-    <pre>
-    hxl.data(url).append(url2, False).append(url3, False)
-    </pre>
+    A common use case is be to start with an empty dataset as a
+    template so that the columns and headers are as desired in the
+    final output, then append other datasets to that, with
+    I{add_columns} set to C{False} to ignore any extra data in the
+    dataset.
+
+    To append multiple datasets, chain the filters::
+
+        filter = HXLAppend(HXLAppend(hxl.data(url), hxl.data(url2), False), hxl.data(url3), False)
+
+    Or, more intuitively (using the convenience methods)::
+
+        hxl.data(url).append(url2, False).append(url3, False)
 
     If you have an unknown number of URLs to append, try something
-    like this:
+    like this::
 
-    <pre>
-    source = hxl.data(template_url)
-    for url in my_list_of_urls:
-        source = source.append(url, True)
-    </pre>
+        source = hxl.data(template_url)
+        for url in my_list_of_urls:
+            source = AppendFilter(source, url, True)
 
-    This class derives directly from AbstractBaseFilter rather than
-    AbstractStreamingFilter, because it's a special case (streaming
-    from two different datasets), and still needs to implement its own
-    row iterator.
+    It's also possible to be selective about what you append, using the I{queries} parameter::
+
+        filter = AppendFilter(source, source2, queries='org=UNICEF')
+
+    In the second dataset, this filter will include I{only} rows where
+    the value "UNICEF" appears under the C{#org} tag.
+
+    This class class is a special case, neither a L{streaming
+    filter<AbstractStreamingFilter>} nor a L{caching
+    filter<AbstractCachingFilter>}; instead, it streams two separate
+    datasets, one starting after the other, so it extends
+    L{AbstractBaseFilter} directly, and implements its own custom
+    iterator.
+
+    @see: L{MergeFilter}, which combines two datasets horizontally
+    rather than vertically.
+
     """
 
     def __init__(self, source, append_source, add_columns=True, queries=[]):
-        """Constructor
-        @param source the HXL data source
-        @param append_source the HXL source to append (or a plain-old URL)
-        @param add_columns flag for adding extra columns in append_source but not source (default True)
-        @param queries optional list of filter queries for rows to append from other datasets
+        """Construct a new I{AppendFilter}
+        @param source: a L{hxl.model.Dataset} object for the principal data
+        @param append_source: a L{hxl.model.Dataset} object for the dataset to append (or a string containing a URL)
+        @param add_columns: flag for adding extra columns in append_source but not source (default True)
+        @param queries: optional list of L{hxl.model.RowQuery} objects
+        (or a single strig) to select which rows to include from the
+        second dataset
+
         """
         super(AppendFilter, self).__init__(source)
         # parameters
@@ -502,8 +528,7 @@ class AppendFilter(AbstractBaseFilter):
         self._template_row = None
 
     def filter_columns(self):
-        """
-        Generate the columns for the combined dataset
+        """Internal: generate the columns for the combined dataset
 
         If add_columns is True, extend with any columns from the
         second dataset that don't appear in the first; otherwise,
@@ -547,9 +572,9 @@ class AppendFilter(AbstractBaseFilter):
 
     def __iter__(self):
         self.columns # make sure this is triggered first
-        return AppendFilter.Iterator(self)
+        return AppendFilter._Iterator(self)
 
-    class Iterator:
+    class _Iterator:
         """Custom iterator to return the contents of both sources, in sequence."""
 
         def __init__(self, outer):
@@ -593,6 +618,7 @@ class AppendFilter(AbstractBaseFilter):
             return row_out
 
         next = __next__
+
 
 class CacheFilter(AbstractCachingFilter):
     """
@@ -643,13 +669,13 @@ class CleanDataFilter(AbstractStreamingFilter):
     def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[], queries=[]):
         """
         Construct a new data-cleaning filter.
-        @param source the HXLDataSource
-        @param whitespace list of TagPatterns for normalising whitespace.
-        @param upper list of TagPatterns for converting to uppercase.
-        @param lower list of TagPatterns for converting to lowercase.
-        @param lower list of TagPatterns for normalising dates.
-        @param lower list of TagPatterns for normalising numbers.
-        @param queries optional list of queries to select rows to be cleaned.
+        @param source: the HXLDataSource
+        @param whitespace: list of TagPatterns for normalising whitespace.
+        @param upper: list of TagPatterns for converting to uppercase.
+        @param lower: list of TagPatterns for converting to lowercase.
+        @param date: list of TagPatterns for normalising dates.
+        @param number: list of TagPatterns for normalising numbers.
+        @param queries: optional list of queries to select rows to be cleaned.
         """
         super(CleanDataFilter, self).__init__(source)
         self.whitespace = hxl.model.TagPattern.parse_list(whitespace)
