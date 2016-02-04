@@ -1,5 +1,15 @@
-"""
-HXL converter classes (to/from other formats)
+"""Data-conversion classes
+
+This module holds classes for converting to HXL from other formats, or
+from HXL to other formats. Current, the only class is L{Tagger} (for
+adding tags to non-HXL tabular data on the fly), but we will add more
+converters soon, especially for formats like GeoJSON.
+
+@author: David Megginson
+@organization: UNOCHA
+@license: Public Domain
+@date: Started April 2015
+
 """
 
 import hxl, re

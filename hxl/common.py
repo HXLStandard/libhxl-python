@@ -1,5 +1,10 @@
-"""
-Common classes, variables, and functions for the HXL library.
+""" Common classes, variables, and functions for the HXL library.
+
+@author: David Megginson
+@organization: UNOCHA
+@license: Public Domain
+@date: Started April 2015
+
 """
 
 import re
