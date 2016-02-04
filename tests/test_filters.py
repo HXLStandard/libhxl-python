@@ -23,7 +23,7 @@ DATA = [
 ]
 
 
-class AbstractFilterTest(unittest.TestCase):
+class AbstractBaseFilterTest(unittest.TestCase):
     """Base class for all tests."""
 
     def setUp(self):
@@ -35,7 +35,7 @@ class AbstractFilterTest(unittest.TestCase):
 # Test classes
 #
 
-class TestAddColumnsFilter(AbstractFilterTest):
+class TestAddColumnsFilter(AbstractBaseFilterTest):
 
     spec = 'Country#country=Country A'
 
@@ -64,7 +64,7 @@ class TestAddColumnsFilter(AbstractFilterTest):
         )
 
 
-class TestAppendFilter(AbstractFilterTest):
+class TestAppendFilter(AbstractBaseFilterTest):
 
     APPEND_DATA = [
         ['Org', 'Targeted', 'Sector 1', 'Sector 2'],
@@ -120,7 +120,7 @@ class TestAppendFilter(AbstractFilterTest):
         self.assertEqual(self.COMBINED_DATA_FILTERED[2:], self.source.append(self.append_source, queries='sector!=WASH').values)
 
         
-class TestCacheFilter(AbstractFilterTest):
+class TestCacheFilter(AbstractBaseFilterTest):
 
     def test_headers(self):
         self.assertEqual(DATA[0], self.source.cache().headers)
@@ -148,7 +148,7 @@ class TestCacheFilter(AbstractFilterTest):
         self.assertEqual(rows1, rows2)
 
 
-class TestCleanFilter(AbstractFilterTest):
+class TestCleanFilter(AbstractBaseFilterTest):
 
     def test_whitespace(self):
         DATA_IN = [
@@ -220,7 +220,7 @@ class TestCleanFilter(AbstractFilterTest):
         self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector', queries='adm1=Plains').values)
 
 
-class TestColumnFilter(AbstractFilterTest):
+class TestColumnFilter(AbstractBaseFilterTest):
 
     def test_with_columns(self):
         expected = ['#sector']
@@ -233,7 +233,7 @@ class TestColumnFilter(AbstractFilterTest):
         self.assertEqual(expected, self.source.without_columns(['#sector']).tags)
 
 
-class TestCountFilter(AbstractFilterTest):
+class TestCountFilter(AbstractBaseFilterTest):
 
     def test_tags(self):
         expected = ['#sector', '#meta']
@@ -289,7 +289,7 @@ class TestCountFilter(AbstractFilterTest):
         self.assertEqual(expected, self.source.count('#sector', queries='adm1=Coast').values)
 
 
-class TestDeduplicationFilter (AbstractFilterTest):
+class TestDeduplicationFilter (AbstractBaseFilterTest):
 
     DATA_IN = DATA + DATA[2:] # double up the input data
 
@@ -315,7 +315,7 @@ class TestDeduplicationFilter (AbstractFilterTest):
         self.assertEqual(self.DATA_OUT_FILTERED[2:], self.source.dedup(queries='sector=Education').values)
 
 
-class TestMergeDataFilter(AbstractFilterTest):
+class TestMergeDataFilter(AbstractBaseFilterTest):
 
     MERGE_IN = [
         ['District', 'P-code'],
@@ -425,7 +425,7 @@ class TestMergeDataFilter(AbstractFilterTest):
         self.assertEqual(MERGE_OUT[2:], merged.values)
 
 
-class TestRenameFilter(AbstractFilterTest):
+class TestRenameFilter(AbstractBaseFilterTest):
 
     spec = '#sector:Sub-sector#subsector'
 
@@ -442,7 +442,7 @@ class TestRenameFilter(AbstractFilterTest):
         )
 
 
-class TestReplaceFilter(AbstractFilterTest):
+class TestReplaceFilter(AbstractBaseFilterTest):
 
     def test_basic_replace(self):
         # should be replaced
@@ -493,7 +493,7 @@ class TestReplaceFilter(AbstractFilterTest):
         self.assertEqual('Coast', result.values[2][2])
 
 
-class TestRowCountFilter(AbstractFilterTest):
+class TestRowCountFilter(AbstractBaseFilterTest):
 
     def test_count(self):
         counter = self.source.row_counter()
@@ -508,7 +508,7 @@ class TestRowCountFilter(AbstractFilterTest):
         self.assertEqual(2, counter.row_count)
 
         
-class TestRowFilter(AbstractFilterTest):
+class TestRowFilter(AbstractBaseFilterTest):
 
     def test_with_rows(self):
         self.assertEqual(DATA[3:], self.source.with_rows(['#sector=education']).values)
@@ -519,7 +519,7 @@ class TestRowFilter(AbstractFilterTest):
         self.assertEqual(DATA[3:], self.source.without_rows('#sector=wash').values)
 
 
-class TestSortFilter(AbstractFilterTest):
+class TestSortFilter(AbstractBaseFilterTest):
 
     def test_forward(self):
         self.assertEqual(sorted(DATA[2:]), self.source.sort().values)
@@ -538,7 +538,7 @@ class TestSortFilter(AbstractFilterTest):
         self.assertEqual(sorted(DATA[2:], key=key), self.source.sort('#meta+count').values)
 
 
-class TestChaining(AbstractFilterTest):
+class TestChaining(AbstractBaseFilterTest):
 
     def test_rowfilter_countfilter(self):
         self.assertEqual(

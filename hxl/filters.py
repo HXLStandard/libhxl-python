@@ -27,7 +27,7 @@ in memory).
 If you are creating your own filters, you should normally subclass
 them from L{AbstractStreamingFilter} (if they don't have to keep data
 internally) or L{AbstractCachingFilter}, but you can also subclass the
-lower-level L{AbstractFilter} directly for especially-complex cases.
+lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 @author: David Megginson
 @organization: UNOCHA
@@ -57,7 +57,7 @@ class HXLFilterException(hxl.common.HXLException):
 #
 # Base class for filters
 
-class AbstractFilter(hxl.model.Dataset):
+class AbstractBaseFilter(hxl.model.Dataset):
     """Abstract base class for composable filters.
 
     This is the base class for all filters. A B{filter} is like a
@@ -71,12 +71,19 @@ class AbstractFilter(hxl.model.Dataset):
     each instantiation, giving the child a chance to provide a
     different set of columns than those in the source.
 
+    If you're writing your own filter classes, you should normally
+    subclass L{AbstractStreamingFilter} or L{AbstractCachingFilter},
+    both of which are child classes of this one; however, there may be
+    some special applications where you need to subclass
+    I{AbstractBaseFilter} directly (see L{AppendFilter} for an
+    example).
+
     Subclassing works like this::
     
-      class MyFilter(hxl.filters.AbstractFilter):
+      class MyFilter(hxl.filters.AbstractBaseFilter):
 
           def __init__(self, source):
-              super(AbstractFilter, self).__init__(source)
+              super(AbstractBaseFilter, self).__init__(source)
 
           def filter_columns(self):
               return [Column.parse('#org'), Column.parse('#adm1')]
@@ -127,13 +134,13 @@ class AbstractFilter(hxl.model.Dataset):
         return self.source.columns
 
     
-class AbstractStreamingFilter(AbstractFilter):
+class AbstractStreamingFilter(AbstractBaseFilter):
     """
     Abstract base class for streaming filters.
 
     A streaming filter processes one row at a time.  It can skip rows,
     but it never reorders them.  Child classes will implement the
-    filter_columns() method from the AbstractFilter class, as well as
+    filter_columns() method from the AbstractBaseFilter class, as well as
     the filter_row(row) method from this class.
     """
 
@@ -186,7 +193,7 @@ class AbstractStreamingFilter(AbstractFilter):
         next = __next__
 
 
-class AbstractCachingFilter(AbstractFilter):
+class AbstractCachingFilter(AbstractBaseFilter):
     """
     Abstract base class for caching filters.
 
@@ -291,7 +298,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
             raise HXLFilterException("Badly formatted new-column spec: " + spec)
 
 
-class AppendFilter(AbstractFilter):
+class AppendFilter(AbstractBaseFilter):
     """Composable filter class to concatenate two datasets.
 
     Usage:
@@ -325,7 +332,7 @@ class AppendFilter(AbstractFilter):
         source = source.append(url, True)
     </pre>
 
-    This class derives directly from AbstractFilter rather than
+    This class derives directly from AbstractBaseFilter rather than
     AbstractStreamingFilter, because it's a special case (streaming
     from two different datasets), and still needs to implement its own
     row iterator.
