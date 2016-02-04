@@ -528,19 +528,7 @@ class AppendFilter(AbstractBaseFilter):
         self._template_row = None
 
     def filter_columns(self):
-        """Internal: generate the columns for the combined dataset
-
-        If add_columns is True, extend with any columns from the
-        second dataset that don't appear in the first; otherwise,
-        just return a copy of the columns from the source
-        dataset.
-
-        As a side-effect, create an empty template for each
-        row of values, and create a position map from column
-        numbers in the second (appended) dataset to column numbers
-        in the output, for faster mapping.
-        """
-        
+        """Internal: generate the columns for the combined dataset"""
         columns_out = copy.deepcopy(self.source.columns)
         column_positions = {}
         original_tags = self.source.display_tags
@@ -578,6 +566,7 @@ class AppendFilter(AbstractBaseFilter):
         """Custom iterator to return the contents of both sources, in sequence."""
 
         def __init__(self, outer):
+            """@param outer: reference to outer object"""
             self.outer = outer
             self.source_iter = iter(outer.source)
             self.append_iter = iter(outer.append_source)
@@ -621,15 +610,44 @@ class AppendFilter(AbstractBaseFilter):
 
 
 class CacheFilter(AbstractCachingFilter):
-    """
-    Composable filter class to cache HXL data in memory.
+    """Composable filter to cache HXL data in memory.
 
-    Caching the data allows you to iterate over it more than once.
+    This filter saves a copy of the HXL data in memory. It supports
+    the L{hxl.model.Dataset.cache} method, and has no corresponding
+    command-line script.
 
-    This filter does nothing *but* cache the data, for cases where you
-    plan to process it more than once.  You have the option to cache
-    only part of the dataset (e.g. for a preview), in which case,
-    the "overflow" property will be True if there were more columns.
+    While L{streaming filters<AbstractStreamingFilter>} are more
+    efficient, sometimes you need to keep a copy of your HXL data in
+    memory, so that you can iterate over it more than once. Some
+    filters, like L{SortFilter} and L{CountFilter}, do that as a side
+    effect, but you can also choose to add a I{CacheFilter} explicitly
+    to your chain.
+
+    This filter does nothing but save a copy of your data for repeated
+    use, as in the following example::
+
+      filter = Cache(hxl.data(url))
+
+    or::
+
+      filter = hxl.data(url).cache()
+
+    It is also possible to cache just I{part} of the data, as a
+    preview or to avoid crashing on excessively-large datasets::
+
+      # cache just the first 10 rows
+      preview = Cache(hxl.data(url), 10)
+
+    If there were more rows of data available, then the filter will
+    set the L{overflow} property to C{True}.
+
+    You can also use the cache filter strategically in a filter chain
+    to save the results of an expensive operation (like replacing
+    data) to avoid repeating it.  For example, this sequence will
+    never run the replacements more than once::
+
+      filter = hxl.data(url).replace_data_map(map_url).cache().with_rows('org=UNICEF')
+
     """
 
     def __init__(self, source, max_rows=None):
@@ -638,15 +656,19 @@ class CacheFilter(AbstractCachingFilter):
         @param max_rows If >0, maximum number of rows to cache.
         """
         super(CacheFilter, self).__init__(source)
+
         self.max_rows = max_rows
+        """Maximum number of rows to keep in the cache (-1 means no limit)"""
+
         self.overflow = False
+        """Flag for whether there were more rows than L{max_rows} available."""
 
     def filter_columns(self):
-        # local copy of the columns
+        """Internal: deep copy of the source columns"""
         return copy.deepcopy(self.source.columns)
 
     def filter_rows(self):
-        # may be limiting the number of rows read
+        """Internal: keep a local copy of the row data."""
         values = []
         max_rows = self.max_rows
         for row in self.source:
@@ -660,22 +682,73 @@ class CacheFilter(AbstractCachingFilter):
 
 
 class CleanDataFilter(AbstractStreamingFilter):
-    """
-    Filter for cleaning values in HXL data.
-    Can normalise whitespace, convert to upper/lowercase, and fix dates and numbers.
-    TODO: clean up lat/lon coordinates
+    """Data-cleaning filter.
+
+    This filter can perform a set of automated cleaning tasks,
+    including character-case conversion, whitespace normalisation, and
+    date and number normalisation. It supports the
+    L{hxl.model.Dataset.clean_data} method and the
+    L{hxl.scripts.hxlclean} command-line script.
+
+    The clean filter is especially useful when you are working with
+    data from different sources who might use different date and
+    number conventions, and also for datasets with inconsistent
+    whitespace and capitalisation. The following functions are
+    available (and can be filtered by row and column):
+
+      - B{whitespace}: strip leading/trailing spaces, and normalise
+        all internal whitespace (including lineends) to a single
+        space.
+      - B{upper}: convert text to all uppercase.
+      - B{lower}: convert text to all lowercase.
+      - B{date}: attempt to parse and normalise dates to ISO 8601
+        format (YYYY-MM-DD). This will not always succeed -- for
+        example, it is impossible to guess whether "9/6/15" refers to
+        6 September 2016 or 9 June 2016 (hence the need for ISO dates)
+        -- but it will do its best.
+      - B{number}: attempt to normalise numbers to standard computer
+        format (remove commas or spaces between thousands, and use "."
+        as the decimal separator).
+
+    For each type of cleaning, you specify one or more L{tag
+    patterns<hxl.model.TagPattern>} to which the cleaning applies (you
+    may use string representations instead of creating the objects),
+    or use C{True} to apply the cleaning to the whole row. You may
+    also include L{hxl.model.RowQuery} objects to apply the cleaning
+    tasks only to specific rows.
+
+    This example normalises all start dates from Oxfam::
+
+      filter = CleanFilter(hxl.data('data.csv'), dates='date+start', queries='org=Oxfam')
+
+      # or
+
+      filter = hxl.data('data.csv').clean_data(dates='date+start', queries='org=Oxfam')
+
+    @see: L{ReplaceDataFilter}, which allows for more-specific
+    replacements using string and regular-expression patterns.
+
     """
 
     def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[], queries=[]):
-        """
-        Construct a new data-cleaning filter.
-        @param source: the HXLDataSource
-        @param whitespace: list of TagPatterns for normalising whitespace.
-        @param upper: list of TagPatterns for converting to uppercase.
-        @param lower: list of TagPatterns for converting to lowercase.
-        @param date: list of TagPatterns for normalising dates.
-        @param number: list of TagPatterns for normalising numbers.
+        """Construct a new data-cleaning filter.
+
+        The I{upper}, I{lower}, I{date}, and I{number} arguments all
+        accept either lists of tag patterns<hxl.model.TagPattern or
+        individual patterns, which can be strings (like
+        C{#org+impl-code}) or full L{hxl.model.TagPattern}
+        objects. The I{queries} argument accepts either lists of
+        queries or individual queries, which can be strings (like
+        C{org=Oxfam}) or full L{hxl.model.RowQuery} objects.
+
+        @param source: a L{hxl.model.Dataset} object to filter
+        @param whitespace: a tag pattern or list of tag patterns for whitespace normalisation
+        @param upper: a tag pattern or list of tag patterns for conversion to uppercase
+        @param lower: a tag pattern or list of tag patterns for conversion to lowercase
+        @param date: a tag pattern or list of tag patterns for date normalisation
+        @param number: a tag pattern or list of tag patterns for number normalisation
         @param queries: optional list of queries to select rows to be cleaned.
+
         """
         super(CleanDataFilter, self).__init__(source)
         self.whitespace = hxl.model.TagPattern.parse_list(whitespace)
@@ -686,7 +759,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
-        """Clean up values and pass on the row data."""
+        """Internal: clean up values and pass on the row data."""
         if hxl.model.RowQuery.match_list(row, self.queries):
             # if there are no queries, or row matches at least one
             columns = self.columns
