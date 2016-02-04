@@ -353,20 +353,44 @@ class AbstractCachingFilter(AbstractBaseFilter):
 #
 
 class AddColumnsFilter(AbstractStreamingFilter):
-    """
-    Composable filter class to add constant values to every row of a HXL dataset.
+    """Composable filter class to add constant values to every row of a HXL dataset.
 
-    This is the class supporting the hxladd command-line utility.
+    This is a L{streaming filter<AbstractStreamingFilter>} to add
+    constant values, such as a country code, to every row of data.  It
+    supports the L{hxl.model.Dataset.add_columns} method and the
+    L{hxladd<hxl.scripts.hxladd>} command-line utility.
 
-    Usage::
-            hxl.data(url).add_columns('Country name#country=Malaysia')
+    This example will add a column with the label "Country name", the
+    HXL hashtag "#country", and the value "Malaysia" to every row in
+    the dataset::
+
+        filter = AddColumnsFilter(source, "Country name#country=Malaysia")      
+
+    @see: L{ColumnFilter}, L{RenameFilter}
+
     """
 
     def __init__(self, source, specs, before=False):
-        """
+        """Construct a new AddColumnsFilter.
+
+        The I{source} parameter may be either a string or a list of
+        strings (for multiple columns). Each string must have the
+        following format (I{<header text>} is optional):
+
+        I{<header text>}B{#}I{<tag and attributes>}B{=}I{<constant value>}
+
+        Example::
+
+            Country name#country=Malasia
+
+        By default, this filter will add new columns to the end of
+        existing ones, but you can use optional I{before} parameter to
+        add them to the front.
+
         @param source: a HXL data source
-        @param specs: a sequence of pairs of Column objects and constant values
-        @param before: True to add new columns before existing ones
+        @param specs: a string or list of strings containing new column specifications, as described above (or a list of tuples as described in L{parse_spec})
+        @param before: true to add new columns before existing ones (default C{False})
+
         """
         super(AddColumnsFilter, self).__init__(source)
         if isinstance(specs, six.string_types):
@@ -376,6 +400,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
         self.const_values = None
 
     def filter_columns(self):
+        """Internal: return the new columns list"""
         new_columns = [spec[0] for spec in self.specs]
         if self.before:
             new_columns = new_columns + self.source.columns
@@ -385,19 +410,31 @@ class AddColumnsFilter(AbstractStreamingFilter):
         return new_columns
 
     def filter_row(self, row):
+        """Internal: return each row with the new fixed value(s) attached."""
         values = copy.copy(row.values)
         if self.before:
             return self.const_values + values
         else:
             return values + self.const_values
 
-    VALUE_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    _SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     @staticmethod
     def parse_spec(spec):
+        """Parse a new-column specification.
+
+        The format is I{<header text>}B{#}I{<tag and
+        attributes>}B{=}I{<fixed value>}. Example::
+
+          Country name#country=Malaysia
+
+        @param spec: the string spec to parse, in the format above.
+        @return: a tuple containing a L{hxl.model.Column} object and the fixed value.
+        """
+
         if not isinstance(spec, six.string_types):
             return spec
-        result = re.match(AddColumnsFilter.VALUE_PATTERN, spec)
+        result = re.match(AddColumnsFilter._SPEC_PATTERN, spec)
         if result:
             header = result.group(1)
             tag = '#' + result.group(2)
@@ -408,6 +445,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
 
 
 class AppendFilter(AbstractBaseFilter):
+
     """Composable filter class to concatenate two datasets.
 
     Usage:
@@ -448,8 +486,7 @@ class AppendFilter(AbstractBaseFilter):
     """
 
     def __init__(self, source, append_source, add_columns=True, queries=[]):
-        """
-        Constructor
+        """Constructor
         @param source the HXL data source
         @param append_source the HXL source to append (or a plain-old URL)
         @param add_columns flag for adding extra columns in append_source but not source (default True)
