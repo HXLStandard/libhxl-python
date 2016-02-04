@@ -76,7 +76,7 @@ object --+
         <tr>
           <td><span class="summary-sig"><a href="hxl.model.Row-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">columns</span>,
-        <span class="summary-sig-arg">values</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
+        <span class="summary-sig-arg">values</span>=<span class="summary-sig-default">[]</span>,
         <span class="summary-sig-arg">row_number</span>=<span class="summary-sig-default">None</span>)</span><br />
       Set up a new row.</td>
           <td align="right" valign="top">
@@ -114,7 +114,7 @@ object --+
         <tr>
           <td><span class="summary-sig"><a href="hxl.model.Row-class.html#get" class="summary-sig-name">get</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">tag</span>,
-        <span class="summary-sig-arg">index</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">index</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">None</span>)</span><br />
       Get a single value for a tag in a row.</td>
           <td align="right" valign="top">
@@ -206,27 +206,6 @@ object --+
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Properties</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="columns"></a><span class="summary-name">columns</span>
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="row_number"></a><span class="summary-name">row_number</span>
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="values"></a><span class="summary-name">values</span>
-    </td>
-  </tr>
   <tr>
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
@@ -253,7 +232,7 @@ object --+
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
         <span class="sig-arg">columns</span>,
-        <span class="sig-arg">values</span>=<span class="sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
+        <span class="sig-arg">values</span>=<span class="sig-default">[]</span>,
         <span class="sig-arg">row_number</span>=<span class="sig-default">None</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
@@ -306,7 +285,7 @@ object --+
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">get</span>(<span class="sig-arg">self</span>,
         <span class="sig-arg">tag</span>,
-        <span class="sig-arg">index</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">index</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">default</span>=<span class="sig-default">None</span>)</span>
   </h3>
   </td><td align="right" valign="top"
@@ -314,12 +293,13 @@ object --+
     </td>
   </tr></table>
   
-  <p>Get a single value for a tag in a row. @param tag A TagPattern or a 
-  string value for a tag.</p>
+  <p>Get a single value for a tag in a row. If no index is provided 
+  (&quot;None&quot;), return the first non-empty value. @param tag A 
+  TagPattern or a string value for a tag.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>index</code></strong>, <strong class="pname"><code>The</code></strong>, <strong class="pname"><code>zero-based</code></strong>, <strong class="pname"><code>index</code></strong>, <strong class="pname"><code>if</code></strong>, <strong class="pname"><code>there</code></strong>, <strong class="pname"><code>are</code></strong>, <strong class="pname"><code>multiple</code></strong>, <strong class="pname"><code>values</code></strong>, <strong class="pname"><code>for</code></strong>, <strong class="pname"><code>the</code></strong>, <strong class="pname"><code>tag</code></strong>, <strong class="pname"><code>(default</code></strong> - 0)</li>
+        <li><strong class="pname"><code>index</code></strong>, <strong class="pname"><code>The</code></strong>, <strong class="pname"><code>zero-based</code></strong>, <strong class="pname"><code>index</code></strong>, <strong class="pname"><code>if</code></strong>, <strong class="pname"><code>there</code></strong>, <strong class="pname"><code>are</code></strong>, <strong class="pname"><code>multiple</code></strong>, <strong class="pname"><code>values</code></strong>, <strong class="pname"><code>for</code></strong>, <strong class="pname"><code>the</code></strong>, <strong class="pname"><code>tag</code></strong>, <strong class="pname"><code>(default</code></strong> - None)</li>
         <li><strong class="pname"><code>default</code></strong>, <strong class="pname"><code>The</code></strong>, <strong class="pname"><code>default</code></strong>, <strong class="pname"><code>value</code></strong>, <strong class="pname"><code>if</code></strong>, <strong class="pname"><code>not</code></strong>, <strong class="pname"><code>found</code></strong>, <strong class="pname"><code>(default</code></strong> - None) @return The value found, or the default value provided.</li>
     </ul></dd>
   </dl>
@@ -420,7 +400,8 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

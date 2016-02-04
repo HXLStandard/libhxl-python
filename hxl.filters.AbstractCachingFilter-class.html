@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>hxl.filters.RenameFilter</title>
+  <title>hxl.filters.AbstractCachingFilter</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -39,7 +39,7 @@
       <span class="breadcrumbs">
         <a href="hxl-module.html">Package&nbsp;hxl</a> ::
         <a href="hxl.filters-module.html">Module&nbsp;filters</a> ::
-        Class&nbsp;RenameFilter
+        Class&nbsp;AbstractCachingFilter
       </span>
     </td>
     <td>
@@ -50,27 +50,62 @@
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class RenameFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class AbstractCachingFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter">source&nbsp;code</a></span></p>
 <pre class="base-tree">
-     object --+            
-              |            
-  <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+        
-                  |        
- <a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+    
-                      |    
-<a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a> --+
-                          |
-                         <strong class="uidshort">RenameFilter</strong>
+    object --+        
+             |        
+ <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+    
+                 |    
+<a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+
+                     |
+                    <strong class="uidshort">AbstractCachingFilter</strong>
 </pre>
 
 <hr />
-<p>Composable filter class to rename columns in a HXL dataset.</p>
-  <p>This is the class supporting the hxlrename command-line utility.</p>
-  <p>Usage:</p>
-  <p>&lt;pre&gt; hxl.data(url).rename_columns('#foo:New header#bar') 
-  &lt;/pre&gt;</p>
+<p>Abstract base class for caching filters.</p>
+  <p>A caching filter processes the entire dataset together in memory. This
+  approach is much less efficient than a <a 
+  href="hxl.filters.AbstractStreamingFilter-class.html" 
+  class="link">streaming filter</a>, but it's necessary when a filter needs
+  to reorder rows, or to change some rows that depend on others. Examples 
+  of caching filters include <a href="hxl.filters.SortFilter-class.html" 
+  class="link">SortFilter</a>, <a href="hxl.filters.CountFilter-class.html"
+  class="link">CountFilter</a>, and <a 
+  href="hxl.filters.CacheFilter-class.html" 
+  class="link">CacheFilter</a>.</p>
+  <p>Another important property of a caching filter is that it's possible 
+  to replay it. As a result, caching filters are especially useful for data
+  that a client application needs to process more than once, and the <a 
+  href="hxl.filters.CacheFilter-class.html" class="link">CacheFilter</a> 
+  class exists for precisely that purpose. The filter will transform the 
+  data only once, then save a copy of it for future use.</p>
+  <p>Child classes may implement the <a 
+  href="hxl.filters.AbstractBaseFilter-class.html#filter_columns" 
+  class="link">AbstractBaseFilter.filter_columns</a> method to change the 
+  columns and tags, and/or this class's <a 
+  href="hxl.filters.AbstractCachingFilter-class.html#filter_rows" 
+  class="link">filter_rows</a> method to change the data all at once, like 
+  this:</p>
+<pre class="literalblock">
+ class MyFilter(hxl.filters.AbstractCachingFilter):
 
-<!-- ==================== INSTANCE METHODS ==================== -->
+     def __init__(self, source):
+         super(AbstractStreamingFilter, self).__init__(source)
+
+     def filter_rows(self, row):
+         raw_data = self.source.values
+         # return a list of lists, one for each row
+         return raw_data.sort()
+</pre>
+  <p>This simple filter will produce a copy of the source data sorted using
+  Python's default sorting method.</p>
+
+<hr />
+<div class="fields">      <p><strong>See Also:</strong>
+        <a href="hxl.filters.AbstractStreamingFilter-class.html" 
+        class="link">AbstractStreamingFilter</a>
+      </p>
+</div><!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -84,12 +119,11 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.RenameFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">source</span>,
-        <span class="summary-sig-arg">rename</span>=<span class="summary-sig-default">[]</span>)</span><br />
-      Constructor @param source the Dataset for the data.</td>
+          <td><span class="summary-sig"><a href="hxl.filters.AbstractCachingFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>)</span><br />
+      Construct a new caching filter.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.__init__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter.__init__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -103,10 +137,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.RenameFilter-class.html#filter_columns" class="summary-sig-name">filter_columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Rename requested columns.</td>
+          <td><span class="summary-sig"><a href="hxl.filters.AbstractCachingFilter-class.html#filter_rows" class="summary-sig-name">filter_rows</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Filter all of the data together.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.filter_columns">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter.filter_rows">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -120,11 +154,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.RenameFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">row</span>)</span><br />
-      Row will be rebuilt with proper columns.</td>
+          <td><span class="summary-sig"><a href="hxl.filters.AbstractCachingFilter-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get the iterator over the rows.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.filter_row">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter.__iter__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -134,11 +167,9 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__">__iter__</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>,
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">filter_columns</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
       <code><a href="hxl.model.Dataset-class.html#add_columns">add_columns</a></code>,
@@ -185,32 +216,6 @@
     </td>
   </tr>
 </table>
-<!-- ==================== STATIC METHODS ==================== -->
-<a name="section-StaticMethods"></a>
-<table class="summary" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Static Methods</span></td>
-</tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="parse_rename"></a><span class="summary-sig-name">parse_rename</span>(<span class="summary-sig-arg">s</span>)</span><br />
-      Parse a rename specification from the parameters.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.parse_rename">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-</table>
 <!-- ==================== CLASS VARIABLES ==================== -->
 <a name="section-ClassVariables"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -223,15 +228,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.filters.RenameFilter-class.html#RENAME_PATTERN" class="summary-name">RENAME_PATTERN</a> = <code title="r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{to\
-ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]<code class="variable-ellipsis">...</code></code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__metaclass__">__metaclass__</a></code>
-      </p>
+        <a name="__metaclass__"></a><span class="summary-name">__metaclass__</span> = <code title="abc.ABCMeta">abc.ABCMeta</code>
     </td>
   </tr>
 </table>
@@ -284,17 +281,15 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">source</span>,
-        <span class="sig-arg">rename</span>=<span class="sig-default">[]</span>)</span>
+        <span class="sig-arg">source</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.__init__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter.__init__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Constructor @param source the Dataset for the data. @param rename_map 
-  map of tags to rename</p>
+  <p>Construct a new caching filter.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -306,87 +301,59 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
   </dl>
 </td></tr></table>
 </div>
-<a name="filter_columns"></a>
+<a name="filter_rows"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_columns</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_rows</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.filter_columns">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter.filter_rows">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Rename requested columns.</p>
+  <p>Filter all of the data together.</p>
+  <p>This method returns raw lists and strings, not objects from the <a 
+  href="hxl.model-module.html" class="link">hxl.model</a> module; for 
+  example, it could return the following for a three-row dataset:</p>
+<pre class="literalblock">
+ [['UNICEF', '20'], ['UNHCR', '15'], ['OXFAM', '25']]
+</pre>
+  <p>The <i>AbstractCachingFilter</i> class will construct the appropriate 
+  objects around the data.</p>
   <dl class="fields">
     <dt>Returns:</dt>
-        <dd>a list of hxl.model.Column objects</dd>
-    <dt>Overrides:
-        <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">AbstractBaseFilter.filter_columns</a>
-    </dt>
+        <dd>a list of lists of strings, one list for each row.</dd>
   </dl>
-</td></tr></table>
+<div class="fields">      <p><strong>See Also:</strong>
+        <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns" 
+        class="link">AbstractBaseFilter.filter_columns</a>
+      </p>
+</div></td></tr></table>
 </div>
-<a name="filter_row"></a>
+<a name="__iter__"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_row</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">row</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__iter__</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.filter_row">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractCachingFilter.__iter__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Row will be rebuilt with proper columns.</p>
+  <p>Get the iterator over the rows.</p>
   <dl class="fields">
-    <dt>Parameters:</dt>
-    <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>row</code></strong> - the original <a href="hxl.model.Row-class.html" 
-          class="link">hxl.model.Row</a> object.</li>
-    </ul></dd>
-    <dt>Returns:</dt>
-        <dd>A list of string values (<i>not</i> a Row object) or 
-          <code>None</code> to skip the row.</dd>
     <dt>Overrides:
-        <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
+        <a href="hxl.model.Dataset-class.html#__iter__">model.Dataset.__iter__</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
-  </dl>
-</td></tr></table>
-</div>
-<br />
-<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
-<a name="section-ClassVariableDetails"></a>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Class Variable Details</span></td>
-</tr>
-</table>
-<a name="RENAME_PATTERN"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">RENAME_PATTERN</h3>
-  
-  <dl class="fields">
-  </dl>
-  <dl class="fields">
-    <dt>Value:</dt>
-      <dd><table><tr><td><pre class="variable">
-r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{to<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)
-</pre></td></tr></table>
-</dd>
   </dl>
 </td></tr></table>
 </div>

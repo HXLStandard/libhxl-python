@@ -157,10 +157,45 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse"></a><span class="summary-sig-name">parse</span>(<span class="summary-sig-arg">s</span>)</span><br />
+          <td><span class="summary-sig"><a name="parse"></a><span class="summary-sig-name">parse</span>(<span class="summary-sig-arg">query</span>)</span><br />
       Parse a filter expression</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.parse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="parse_list"></a><span class="summary-sig-name">parse_list</span>(<span class="summary-sig-arg">queries</span>)</span><br />
+      Parse a single query spec or a list of specs.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.parse_list">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="match_list"></a><span class="summary-sig-name">match_list</span>(<span class="summary-sig-arg">row</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">None</span>)</span><br />
+      See if any query in a list matches a row.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.match_list">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -217,14 +252,8 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.RowQuery-class.html#OPERATOR_MAP" class="summary-name">OPERATOR_MAP</a> = <code title="{'!=': &lt;built-in function ne&gt;,
- '!~': &lt;function operator_nre at 0x7f1b2c273d70&gt;,
- '&lt;': &lt;built-in function lt&gt;,
- '&lt;=': &lt;built-in function le&gt;,
- '=': &lt;built-in function eq&gt;,
- '&gt;': &lt;built-in function gt&gt;,
- '&gt;=': &lt;built-in function ge&gt;,
- '~': &lt;function operator_re at 0x7f1b2c273cf8&gt;}"><code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">!=</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function ne&gt;<code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">!~</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;function <code class="variable-ellipsis">...</code></code>
+        <a href="hxl.model.RowQuery-class.html#OPERATOR_MAP" class="summary-name">OPERATOR_MAP</a> = <code title="{'=': operator.eq, '!=': operator.ne, '&lt;': operator.lt, '&lt;=': operator\
+.le, '&gt;': operator.gt, '&gt;=': operator.ge}">{'=': operator.eq, '!=': operator.ne, '&lt;': oper<code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 </table>
@@ -302,14 +331,8 @@ object --+
   <dl class="fields">
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
-<code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">!=</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function ne&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">!~</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;function operator_nre at 0x7f1b2c273d70&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">&lt;</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function lt&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">&lt;=</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function le&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">=</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function eq&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">&gt;</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function gt&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">&gt;=</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;built-in function ge&gt;<code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">~</code><code class="variable-quote">'</code><code class="variable-op">: </code>&lt;function operator_re at 0x7f1b2c273cf8&gt;<code class="variable-group">}</code>
+{'=': operator.eq, '!=': operator.ne, '&lt;': operator.lt, '&lt;=': operator<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+.le, '&gt;': operator.gt, '&gt;=': operator.ge}
 </pre></td></tr></table>
 </dd>
   </dl>
@@ -342,7 +365,8 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

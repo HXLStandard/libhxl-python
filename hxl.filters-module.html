@@ -50,12 +50,61 @@
 </table>
 <!-- ==================== MODULE DESCRIPTION ==================== -->
 <h1 class="epydoc">Module filters</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html">source&nbsp;code</a></span></p>
-<p>Filters for the Humanitarian Exchange Language (HXL) v1.0 David 
-  Megginson Started October 2014</p>
-  <p>License: Public Domain Documentation: 
-  https://github.com/HXLStandard/libhxl-python/wiki</p>
+<p>Data filter classes for the Humanitarian Exchange Language (HXL) 
+  v1.0</p>
+  <p>Filters are virtual <a href="hxl.model.Dataset-class.html" 
+  class="link">datasets</a> that read from <i>other</i> datasets and modify
+  them on the fly. Most of the filter classes here have corresponding 
+  convenience methods in the <a href="hxl.model.Dataset-class.html" 
+  class="link">hxl.model.Dataset</a> class, such as <a 
+  href="hxl.model.Dataset-class.html#sort" class="link">sort()</a> for <a 
+  href="hxl.filters.SortFilter-class.html" class="link">SortFilter</a>:</p>
+<pre class="literalblock">
+ # Filter as a class
+ source = SortFilter(hxl.data('http://example.org/data.csv'))
 
-<!-- ==================== CLASSES ==================== -->
+ # Filter as a method
+ source = hxl.data('http://example.org/data.csv).sort()
+</pre>
+  <p>Most filters do not keep a copy of the data internally, so it is 
+  efficient to chain many filters together:</p>
+<pre class="literalblock">
+ source = hxl.data(url).with_rows('org=UNICEF').with_rows('sector=Education')
+</pre>
+  <p>Some filters, however, do have to keep a cached version of the data 
+  internally, such as <a href="hxl.filters.SortFilter-class.html" 
+  class="link">SortFilter</a>, <a href="hxl.filters.CountFilter-class.html"
+  class="link">CountFilter</a>, and <a 
+  href="hxl.filters.CacheFilter-class.html" class="link">CacheFilter</a>. 
+  If you are working with very large datasets, you should be aware of this 
+  limitation (for example, it is better to sort <i>after</i> filtering out 
+  a lot of rows, so that there will be less held in memory).</p>
+  <p>If you are creating your own filters, you should normally subclass 
+  them from <a href="hxl.filters.AbstractStreamingFilter-class.html" 
+  class="link">AbstractStreamingFilter</a> (if they don't have to keep data
+  internally) or <a href="hxl.filters.AbstractCachingFilter-class.html" 
+  class="link">AbstractCachingFilter</a>, but you can also subclass the 
+  lower-level <a href="hxl.filters.AbstractBaseFilter-class.html" 
+  class="link">AbstractBaseFilter</a> directly for especially-complex 
+  cases.</p>
+
+<hr />
+<div class="fields">      <p><strong>Author:</strong>
+        David Megginson
+      </p>
+      <p><strong>Organization:</strong>
+        UNOCHA
+      </p>
+      <p><strong>License:</strong>
+        Public Domain
+      </p>
+      <p><strong>Date:</strong>
+        Started October 2014
+      </p>
+      <p><strong>See Also:</strong>
+        <a href="http://hxlstandard.org" target="_top">hxlstandard.org</a>
+      </p>
+</div><!-- ==================== CLASSES ==================== -->
 <a name="section-Classes"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -67,7 +116,32 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.filters.HXLFilterException-class.html" class="summary-name">HXLFilterException</a>
+        <a href="hxl.filters.HXLFilterException-class.html" class="summary-name">HXLFilterException</a><br />
+      Base class for HXL filter exceptions.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.filters.AbstractBaseFilter-class.html" class="summary-name">AbstractBaseFilter</a><br />
+      Abstract base class for composable filters.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.filters.AbstractStreamingFilter-class.html" class="summary-name">AbstractStreamingFilter</a><br />
+      Abstract base class for streaming filters.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.filters.AbstractCachingFilter-class.html" class="summary-name">AbstractCachingFilter</a><br />
+      Abstract base class for caching filters.
     </td>
   </tr>
 <tr>
@@ -75,8 +149,8 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.AddColumnsFilter-class.html" class="summary-name">AddColumnsFilter</a><br />
-      Composable filter class to add constant values to every row of a 
-        HXL dataset.
+      Composable filter class to add constant values to every row of a HXL 
+      dataset.
     </td>
   </tr>
 <tr>
@@ -108,7 +182,7 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.ColumnFilter-class.html" class="summary-name">ColumnFilter</a><br />
-      Composable filter class to cut columns from a HXL dataset.
+      Composable filter class to filter columns in a HXL dataset.
     </td>
   </tr>
 <tr>
@@ -155,6 +229,14 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a href="hxl.filters.RowCountFilter-class.html" class="summary-name">RowCountFilter</a><br />
+      Composable filter class to count lines.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="hxl.filters.RowFilter-class.html" class="summary-name">RowFilter</a><br />
       Composable filter class to select rows from a HXL dataset.
     </td>
@@ -165,30 +247,6 @@
     </td><td class="summary">
         <a href="hxl.filters.SortFilter-class.html" class="summary-name">SortFilter</a><br />
       Composable filter class to sort a HXL dataset.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.filters.ValidateFilter-class.html" class="summary-name">ValidateFilter</a><br />
-      Composable filter class to validate a HXL dataset against a schema.
-    </td>
-  </tr>
-</table>
-<!-- ==================== VARIABLES ==================== -->
-<a name="section-Variables"></a>
-<table class="summary" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Variables</span></td>
-</tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="'hxl'"><code class="variable-quote">'</code><code class="variable-string">hxl</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 </table>
@@ -218,7 +276,8 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

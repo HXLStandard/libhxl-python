@@ -57,12 +57,6 @@ object --+
         <strong class="uidshort">Dataset</strong>
 </pre>
 
-<dl><dt>Known Subclasses:</dt>
-<dd>
-      <ul class="subclass-list">
-<li><a href="hxl.io.HXLReader-class.html">io.HXLReader</a></li><li>, <a href="hxl.filters.AddColumnsFilter-class.html">filters.AddColumnsFilter</a></li><li>, <a href="hxl.filters.AppendFilter-class.html">filters.AppendFilter</a></li><li>, <a href="hxl.filters.CacheFilter-class.html">filters.CacheFilter</a></li><li>, <a href="hxl.filters.CleanDataFilter-class.html">filters.CleanDataFilter</a></li><li>, <a href="hxl.filters.ColumnFilter-class.html">filters.ColumnFilter</a></li><li>, <a href="hxl.filters.CountFilter-class.html">filters.CountFilter</a></li><li>, <a href="hxl.filters.DeduplicationFilter-class.html">filters.DeduplicationFilter</a></li><li>, <a href="hxl.filters.MergeDataFilter-class.html">filters.MergeDataFilter</a></li><li>, <a href="hxl.filters.RenameFilter-class.html">filters.RenameFilter</a></li><li>, <a href="hxl.filters.ReplaceDataFilter-class.html">filters.ReplaceDataFilter</a></li><li>, <a href="hxl.filters.RowFilter-class.html">filters.RowFilter</a></li><li>, <a href="hxl.filters.SortFilter-class.html">filters.SortFilter</a></li><li>, <a href="hxl.filters.ValidateFilter-class.html">filters.ValidateFilter</a></li>  </ul>
-</dd></dl>
-
 <hr />
 <p>Abstract base class for a HXL data source.</p>
   <p>Any source of parsed HXL data inherits from this class: that includes 
@@ -72,23 +66,6 @@ object --+
   <p>The child class must implement the columns() method as a property and 
   the next() method to iterate through rows of data.</p>
 
-<!-- ==================== NESTED CLASSES ==================== -->
-<a name="section-NestedClasses"></a>
-<table class="summary" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Nested Classes</span></td>
-</tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="abc.ABCMeta-class.html" class="summary-name">__metaclass__</a><br />
-      Metaclass for defining Abstract Base Classes (ABCs).
-    </td>
-  </tr>
-</table>
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -107,6 +84,108 @@ object --+
       Get the iterator over the rows.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.__iter__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#columns" class="summary-sig-name">columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get the column definitions for the dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.columns">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#headers" class="summary-sig-name">headers</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a list of header strings (for a spreadsheet row).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.headers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#tags" class="summary-sig-name">tags</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a list of tags.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.tags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#display_tags" class="summary-sig-name">display_tags</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a list of display tags.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.display_tags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#has_headers" class="summary-sig-name">has_headers</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Report whether any non-empty header strings exist.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.has_headers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#values" class="summary-sig-name">values</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get all values for the dataset at once, in an array of arrays.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.values">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -161,7 +240,8 @@ object --+
         <tr>
           <td><span class="summary-sig"><a name="append"></a><span class="summary-sig-name">append</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">append_source</span>,
-        <span class="summary-sig-arg">add_columns</span>=<span class="summary-sig-default">True</span>)</span><br />
+        <span class="summary-sig-arg">add_columns</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
       Append a second dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.append">source&nbsp;code</a></span>
@@ -182,6 +262,25 @@ object --+
       Add a caching filter to the dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.cache">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="dedup"></a><span class="summary-sig-name">dedup</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">patterns</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Deduplicate a dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.dedup">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -288,10 +387,30 @@ object --+
         <tr>
           <td><span class="summary-sig"><a name="count"></a><span class="summary-sig-name">count</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">patterns</span>,
-        <span class="summary-sig-arg">aggregate_pattern</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">aggregate_pattern</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">count_spec</span>=<span class="summary-sig-default">'Count#meta+count'</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
       Count values in the dataset (caching).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.count">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="row_counter"></a><span class="summary-sig-name">row_counter</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Count the number of rows while streaming.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.row_counter">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -309,10 +428,30 @@ object --+
         <span class="summary-sig-arg">original</span>,
         <span class="summary-sig-arg">replacement</span>,
         <span class="summary-sig-arg">pattern</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">use_regex</span>=<span class="summary-sig-default">False</span>)</span><br />
+        <span class="summary-sig-arg">use_regex</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
       Replace values in a HXL dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.replace_data">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="replace_data_map"></a><span class="summary-sig-name">replace_data_map</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">map_source</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Replace values in a HXL dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.replace_data_map">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -364,11 +503,12 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="clean_data"></a><span class="summary-sig-name">clean_data</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">whitespace</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
-        <span class="summary-sig-arg">upper</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
-        <span class="summary-sig-arg">lower</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
-        <span class="summary-sig-arg">date</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
-        <span class="summary-sig-arg">number</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span><br />
+        <span class="summary-sig-arg">whitespace</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">upper</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">lower</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">date</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">number</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
       Clean data fields.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.clean_data">source&nbsp;code</a></span>
@@ -390,7 +530,8 @@ object --+
         <span class="summary-sig-arg">keys</span>,
         <span class="summary-sig-arg">tags</span>,
         <span class="summary-sig-arg">replace</span>=<span class="summary-sig-default">False</span>,
-        <span class="summary-sig-arg">overwrite</span>=<span class="summary-sig-default">False</span>)</span><br />
+        <span class="summary-sig-arg">overwrite</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
       Merges values from a second dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.merge_data">source&nbsp;code</a></span>
@@ -458,42 +599,6 @@ object --+
       
     </td>
   </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="dedup"></a><span class="summary-sig-name">dedup</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">patterns</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span><br />
-      Deduplicate a dataset.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.dedup">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="replace_data_map"></a><span class="summary-sig-name">replace_data_map</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">map_source</span>)</span><br />
-      Replace values in a HXL dataset.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.replace_data_map">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
   <tr>
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
@@ -526,7 +631,7 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__abstractmethods__"></a><span class="summary-name">__abstractmethods__</span> = <code title="frozenset(['__iter__'])"><code class="variable-group">frozenset([</code><code class="variable-quote">'</code><code class="variable-string">__iter__</code><code class="variable-quote">'</code><code class="variable-group">])</code></code>
+        <a name="__metaclass__"></a><span class="summary-name">__metaclass__</span> = <code title="abc.ABCMeta">abc.ABCMeta</code>
     </td>
   </tr>
 </table>
@@ -538,54 +643,6 @@ object --+
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Properties</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html#columns" class="summary-name">columns</a><br />
-      Get the column definitions for the dataset.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html#headers" class="summary-name">headers</a><br />
-      Return a list of header strings (for a spreadsheet row).
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html#tags" class="summary-name">tags</a><br />
-      Return a list of tags.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html#display_tags" class="summary-name">display_tags</a><br />
-      Return a list of display tags.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html#has_headers" class="summary-name">has_headers</a><br />
-      Report whether any non-empty header strings exist.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html#values" class="summary-name">values</a><br />
-      Get all values for the dataset at once, in an array of arrays.
-    </td>
-  </tr>
   <tr>
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
@@ -622,6 +679,147 @@ object --+
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@abc.abstractmethod</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="columns"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">columns</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.columns">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get the column definitions for the dataset. @return a list of Column 
+  objects.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+        <li><code>@abc.abstractmethod</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="headers"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">headers</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.headers">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return a list of header strings (for a spreadsheet row).</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="tags"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">tags</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.tags">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return a list of tags.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="display_tags"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">display_tags</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.display_tags">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return a list of display tags.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="has_headers"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">has_headers</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.has_headers">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Report whether any non-empty header strings exist.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="values"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">values</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.values">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get all values for the dataset at once, in an array of arrays. This 
+  method can be highly inefficient for large datasets.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -680,108 +878,6 @@ object --+
 </td></tr></table>
 </div>
 <br />
-<!-- ==================== PROPERTY DETAILS ==================== -->
-<a name="section-PropertyDetails"></a>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Property Details</span></td>
-</tr>
-</table>
-<a name="columns"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">columns</h3>
-  <p>Get the column definitions for the dataset. @return a list of Column 
-  objects.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.columns(<span class="summary-sig-arg">self</span>)</span>
-        - Get the column definitions for the dataset.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="headers"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">headers</h3>
-  <p>Return a list of header strings (for a spreadsheet row).</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.headers(<span class="summary-sig-arg">self</span>)</span>
-        - Return a list of header strings (for a spreadsheet row).
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="tags"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">tags</h3>
-  <p>Return a list of tags.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.tags(<span class="summary-sig-arg">self</span>)</span>
-        - Return a list of tags.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="display_tags"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">display_tags</h3>
-  <p>Return a list of display tags.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.display_tags(<span class="summary-sig-arg">self</span>)</span>
-        - Return a list of display tags.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="has_headers"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">has_headers</h3>
-  <p>Report whether any non-empty header strings exist.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.has_headers(<span class="summary-sig-arg">self</span>)</span>
-        - Report whether any non-empty header strings exist.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="values"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">values</h3>
-  <p>Get all values for the dataset at once, in an array of arrays. This 
-  method can be highly inefficient for large datasets.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.values(<span class="summary-sig-arg">self</span>)</span>
-        - Get all values for the dataset at once, in an array of arrays.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<br />
 <!-- ==================== NAVIGATION BAR ==================== -->
 <table class="navbar" border="0" width="100%" cellpadding="0"
        bgcolor="#a0c0ff" cellspacing="0">
@@ -808,7 +904,8 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

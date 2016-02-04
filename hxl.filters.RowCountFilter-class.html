@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>hxl.filters.ValidateFilter</title>
+  <title>hxl.filters.RowCountFilter</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -39,7 +39,7 @@
       <span class="breadcrumbs">
         <a href="hxl-module.html">Package&nbsp;hxl</a> ::
         <a href="hxl.filters-module.html">Module&nbsp;filters</a> ::
-        Class&nbsp;ValidateFilter
+        Class&nbsp;RowCountFilter
       </span>
     </td>
     <td>
@@ -50,50 +50,29 @@
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class ValidateFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#ValidateFilter">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class RowCountFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#RowCountFilter">source&nbsp;code</a></span></p>
 <pre class="base-tree">
-   object --+    
-            |    
-<a href="hxl.model.Dataset-class.html">model.Dataset</a> --+
-                |
-               <strong class="uidshort">ValidateFilter</strong>
+     object --+            
+              |            
+  <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+        
+                  |        
+ <a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+    
+                      |    
+<a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a> --+
+                          |
+                         <strong class="uidshort">RowCountFilter</strong>
 </pre>
 
 <hr />
-<p>Composable filter class to validate a HXL dataset against a 
-  schema.</p>
-  <p>This is the class supporting the hxlvalidate command-line utility.</p>
-  <p>Because this class is a {@link hxl.model.Dataset}, you can use it as 
-  the source to an instance of another filter class to build a dynamic, 
-  singled-threaded processing pipeline.</p>
+<p>Composable filter class to count lines.</p>
+  <p>The output is identical to the input; the line count is stored in the 
+  filter itself.  As a result, there is no corresponding command-line 
+  utility.</p>
   <p>Usage:</p>
-  <p>&lt;pre&gt; source = HXLReader(sys.stdin) schema = 
-  hxl.schema('my-schema.csv') filter = ValidateFilter(source, schema) 
-  write_hxl(sys.stdout, filter) &lt;/pre&gt;</p>
+  <p>&lt;pre&gt; counter = hxl.data(url).row_counter(); // process the 
+  filter print(&quot;{} lines&quot;.format(counter.row_count); 
+  &lt;/pre&gt;</p>
 
-<!-- ==================== NESTED CLASSES ==================== -->
-<a name="section-NestedClasses"></a>
-<table class="summary" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Nested Classes</span></td>
-</tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.filters.ValidateFilter.Iterator-class.html" class="summary-name">Iterator</a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
-      <code><a href="abc.ABCMeta-class.html">__metaclass__</a></code>
-      </p>
-    </td>
-  </tr>
-</table>
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -108,15 +87,12 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.ValidateFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="hxl.filters.RowCountFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">source</span>,
-        <span class="summary-sig-arg">schema</span>,
-        <span class="summary-sig-arg">show_all</span>=<span class="summary-sig-default">False</span>)</span><br />
-      @param source a HXL data source @param schema a Schema object @param 
-      show_all boolean flag to report all lines (including those without 
-      errors).</td>
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Construct a new streaming filter.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#ValidateFilter.__init__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#RowCountFilter.__init__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -130,10 +106,11 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.ValidateFilter-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Get the iterator over the rows.</td>
+          <td><span class="summary-sig"><a href="hxl.filters.RowCountFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>)</span><br />
+      Filter a single row of data.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#ValidateFilter.__iter__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#RowCountFilter.filter_row">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -143,6 +120,13 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__">__iter__</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>,
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">filter_columns</a></code>
+      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
       <code><a href="hxl.model.Dataset-class.html#add_columns">add_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#append">append</a></code>,
@@ -150,16 +134,22 @@
       <code><a href="hxl.model.Dataset-class.html#clean_data">clean_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#count">count</a></code>,
       <code><a href="hxl.model.Dataset-class.html#dedup">dedup</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#display_tags">display_tags</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_csv">gen_csv</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_json">gen_json</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_raw">gen_raw</a></code>,
       <code><a href="hxl.model.Dataset-class.html#get_value_set">get_value_set</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
       <code><a href="hxl.model.Dataset-class.html#merge_data">merge_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#rename_columns">rename_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data">replace_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data_map">replace_data_map</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#row_counter">row_counter</a></code>,
       <code><a href="hxl.model.Dataset-class.html#sort">sort</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#tags">tags</a></code>,
       <code><a href="hxl.model.Dataset-class.html#validate">validate</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#values">values</a></code>,
       <code><a href="hxl.model.Dataset-class.html#with_columns">with_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#with_rows">with_rows</a></code>,
       <code><a href="hxl.model.Dataset-class.html#without_columns">without_columns</a></code>,
@@ -190,11 +180,27 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Class Variables</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="__abstractmethods__"></a><span class="summary-name">__abstractmethods__</span> = <code title="frozenset([])"><code class="variable-group">frozenset([</code><code class="variable-group">])</code></code>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__metaclass__">__metaclass__</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Variables</span></td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#source">source</a></code>
+      </p>
     </td>
   </tr>
 </table>
@@ -206,23 +212,8 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Properties</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.filters.ValidateFilter-class.html#columns" class="summary-name">columns</a><br />
-      Add columns for the error reporting.
-    </td>
-  </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
-      <code><a href="hxl.model.Dataset-class.html#display_tags">display_tags</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#tags">tags</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#values">values</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -247,70 +238,59 @@
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
         <span class="sig-arg">source</span>,
-        <span class="sig-arg">schema</span>,
-        <span class="sig-arg">show_all</span>=<span class="sig-default">False</span>)</span>
+        <span class="sig-arg">queries</span>=<span class="sig-default">[]</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#ValidateFilter.__init__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#RowCountFilter.__init__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>@param source a HXL data source @param schema a Schema object @param 
-  show_all boolean flag to report all lines (including those without 
-  errors).</p>
+  <p>Construct a new streaming filter.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>source</code></strong> - the source dataset</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
 </div>
-<a name="__iter__"></a>
+<a name="filter_row"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__iter__</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#ValidateFilter.__iter__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#RowCountFilter.filter_row">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Get the iterator over the rows.</p>
+  <p>Filter a single row of data.</p>
+  <p>By default, this method returns the row's values, unchanged. 
+  Subclasses can use it to replace, add or suppress rows on the fly, 
+  without having to keep a copy of the entire dataset in memory.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>row</code></strong> - the original <a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> object.</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>A list of string values (<i>not</i> a Row object) or 
+          <code>None</code> to skip the row.</dd>
     <dt>Overrides:
-        <a href="hxl.model.Dataset-class.html#__iter__">model.Dataset.__iter__</a>
+        <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
         <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
-  </dl>
-</td></tr></table>
-</div>
-<br />
-<!-- ==================== PROPERTY DETAILS ==================== -->
-<a name="section-PropertyDetails"></a>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Property Details</span></td>
-</tr>
-</table>
-<a name="columns"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">columns</h3>
-  <p>Add columns for the error reporting.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.columns(<span class="summary-sig-arg">self</span>)</span>
-        - Add columns for the error reporting.
-    </dd>
   </dl>
 </td></tr></table>
 </div>
@@ -341,7 +321,8 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

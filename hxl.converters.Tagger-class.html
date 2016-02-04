@@ -37,9 +37,8 @@
   <tr valign="top">
     <td width="100%">
       <span class="breadcrumbs">
-        hxl ::
-        converters ::
-        Tagger ::
+        <a href="hxl-module.html">Package&nbsp;hxl</a> ::
+        <a href="hxl.converters-module.html">Module&nbsp;converters</a> ::
         Class&nbsp;Tagger
       </span>
     </td>
@@ -62,29 +61,20 @@
 
 <hr />
 <p>Add HXL hashtags to a CSV-like input stream.</p>
-  <p>The input spec is a list of tuples, where the first item is a 
-  substring to match (case-/space-/punctuation-insensitive), and the second
-  item is the HXL tag spec to use. Example:</p>
-  <p>[('Cluster', '#sector'), ('Organi', '#org'), ('province', 
-  '#adm1+es')]</p>
-  <p>The tag specs are not parsed for correctness.</p>
+  <p>Usage:</p>
+<pre class="literalblock">
+ input = open('data.csv', 'r')
+ specs = [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
+ tagger = Tagger(input, specs)
+</pre>
+  <p>The tagger object acts as a <a href="hxl.io.AbstractInput-class.html" 
+  class="link">hxl.io.AbstractInput</a> source, which you can use with the 
+  <a href="hxl.io-module.html#data" class="link">hxl.data</a> function like
+  this:</p>
+<pre class="literalblock">
+ source = hxl.data(Tagger(input, specs)).with_rows('org=unicef').sort()
+</pre>
 
-<!-- ==================== NESTED CLASSES ==================== -->
-<a name="section-NestedClasses"></a>
-<table class="summary" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Nested Classes</span></td>
-</tr>
-  <tr>
-    <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.io.AbstractInput-class.html">io.AbstractInput</a></code></b>:
-      <code><a href="abc.ABCMeta-class.html">__metaclass__</a></code>
-      </p>
-    </td>
-  </tr>
-</table>
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -101,8 +91,8 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.converters.Tagger-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">input</span>,
-        <span class="summary-sig-arg">specs</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span><br />
-      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+        <span class="summary-sig-arg">specs</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Construct a new Tagger object.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.__init__">source&nbsp;code</a></span>
             
@@ -119,7 +109,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.converters.Tagger-class.html#__next__" class="summary-sig-name">__next__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Get the next row, if we can tag the raw data.</td>
+      Return the next line of input (including the new tags).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.__next__">source&nbsp;code</a></span>
             
@@ -136,7 +126,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="next"></a><span class="summary-sig-name">next</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      Get the next row, if we can tag the raw data.</td>
+      Return the next line of input (including the new tags).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.__next__">source&nbsp;code</a></span>
             
@@ -152,43 +142,7 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="add_tags"></a><span class="summary-sig-name">add_tags</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      Look for headers in the first 25 rows.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.add_tags">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="tryTagRow"></a><span class="summary-sig-name">tryTagRow</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">raw_row</span>)</span><br />
-      See if we can match a header row.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.tryTagRow">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.converters.Tagger-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Make iterable.</td>
+          <td><span class="summary-sig"><a href="hxl.converters.Tagger-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span></td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.__iter__">source&nbsp;code</a></span>
             
@@ -235,7 +189,8 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse_spec"></a><span class="summary-sig-name">parse_spec</span>(<span class="summary-sig-arg">s</span>)</span></td>
+          <td><span class="summary-sig"><a name="parse_spec"></a><span class="summary-sig-name">parse_spec</span>(<span class="summary-sig-arg">s</span>)</span><br />
+      Try parsing a tagger spec (used only by the command-line tools)</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.converters-pysrc.html#Tagger.parse_spec">source&nbsp;code</a></span>
             
@@ -254,18 +209,11 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Class Variables</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.converters.Tagger-class.html#SPEC_PATTERN" class="summary-name">SPEC_PATTERN</a> = <code title="'^(.+)(#[A-Za-z][_0-9A-Za-z]*([+][A-Za-z][_0-9A-Za-z]*)*)$'"><code class="variable-quote">'</code><code class="variable-string">^(.+)(#[A-Za-z][_0-9A-Za-z]*([+][A-Za-z][_0-9A</code><code class="variable-ellipsis">...</code></code>
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="__abstractmethods__"></a><span class="summary-name">__abstractmethods__</span> = <code title="frozenset([])"><code class="variable-group">frozenset([</code><code class="variable-group">])</code></code>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.io.AbstractInput-class.html">io.AbstractInput</a></code></b>:
+      <code><a href="hxl.io.AbstractInput-class.html#__metaclass__">__metaclass__</a></code>
+      </p>
     </td>
   </tr>
 </table>
@@ -303,7 +251,7 @@
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
         <span class="sig-arg">input</span>,
-        <span class="sig-arg">specs</span>=<span class="sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span>
+        <span class="sig-arg">specs</span>=<span class="sig-default">[]</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -311,11 +259,21 @@
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <p>Construct a new Tagger object.</p>
+  <p>The input spec is a list of tuples, where the first item is a 
+  substring to match (case-/space-/punctuation-insensitive), and the second
+  item is the HXL tag spec to use. Example:</p>
+<pre class="literalblock">
+ [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
+</pre>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>input</code></strong> - an input stream of some kind.</li>
+        <li><strong class="pname"><code>specs</code></strong> - the input specs, as described above (default: [])</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -334,7 +292,7 @@
     </td>
   </tr></table>
   
-  <p>Get the next row, if we can tag the raw data.</p>
+  <p>Return the next line of input (including the new tags).</p>
   <dl class="fields">
     <dt>Overrides:
         <a href="hxl.io.AbstractInput-class.html#__next__">io.AbstractInput.__next__</a>
@@ -356,39 +314,11 @@
     </td>
   </tr></table>
   
-  <p>Make iterable.</p>
+  
   <dl class="fields">
     <dt>Overrides:
         <a href="hxl.io.AbstractInput-class.html#__iter__">io.AbstractInput.__iter__</a>
     </dt>
-  </dl>
-</td></tr></table>
-</div>
-<br />
-<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
-<a name="section-ClassVariableDetails"></a>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Class Variable Details</span></td>
-</tr>
-</table>
-<a name="SPEC_PATTERN"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">SPEC_PATTERN</h3>
-  
-  <dl class="fields">
-  </dl>
-  <dl class="fields">
-    <dt>Value:</dt>
-      <dd><table><tr><td><pre class="variable">
-<code class="variable-quote">'</code><code class="variable-string">^(.+)(#[A-Za-z][_0-9A-Za-z]*([+][A-Za-z][_0-9A-Za-z]*)*)$</code><code class="variable-quote">'</code>
-</pre></td></tr></table>
-</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -419,7 +349,8 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

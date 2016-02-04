@@ -49,54 +49,18 @@
 </b></center><br />
 <h1 class="epydoc">Class Hierarchy</h1>
 <ul class="nomargin-top">
-    <li> <strong class="uidlink"><a href="hxl.filters.AppendFilter.Iterator-class.html">hxl.filters.AppendFilter.Iterator</a></strong>:
-      <em class="summary">Custom iterator to return the contents of both sources, in 
-        sequence.</em>
+    <li> <strong class="uidlink">hxl.io.BufferedIOBase</strong>
     </li>
     <li> <strong class="uidlink"><a href="hxl.filters.CountFilter.Iterator-class.html">hxl.filters.CountFilter.Iterator</a></strong>
     </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.RenameFilter.Iterator-class.html">hxl.filters.RenameFilter.Iterator</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.ValidateFilter.Iterator-class.html">hxl.filters.ValidateFilter.Iterator</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.MergeDataFilter.Iterator-class.html">hxl.filters.MergeDataFilter.Iterator</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.ColumnFilter.Iterator-class.html">hxl.filters.ColumnFilter.Iterator</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.CleanDataFilter.Iterator-class.html">hxl.filters.CleanDataFilter.Iterator</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.AddColumnsFilter.Iterator-class.html">hxl.filters.AddColumnsFilter.Iterator</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.ReplaceDataFilter.Iterator-class.html">hxl.filters.ReplaceDataFilter.Iterator</a></strong>:
-      <em class="summary">Custom iterator for on-the-fly replacement</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.DeduplicationFilter.Iterator-class.html">hxl.filters.DeduplicationFilter.Iterator</a></strong>
-    </li>
     <li> <strong class="uidlink"><a href="hxl.filters.ReplaceDataFilter.Replacement-class.html">hxl.filters.ReplaceDataFilter.Replacement</a></strong>:
       <em class="summary">Replacement specification.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.io.Sniffer-class.html">hxl.io.Sniffer</a></strong>:
-      <em class="summary">Extremely simple class to sniff the first four bytes of a file.</em>
     </li>
     <li> <strong class="uidlink">object</strong>:
       <em class="summary">The most base type</em>
     <ul>
     <li> <strong class="uidlink"><a href="hxl.io.AbstractInput-class.html">hxl.io.AbstractInput</a></strong>:
       <em class="summary">Abstract base class for input classes.</em>
-    <ul>
-    <li> <strong class="uidlink"><a href="hxl.io.ArrayInput-class.html">hxl.io.ArrayInput</a></strong>:
-      <em class="summary">Read raw input from an array.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.io.CSVInput-class.html">hxl.io.CSVInput</a></strong>:
-      <em class="summary">Read raw CSV input from a URL or filename.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.io.ExcelInput-class.html">hxl.io.ExcelInput</a></strong>:
-      <em class="summary">Read raw XLS input from a URL or filename.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.converters.Tagger-class.html">hxl.converters.Tagger</a></strong>:
-      <em class="summary">Add HXL hashtags to a CSV-like input stream.</em>
-    </li>
-    </ul>
     </li>
     <li> <strong class="uidlink"><a href="hxl.filters.CountFilter.Aggregator-class.html">hxl.filters.CountFilter.Aggregator</a></strong>:
       <em class="summary">Class to collect aggregates for a single combination.</em>
@@ -109,21 +73,6 @@
     <ul>
     <li> <strong class="uidlink"><a href="hxl.common.HXLException-class.html">hxl.common.HXLException</a></strong>:
       <em class="summary">Base class for all HXL-related exceptions.</em>
-    <ul>
-    <li> <strong class="uidlink"><a href="hxl.filters.HXLFilterException-class.html">hxl.filters.HXLFilterException</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.io.HXLParseException-class.html">hxl.io.HXLParseException</a></strong>:
-      <em class="summary">A parsing error in a HXL dataset.</em>
-    <ul>
-    <li> <strong class="uidlink"><a href="hxl.io.HXLTagsNotFoundException-class.html">hxl.io.HXLTagsNotFoundException</a></strong>:
-      <em class="summary">Specific parsing exception: no HXL tags.</em>
-    </li>
-    </ul>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.validation.HXLValidationException-class.html">hxl.validation.HXLValidationException</a></strong>:
-      <em class="summary">Data structure to hold a HXL validation error.</em>
-    </li>
-    </ul>
     </li>
     </ul>
     </li>
@@ -134,55 +83,8 @@
     </li>
     <li> <strong class="uidlink"><a href="hxl.model.Dataset-class.html">hxl.model.Dataset</a></strong>:
       <em class="summary">Abstract base class for a HXL data source.</em>
-    <ul>
-    <li> <strong class="uidlink"><a href="hxl.filters.AddColumnsFilter-class.html">hxl.filters.AddColumnsFilter</a></strong>:
-      <em class="summary">Composable filter class to add constant values to every row of a 
-        HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.AppendFilter-class.html">hxl.filters.AppendFilter</a></strong>:
-      <em class="summary">Composable filter class to concatenate two datasets.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.CacheFilter-class.html">hxl.filters.CacheFilter</a></strong>:
-      <em class="summary">Composable filter class to cache HXL data in memory.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.CleanDataFilter-class.html">hxl.filters.CleanDataFilter</a></strong>:
-      <em class="summary">Filter for cleaning values in HXL data.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.ColumnFilter-class.html">hxl.filters.ColumnFilter</a></strong>:
-      <em class="summary">Composable filter class to cut columns from a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.CountFilter-class.html">hxl.filters.CountFilter</a></strong>:
-      <em class="summary">Composable filter class to aggregate rows in a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.DeduplicationFilter-class.html">hxl.filters.DeduplicationFilter</a></strong>:
-      <em class="summary">Composable filter to deduplicate a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.io.HXLReader-class.html">hxl.io.HXLReader</a></strong>:
-      <em class="summary">Read HXL data from a file</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.MergeDataFilter-class.html">hxl.filters.MergeDataFilter</a></strong>:
-      <em class="summary">Composable filter class to merge values from two HXL datasets.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.RenameFilter-class.html">hxl.filters.RenameFilter</a></strong>:
-      <em class="summary">Composable filter class to rename columns in a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.ReplaceDataFilter-class.html">hxl.filters.ReplaceDataFilter</a></strong>:
-      <em class="summary">Composable filter class to replace values in a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.RowFilter-class.html">hxl.filters.RowFilter</a></strong>:
-      <em class="summary">Composable filter class to select rows from a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.SortFilter-class.html">hxl.filters.SortFilter</a></strong>:
-      <em class="summary">Composable filter class to sort a HXL dataset.</em>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.ValidateFilter-class.html">hxl.filters.ValidateFilter</a></strong>:
-      <em class="summary">Composable filter class to validate a HXL dataset against a schema.</em>
-    </li>
-    </ul>
     </li>
     <li> <strong class="uidlink"><a href="hxl.scripts.FileOutput-class.html">hxl.scripts.FileOutput</a></strong>
-    </li>
-    <li> <strong class="uidlink"><a href="hxl.filters.RowFilter.Iterator-class.html">hxl.filters.RowFilter.Iterator</a></strong>
     </li>
     <li> <strong class="uidlink"><a href="hxl.model.Row-class.html">hxl.model.Row</a></strong>:
       <em class="summary">An iterable row of values in a HXL dataset.</em>
@@ -200,15 +102,6 @@
     </li>
     <li> <strong class="uidlink"><a href="hxl.model.TagPattern-class.html">hxl.model.TagPattern</a></strong>:
       <em class="summary">Pattern for matching a tag.</em>
-    </li>
-    <li> <strong class="uidlink">type</strong>:
-      <em class="summary">type(object) -&gt; the object's type type(name, bases, dict) -&gt; 
-        a new type</em>
-    <ul>
-    <li> <strong class="uidlink"><a href="abc.ABCMeta-class.html">abc.ABCMeta</a></strong>:
-      <em class="summary">Metaclass for defining Abstract Base Classes (ABCs).</em>
-    </li>
-    </ul>
     </li>
     </ul>
     </li>
@@ -239,7 +132,8 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

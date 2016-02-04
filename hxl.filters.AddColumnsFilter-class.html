@@ -52,45 +52,42 @@
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class AddColumnsFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter">source&nbsp;code</a></span></p>
 <pre class="base-tree">
-   object --+    
-            |    
-<a href="hxl.model.Dataset-class.html">model.Dataset</a> --+
-                |
-               <strong class="uidshort">AddColumnsFilter</strong>
+     object --+            
+              |            
+  <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+        
+                  |        
+ <a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+    
+                      |    
+<a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a> --+
+                          |
+                         <strong class="uidshort">AddColumnsFilter</strong>
 </pre>
 
 <hr />
 <p>Composable filter class to add constant values to every row of a HXL 
   dataset.</p>
-  <p>This is the class supporting the hxladd command-line utility.</p>
-  <p>Because this class is a {@link hxl.model.Dataset}, you can use it as 
-  the source to an instance of another filter class to build a dynamic, 
-  single-threaded processing pipeline.</p>
+  <p>This is a <a href="hxl.filters.AbstractStreamingFilter-class.html" 
+  class="link">streaming filter</a> to add constant values, such as a 
+  country code, to every row of data.  It supports the <a 
+  href="hxl.model.Dataset-class.html#add_columns" 
+  class="link">hxl.model.Dataset.add_columns</a> method and the <a 
+  href="hxl.scripts-module.html#hxladd" class="link">hxladd</a> 
+  command-line utility.</p>
+  <p>This example will add a column with the label &quot;Country 
+  name&quot;, the HXL hashtag &quot;#country&quot;, and the value 
+  &quot;Malaysia&quot; to every row in the dataset:</p>
+<pre class="literalblock">
+   filter = AddColumnsFilter(source, &quot;Country name#country=Malaysia&quot;)      
+</pre>
 
-<!-- ==================== NESTED CLASSES ==================== -->
-<a name="section-NestedClasses"></a>
-<table class="summary" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Nested Classes</span></td>
-</tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.filters.AddColumnsFilter.Iterator-class.html" class="summary-name">Iterator</a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
-      <code><a href="abc.ABCMeta-class.html">__metaclass__</a></code>
+<hr />
+<div class="fields">      <p><strong>See Also:</strong>
+        <a href="hxl.filters.ColumnFilter-class.html" 
+        class="link">ColumnFilter</a>, <a 
+        href="hxl.filters.RenameFilter-class.html" 
+        class="link">RenameFilter</a>
       </p>
-    </td>
-  </tr>
-</table>
-<!-- ==================== INSTANCE METHODS ==================== -->
+</div><!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -108,9 +105,7 @@
         <span class="summary-sig-arg">source</span>,
         <span class="summary-sig-arg">specs</span>,
         <span class="summary-sig-arg">before</span>=<span class="summary-sig-default">False</span>)</span><br />
-      @param source a HXL data source @param specs a sequence of pairs of 
-      Column objects and constant values @param before True to add new 
-      columns before existing ones</td>
+      Construct a new AddColumnsFilter.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.__init__">source&nbsp;code</a></span>
             
@@ -126,10 +121,28 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.AddColumnsFilter-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Get the iterator over the rows.</td>
+          <td><span class="summary-sig"><a href="hxl.filters.AddColumnsFilter-class.html#filter_columns" class="summary-sig-name">filter_columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Internal: return the new columns list</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.__iter__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.filter_columns">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.filters.AddColumnsFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>)</span><br />
+      Internal: return each row with the new fixed value(s) attached.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.filter_row">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -139,6 +152,12 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__">__iter__</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>
+      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
       <code><a href="hxl.model.Dataset-class.html#add_columns">add_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#append">append</a></code>,
@@ -146,16 +165,22 @@
       <code><a href="hxl.model.Dataset-class.html#clean_data">clean_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#count">count</a></code>,
       <code><a href="hxl.model.Dataset-class.html#dedup">dedup</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#display_tags">display_tags</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_csv">gen_csv</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_json">gen_json</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_raw">gen_raw</a></code>,
       <code><a href="hxl.model.Dataset-class.html#get_value_set">get_value_set</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
       <code><a href="hxl.model.Dataset-class.html#merge_data">merge_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#rename_columns">rename_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data">replace_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data_map">replace_data_map</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#row_counter">row_counter</a></code>,
       <code><a href="hxl.model.Dataset-class.html#sort">sort</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#tags">tags</a></code>,
       <code><a href="hxl.model.Dataset-class.html#validate">validate</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#values">values</a></code>,
       <code><a href="hxl.model.Dataset-class.html#with_columns">with_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#with_rows">with_rows</a></code>,
       <code><a href="hxl.model.Dataset-class.html#without_columns">without_columns</a></code>,
@@ -192,7 +217,8 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse_spec"></a><span class="summary-sig-name">parse_spec</span>(<span class="summary-sig-arg">spec</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.filters.AddColumnsFilter-class.html#parse_spec" class="summary-sig-name">parse_spec</a>(<span class="summary-sig-arg">spec</span>)</span><br />
+      Parse a new-column specification.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.parse_spec">source&nbsp;code</a></span>
             
@@ -211,19 +237,27 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Class Variables</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.filters.AddColumnsFilter-class.html#VALUE_PATTERN" class="summary-name">VALUE_PATTERN</a> = <code title="'^\\s*(?:([^#]*)#)?([A-Za-z][_0-9A-Za-z]*(?:\\s*\\+[A-Za-z][_0-9A-Za-z\
-]*)*)=(.*)\\s*$'"><code class="variable-quote">'</code><code class="variable-string">^\\s*(?:([^#]*)#)?([A-Za-z][_0-9A-Za-z]*(?:\\</code><code class="variable-ellipsis">...</code></code>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__metaclass__">__metaclass__</a></code>
+      </p>
     </td>
   </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="__abstractmethods__"></a><span class="summary-name">__abstractmethods__</span> = <code title="frozenset([])"><code class="variable-group">frozenset([</code><code class="variable-group">])</code></code>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Variables</span></td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#source">source</a></code>
+      </p>
     </td>
   </tr>
 </table>
@@ -235,23 +269,8 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Properties</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.filters.AddColumnsFilter-class.html#columns" class="summary-name">columns</a><br />
-      Add the constant columns to the end.
-    </td>
-  </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
-      <code><a href="hxl.model.Dataset-class.html#display_tags">display_tags</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#tags">tags</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#values">values</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -285,90 +304,120 @@
     </td>
   </tr></table>
   
-  <p>@param source a HXL data source @param specs a sequence of pairs of 
-  Column objects and constant values @param before True to add new columns 
-  before existing ones</p>
+  <p>Construct a new AddColumnsFilter.</p>
+  <p>The <i>source</i> parameter may be either a string or a list of 
+  strings (for multiple columns). Each string must have the following 
+  format (<i>&lt;header text&gt;</i> is optional):</p>
+  <p><i>&lt;header text&gt;</i><b>#</b><i>&lt;tag and 
+  attributes&gt;</i><b>=</b><i>&lt;constant value&gt;</i></p>
+  <p>Example:</p>
+<pre class="literalblock">
+   Country name#country=Malasia
+</pre>
+  <p>By default, this filter will add new columns to the end of existing 
+  ones, but you can use optional <i>before</i> parameter to add them to the
+  front.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>source</code></strong> - a HXL data source</li>
+        <li><strong class="pname"><code>specs</code></strong> - a string or list of strings containing new column specifications,
+          as described above (or a list of tuples as described in <a 
+          href="hxl.filters.AddColumnsFilter-class.html#parse_spec" 
+          class="link">parse_spec</a>)</li>
+        <li><strong class="pname"><code>before</code></strong> - true to add new columns before existing ones (default 
+          <code>False</code>)</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
     </dt>
   </dl>
 </td></tr></table>
 </div>
-<a name="__iter__"></a>
+<a name="filter_columns"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__iter__</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_columns</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.__iter__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.filter_columns">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Get the iterator over the rows.</p>
+  <p>Internal: return the new columns list</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>a list of hxl.model.Column objects</dd>
     <dt>Overrides:
-        <a href="hxl.model.Dataset-class.html#__iter__">model.Dataset.__iter__</a>
-        <dd><em class="note">(inherited documentation)</em></dd>
+        <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">AbstractBaseFilter.filter_columns</a>
     </dt>
   </dl>
 </td></tr></table>
 </div>
-<br />
-<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
-<a name="section-ClassVariableDetails"></a>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Class Variable Details</span></td>
-</tr>
-</table>
-<a name="VALUE_PATTERN"></a>
+<a name="filter_row"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
-  <h3 class="epydoc">VALUE_PATTERN</h3>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.filter_row">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
   
+  <p>Internal: return each row with the new fixed value(s) attached.</p>
   <dl class="fields">
-  </dl>
-  <dl class="fields">
-    <dt>Value:</dt>
-      <dd><table><tr><td><pre class="variable">
-<code class="variable-quote">'</code><code class="variable-string">^\\s*(?:([^#]*)#)?([A-Za-z][_0-9A-Za-z]*(?:\\s*\\+[A-Za-z][_0-9A-Za-z</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-<code class="variable-string">]*)*)=(.*)\\s*$</code><code class="variable-quote">'</code>
-</pre></td></tr></table>
-</dd>
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>row</code></strong> - the original <a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> object.</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>A list of string values (<i>not</i> a Row object) or 
+          <code>None</code> to skip the row.</dd>
+    <dt>Overrides:
+        <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
+    </dt>
   </dl>
 </td></tr></table>
 </div>
-<br />
-<!-- ==================== PROPERTY DETAILS ==================== -->
-<a name="section-PropertyDetails"></a>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr bgcolor="#70b0f0" class="table-header">
-  <td align="left" colspan="2" class="table-header">
-    <span class="table-header">Property Details</span></td>
-</tr>
-</table>
-<a name="columns"></a>
+<a name="parse_spec"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
-  <h3 class="epydoc">columns</h3>
-  <p>Add the constant columns to the end.</p>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_spec</span>(<span class="sig-arg">spec</span>)</span>
+    <br /><em class="fname">Static Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#AddColumnsFilter.parse_spec">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse a new-column specification.</p>
+  <p>The format is <i>&lt;header text&gt;</i><b>#</b><i>&lt;tag and 
+  attributes&gt;</i><b>=</b><i>&lt;fixed value&gt;</i>. Example:</p>
+<pre class="literalblock">
+ Country name#country=Malaysia
+</pre>
   <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.columns(<span class="summary-sig-arg">self</span>)</span>
-        - Add the constant columns to the end.
-    </dd>
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>spec</code></strong> - the string spec to parse, in the format above.</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a tuple containing a <a href="hxl.model.Column-class.html" 
+          class="link">hxl.model.Column</a> object and the fixed value.</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -399,7 +448,8 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

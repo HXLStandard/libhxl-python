@@ -119,14 +119,6 @@
       Read HXL data from a file
     </td>
   </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.io.Sniffer-class.html" class="summary-name">Sniffer</a><br />
-      Extremely simple class to sniff the first four bytes of a file.
-    </td>
-  </tr>
 </table>
 <!-- ==================== FUNCTIONS ==================== -->
 <a name="section-Functions"></a>
@@ -158,9 +150,25 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="decode"></a><span class="summary-sig-name">decode</span>(<span class="summary-sig-arg">s</span>)</span></td>
+          <td><span class="summary-sig"><a name="wrap_stream"></a><span class="summary-sig-name">wrap_stream</span>(<span class="summary-sig-arg">stream</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#decode">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.io-pysrc.html#wrap_stream">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="wrap_input"></a><span class="summary-sig-name">wrap_input</span>(<span class="summary-sig-arg">input</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#wrap_input">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -232,10 +240,27 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="encode"></a><span class="summary-sig-name">encode</span>(<span class="summary-sig-arg">value</span>)</span><br />
-      Encode a string into UTF-8 for Python2</td>
+          <td><span class="summary-sig"><a name="munge_url"></a><span class="summary-sig-name">munge_url</span>(<span class="summary-sig-arg">url</span>)</span><br />
+      Munge a URL to get at underlying data for well-known types.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#_encode_py2">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.io-pysrc.html#munge_url">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="encode"></a><span class="summary-sig-name">encode</span>(<span class="summary-sig-arg">value</span>)</span><br />
+      Leave a Unicode string as-is for Python3</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#_encode_py3">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -293,6 +318,13 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="open_url"></a><span class="summary-name">open_url</span> = <code title="urllib.request.urlopen">urllib.request.urlopen</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a name="FUZZY_HASHTAG_PERCENTAGE"></a><span class="summary-name">FUZZY_HASHTAG_PERCENTAGE</span> = <code title="0.5">0.5</code>
     </td>
   </tr>
@@ -300,36 +332,36 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.io-module.html#GOOGLE_SHEETS_URL" class="summary-name">GOOGLE_SHEETS_URL</a> = <code title="'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid\
-=([0-9]+)).*$'"><code class="variable-quote">'</code><code class="variable-string">^https?://docs.google.com/.*spreadsheets.</code><code class="variable-ellipsis">...</code></code>
+        <a href="hxl.io-module.html#GOOGLE_SHEETS_URL" class="summary-name">GOOGLE_SHEETS_URL</a> = <code title="r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gi\
+d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.io-module.html#DROPBOX_URL" class="summary-name">DROPBOX_URL</a> = <code title="'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\\?dl=[01]$'"><code class="variable-quote">'</code><code class="variable-string">^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]</code><code class="variable-ellipsis">...</code></code>
+        <a href="hxl.io-module.html#DROPBOX_URL" class="summary-name">DROPBOX_URL</a> = <code title="r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'">r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?<code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="EXCEL_SIGS"></a><span class="summary-name">EXCEL_SIGS</span> = <code title="['PK\x03\x04', '\xd0\xcf\x11\xe0']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">PK\x03\x04</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">\xd0\xcf\x11\xe0</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+        <a href="hxl.io-module.html#CKAN_URL" class="summary-name">CKAN_URL</a> = <code title="r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'">r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0<code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="HTML5_SIGS"></a><span class="summary-name">HTML5_SIGS</span> = <code title="['&lt;!DO', '\n&lt;!D']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">&lt;!DO</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">\n&lt;!D</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+        <a name="EXCEL_SIGS"></a><span class="summary-name">EXCEL_SIGS</span> = <code title="[b&quot;PK\x03\x04&quot;, b&quot;\xd0\xcf\x11\xe0&quot;]">[b&quot;PK\x03\x04&quot;, b&quot;\xd0\xcf\x11\xe0&quot;]</code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="'hxl'"><code class="variable-quote">'</code><code class="variable-string">hxl</code><code class="variable-quote">'</code></code>
+        <a name="HTML5_SIGS"></a><span class="summary-name">HTML5_SIGS</span> = <code title="[b&quot;&lt;!DO&quot;, b&quot;\n&lt;!D&quot;]">[b&quot;&lt;!DO&quot;, b&quot;\n&lt;!D&quot;]</code>
     </td>
   </tr>
 </table>
@@ -386,8 +418,8 @@
   <dl class="fields">
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
-<code class="variable-quote">'</code><code class="variable-string">^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid</code><span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-<code class="variable-string">=([0-9]+)).*$</code><code class="variable-quote">'</code>
+r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gi<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+d=([0-9]+))?.*$'
 </pre></td></tr></table>
 </dd>
   </dl>
@@ -405,7 +437,25 @@
   <dl class="fields">
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
-<code class="variable-quote">'</code><code class="variable-string">^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\\?dl=[01]$</code><code class="variable-quote">'</code>
+r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="CKAN_URL"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">CKAN_URL</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'
 </pre></td></tr></table>
 </dd>
   </dl>
@@ -438,7 +488,8 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug 25 12:03:01 2015
+    Generated by Epydoc 3.0.1
+    on Thu Feb  4 19:33:46 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
