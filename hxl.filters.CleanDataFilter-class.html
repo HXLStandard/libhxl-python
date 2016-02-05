@@ -64,11 +64,66 @@
 </pre>
 
 <hr />
-<p>Filter for cleaning values in HXL data. Can normalise whitespace, 
-  convert to upper/lowercase, and fix dates and numbers. TODO: clean up 
-  lat/lon coordinates</p>
+<p>Data-cleaning filter.</p>
+  <p>This filter can perform a set of automated cleaning tasks, including 
+  character-case conversion, whitespace normalisation, and date and number 
+  normalisation. It supports the <a 
+  href="hxl.model.Dataset-class.html#clean_data" 
+  class="link">hxl.model.Dataset.clean_data</a> method and the <a 
+  href="hxl.scripts-module.html#hxlclean" 
+  class="link">hxl.scripts.hxlclean</a> command-line script.</p>
+  <p>The clean filter is especially useful when you are working with data 
+  from different sources who might use different date and number 
+  conventions, and also for datasets with inconsistent whitespace and 
+  capitalisation. The following functions are available (and can be 
+  filtered by row and column):</p>
+  <ul>
+    <li>
+      <b>whitespace</b>: strip leading/trailing spaces, and normalise all 
+      internal whitespace (including lineends) to a single space.
+    </li>
+    <li>
+      <b>upper</b>: convert text to all uppercase.
+    </li>
+    <li>
+      <b>lower</b>: convert text to all lowercase.
+    </li>
+    <li>
+      <b>date</b>: attempt to parse and normalise dates to ISO 8601 format 
+      (YYYY-MM-DD). This will not always succeed -- for example, it is 
+      impossible to guess whether &quot;9/6/15&quot; refers to 6 September 
+      2016 or 9 June 2016 (hence the need for ISO dates) -- but it will do 
+      its best.
+    </li>
+    <li>
+      <b>number</b>: attempt to normalise numbers to standard computer 
+      format (remove commas or spaces between thousands, and use 
+      &quot;.&quot; as the decimal separator).
+    </li>
+  </ul>
+  <p>For each type of cleaning, you specify one or more <a 
+  href="hxl.model.TagPattern-class.html" class="link">tag patterns</a> to 
+  which the cleaning applies (you may use string representations instead of
+  creating the objects), or use <code>True</code> to apply the cleaning to 
+  the whole row. You may also include <a 
+  href="hxl.model.RowQuery-class.html" class="link">hxl.model.RowQuery</a> 
+  objects to apply the cleaning tasks only to specific rows.</p>
+  <p>This example normalises all start dates from Oxfam:</p>
+<pre class="literalblock">
+ filter = CleanFilter(hxl.data('data.csv'), dates='date+start', queries='org=Oxfam')
 
-<!-- ==================== INSTANCE METHODS ==================== -->
+ # or
+
+ filter = hxl.data('data.csv').clean_data(dates='date+start', queries='org=Oxfam')
+</pre>
+
+<hr />
+<div class="fields">      <p><strong>See Also:</strong>
+        <a href="hxl.filters.ReplaceDataFilter-class.html" 
+        class="link">ReplaceDataFilter</a>, which allows for more-specific 
+        replacements using string and regular-expression patterns.
+      </p>
+</div><!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -108,7 +163,7 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.CleanDataFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Clean up values and pass on the row data.</td>
+      Internal: clean up values and pass on the row data.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#CleanDataFilter.filter_row">source&nbsp;code</a></span>
             
@@ -252,15 +307,27 @@
   </tr></table>
   
   <p>Construct a new data-cleaning filter.</p>
+  <p>The <i>upper</i>, <i>lower</i>, <i>date</i>, and <i>number</i> 
+  arguments all accept either lists of tag patterns&lt;hxl.model.TagPattern
+  or individual patterns, which can be strings (like 
+  <code>#org+impl-code</code>) or full <a 
+  href="hxl.model.TagPattern-class.html" 
+  class="link">hxl.model.TagPattern</a> objects. The <i>queries</i> 
+  argument accepts either lists of queries or individual queries, which can
+  be strings (like <code>org=Oxfam</code>) or full <a 
+  href="hxl.model.RowQuery-class.html" class="link">hxl.model.RowQuery</a> 
+  objects.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>source</code></strong> - the HXLDataSource</li>
-        <li><strong class="pname"><code>whitespace</code></strong> - list of TagPatterns for normalising whitespace.</li>
-        <li><strong class="pname"><code>upper</code></strong> - list of TagPatterns for converting to uppercase.</li>
-        <li><strong class="pname"><code>lower</code></strong> - list of TagPatterns for converting to lowercase.</li>
-        <li><strong class="pname"><code>date</code></strong> - list of TagPatterns for normalising dates.</li>
-        <li><strong class="pname"><code>number</code></strong> - list of TagPatterns for normalising numbers.</li>
+        <li><strong class="pname"><code>source</code></strong> - a <a href="hxl.model.Dataset-class.html" 
+          class="link">hxl.model.Dataset</a> object to filter</li>
+        <li><strong class="pname"><code>whitespace</code></strong> - a tag pattern or list of tag patterns for whitespace 
+          normalisation</li>
+        <li><strong class="pname"><code>upper</code></strong> - a tag pattern or list of tag patterns for conversion to uppercase</li>
+        <li><strong class="pname"><code>lower</code></strong> - a tag pattern or list of tag patterns for conversion to lowercase</li>
+        <li><strong class="pname"><code>date</code></strong> - a tag pattern or list of tag patterns for date normalisation</li>
+        <li><strong class="pname"><code>number</code></strong> - a tag pattern or list of tag patterns for number normalisation</li>
         <li><strong class="pname"><code>queries</code></strong> - optional list of queries to select rows to be cleaned.</li>
     </ul></dd>
     <dt>Overrides:
@@ -284,7 +351,7 @@
     </td>
   </tr></table>
   
-  <p>Clean up values and pass on the row data.</p>
+  <p>Internal: clean up values and pass on the row data.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -328,7 +395,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Thu Feb  4 19:52:01 2016
+    on Fri Feb  5 15:21:26 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

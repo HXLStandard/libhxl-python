@@ -64,13 +64,44 @@
 </pre>
 
 <hr />
-<p>Composable filter class to cache HXL data in memory.</p>
-  <p>Caching the data allows you to iterate over it more than once.</p>
-  <p>This filter does nothing *but* cache the data, for cases where you 
-  plan to process it more than once.  You have the option to cache only 
-  part of the dataset (e.g. for a preview), in which case, the 
-  &quot;overflow&quot; property will be True if there were more 
-  columns.</p>
+<p>Composable filter to cache HXL data in memory.</p>
+  <p>This filter saves a copy of the HXL data in memory. It supports the <a
+  href="hxl.model.Dataset-class.html#cache" 
+  class="link">hxl.model.Dataset.cache</a> method, and has no corresponding
+  command-line script.</p>
+  <p>While <a href="hxl.filters.AbstractStreamingFilter-class.html" 
+  class="link">streaming filters</a> are more efficient, sometimes you need
+  to keep a copy of your HXL data in memory, so that you can iterate over 
+  it more than once. Some filters, like <a 
+  href="hxl.filters.SortFilter-class.html" class="link">SortFilter</a> and 
+  <a href="hxl.filters.CountFilter-class.html" 
+  class="link">CountFilter</a>, do that as a side effect, but you can also 
+  choose to add a <i>CacheFilter</i> explicitly to your chain.</p>
+  <p>This filter does nothing but save a copy of your data for repeated 
+  use, as in the following example:</p>
+<pre class="literalblock">
+ filter = Cache(hxl.data(url))
+</pre>
+  <p>or:</p>
+<pre class="literalblock">
+ filter = hxl.data(url).cache()
+</pre>
+  <p>It is also possible to cache just <i>part</i> of the data, as a 
+  preview or to avoid crashing on excessively-large datasets:</p>
+<pre class="literalblock">
+ # cache just the first 10 rows
+ preview = Cache(hxl.data(url), 10)
+</pre>
+  <p>If there were more rows of data available, then the filter will set 
+  the <a href="hxl.filters.CacheFilter-class.html#overflow" 
+  class="link">overflow</a> property to <code>True</code>.</p>
+  <p>You can also use the cache filter strategically in a filter chain to 
+  save the results of an expensive operation (like replacing data) to avoid
+  repeating it.  For example, this sequence will never run the replacements
+  more than once:</p>
+<pre class="literalblock">
+ filter = hxl.data(url).replace_data_map(map_url).cache().with_rows('org=UNICEF')
+</pre>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -107,7 +138,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.CacheFilter-class.html#filter_columns" class="summary-sig-name">filter_columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Return a new list of columns for the filtered dataset.</td>
+      Internal: deep copy of the source columns</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.filter_columns">source&nbsp;code</a></span>
             
@@ -124,7 +155,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.CacheFilter-class.html#filter_rows" class="summary-sig-name">filter_rows</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Filter all of the data together.</td>
+      Internal: keep a local copy of the row data.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.filter_rows">source&nbsp;code</a></span>
             
@@ -211,6 +242,24 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Instance Variables</span></td>
 </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="max_rows"></a><span class="summary-name">max_rows</span><br />
+      Maximum number of rows to keep in the cache (-1 means no limit)
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="overflow"></a><span class="summary-name">overflow</span><br />
+      Flag for whether there were more rows than <a 
+      href="hxl.filters.CacheFilter-class.html#max_rows" 
+      class="link">max_rows</a> available.
+    </td>
+  </tr>
   <tr>
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
@@ -288,16 +337,12 @@
     </td>
   </tr></table>
   
-  <p>Return a new list of columns for the filtered dataset.</p>
-  <p>By default, return the source HXL data's columns. Child classes 
-  override the filter_columns() method to return a different set of 
-  columns</p>
+  <p>Internal: deep copy of the source columns</p>
   <dl class="fields">
     <dt>Returns:</dt>
         <dd>a list of hxl.model.Column objects</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">AbstractBaseFilter.filter_columns</a>
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -316,21 +361,12 @@
     </td>
   </tr></table>
   
-  <p>Filter all of the data together.</p>
-  <p>This method returns raw lists and strings, not objects from the <a 
-  href="hxl.model-module.html" class="link">hxl.model</a> module; for 
-  example, it could return the following for a three-row dataset:</p>
-<pre class="literalblock">
- [['UNICEF', '20'], ['UNHCR', '15'], ['OXFAM', '25']]
-</pre>
-  <p>The <i>AbstractCachingFilter</i> class will construct the appropriate 
-  objects around the data.</p>
+  <p>Internal: keep a local copy of the row data.</p>
   <dl class="fields">
     <dt>Returns:</dt>
         <dd>a list of lists of strings, one list for each row.</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractCachingFilter-class.html#filter_rows">AbstractCachingFilter.filter_rows</a>
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -363,7 +399,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Thu Feb  4 19:52:01 2016
+    on Fri Feb  5 15:21:26 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

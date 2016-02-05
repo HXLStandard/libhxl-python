@@ -64,14 +64,41 @@
 </pre>
 
 <hr />
-<p>Composable filter class to filter columns in a HXL dataset.</p>
-  <p>Usage:</p>
-  <p>&lt;pre&gt; # blacklist columns 
-  hxl.data(url).without_columns('contact+email')</p>
-  <p># whitelist columns hxl.data(url).with_columns(['org', 'sector', 
-  'adm1']) &lt;/pre&gt;</p>
+<p>Composable filter class to remove columns from a HXL dataset.</p>
+  <p>This filter supports removing columns based on either a whitelist or a
+  blacklist of <a href="hxl.model.TagPattern-class.html" class="link">tag 
+  patterns</a>. It supports the <a 
+  href="hxl.model.Dataset-class.html#with_columns" 
+  class="link">hxl.model.Dataset.with_columns</a> and <a 
+  href="hxl.model.Dataset-class.html#without_columns" 
+  class="link">hxl.model.Dataset.without_columns</a> convenience methods 
+  and the <a href="hxl.scripts-module.html#hxlcut" 
+  class="link">hxl.scripts.hxlcut</a> command-line script.</p>
+  <p>Remove all columns matching the pattern &quot;#contact+email&quot; 
+  from the dataset:</p>
+<pre class="literalblock">
+ filter = ColumnFilter(hxl.data(url), exclude_tags='contact+email')
 
-<!-- ==================== INSTANCE METHODS ==================== -->
+ # or
+
+ filter = hxl.data(url).without_columns('contact+email')
+</pre>
+  <p>Remove all columns <i>except</i> those matching the patterns '#org', 
+  '#sector', and '#activity':</p>
+<pre class="literalblock">
+ filter = ColumnFilter(hxl.data(url), include_tags=['org', 'sector', 'activity'])
+
+ # or
+
+ filter = hxl.data(url).with_columns(['org', 'sector', 'activity'])
+</pre>
+
+<hr />
+<div class="fields">      <p><strong>See Also:</strong>
+        <a href="hxl.filters.RowFilter-class.html" 
+        class="link">RowFilter</a>
+      </p>
+</div><!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -89,9 +116,7 @@
         <span class="summary-sig-arg">source</span>,
         <span class="summary-sig-arg">include_tags</span>=<span class="summary-sig-default">[]</span>,
         <span class="summary-sig-arg">exclude_tags</span>=<span class="summary-sig-default">[]</span>)</span><br />
-      @param source a HXL data source @param include_tags a whitelist of 
-      TagPattern objects to include @param exclude_tags a blacklist of 
-      TagPattern objects to exclude</td>
+      Construct a column filter.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#ColumnFilter.__init__">source&nbsp;code</a></span>
             
@@ -108,7 +133,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.ColumnFilter-class.html#filter_columns" class="summary-sig-name">filter_columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Remove any columns in the blacklist or not in the whitelist.</td>
+      Internal: remove column definitions</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#ColumnFilter.filter_columns">source&nbsp;code</a></span>
             
@@ -126,7 +151,8 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.ColumnFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Remove values from a row for any column that's been removed.</td>
+      Internal: remove values from a row for any column that's been 
+      removed.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#ColumnFilter.filter_row">source&nbsp;code</a></span>
             
@@ -264,13 +290,15 @@
     </td>
   </tr></table>
   
-  <p>@param source a HXL data source @param include_tags a whitelist of 
-  TagPattern objects to include @param exclude_tags a blacklist of 
-  TagPattern objects to exclude</p>
+  <p>Construct a column filter.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>source</code></strong> - the source dataset</li>
+        <li><strong class="pname"><code>source</code></strong> - a <a href="hxl.model.Dataset-class.html" 
+          class="link">hxl.model.Dataset</a></li>
+        <li><strong class="pname"><code>include_tags</code></strong> - a whitelist of <a href="hxl.model.TagPattern-class.html" 
+          class="link">tag patterns</a> objects to include</li>
+        <li><strong class="pname"><code>exclude_tags</code></strong> - a blacklist of tag patterns objects to exclude</li>
     </ul></dd>
     <dt>Overrides:
         object.__init__
@@ -292,8 +320,7 @@
     </td>
   </tr></table>
   
-  <p>Remove any columns in the blacklist or not in the whitelist. Save the 
-  indices in self.cached_indices for row filtering.</p>
+  <p>Internal: remove column definitions</p>
   <dl class="fields">
     <dt>Returns:</dt>
         <dd>a list of hxl.model.Column objects</dd>
@@ -318,7 +345,8 @@
     </td>
   </tr></table>
   
-  <p>Remove values from a row for any column that's been removed.</p>
+  <p>Internal: remove values from a row for any column that's been 
+  removed.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -362,7 +390,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Thu Feb  4 19:52:01 2016
+    on Fri Feb  5 15:21:26 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
