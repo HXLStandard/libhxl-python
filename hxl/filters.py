@@ -983,8 +983,38 @@ class CountFilter(AbstractCachingFilter):
             
         return columns
 
-    def __iter__(self):
-        return CountFilter.Iterator(self)
+    def filter_rows(self):
+        raw_data = []
+        for aggregate in self._aggregate():
+            values = list(aggregate[0])
+            values.append(aggregate[1].count)
+            if self.aggregate_pattern:
+                if aggregate[1].seen_numbers:
+                    values += [
+                        aggregate[1].sum,
+                        aggregate[1].average,
+                        aggregate[1].min,
+                        aggregate[1].max
+                    ]
+                else:
+                    values += ['', '', '', '']
+            raw_data.append(values)
+        return raw_data
+
+    def _aggregate(self):
+        """
+        Read the entire source dataset and produce saved aggregate data.
+        """
+        aggregators = {}
+        for row in self.source:
+            if hxl.model.RowQuery.match_list(row, self.queries):
+                values = [str(row.get(pattern, default='')) for pattern in self.patterns]
+                if values:
+                    key = tuple(values)
+                    if not key in aggregators:
+                        aggregators[key] = CountFilter._Aggregator(self.aggregate_pattern)
+                    aggregators[key].add(row)
+        return iter(sorted(aggregators.items()))
 
     SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
@@ -1000,58 +1030,7 @@ class CountFilter(AbstractCachingFilter):
         else:
             raise HXLFilterException("Badly formatted column spec: " + spec)
 
-
-    class Iterator:
-
-        def __init__(self, outer):
-            self.outer = outer
-            self.iterator = iter(outer.source)
-            self.aggregate_iter = None
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            """
-            @return the next row of aggregated data.
-            """
-            if self.aggregate_iter is None:
-                self._aggregate()
-            # Write the stats, sorted in value order
-            aggregate = next(self.aggregate_iter)
-            values = list(aggregate[0])
-            values.append(aggregate[1].count)
-            if self.outer.aggregate_pattern:
-                if aggregate[1].seen_numbers:
-                    values.append(aggregate[1].sum)
-                    values.append(aggregate[1].average)
-                    values.append(aggregate[1].min)
-                    values.append(aggregate[1].max)
-                else:
-                    values = values + ([''] * 4)
-
-            row = hxl.model.Row(self.outer.columns)
-            row.values = values
-            return row
-
-        next = __next__
-
-        def _aggregate(self):
-            """
-            Read the entire source dataset and produce saved aggregate data.
-            """
-            aggregators = {}
-            for row in self.iterator:
-                if hxl.model.RowQuery.match_list(row, self.outer.queries):
-                    values = [str(row.get(pattern, default='')) for pattern in self.outer.patterns]
-                    if values:
-                        key = tuple(values)
-                        if not key in aggregators:
-                            aggregators[key] = CountFilter.Aggregator(self.outer.aggregate_pattern)
-                        aggregators[key].add(row)
-            self.aggregate_iter = iter(sorted(aggregators.items()))
-
-    class Aggregator(object):
+    class _Aggregator(object):
         """
         Class to collect aggregates for a single combination.
 
