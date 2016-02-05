@@ -823,25 +823,40 @@ class CleanDataFilter(AbstractStreamingFilter):
 
 
 class ColumnFilter(AbstractStreamingFilter):
-    """
-    Composable filter class to filter columns in a HXL dataset.
+    """Composable filter class to remove columns from a HXL dataset.
 
-    Usage:
+    This filter supports removing columns based on either a whitelist
+    or a blacklist of L{tag patterns<hxl.model.TagPattern>}. It
+    supports the L{hxl.model.Dataset.with_columns} and
+    L{hxl.model.Dataset.without_columns} convenience methods and the
+    L{hxl.scripts.hxlcut} command-line script.
 
-    <pre>
-    # blacklist columns
-    hxl.data(url).without_columns('contact+email')
+    Remove all columns matching the pattern "#contact+email" from the
+    dataset::
 
-    # whitelist columns
-    hxl.data(url).with_columns(['org', 'sector', 'adm1'])
-    </pre>
+      filter = ColumnFilter(hxl.data(url), exclude_tags='contact+email')
+
+      # or
+
+      filter = hxl.data(url).without_columns('contact+email')
+
+    Remove all columns I{except} those matching the patterns '#org',
+    '#sector', and '#activity'::
+
+      filter = ColumnFilter(hxl.data(url), include_tags=['org', 'sector', 'activity'])
+
+      # or
+
+      filter = hxl.data(url).with_columns(['org', 'sector', 'activity'])
+
+    @see: L{RowFilter}
     """
 
     def __init__(self, source, include_tags=[], exclude_tags=[]):
-        """
-        @param source a HXL data source
-        @param include_tags a whitelist of TagPattern objects to include
-        @param exclude_tags a blacklist of TagPattern objects to exclude
+        """Construct a column filter.
+        @param source: a L{hxl.model.Dataset}
+        @param include_tags: a whitelist of L{tag patterns<hxl.model.TagPattern>} objects to include
+        @param exclude_tags: a blacklist of tag patterns objects to exclude
         """
         super(ColumnFilter, self).__init__(source)
         self.include_tags = hxl.model.TagPattern.parse_list(include_tags)
@@ -849,10 +864,7 @@ class ColumnFilter(AbstractStreamingFilter):
         self.indices = [] # saved indices for columns to include
 
     def filter_columns(self):
-        """
-        Remove any columns in the blacklist or not in the whitelist.
-        Save the indices in self.cached_indices for row filtering.
-        """
+        """Internal: remove column definitions"""
         columns_in = self.source.columns
         columns_out = []
         for i in range(len(columns_in)):
@@ -862,7 +874,7 @@ class ColumnFilter(AbstractStreamingFilter):
         return columns_out
 
     def filter_row(self, row):
-        """Remove values from a row for any column that's been removed."""
+        """Internal: remove values from a row for any column that's been removed."""
         values = []
         for i in self.indices:
             try:
@@ -872,8 +884,7 @@ class ColumnFilter(AbstractStreamingFilter):
         return values
 
     def _test_column(self, column):
-        """
-        Test whether a column should be included in the output.
+        """Test whether a  column should be included in the output.
         If there is a whitelist, it must be in the whitelist; if there is a blacklist, it must not be in the blacklist.
         """
         if self.exclude_tags:
@@ -897,30 +908,50 @@ class ColumnFilter(AbstractStreamingFilter):
 
 
 class CountFilter(AbstractCachingFilter):
-    """
-    Composable filter class to aggregate rows in a HXL dataset.
+    """Composable filter class to aggregate rows in a HXL dataset.
 
-    This is the class supporting the hxlcount command-line utility.
+    This class supports the L{hxl.model.Dataset.count} convenience
+    method and the L{hxl.scripts.hxlcount} command-line script.
 
-    WARNING: this filter reads the entire source dataset before
-    producing output, and may need to hold a large amount of data in
-    memory, depending on the number of unique combinations counted.
+    This is a L{caching filter<AbstractCachingFilter>} that performs
+    aggregate actions such as counting, summing, and averaging across
+    multiple rows of data. For example, it can reduce a dataset to a
+    list of the number of times that each organisation or sector
+    appears. This is the main filter for producing reports, or the
+    data underlying charts and other visualisations; it is also useful
+    for anonymising data by rolling it up to higher levels of
+    abstraction.
 
-    Usage:
+    This example counts the number of rows for each organisation::
 
-    <pre>
-    filter = source.count(['#org', '#sector'])
-    </pre>
+      filter = CountFilter(hxl.data(url), 'org')
+
+      # or
+
+      filter = hxl.data(url).count('org')
+
+    You can do multiple levels of counting like this::
+
+      filter = hxl.data(url).count(['org', 'sector'])
+
+    To produce other aggregates, like averages, min, max, and sum, use the I{aggregate_pattern} argument::
+
+      filter = hxl.data(url).count('adm1', aggregate_pattern='affected')
+
+    You can also use the I{queries} argument to limit the counting to
+    specific fields. This example will count only the rows where C{#adm1} is set to "Coast"::
+
+      filter = hxl.data(url).count('org', queries='adm1=Coast')
+
     """
 
     def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', queries=[]):
-        """
-        Constructor
-        @param source the HXL data source
-        @param patterns a list of strings or TagPattern objects that form a unique key together
-        @param aggregate_pattern an optional tag pattern calculating numeric aggregate values.
-        @param count_spec the tag spec for the count column (defaults to 'Count#meta+count').
-        @param filters an optional list of query filters for rows to be counted.
+        """Construct a new count filter
+        @param source: a L{hxl.model.Dataset}
+        @param patterns: a single L{tag pattern<hxl.model.TagPattern>} or list of tag patterns that, together, form a unique key for counting.
+        @param aggregate_pattern: (optional) a single tag pattern for advanced aggregation (sum, min, max, and average).
+        @param count_spec: a L{tag spec<hxl.model.Column>} to apply to the column containing the counts (defaults to 'Count#meta+count').
+        @param queries: an optional list of L{row queries<hxl.model.RowQuery>} to filter the rows being counted.
         """
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
@@ -929,7 +960,7 @@ class CountFilter(AbstractCachingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_columns(self):
-        """Generate the columns for the report."""
+        """Internal: generate the columns for the report."""
         columns = []
 
         # Add columns being counted
@@ -951,7 +982,6 @@ class CountFilter(AbstractCachingFilter):
             columns.append(hxl.model.Column.parse('#meta+max', header='Maximum value'))
             
         return columns
-
 
     def __iter__(self):
         return CountFilter.Iterator(self)
