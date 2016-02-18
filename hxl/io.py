@@ -86,7 +86,7 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False):
+def data(data, allow_local=False, sheet_index=None):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
@@ -98,7 +98,7 @@ def data(data, allow_local=False):
         return data
 
     else:
-        return HXLReader(make_input(data, allow_local))
+        return HXLReader(make_input(data, allow_local, sheet_index))
 
     
 def write_hxl(output, source, show_headers=True, show_tags=True):
