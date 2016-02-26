@@ -356,6 +356,7 @@ class Dataset(object):
                 yield ",\n" + json.dumps(raw)
         yield "\n]\n"
 
+
 class Column(object):
     """
     The definition of a logical column in the HXL data.
