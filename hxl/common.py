@@ -8,7 +8,7 @@
 
 """
 
-import re, unidecode
+import re, unidecode, sys
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """Regular-expression pattern for a single token."""
@@ -43,7 +43,19 @@ def normalise_string(s):
     @param s: the string to normalise.
     """
     if s:
-        return re.sub(WHITESPACE_PATTERN, ' ', unidecode.unidecode(str(s).strip().lower().replace("\n", " ")))
+        # basic whitespace cleanups
+        s = str(s).strip().lower().replace("\n", " ")
+
+        # Python2 Unicode hack
+        if sys.version_info[0] < 3:
+            s = unicode(s, 'utf-8')
+
+        # Normalise whitespace and return
+        return re.sub(
+            WHITESPACE_PATTERN,
+            ' ',
+            unidecode.unidecode(s)
+        )
     else:
         return ''
 
