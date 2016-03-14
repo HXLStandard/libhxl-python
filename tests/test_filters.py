@@ -321,7 +321,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
         ['District', 'P-code'],
         ['#adm1', '#adm1+code'],
         ['coaST', '001'],         # deliberate case variation
-        ['   Plains', '002']      # deliberate whitespace variation
+        ['   Pláins', '002']      # deliberate whitespace variation and accent
     ]
 
     MERGE_OUT = [
