@@ -3,13 +3,15 @@
 from setuptools import setup
 
 setup(name='libhxl',
-      version='2.7',
+      version='2.7.1',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       author_email='contact@megginson.com',
       url='http://hxlproject.org',
       install_requires=['python-dateutil', 'xlrd', 'requests', 'unidecode'],
       packages=['hxl'],
+      package_data={'hxl': ['*.csv']},
+      include_package_data=True,
       test_suite='tests',
       entry_points={
           'console_scripts': [
