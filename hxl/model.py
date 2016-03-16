@@ -597,7 +597,7 @@ class RowQuery(object):
             return []
 
     @staticmethod
-    def match_list(row, queries=None):
+    def match_list(row, queries=None, reverse=False):
         """See if any query in a list matches a row."""
         if not queries:
             # no queries = pass
@@ -606,8 +606,8 @@ class RowQuery(object):
             # otherwise, must match at least one
             for query in queries:
                 if query.match_row(row):
-                    return True
-            return False
+                    return not reverse
+            return reverse
 
     @staticmethod
     def operator_re(s, pattern):

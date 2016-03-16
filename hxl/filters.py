@@ -1457,19 +1457,10 @@ class RowFilter(AbstractStreamingFilter):
 
     def filter_row(self, row):
         """Filter data row-wise."""
-        if self.mask and not self._match_row(row, self.mask):
-            return row.values
-        if self._match_row(row, self.queries, self.reverse):
-            return row.values
-        else:
-            return None
-
-    def _match_row(self, row, queries, reverse=False):
-        """Check if any of the queries matches the row (implied OR)."""
-        for query in queries:
-            if query.match_row(row):
-                return not reverse
-        return self.reverse
+        if hxl.model.RowQuery.match_list(row, self.mask):
+            if not hxl.model.RowQuery.match_list(row, self.queries, self.reverse):
+                return None
+        return row.values
 
     
 class SortFilter(AbstractCachingFilter):
