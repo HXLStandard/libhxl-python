@@ -256,15 +256,23 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.ColumnFilter(self, exclude_tags=blacklist)
 
-    def with_rows(self, queries):
-        """Select matching rows."""
+    def with_rows(self, queries, mask=[]):
+        """Select matching rows.
+        @param queries: a predicate or list of predicates for rows to include
+        @param mask: a predicate or list of predicates for rows to test (default: [] to test all)
+        @return: a filtered version of the source
+        """
         import hxl.filters
-        return hxl.filters.RowFilter(self, queries=queries, reverse=False)
+        return hxl.filters.RowFilter(self, queries=queries, reverse=False, mask=mask)
 
-    def without_rows(self, queries):
-        """Select non-matching rows."""
+    def without_rows(self, queries, mask=[]):
+        """Select non-matching rows.
+        @param queries: a predicate or list of predicates for rows to ignore
+        @param mask: a predicate or list of predicates for rows to test (default: [] to test all)
+        @return: a filtered version of the source
+        """
         import hxl.filters
-        return hxl.filters.RowFilter(self, queries=queries, reverse=True)
+        return hxl.filters.RowFilter(self, queries=queries, reverse=True, mask=mask)
 
     def sort(self, keys=None, reverse=False):
         """Sort the dataset (caching)."""

@@ -1442,28 +1442,33 @@ class RowFilter(AbstractStreamingFilter):
     </pre>
     """
 
-    def __init__(self, source, queries=[], reverse=False):
+    def __init__(self, source, queries=[], reverse=False, mask=[]):
         """
         Constructor
-        @param source the HXL data source
-        @param queries a series for parsed queries
-        @param reverse True to reverse the sense of the select
+        @param source: the HXL data source
+        @param queries: a series of predicates for rows to include or ignore
+        @param reverse: True to reverse the sense of the select
+        @param mask: a series of predicates to limit the rows to test (default: [] to test all)
         """
         super(RowFilter, self).__init__(source)
         self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.mask = hxl.model.RowQuery.parse_list(mask)
         self.reverse = reverse
 
     def filter_row(self, row):
-        if self.match_row(row):
+        """Filter data row-wise."""
+        if self.mask and not self._match_row(row, self.mask):
+            return row.values
+        if self._match_row(row, self.queries, self.reverse):
             return row.values
         else:
             return None
 
-    def match_row(self, row):
+    def _match_row(self, row, queries, reverse=False):
         """Check if any of the queries matches the row (implied OR)."""
-        for query in self.queries:
+        for query in queries:
             if query.match_row(row):
-                return not self.reverse
+                return not reverse
         return self.reverse
 
     

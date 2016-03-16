@@ -519,6 +519,9 @@ class TestRowFilter(AbstractBaseFilterTest):
         self.assertEqual(DATA[3:], self.source.without_rows(['#sector=wash']).values)
         self.assertEqual(DATA[3:], self.source.without_rows('#sector=wash').values)
 
+    def test_masked(self):
+        self.assertEqual(DATA[2:], self.source.with_rows('sector=education', mask='org=ngo b').values)
+
 
 class TestSortFilter(AbstractBaseFilterTest):
 
