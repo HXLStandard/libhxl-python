@@ -64,6 +64,12 @@ class TestAddColumnsFilter(AbstractBaseFilterTest):
             self.source.add_columns(self.spec).values
         )
 
+    def test_dynamic_value(self):
+        self.assertEqual(
+            [values + [values[1]] for values in DATA[2:]],
+            self.source.add_columns('Country#country={{#sector}}').values
+        )
+
 
 class TestAppendFilter(AbstractBaseFilterTest):
 

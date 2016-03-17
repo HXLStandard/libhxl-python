@@ -413,11 +413,21 @@ class AddColumnsFilter(AbstractStreamingFilter):
         """Internal: return each row with the new fixed value(s) attached."""
         values = copy.copy(row.values)
         if self.before:
-            return self.const_values + values
+            return self._subst(row, self.const_values) + values
         else:
-            return values + self.const_values
+            return values + self._subst(row, self.const_values)
+
+    def _subst(self, row, const_values):
+        def do_sub(match_object):
+            return row.get(match_object.group(1))
+        values = []
+        for value in const_values:
+            values.append(re.sub(AddColumnsFilter._SUBST_PATTERN, do_sub, value))
+        return values
 
     _SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+
+    _SUBST_PATTERN = '{{(#' + hxl.common.TOKEN_PATTERN + '(?:[+-]' + hxl.common.TOKEN_PATTERN + ')*)}}';
 
     @staticmethod
     def parse_spec(spec):
@@ -1152,6 +1162,8 @@ class MergeDataFilter(AbstractStreamingFilter):
     Composable filter class to merge values from two HXL datasets.
 
     This is the class supporting the hxlmerge command-line utility.
+
+    Merges the values for the *last* matching row in the merge dataset.
 
     Warning: this filter may store a large amount of data in memory, depending on the merge.
 
