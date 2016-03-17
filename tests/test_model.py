@@ -127,7 +127,7 @@ class TestDataset(unittest.TestCase):
 class TestColumn(unittest.TestCase):
 
     HXL_TAG = '#foo'
-    ATTRIBUTES = {'en', 'bar'}
+    ATTRIBUTES = ['en', 'bar', 'f']
     HEADER_TEXT = 'Foo header'
     COLUMN_NUMBER = 5
     SOURCE_COLUMN_NUMBER = 7
@@ -137,13 +137,11 @@ class TestColumn(unittest.TestCase):
 
     def test_variables(self):
         self.assertEqual(TestColumn.HXL_TAG, self.column.tag)
-        self.assertEqual(TestColumn.ATTRIBUTES, self.column.attributes)
+        self.assertEqual(set(TestColumn.ATTRIBUTES), self.column.attributes)
         self.assertEqual(TestColumn.HEADER_TEXT, self.column.header)
 
     def test_display_tag(self):
-        # order is not fixed
-        #self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.display_tag)
-        pass
+        self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.display_tag)
 
     def test_case_insensitive(self):
         column = Column(tag='Foo', attributes=['X', 'y'])

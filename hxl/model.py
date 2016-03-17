@@ -374,7 +374,7 @@ class Column(object):
     PATTERN = r'^\s*(#{token})((?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
-    __slots__ = ['tag', 'attributes', 'header']
+    __slots__ = ['tag', 'attributes', 'attribute_list', 'header']
 
     def __init__(self, tag=None, attributes=(), header=None):
         """
@@ -388,6 +388,7 @@ class Column(object):
         self.tag = tag
         self.header = header
         self.attributes = set([a.lower() for a in attributes])
+        self.attribute_list = [a.lower() for a in attributes] # to preserve order
 
     @property
     def display_tag(self):
@@ -397,7 +398,7 @@ class Column(object):
         """
         if self.tag:
             s = self.tag
-            for attribute in self.attributes:
+            for attribute in self.attribute_list:
                 s += '+' + attribute
             return s
         else:
