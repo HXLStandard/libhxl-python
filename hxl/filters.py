@@ -1157,6 +1157,52 @@ class DeduplicationFilter(AbstractStreamingFilter):
         return tuple(key)
 
         
+class ExpandLabelsFilter(AbstractStreamingFilter):
+    """
+    Composable filter to expand labelled cells
+
+    Supports the hxlexpand command-line script.
+    """
+
+    def __init__(self, source):
+        """
+        Constructor
+        @param source the upstream source dataset
+        """
+        super(ExpandLabelsFilter, self).__init__(source)
+        self._generator = None
+        self._plan = self._make_plan(source.columns)
+
+    def filter_row(self, row):
+        return self._gen_values(row)
+
+    def _gen_values(self, row):
+        values = []
+        for spec in self._plan:
+            if isinstance(spec, list):
+                values.append(row.columns[spec[0]].header)
+                values.append(row.values[spec[0]])
+            else:
+                values.append(row.values[spec])
+        return values
+    
+    def _make_plan(self, columns):
+        """Create an expansion plan"""
+        plan = []
+        groups = {}
+        for index, column in enumerate(columns):
+            if 'label' in column.attributes:
+                display_tag = column.display_tag
+                if display_tag not in groups:
+                    plan.append([index])
+                    groups[display_tag] = len(plan) - 1;
+                else:
+                    plan[groups.get(display_tag)].append(index)
+            else:
+                plan.append(index)
+        return plan
+
+
 class MergeDataFilter(AbstractStreamingFilter):
     """
     Composable filter class to merge values from two HXL datasets.

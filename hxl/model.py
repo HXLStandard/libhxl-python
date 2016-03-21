@@ -321,6 +321,10 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, queries=queries)
 
+    def expand_labels(self):
+        import hxl.filters
+        return hxl.filters.ExpandLabelsFilter(self)
+
     #
     # Generators
     #

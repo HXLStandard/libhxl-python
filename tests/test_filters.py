@@ -548,6 +548,35 @@ class TestSortFilter(AbstractBaseFilterTest):
         self.assertEqual(sorted(DATA[2:], key=key), self.source.sort('#meta+count').values)
 
 
+class TestExpandLabelsFilter(AbstractBaseFilterTest):
+
+    DATA_IN = [
+        ['Province', 'Date', 'Girls', 'Boys', 'Women', 'Men'],
+        ['#adm1', '#date', '#affected+label', '#affected+label', '#affected+label', '#affected+label'],
+        ['Coast', '2016', '200', '150', '500', '600'],
+        ['Plains', '2016', '300', '450', '800', '750'],
+    ]
+
+    DATA_OUT = [
+        ['Province', 'Date', 'Group', 'Number affected'],
+        ['#adm1', '#date', '#affected+type', '#affected+num'],
+        ['Coast', '2016', 'Girls', '200'],
+        ['Coast', '2016', 'Boys', '150'],
+        ['Coast', '2016', 'Women', '500'],
+        ['Coast', '2016', 'Men', '600'],
+        ['Plains', '2016', 'Girls', '300'],
+        ['Plains', '2016', 'Boys', '450'],
+        ['Plains', '2016', 'Women', '800'],
+        ['Plains', '2016', 'Men', '750']
+    ]
+
+    def test_content(self):
+        self.assertEqual(
+            hxl.data(self.DATA_IN).expand_labels().values,
+            self.DATA_OUT[2:]
+        )
+
+
 class TestChaining(AbstractBaseFilterTest):
 
     def test_rowfilter_countfilter(self):
