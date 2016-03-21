@@ -570,6 +570,13 @@ class TestExpandLabelsFilter(AbstractBaseFilterTest):
         ['Plains', '2016', 'Men', '750']
     ]
 
+    def test_headers(self):
+        source = hxl.data(self.DATA_IN).expand_labels()
+        self.assertEqual(
+            ['#adm1', '#date', '#affected+label+header', '#affected+label+value'],
+            source.display_tags
+        )
+
     def test_content(self):
         self.assertEqual(
             hxl.data(self.DATA_IN).expand_labels().values,

@@ -1173,6 +1173,17 @@ class ExpandLabelsFilter(AbstractBaseFilter):
         self._generator = None
         self._plan = self._make_plan(source.columns)
 
+    def filter_columns(self):
+        columns = []
+        for spec in self._plan:
+            if isinstance(spec, list):
+                model_column = self.source.columns[spec[0]]
+                columns.append(copy.deepcopy(model_column).add_attribute('header'))
+                columns.append(copy.deepcopy(model_column).add_attribute('value'))
+            else:
+                columns.append(self.source.columns[spec])
+        return columns
+
     def __iter__(self):
         for row in self.source:
             for values in self._expand(row, self._plan):

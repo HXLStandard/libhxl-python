@@ -408,6 +408,20 @@ class Column(object):
         else:
             return ''
 
+    def add_attribute(self, attribute):
+        """Add an attribute to the column."""
+        if attribute not in self.attributes:
+            self.attributes.add(attribute)
+            self.attribute_list.append(attribute)
+        return self
+
+    def remove_attribute(self, attribute):
+        """Remove an attribute from the column."""
+        if attribute in self.attributes:
+            self.attributes.remove(attribute)
+            self.attribute_list.remove(attribute)
+        return self
+
     def __repr__(self):
         return self.display_tag
 
