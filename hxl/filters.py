@@ -1157,7 +1157,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
         return tuple(key)
 
         
-class ExpandLabelsFilter(AbstractStreamingFilter):
+class ExpandLabelsFilter(AbstractBaseFilter):
     """
     Composable filter to expand labelled cells
 
@@ -1173,19 +1173,30 @@ class ExpandLabelsFilter(AbstractStreamingFilter):
         self._generator = None
         self._plan = self._make_plan(source.columns)
 
-    def filter_row(self, row):
-        return self._gen_values(row)
+    def __iter__(self):
+        for row in self.source:
+            for values in self._expand(row, self._plan):
+                yield hxl.model.Row(self.source.columns, values)
 
-    def _gen_values(self, row):
-        values = []
-        for spec in self._plan:
-            if isinstance(spec, list):
-                values.append(row.columns[spec[0]].header)
-                values.append(row.values[spec[0]])
-            else:
-                values.append(row.values[spec])
-        return values
-    
+    def _expand(self, row, plan, values_in=[]):
+        """Recursive generator for the row data.
+        https://wiki.python.org/moin/Generators
+        """
+        if not plan: # terminal condition
+            yield values_in
+        else:
+            spec = plan[0]
+            plan = plan[1:]
+            if isinstance(spec, list): # multiple branches
+                for index in spec:
+                    values = values_in + [row.columns[index].header, row.values[index]]
+                    for values_out in self._expand(row, plan, values):
+                        yield values_out
+            else: # continue on a single branch
+                values = values_in + [row.values[spec]]
+                for values_out in self._expand(row, plan, values):
+                    yield values_out
+
     def _make_plan(self, columns):
         """Create an expansion plan"""
         plan = []
