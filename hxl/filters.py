@@ -1157,11 +1157,11 @@ class DeduplicationFilter(AbstractStreamingFilter):
         return tuple(key)
 
         
-class ExpandLabelsFilter(AbstractBaseFilter):
+class ExplodeFilter(AbstractBaseFilter):
     """
-    Composable filter to expand labelled cells
+    Explode a wide (series) dataset into a long ne
 
-    Supports the hxlexpand command-line script.
+    Supports the hxlexplode command-line script.
     """
 
     def __init__(self, source):
@@ -1169,7 +1169,7 @@ class ExpandLabelsFilter(AbstractBaseFilter):
         Constructor
         @param source the upstream source dataset
         """
-        super(ExpandLabelsFilter, self).__init__(source)
+        super(ExplodeFilter, self).__init__(source)
         self._generator = None
         self._plan = self._make_plan(source.columns)
 

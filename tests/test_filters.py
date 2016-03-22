@@ -548,7 +548,7 @@ class TestSortFilter(AbstractBaseFilterTest):
         self.assertEqual(sorted(DATA[2:], key=key), self.source.sort('#meta+count').values)
 
 
-class TestExpandLabelsFilter(AbstractBaseFilterTest):
+class TestExplodeFilter(AbstractBaseFilterTest):
 
     DATA_IN = [
         ['Province', 'Date', 'Girls', 'Boys', 'Women', 'Men'],
@@ -571,7 +571,7 @@ class TestExpandLabelsFilter(AbstractBaseFilterTest):
     ]
 
     def test_headers(self):
-        source = hxl.data(self.DATA_IN).expand_labels()
+        source = hxl.data(self.DATA_IN).explode()
         self.assertEqual(
             ['#adm1', '#date', '#affected+label+header', '#affected+label+value'],
             source.display_tags
@@ -579,7 +579,7 @@ class TestExpandLabelsFilter(AbstractBaseFilterTest):
 
     def test_content(self):
         self.assertEqual(
-            hxl.data(self.DATA_IN).expand_labels().values,
+            hxl.data(self.DATA_IN).explode().values,
             self.DATA_OUT[2:]
         )
 
