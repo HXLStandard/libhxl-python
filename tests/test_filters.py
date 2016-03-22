@@ -550,16 +550,17 @@ class TestSortFilter(AbstractBaseFilterTest):
 
 class TestExplodeFilter(AbstractBaseFilterTest):
 
+    # deliberate variation in attribute ordering
     DATA_IN = [
         ['Province', 'Date', 'Girls', 'Boys', 'Women', 'Men'],
-        ['#adm1', '#date', '#affected+label', '#affected+label', '#affected+label', '#affected+label'],
+        ['#adm1', '#date', '#affected+label+num', '#affected+num+label', '#affected+num+label', '#affected+num+label'],
         ['Coast', '2016', '200', '150', '500', '600'],
         ['Plains', '2016', '300', '450', '800', '750'],
     ]
 
     DATA_OUT = [
         ['Province', 'Date', 'Group', 'Number affected'],
-        ['#adm1', '#date', '#affected+type', '#affected+num'],
+        ['#adm1', '#date', '#affected+num+header', '#affected+num+value'],
         ['Coast', '2016', 'Girls', '200'],
         ['Coast', '2016', 'Boys', '150'],
         ['Coast', '2016', 'Women', '500'],
@@ -573,7 +574,14 @@ class TestExplodeFilter(AbstractBaseFilterTest):
     def test_headers(self):
         source = hxl.data(self.DATA_IN).explode()
         self.assertEqual(
-            ['#adm1', '#date', '#affected+label+header', '#affected+label+value'],
+            ['#adm1', '#date', '#affected+num+header', '#affected+num+value'],
+            source.display_tags
+        )
+
+    def test_custom_atts(self):
+        source = hxl.data(self.DATA_IN).explode('foo', 'bar')
+        self.assertEqual(
+            ['#adm1', '#date', '#affected+num+foo', '#affected+num+bar'],
             source.display_tags
         )
 

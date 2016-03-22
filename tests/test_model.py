@@ -148,6 +148,20 @@ class TestColumn(unittest.TestCase):
         self.assertEquals('foo', column.tag)
         self.assertEquals(set(['x', 'y']), column.attributes)
 
+    def test_eq(self):
+        col1 = Column(tag='xxx', attributes={'b','c','a'}, header='foo')
+        col2 = Column(tag='xxx', attributes={'a', 'b','c'}, header='bar')
+        col3 = Column(tag='xxx', attributes={'b','c'})
+        self.assertEquals(col1, col2)
+        self.assertNotEquals(col1, col3)
+
+    def test_hash(self):
+        col1 = Column(tag='xxx', attributes={'b','c','a'}, header='foo')
+        col2 = Column(tag='xxx', attributes={'a', 'b','c'}, header='bar')
+        col3 = Column(tag='xxx', attributes={'b','c'})
+        self.assertEquals(hash(col1), hash(col2))
+        self.assertNotEquals(hash(col1), hash(col3))
+
 
 class TestRow(unittest.TestCase):
 

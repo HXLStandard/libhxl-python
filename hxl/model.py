@@ -321,9 +321,16 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, queries=queries)
 
-    def explode(self):
+    def explode(self, header_attribute='header', value_attribute='value'):
+        """Explodes a wide dataset into a long datasets.
+        @param header_attribute: the attribute to add to the hashtag of the column with the former header (default 'header')
+        @param vaue_attribute: the attribute to add to the hashtag of the column with the former value (default 'value')
+        @return: new new, filtered dataset.
+        @see hxl.model.ExplodeFilter
+        """
+        
         import hxl.filters
-        return hxl.filters.ExplodeFilter(self)
+        return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
 
     #
     # Generators
@@ -421,6 +428,20 @@ class Column(object):
             self.attributes.remove(attribute)
             self.attribute_list.remove(attribute)
         return self
+
+    def __hash__(self):
+        """Make columns usable in a dictionary.
+        Only the hashtag and attributes are used.
+        """
+        hash_value = hash(self.tag)
+        for attribute in self.attributes:
+            hash_value += hash(attribute)
+        return hash_value
+
+    def __eq__(self, other):
+        """Test for comparison with another object.
+        For equality, only the hashtag and attributes have to be the same."""
+        return (self.tag == other.tag and self.attributes == other.attributes)
 
     def __repr__(self):
         return self.display_tag

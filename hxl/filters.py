@@ -1158,33 +1158,57 @@ class DeduplicationFilter(AbstractStreamingFilter):
 
         
 class ExplodeFilter(AbstractBaseFilter):
-    """
-    Explode a wide (series) dataset into a long ne
+    """Explode a wide (series) dataset into a long version.
 
-    Supports the hxlexplode command-line script.
+    Every set of identically-tagged columns that contain the +label
+    attribute in their hashtag will get their own row, with the header
+    text and the value side by side.  For example,
+
+    Country,2015,2014,2013
+    #country,#affected+label,#affected+label,#affected+label
+    Cameroon,100,150,120
+
+    will be converted to
+
+    Country,Header,Value
+    #country,#affected+header,#affected+value
+    Cameroon,2015,100
+    Cameroon,2014,150
+    Cameroon,2015,120
+
+    (You can use the RenameFilter to change the names and hashtags of
+    the generated columns.)
+
+    @see: hxl.model.Dataset.explode
     """
 
-    def __init__(self, source):
+    def __init__(self, source, header_attribute='header', value_attribute='value'):
         """
         Constructor
-        @param source the upstream source dataset
+        @param source: the upstream source dataset
+        @param header_attribute: the attribute to add to the hashtag for the column with the former header (default: 'header')
+        @param value_attribute: the attribute to add to the hashtag for the column with the former header (default: 'value')
         """
         super(ExplodeFilter, self).__init__(source)
+        self.header_attribute = header_attribute
+        self.value_attribute = value_attribute
         self._generator = None
-        self._plan = self._make_plan(source.columns)
+        self._plan = self._make_plan()
 
     def filter_columns(self):
+        """Produce the new column headers."""
         columns = []
         for spec in self._plan:
             if isinstance(spec, list):
                 model_column = self.source.columns[spec[0]]
-                columns.append(copy.deepcopy(model_column).add_attribute('header'))
-                columns.append(copy.deepcopy(model_column).add_attribute('value'))
+                columns.append(copy.deepcopy(model_column).remove_attribute('label').add_attribute(self.header_attribute))
+                columns.append(copy.deepcopy(model_column).remove_attribute('label').add_attribute(self.value_attribute))
             else:
                 columns.append(self.source.columns[spec])
         return columns
 
     def __iter__(self):
+        """Custom iterator to produce exploded rows."""
         for row in self.source:
             for values in self._expand(row, self._plan):
                 yield hxl.model.Row(self.source.columns, values)
@@ -1208,18 +1232,20 @@ class ExplodeFilter(AbstractBaseFilter):
                 for values_out in self._expand(row, plan, values):
                     yield values_out
 
-    def _make_plan(self, columns):
-        """Create an expansion plan"""
+    def _make_plan(self):
+        """Create an expansion plan
+        The plan is a list of integers, representing columns in the original source.
+        Some items are lists of integers, representing variants to show for multiple rows.
+        """
         plan = []
         groups = {}
-        for index, column in enumerate(columns):
+        for index, column in enumerate(self.source.columns):
             if 'label' in column.attributes:
-                display_tag = column.display_tag
-                if display_tag not in groups:
+                if column not in groups:
                     plan.append([index])
-                    groups[display_tag] = len(plan) - 1;
+                    groups[column] = len(plan) - 1;
                 else:
-                    plan[groups.get(display_tag)].append(index)
+                    plan[groups.get(column)].append(index)
             else:
                 plan.append(index)
         return plan
