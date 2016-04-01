@@ -227,6 +227,14 @@ class Dataset(object):
         """
         return hxl.validation.schema(schema, callback).validate(self)
 
+    def recipe(self, recipe):
+        """Parse a recipe (JSON or a list of dicts) and create the appropriate filters.
+        @param recipe: a list of dicts, a single dict, or a JSON literal string.
+        @return: the new end filter.
+        """
+        import hxl.filters
+        return hxl.filters.from_recipe(self, recipe)
+
     #
     # Filters
     #
