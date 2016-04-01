@@ -460,7 +460,7 @@ class AppendFilter(AbstractBaseFilter):
 
     Usage::
     
-        filter = Appendfilter(hxl.data(url), hxl.data(url2))
+        filter = AppendFilter(hxl.data(url), hxl.data(url2))
 
     This filter concatenates a second dataset to the end of the first
     one. It supports the L{hxl.model.Dataset.append} convenience
@@ -1673,97 +1673,137 @@ def from_recipe(source, recipe):
     @param recipe: a list of dictionaries, each describing a filter.
     @return: the filter at the end of the new chain.
     """
+
     source = hxl.data(source)
     for spec in recipe:
-        type = spec.get('filter')
+
+        def opt(property, default_value=None):
+            """Get an optional property, possibly with a default value."""
+            value = spec.get(property)
+            if value is None:
+                return default_value
+            else:
+                return value
+
+        type = opt('filter')
+
+        def req(property):
+            """Get a required property, and raise an exception if missing."""
+            value = spec.get(property)
+            if value is None:
+                raise HXLFilterException("Filter {} is missing required property {}".format(type, property))
+            return value
+
         if type == 'add_columns':
             source = source.add_columns(
-                spec.get('specs'),
-                spec.get('before', False)
+                req('specs'),
+                opt('before', False)
             )
+
         elif type == 'append':
             source = source.append(
-                spec.get('append_source'),
-                spec.get('add_columns', True),
-                spec.get('queries', [])
+                req('append_source'),
+                opt('add_columns', True),
+                opt('queries', [])
             )
+
         elif type == 'cache':
             source = source.cache()
+
         elif type == 'clean_data':
             source = source.clean_data(
-                spec.get('whitespace', []),
-                spec.get('upper', []),
-                spec.get('lower', []),
-                spec.get('date', []),
-                spec.get('number', []),
-                spec.get('queries', [])
+                opt('whitespace', []),
+                opt('upper', []),
+                opt('lower', []),
+                opt('date', []),
+                opt('number', []),
+                opt('queries', [])
             )
-        elif type == 'dedup':
-            source = souce.dedup(
-                spec.get('patterns', []),
-                spec.get('queries', [])
-            )
+
         elif type == 'count':
             source = source.count(
-                spec.get('patterns'),
-                spec.get('aggregate_pattern'),
-                spec.get('count_spec', 'Count#meta+count'),
-                spec.get('queries', [])
+                req('patterns'),
+                opt('aggregate_pattern'),
+                opt('count_spec', 'Count#meta+count'),
+                opt('queries', [])
             )
+
+        elif type == 'dedup':
+            source = source.dedup(
+                opt('patterns', []),
+                opt('queries', [])
+            )
+
         elif type == 'explode':
             source = source.explode(
-                spec.get('header_attribute'),
-                spec.get('value_attribute')
+                opt('header_attribute', 'header'),
+                opt('value_attribute', 'value')
             )
+            
         elif type == 'merge_data':
             source = source.merge_data(
-                spec.get('merge_source'),
-                spec.get('keys'),
-                spec.get('tags'),
-                spec.get('replace', False),
-                spec.get('overwrite', False),
-                spec.get('queries', [])
+                req('merge_source'),
+                req('keys'),
+                req('tags'),
+                opt('replace', False),
+                opt('overwrite', False),
+                opt('queries', [])
             )
+            
         elif type == 'rename_columns':
             source = source.rename_columns(
-                spec.get('specs')
+                req('specs')
             )
+            
         elif type == 'replace_data':
             source = source.replace_data(
-                spec.get('original'),
-                spec.get('replacement'),
-                spec.get('pattern'),
-                spec.get('use_regex', False),
-                spec.get('queries', [])
+                req('original'),
+                req('replacement'),
+                opt('pattern'),
+                opt('use_regex', False),
+                opt('queries', [])
             )
+            
         elif type == 'replace_data_map':
             source = source.replace_data_map(
-                spec.get('map_source'),
-                spec.get('queries', [])
+                req('map_source'),
+                opt('queries', [])
             )
+            
         elif type == 'sort':
             source = source.sort(
-                spec.get('keys'),
-                spec.get('reverse', False)
+                opt('keys'),
+                opt('reverse', False)
             )
+            
         elif type == 'with_columns':
             source = source.with_columns(
-                spec.get('whitelist')
+                req('whitelist')
             )
+            
         elif type == 'with_rows':
             source = source.with_rows(
-                spec.get('queries'),
-                spec.get('mask', [])
+                req('queries'),
+                opt('mask', [])
             )
+            
         elif type == 'without_columns':
             source = source.without_columns(
-                spec.get('blacklist')
+                req('blacklist')
             )
+            
         elif type == 'without_rows':
             source = source.without_rows(
-                spec.get('queries'),
-                spec.get('mask', [])
+                req('queries'),
+                opt('mask', [])
             )
+
+        elif type:
+            raise HXLFilterException("Unknown filter type {}".format(type))
+
+        else:
+            raise HXLFilterException("No 'filter' property specified")
+            
     return source
 
 

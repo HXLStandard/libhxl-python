@@ -298,7 +298,7 @@ class Dataset(object):
     def replace_data_map(self, map_source, queries=[]):
         """Replace values in a HXL dataset."""
         import hxl.filters
-        replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(map_source)
+        replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.data(map_source))
         return hxl.filters.ReplaceDataFilter(self, replacements, queries=queries)
 
     def add_columns(self, specs, before=False):
