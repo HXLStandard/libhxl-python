@@ -51,119 +51,115 @@ class TestRecipe(AbstractBaseFilterTest):
         ])
         self.assertEqual(filtered.values, [DATA[4], DATA[2]])
 
+    def test_json(self):
+        # test using a literal JSON string for the recipe
+        filtered = hxl.filters.from_recipe(self.source, '{"filter": "cache"}')
+        self.assertEqual(type(filtered).__name__, 'CacheFilter')
+
     # test individual filter types in the recipe
+    # all of these specify only a single filter as a dict
     
     def test_add_columns(self):
-        filtered = hxl.filters.from_recipe(self.source, [
-            {
-                'filter': 'add_columns',
-                'specs': '#foo=bar'
-            }
-        ])
+        filtered = hxl.filters.from_recipe(self.source, {
+            'filter': 'add_columns',
+            'specs': '#foo=bar'
+        })
         self.assertEqual(type(filtered).__name__, 'AddColumnsFilter')
 
     def test_append(self):
-        filtered = hxl.filters.from_recipe(self.source, [
-            {
-                'filter': 'append',
-                'append_source': DATA
-            }
-        ])
+        filtered = hxl.filters.from_recipe(self.source, {
+            'filter': 'append',
+            'append_source': DATA
+        })
         self.assertEqual(type(filtered).__name__, 'AppendFilter')
 
     def test_cache(self):
-        filtered = hxl.filters.from_recipe(self.source, [{'filter': 'cache'}])
+        filtered = hxl.filters.from_recipe(self.source, {'filter': 'cache'})
         self.assertEqual(type(filtered).__name__, 'CacheFilter')
 
     def test_clean_data(self):
-        filtered = hxl.filters.from_recipe(self.source, [{'filter': 'clean_data'}])
+        filtered = hxl.filters.from_recipe(self.source, {'filter': 'clean_data'})
         self.assertEqual(type(filtered).__name__, 'CleanDataFilter')
 
     def test_count(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'count',
             'patterns': 'sector'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'CountFilter')
 
     def test_dedup(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
-            'filter': 'dedup'
-        }])
+        filtered = hxl.filters.from_recipe(self.source, {'filter': 'dedup'})
         self.assertEqual(type(filtered).__name__, 'DeduplicationFilter')
 
     def test_explode(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
-            'filter': 'explode'
-        }])
+        filtered = hxl.filters.from_recipe(self.source, {'filter': 'explode'})
         self.assertEqual(type(filtered).__name__, 'ExplodeFilter')
 
     def test_merge_data(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'merge_data',
             'merge_source': DATA,
             'keys': 'sector',
             'tags': 'org'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'MergeDataFilter')
 
     def test_rename_columns(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'rename_columns',
             'specs': '#foo:#bar'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'RenameFilter')
 
     def test_replace_data(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'replace_data',
             'original': 'foo',
             'replacement': 'bar'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'ReplaceDataFilter')
 
     def test_replace_data_map(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'replace_data_map',
             'map_source': [
                 ['#x_pattern', '#x_substitution', '#x_tag'],
                 ['NGO C', 'NGO Charlie', 'org']
             ]
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'ReplaceDataFilter')
 
     def test_sort(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
-            'filter': 'sort',
-        }])
+        filtered = hxl.filters.from_recipe(self.source, {'filter': 'sort'})
         self.assertEqual(type(filtered).__name__, 'SortFilter')
 
     def test_with_columns(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'with_columns',
             'whitelist': 'sector'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'ColumnFilter')
 
     def test_with_rows(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'with_rows',
             'queries': 'sector=WASH'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'RowFilter')
 
     def test_without_columns(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'without_columns',
             'blacklist': 'sector'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'ColumnFilter')
 
     def test_without_rows(self):
-        filtered = hxl.filters.from_recipe(self.source, [{
+        filtered = hxl.filters.from_recipe(self.source, {
             'filter': 'without_rows',
             'queries': 'sector=WASH'
-        }])
+        })
         self.assertEqual(type(filtered).__name__, 'RowFilter')
 
 

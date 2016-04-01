@@ -37,7 +37,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import sys, re, six, abc, copy
+import sys, re, six, abc, copy, json
 import dateutil.parser
 
 import hxl
@@ -1675,6 +1675,18 @@ def from_recipe(source, recipe):
     """
 
     source = hxl.data(source)
+
+    #
+    # Clean up recipe if needed
+    #
+    if isinstance(recipe, six.string_types):
+        # a JSON string (parse it first)
+        recipe = json.loads(recipe)
+    if isinstance(recipe, dict) and recipe.get('filter'):
+        # a single filter (make it into a list)
+        recipe = [recipe]
+
+    # Process each filter in turn
     for spec in recipe:
 
         def opt(property, default_value=None):
