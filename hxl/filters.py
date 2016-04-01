@@ -1657,5 +1657,115 @@ class SortFilter(AbstractCachingFilter):
                 return (float('inf'), norm)
 
 
+#
+# Compile a filter chain
+#
+
+def from_recipe(source, recipe):
+    """Build a filter chain from a JSON-like list of filter specs.
+
+    Each recipe dictionary contains the property 'filter', describing
+    the filter type, and zero or more other properties providing
+    parameters for the filter. Filter and parameter names are the same
+    as the methods and arguments in hxl.model.Dataset.
+
+    @param source: a HXL data source, URL, etc.
+    @param recipe: a list of dictionaries, each describing a filter.
+    @return: the filter at the end of the new chain.
+    """
+    source = hxl.data(source)
+    for spec in recipe:
+        type = spec.get('filter')
+        if type == 'add_columns':
+            source = source.add_columns(
+                spec.get('specs'),
+                spec.get('before', False)
+            )
+        elif type == 'append':
+            source = source.append(
+                spec.get('append_source'),
+                spec.get('add_columns', True),
+                spec.get('queries', [])
+            )
+        elif type == 'cache':
+            source = source.cache()
+        elif type == 'clean_data':
+            source = source.clean_data(
+                spec.get('whitespace', []),
+                spec.get('upper', []),
+                spec.get('lower', []),
+                spec.get('date', []),
+                spec.get('number', []),
+                spec.get('queries', [])
+            )
+        elif type == 'dedup':
+            source = souce.dedup(
+                spec.get('patterns', []),
+                spec.get('queries', [])
+            )
+        elif type == 'count':
+            source = source.count(
+                spec.get('patterns'),
+                spec.get('aggregate_pattern'),
+                spec.get('count_spec', 'Count#meta+count'),
+                spec.get('queries', [])
+            )
+        elif type == 'explode':
+            source = source.explode(
+                spec.get('header_attribute'),
+                spec.get('value_attribute')
+            )
+        elif type == 'merge_data':
+            source = source.merge_data(
+                spec.get('merge_source'),
+                spec.get('keys'),
+                spec.get('tags'),
+                spec.get('replace', False),
+                spec.get('overwrite', False),
+                spec.get('queries', [])
+            )
+        elif type == 'rename_columns':
+            source = source.rename_columns(
+                spec.get('specs')
+            )
+        elif type == 'replace_data':
+            source = source.replace_data(
+                spec.get('original'),
+                spec.get('replacement'),
+                spec.get('pattern'),
+                spec.get('use_regex', False),
+                spec.get('queries', [])
+            )
+        elif type == 'replace_data_map':
+            source = source.replace_data_map(
+                spec.get('map_source'),
+                spec.get('queries', [])
+            )
+        elif type == 'sort':
+            source = source.sort(
+                spec.get('keys'),
+                spec.get('reverse', False)
+            )
+        elif type == 'with_columns':
+            source = source.with_columns(
+                spec.get('whitelist')
+            )
+        elif type == 'with_rows':
+            source = source.with_rows(
+                spec.get('queries'),
+                spec.get('mask', [])
+            )
+        elif type == 'without_columns':
+            source = source.without_columns(
+                spec.get('blacklist')
+            )
+        elif type == 'without_rows':
+            source = source.without_rows(
+                spec.get('queries'),
+                spec.get('mask', [])
+            )
+    return source
+
+
 # end
 

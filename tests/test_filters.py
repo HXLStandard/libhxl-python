@@ -33,6 +33,25 @@ class AbstractBaseFilterTest(unittest.TestCase):
 
 
 #
+# Test compiling from a recipe
+#
+
+class TestRecipe(AbstractBaseFilterTest):
+
+    def test_simple(self):
+        filters = hxl.filters.from_recipe(self.source, [
+            {
+                'filter': 'without_rows',
+                'queries': 'adm1=Plains'
+            },
+            {
+                'filter': 'sort',
+                'keys': 'sector'
+            }
+        ])
+        self.assertEqual(filters.values, [DATA[4], DATA[2]])
+
+#
 # Test classes
 #
 
