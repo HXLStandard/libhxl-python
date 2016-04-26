@@ -1104,12 +1104,18 @@ class CountFilter(AbstractCachingFilter):
 
 
 class DeduplicationFilter(AbstractStreamingFilter):
-    """
-    Composable filter to deduplicate a HXL dataset.
+    """Composable filter to deduplicate a HXL dataset.
+
+    Removes duplicate lines from a dataset, where "duplicate" is
+    optionally defined by a set of keys specified by the user. As a
+    result, not all values in duplicate rows will necessarily be
+    identical. The filter will always return the *first* matching row
+    of a set of duplicates.
 
     Supports the hxldedup command-line script.
 
     TODO: add more-sophisticated matching, edit distance, etc.
+
     """
 
     def __init__(self, source, patterns=None, queries=[]):
