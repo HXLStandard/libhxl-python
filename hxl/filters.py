@@ -813,12 +813,26 @@ class CleanDataFilter(AbstractStreamingFilter):
 
         # Number
         if self._match_patterns(self.number, column) and re.search('\d', value):
-            # fixme - get much smarter about numbers
+
+            def try_number(value):
+                try:
+                    n = float(value)
+                    if n.is_integer():
+                        return str(int(n))
+                    else:
+                        return str(n)
+                except:
+                    return None
+
+                # fixme - get much smarter about numbers
             if value:
-                value = re.sub('[^\de.]+', '', value)
-                value = re.sub('^0+', '', value)
-                value = re.sub('(\..*)0+$', '\g<1>', value)
-                value = re.sub('\.$', '', value)
+                n = try_number(value)
+                if n is None:
+                    value = re.sub('[^\de.]+', '', value)
+                    value = re.sub('(\..*)0+$', '\g<1>', value)
+                    n = try_number(value) # OK, try again
+                if n is not None:
+                    value = n
         return value
 
     def _match_patterns(self, patterns, column):
@@ -1104,12 +1118,18 @@ class CountFilter(AbstractCachingFilter):
 
 
 class DeduplicationFilter(AbstractStreamingFilter):
-    """
-    Composable filter to deduplicate a HXL dataset.
+    """Composable filter to deduplicate a HXL dataset.
+
+    Removes duplicate lines from a dataset, where "duplicate" is
+    optionally defined by a set of keys specified by the user. As a
+    result, not all values in duplicate rows will necessarily be
+    identical. The filter will always return the *first* matching row
+    of a set of duplicates.
 
     Supports the hxldedup command-line script.
 
     TODO: add more-sophisticated matching, edit distance, etc.
+
     """
 
     def __init__(self, source, patterns=None, queries=[]):

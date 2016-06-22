@@ -309,12 +309,14 @@ class TestCleanFilter(AbstractBaseFilterTest):
             ['#org', '#sector', '#adm1', '#meta+count'],
             ['NGO A', 'WASH', 'Coast', '  200'],
             ['NGO B', 'Education', 'Plains', '1,100 '],
-            ['NGO B', 'Child Protection', 'Coast', '300.']
+            ['NGO B', 'Child Protection', 'Coast', '300.'],
+            ['NGO A', 'Logistics', 'Coast', '1.7E5']
         ]
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],
             ['NGO B', 'Education', 'Plains', '1100'],
-            ['NGO B', 'Child Protection', 'Coast', '300']
+            ['NGO B', 'Child Protection', 'Coast', '300'],
+            ['NGO A', 'Logistics', 'Coast', '170000']
         ]
         self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(number='meta+count').values)
         
