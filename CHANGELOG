@@ -1,0 +1,8 @@
+2016-06-22 Release 2.8
+	- add a new Explode filter that changes series data to a more-normalised form (no command-line version yet)
+	- improvements to Add Column filter
+	- better number handling in Clean Data filter (can now handle exponential notation)
+	- add mask parameter to Merge Data filter
+	- start support for reading/writing filter chains encoded in JSON
+	- added add_attribute and remove_attribute methods for a dataset
+	- documentation and unit test improvements
