@@ -21,34 +21,32 @@ class TaggerTest(unittest.TestCase):
         ['Yemen', 'YEM', '50000', '43000', '45000', '38000', '30000']
     ]
 
+    EXPECTED_TAGS_SIMPLE = ['#country+name', '#country+code', '', '', '', '', '']
+
     def setUp(self):
         pass
 
     def test_basic(self):
         """Basic tagging operation."""
         tagging_specs = [('Country Name', '#country+name'), ('Country Code', '#country+code')]
-        expected_tags = ['#country+name', '#country+code', '', '', '', '', '']
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs))
-        self.assertEqual(expected_tags, source.display_tags)
+        self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
 
     def test_case_insensitive(self):
         """Test that the tagger is case-insensitive."""
         tagging_specs = [('country name', '#country+name'), ('code', '#country+code')]
-        expected_tags = ['#country+name', '#country+code', '', '', '', '', '']
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs))
-        self.assertEqual(expected_tags, source.display_tags)
+        self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
 
     def test_space_insensitive(self):
         """Test that the tagger is whitespace-insensitive."""
         tagging_specs = [('  Country  Name', '#country+name'), ('Country    Code  ', '#country+code')]
-        expected_tags = ['#country+name', '#country+code', '', '', '', '', '']
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs))
-        self.assertEqual(expected_tags, source.display_tags)
+        self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
 
     def test_partial_match(self):
         """Test for substrings."""
         tagging_specs = [('name', '#country+name'), ('code', '#country+code')]
-        expected_tags = ['#country+name', '#country+code', '', '', '', '', '']
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs))
-        self.assertEqual(expected_tags, source.display_tags)
+        self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
         
