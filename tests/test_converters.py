@@ -13,6 +13,7 @@ import hxl
 
 
 class TaggerTest(unittest.TestCase):
+    """Unit tests for hxl.converters.Tagger"""
 
     UNTAGGED = [
         ['Country Name', 'Country Code', '2016', '2015', '2014', '2013', '2012'],
@@ -49,4 +50,10 @@ class TaggerTest(unittest.TestCase):
         tagging_specs = [('name', '#country+name'), ('code', '#country+code')]
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs))
         self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
+        
+    def test_full_match(self):
+        """Test for substrings."""
+        tagging_specs = [('country name', '#country+name'), ('code', '#country+code')]
+        source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs, allow_partial=False))
+        self.assertEqual(['#country+name', '', '', '', '', '', ''], source.display_tags)
         

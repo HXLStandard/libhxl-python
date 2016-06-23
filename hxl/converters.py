@@ -32,7 +32,7 @@ class Tagger(hxl.io.AbstractInput):
 
     """
 
-    def __init__(self, input, specs=[]):
+    def __init__(self, input, specs=[], allow_partial=True):
         """Construct a new Tagger object.
 
         The input spec is a list of tuples, where the first item is a
@@ -45,6 +45,7 @@ class Tagger(hxl.io.AbstractInput):
         @param specs: the input specs, as described above (default: [])
         """
         self.specs = [(hxl.common.normalise_string(spec[0]), spec[1]) for spec in specs]
+        self.allow_partial = allow_partial
         self.input = iter(input)
         self._cache = []
         self._found_tags = False
@@ -86,7 +87,7 @@ class Tagger(hxl.io.AbstractInput):
         for index, value in enumerate(raw_row):
             value = hxl.common.normalise_string(value)
             for spec in self.specs:
-                if spec[0] in value:
+                if self._check_header(spec[0], value):
                     tags.append(spec[1])
                     tag_count += 1
                     break
@@ -97,6 +98,12 @@ class Tagger(hxl.io.AbstractInput):
             return tags
         else:
             return None
+
+    def _check_header(self, spec, header):
+        if self.allow_partial:
+            return (spec in header)
+        else:
+            return (spec == header)
 
     def __iter__(self):
         return self
