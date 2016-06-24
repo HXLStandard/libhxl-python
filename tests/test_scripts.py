@@ -297,6 +297,13 @@ class TestTag(BaseTest):
             '-m', 'is#adm1'
         ], 'tag-output-ambiguous.csv')
 
+    def test_default_tag(self):
+        """Supply a default tag."""
+        self.assertOutput([
+            '-m', 'organisation#org',
+            '-d', '#meta'
+        ], 'tag-output-default.csv')
+
 
 class TestValidate(BaseTest):
     """

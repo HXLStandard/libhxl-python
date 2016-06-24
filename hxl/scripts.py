@@ -596,10 +596,17 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='Header Text#tag',
         type=hxl.converters.Tagger.parse_spec
         )
+    parser.add_argument(
+        '-d',
+        '--default-tag',
+        help='Default tag for non-matching columns',
+        metavar='#tag',
+        type=hxl.model.Column.parse
+    )
     args = parser.parse_args(args)
 
     with hxl.io.make_input(args.infile or stdin, allow_local=True) as input, make_output(args, stdout) as output:
-        tagger = hxl.converters.Tagger(input, args.map)
+        tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag)
         hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
 
     return EXIT_OK
