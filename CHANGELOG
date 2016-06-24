@@ -1,7 +1,7 @@
 
-	- add unit tests for Tagger, and option to force a full header
-	match
-	
+	- add unit tests for Tagger, along option to force a full header
+	match and a default tag for non-matching headers
+
 2016-06-22 Release 2.8
 	- add a new Explode filter that changes series data to a more-normalised form (no command-line version yet)
 	- improvements to Add Column filter

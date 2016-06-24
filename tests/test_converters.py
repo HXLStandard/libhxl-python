@@ -24,6 +24,8 @@ class TaggerTest(unittest.TestCase):
 
     EXPECTED_TAGS_SIMPLE = ['#country+name', '#country+code', '', '', '', '', '']
 
+    EXPECTED_TAGS_DEFAULT = ['#country+name', '#country+code', '#targeted', '#targeted', '#targeted', '#targeted', '#targeted']
+
     def setUp(self):
         pass
 
@@ -56,4 +58,10 @@ class TaggerTest(unittest.TestCase):
         tagging_specs = [('country name', '#country+name'), ('code', '#country+code')]
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs, allow_partial=False))
         self.assertEqual(['#country+name', '', '', '', '', '', ''], source.display_tags)
+
+    def test_default_tag(self):
+        """Test for default tag."""
+        tagging_specs = [('Country Name', '#country+name'), ('Country Code', '#country+code')]
+        source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs, default_tag='#targeted'))
+        self.assertEqual(self.EXPECTED_TAGS_DEFAULT, source.display_tags)
         

@@ -32,7 +32,7 @@ class Tagger(hxl.io.AbstractInput):
 
     """
 
-    def __init__(self, input, specs=[], allow_partial=True):
+    def __init__(self, input, specs=[], allow_partial=True, default_tag=None):
         """Construct a new Tagger object.
 
         The input spec is a list of tuples, where the first item is a
@@ -43,8 +43,11 @@ class Tagger(hxl.io.AbstractInput):
 
         @param input: an input stream of some kind.
         @param specs: the input specs, as described above (default: [])
+        @param allow_partial: if True (default), match substrings; otherwise, require full match.
+        @param default_tag: default tagspec to use for any column without a match.
         """
         self.specs = [(hxl.common.normalise_string(spec[0]), spec[1]) for spec in specs]
+        self.default_tag = default_tag
         self.allow_partial = allow_partial
         self.input = iter(input)
         self._cache = []
@@ -95,6 +98,8 @@ class Tagger(hxl.io.AbstractInput):
                 # run only if nothing found
                 tags.append('')
         if tag_count > 0 and tag_count/float(len(self.specs)) >= 0.5:
+            if self.default_tag:
+                tags = [tag or self.default_tag for tag in tags]
             return tags
         else:
             return None
