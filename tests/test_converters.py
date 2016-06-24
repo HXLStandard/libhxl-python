@@ -54,9 +54,9 @@ class TaggerTest(unittest.TestCase):
         self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
         
     def test_full_match(self):
-        """Test for substrings."""
+        """Test for full match."""
         tagging_specs = [('country name', '#country+name'), ('code', '#country+code')]
-        source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs, allow_partial=False))
+        source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs, match_all=True))
         self.assertEqual(['#country+name', '', '', '', '', '', ''], source.display_tags)
 
     def test_default_tag(self):
