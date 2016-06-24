@@ -588,6 +588,14 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     parser = make_args('Add HXL tags to a raw CSV file.')
     parser.add_argument(
+        '-a',
+        '--match-all',
+        help='Match the entire header text (not just a substring)',
+        action='store_const',
+        const=True,
+        default=False
+        )
+    parser.add_argument(
         '-m',
         '--map',
         help='Mapping expression',
@@ -606,7 +614,7 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with hxl.io.make_input(args.infile or stdin, allow_local=True) as input, make_output(args, stdout) as output:
-        tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag)
+        tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag, match_all=args.match_all)
         hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
 
     return EXIT_OK

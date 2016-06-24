@@ -282,13 +282,17 @@ class TestTag(BaseTest):
             '-m', 'ntry#country',
             '-m', 'div#adm1'
         ], 'tag-output-full.csv')
+        self.assertOutput([
+            '-a', # force match_all
+            '-m', 'org#org', # should fail
+            '-m', 'cluster#sector' #should succeed
+        ], 'tag-output-notsubstrings.csv')
 
     def test_partial(self):
         """Try tagging only one row."""
         self.assertOutput([
             '--map', 'cluster#sector'
         ], 'tag-output-partial.csv')
-
 
     def test_ambiguous(self):
         """Use an ambiguous header for the second one."""
