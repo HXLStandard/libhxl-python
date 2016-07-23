@@ -271,7 +271,11 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input):
-        self._input = io.TextIOWrapper(input)
+        if hasattr(input, 'encoding'):
+            encoding = input.encoding
+        else:
+            encoding = 'utf-8'
+        self._input = io.TextIOWrapper(input, encoding=encoding)
         self._reader = csv.reader(self._input)
 
     def __next__(self):
