@@ -162,6 +162,21 @@ The following generators are available (you can use the parameters to turn the t
 </table>
 
 
+## Caching
+
+libhxl uses the Python
+[requests](http://docs.python-requests.org/en/master/) library for
+opening URLs. If you want to enable caching (for example, to avoid
+beating up on your source with repeated requests), your code can use
+the [requests_cache](https://pypi.python.org/pypi/requests-cache)
+plugin, like this:
+
+    import requests_cache
+    requests_cache.install_cache('demo_cache', expire_after=3600)
+
+The default caching backend is a sqlite database at the location specied.
+
+
 # Installation
 
 This repository includes a standard Python `setup.py` script for

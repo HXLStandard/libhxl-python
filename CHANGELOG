@@ -1,6 +1,9 @@
-
+2016-07-23 Release 3.0
+	- use the Python requests library in hxl.io (which will allow
+	  add-ons like requests_cache)
+	- the tagger now has an option for a default tag
 	- add unit tests for Tagger, along option to force a full header
-	match and a default tag for non-matching headers
+	  match and a default tag for non-matching headers
 
 2016-06-22 Release 2.8
 	- add a new Explode filter that changes series data to a more-normalised form (no command-line version yet)
