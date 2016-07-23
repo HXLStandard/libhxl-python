@@ -180,7 +180,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
         return ArrayInput(raw_source)
 
     else:
-        if hasattr(raw_source, 'readable'):
+        if hasattr(raw_source, 'read'):
             # it's an input stream
             input = wrap_stream(raw_source)
         else:
