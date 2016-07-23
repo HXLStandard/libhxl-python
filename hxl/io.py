@@ -210,15 +210,23 @@ class HXLTagsNotFoundException(HXLParseException):
 
 
 class RequestResponseIOWrapper(io.RawIOBase):
+    """Wrapper for a Response object from the requests library.  Streaming
+    in requests is a bit broken: for example, if you're streaming, the
+    stream from the raw property doesn't unzip the payload.
+    """
 
     def __init__(self, response):
         self.response = response
+        self.iter = response.iter_content(512)
 
     def read(self, size=-1):
-        return self.response.raw.read(size)
+        return self.response.raw.read(size, decode_content=True)
 
     def readinto(self, b):
-        return self.response.raw.readinto(b)
+        result = self.read(len(b))
+        for i in range(0, len(result)):
+            b[i] = result[i]
+        return len(result)
 
     def readable(self):
         return self.response.raw.readable()
