@@ -246,7 +246,6 @@ class RequestResponseIOWrapper(io.RawIOBase):
 
     def close(self):
         return self.response.close()
-        
 
 class AbstractInput(object):
     """Abstract base class for input classes."""
@@ -271,11 +270,16 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input):
-        if hasattr(input, 'encoding'):
-            encoding = input.encoding
+        if sys.version_info < (3,):
+            self._input = input
         else:
-            encoding = 'utf-8'
-        self._input = io.TextIOWrapper(input, encoding=encoding)
+            if hasattr(input, 'response'):
+                # Trick - if this is a wrapper, we can get at the response
+                encoding = input.response.encoding
+            else:
+                encoding = 'utf-8'
+            self._input = io.TextIOWrapper(input, encoding=encoding)
+                
         self._reader = csv.reader(self._input)
 
     def __next__(self):
