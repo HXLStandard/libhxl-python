@@ -227,22 +227,34 @@ class RequestResponseIOWrapper(io.RawIOBase):
     stream from the raw property doesn't unzip the payload.
     """
 
+    _seen_decode_exception = False
+    """Remember if the decode_content param failed for read()."""
+
     def __init__(self, response):
         self.response = response
         self.iter = response.iter_content(512)
 
     def read(self, size=-1):
-        return self.response.raw.read(size, decode_content=True)
+        if not self._seen_decode_exception:
+            # Try the decode_content param to handle gzipped content
+            try:
+                return self.response.raw.read(size, decode_content=True)
+            except:
+                self._see_decode_exception = True
+        return self.response.raw.read(size)
 
     def readinto(self, b):
         # Can't use readinto, because implementation lacks decode_content
         result = self.read(len(b))
-        for i in range(0, len(result)): # slow -- fixme
-            b[i] = result[i]
-        return len(result)
+        byte_count = len(result)
+        b[0:byte_count] = result[0:byte_count]
+        return byte_count
 
     def readable(self):
-        return self.response.raw.readable()
+        if hasattr(self.response.raw, 'readable'):
+            return self.response.raw.readable()
+        else:
+            return True
 
     def close(self):
         return self.response.close()
