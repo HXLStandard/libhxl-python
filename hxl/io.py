@@ -19,41 +19,6 @@ import xlrd
 import six
 import requests
 
-if sys.version_info < (3,):
-    # Customisation for Python 2.x
-    import hxl.py2compat
-    import urllib2
-    open_url = urllib2.urlopen
-    def get_status(response):
-        return response.getcode()
-    def wrap_stream(stream):
-        # Need an io object
-        if not hasattr(stream, 'readable'):
-            stream = hxl.py2compat.InputStreamWrapper(stream)
-        # Already buffered?
-        if hasattr(stream, 'peek'):
-            return stream
-        else:
-            return io.BufferedReader(stream)
-    def wrap_input(input):
-        return input
-else:
-    # Customisation for Python 3.x
-    import urllib.request
-    open_url = urllib.request.urlopen
-    def get_status(response):
-        return response.status
-    def wrap_stream(stream):
-        if hasattr(stream, 'peek'):
-            return stream
-        else:
-            return io.BufferedReader(stream)
-    def wrap_input(input):
-        if hasattr(input, 'encoding'):
-            return input
-        else:
-            return io.TextIOWrapper(input, encoding='utf-8', newline='')
-
 import hxl
 
 
@@ -182,10 +147,10 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
     else:
         if hasattr(raw_source, 'read'):
             # it's an input stream
-            input = wrap_stream(raw_source)
+            input = io.BufferedReader(raw_source)
         else:
             # assume a URL or filename
-            input = wrap_stream(open_url_or_file(raw_source, allow_local=allow_local))
+            input = io.BufferedReader(open_url_or_file(raw_source, allow_local=allow_local))
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
@@ -208,10 +173,10 @@ def open_url_or_file(url_or_filename, allow_local=False):
     """
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
-        response = open_url(munge_url(url_or_filename))
-        if get_status(response) != 200:
+        response = requests.get(munge_url(url_or_filename), stream=True)
+        if response.status_code != 200:
             raise IOError('Received HTTP response code {}'.format(response.status_code))
-        return response
+        return RequestResponseIOWrapper(response)
     elif allow_local:
         # Default to a local file, if allowed
         return io.open(url_or_filename, 'rb')
@@ -242,6 +207,24 @@ class HXLTagsNotFoundException(HXLParseException):
 
     def __init__(self, message='HXL tags not found in first 25 rows'):
         super(HXLTagsNotFoundException, self).__init__(message)
+
+
+class RequestResponseIOWrapper(io.RawIOBase):
+
+    def __init__(self, response):
+        self.response = response
+
+    def read(self, size=-1):
+        return self.response.raw.read(size)
+
+    def readinto(self, b):
+        return self.response.raw.readinto(b)
+
+    def readable(self):
+        return self.response.raw.readable()
+
+    def close(self):
+        return self.response.close()
         
 
 class AbstractInput(object):
@@ -267,7 +250,7 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input):
-        self._input = wrap_input(input)
+        self._input = io.TextIOWrapper(input)
         self._reader = csv.reader(self._input)
 
     def __next__(self):
