@@ -136,6 +136,18 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
     @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
     """
 
+    def wrap_stream(stream):
+        if sys.version_info < (3,):
+            # Extra work for Python 2.x
+            if not hasattr(stream, 'readable'):
+                import hxl.py2compat
+                stream = hxl.py2compat.InputStreamWrapper(stream)
+        if hasattr(stream, 'peek'):
+            # already buffered
+            return stream
+        else:
+            return io.BufferedReader(stream)
+
     if isinstance(raw_source, AbstractInput):
         # already an input source: no op
         return raw_source
@@ -147,10 +159,10 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
     else:
         if hasattr(raw_source, 'read'):
             # it's an input stream
-            input = io.BufferedReader(raw_source)
+            input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
-            input = io.BufferedReader(open_url_or_file(raw_source, allow_local=allow_local))
+            input = wrap_stream(open_url_or_file(raw_source, allow_local=allow_local))
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
@@ -223,8 +235,9 @@ class RequestResponseIOWrapper(io.RawIOBase):
         return self.response.raw.read(size, decode_content=True)
 
     def readinto(self, b):
+        # Can't use readinto, because implementation lacks decode_content
         result = self.read(len(b))
-        for i in range(0, len(result)):
+        for i in range(0, len(result)): # slow -- fixme
             b[i] = result[i]
         return len(result)
 
