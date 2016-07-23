@@ -185,7 +185,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
             input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
-            input = wrap_stream(make_stream(raw_source, allow_local=allow_local))
+            input = wrap_stream(open_url_or_file(raw_source, allow_local=allow_local))
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
@@ -199,26 +199,25 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
             return CSVInput(input)
 
 
-def make_stream(origin, allow_local=False):
-    """Figure out whether to open a file or a URL."""
-
-    is_google = False
-
-    origin = munge_url(origin)
-
-    # Does it look like a url?
-    if re.match(r'^(?:https?|ftp)://', origin):
-        response = open_url(origin)
+def open_url_or_file(url_or_filename, allow_local=False):
+    """Try opening a local or remote resource.
+    Allows only HTTP(S) and (S)FTP URLs.
+    @param url_or_filename: the string to try openining.
+    @param allow_local: if True, OK to open local files; otherwise, only remote URLs allowed (default: False).
+    @return: an io stream.
+    """
+    if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
+        # It looks like a URL
+        response = open_url(munge_url(url_or_filename))
         if get_status(response) != 200:
             raise IOError('Received HTTP response code {}'.format(response.status_code))
         return response
-
-    # Are we allowed to open local files?
     elif allow_local:
-        return io.open(origin, 'rb')
-
+        # Default to a local file, if allowed
+        return io.open(url_or_filename, 'rb')
     else:
-        raise IOError('Only http(s) and ftp URLs allowed.')
+        # Forbidden to trye local (allow_local is False), so give up.
+        raise IOError("Only http(s) and (s)ftp URLs allowed: {}".format(url_or_filename))
 
 
 ########################################################################
