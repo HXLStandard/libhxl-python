@@ -158,23 +158,34 @@ else:
     encode = _encode_py3
 
     
-def make_input(data, allow_local=False, sheet_index=None):
-    """Figure out what kind of input to create."""
+def make_input(raw_source, allow_local=False, sheet_index=None):
+    """Figure out what kind of input to create.
 
-    if isinstance(data, AbstractInput):
-        return data
+    Can detect a URL or filename, an input stream, or an array.
+    Will also try to detect HTML and Excel before defaulting to CSV.
+    The result is an object that can deliver rows of data for the HXL library to parse.
 
-    elif hasattr(data, '__len__') and (not isinstance(data, six.string_types)):
+    @param raw_source: the raw data source (e.g. a URL or input stream).
+    @param allow_local: if True, allow opening local files as well as remote URLs (default: False).
+    @param sheet_index: if a number, read that sheet from an Excel workbook (default: None).
+    @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
+    """
+
+    if isinstance(raw_source, AbstractInput):
+        # already an input source: no op
+        return raw_source
+
+    elif hasattr(raw_source, '__len__') and (not isinstance(raw_source, six.string_types)):
         # it's an array
-        return ArrayInput(data)
+        return ArrayInput(raw_source)
 
     else:
-        if hasattr(data, 'read'):
-            # it's a stream
-            input = wrap_stream(data)
+        if hasattr(raw_source, 'readable'):
+            # it's an input stream
+            input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
-            input = wrap_stream(make_stream(data, allow_local=allow_local))
+            input = wrap_stream(make_stream(raw_source, allow_local=allow_local))
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
