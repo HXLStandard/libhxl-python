@@ -230,70 +230,69 @@ class RequestResponseIOWrapper(io.RawIOBase):
     _seen_decode_exception = False
     """Remember if the decode_content param failed for read()."""
 
-    BUFFER_SIZE = 0x4000
+    BUFFER_SIZE = 0x1000
+    """Size of input chunk buffer from requests.raw.iter_content"""
 
     def __init__(self, response):
+        """Construct a wrapper around a requests response object
+        @param response: the HTTP response from the requests library
+        """
         self.response = response
         self.buffer = None
         self.buffer_pos = -1
-        self.iter = response.iter_content(self.BUFFER_SIZE)
+        self.iter = response.iter_content(self.BUFFER_SIZE) # iterator through the input
 
     def read(self, size=-1):
+        """Read raw byte input from the requests raw.iter_content iterator
+        The function will unzip zipped content.
+        @param size: the maximum number of bytes to read, or -1 for all available.
+        """
         result = bytearray()
 
-        if size == -1 or size is None:
+        if size == -1:
+            # Read all of the content at once
             for chunk in self.iter:
                 result += chunk
             self.buffer = None
         else:
+            # Read from chunks until we have enough content
             while size > 0:
                 if not self.buffer:
                     try:
                         self.buffer = next(self.iter)
                     except StopIteration:
+                         # stop if we've run out of input
                         break
                     self.buffer_pos = 0
-                avail = min(len(self.buffer)-self.buffer_pos, size)
-                result += self.buffer[self.buffer_pos:]
+                avail = min(len(self.buffer)-self.buffer_pos, size) #actually read
+                result += self.buffer[self.buffer_pos:self.buffer_pos+avail]
                 size -= avail
                 self.buffer_pos += avail
                 if self.buffer_pos >= len(self.buffer):
                     self.buffer = None
 
-        return bytes(result) # FIXME - copy?
+        return bytes(result) # FIXME - how can we avoid a copy?
 
     def readinto(self, b):
-        result = self.read(len(b))
+        """Read content into a buffer of some kind.
+        This is not very efficient right now -- too much copying.
+        @param b: the buffer to read into (will read up to its length)
+        """
+        result = self.read(len(b))[:len(b)]
         size = len(result)
-        b[0:size] = result[0:size]
+        b[:size] = result[:size]
         return size
 
     def readable(self):
+        """Flag whether the content is readable."""
         if hasattr(self.response.raw, 'readable'):
             return self.response.raw.readable()
         else:
             return True
 
     def close(self):
+        """Close the streaming response."""
         return self.response.close()
-
-    def _refresh_buffer():
-        self.buffer = next(self.iter)
-        self.buffer_pos = 0
-
-    def _get_buffered_bytes(self, count):
-
-        result = bytearray()
-
-        while count > 0:
-            if not self.buffer:
-                refresh_buffer()
-            avail = min(len(self.buffer)-self.buffer_count, count)
-            result += self.buffer[buffer_pos:]
-            buffer_pos += avail
-            count -= avail
-
-        return result
 
 
 class AbstractInput(object):
