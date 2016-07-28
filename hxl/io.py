@@ -230,18 +230,37 @@ class RequestResponseIOWrapper(io.RawIOBase):
     _seen_decode_exception = False
     """Remember if the decode_content param failed for read()."""
 
+    BUFFER_SIZE = 0x4000
+
     def __init__(self, response):
         self.response = response
-        self.iter = response.iter_content(512)
+        self.buffer = None
+        self.buffer_pos = -1
+        self.iter = response.iter_content(self.BUFFER_SIZE)
 
     def read(self, size=-1):
-        if not self._seen_decode_exception:
-            # Try the decode_content param to handle gzipped content
-            try:
-                return self.response.raw.read(size, decode_content=True)
-            except:
-                self._see_decode_exception = True
-        return self.response.raw.read(size)
+        result = bytearray()
+
+        if size == -1 or size is None:
+            for chunk in self.iter:
+                result += chunk
+            self.buffer = None
+        else:
+            while size > 0:
+                if not self.buffer:
+                    try:
+                        self.buffer = next(self.iter)
+                    except StopIteration:
+                        break
+                    self.buffer_pos = 0
+                avail = min(len(self.buffer)-self.buffer_pos, size)
+                result += self.buffer[self.buffer_pos:]
+                size -= avail
+                self.buffer_pos += avail
+                if self.buffer_pos >= len(self.buffer):
+                    self.buffer = None
+
+        return bytes(result) # FIXME - copy?
 
     def readinto(self, b):
         # Can't use readinto, because implementation lacks decode_content
@@ -258,6 +277,25 @@ class RequestResponseIOWrapper(io.RawIOBase):
 
     def close(self):
         return self.response.close()
+
+    def _refresh_buffer():
+        self.buffer = next(self.iter)
+        self.buffer_pos = 0
+
+    def _get_buffered_bytes(self, count):
+
+        result = bytearray()
+
+        while count > 0:
+            if not self.buffer:
+                refresh_buffer()
+            avail = min(len(self.buffer)-self.buffer_count, count)
+            result += self.buffer[buffer_pos:]
+            buffer_pos += avail
+            count -= avail
+
+        return result
+
 
 class AbstractInput(object):
     """Abstract base class for input classes."""
