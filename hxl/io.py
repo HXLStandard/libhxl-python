@@ -263,11 +263,10 @@ class RequestResponseIOWrapper(io.RawIOBase):
         return bytes(result) # FIXME - copy?
 
     def readinto(self, b):
-        # Can't use readinto, because implementation lacks decode_content
         result = self.read(len(b))
-        byte_count = len(result)
-        b[0:byte_count] = result[0:byte_count]
-        return byte_count
+        size = len(result)
+        b[0:size] = result[0:size]
+        return size
 
     def readable(self):
         if hasattr(self.response.raw, 'readable'):
