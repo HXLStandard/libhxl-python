@@ -1,3 +1,7 @@
+2016-07-28 Release 3.1
+	- change request handling to work better with requests_cache (no
+	  more streaming directly from the raw object in the request response)
+
 2016-07-23 Release 3.0
 	- use the Python requests library in hxl.io (which will allow
 	  add-ons like requests_cache)
