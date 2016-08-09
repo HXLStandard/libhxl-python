@@ -17,10 +17,10 @@ import hxl
 
 DATA = [
     ['Organisation', 'Cluster', 'District', 'Count'],
-    ['#org', '#sector', '#adm1', '#meta+count'],
+    ['#org', '#sector+list', '#adm1', '#meta+count'],
     ['NGO A', 'WASH', 'Coast', '200'],
     ['NGO B', 'Education', 'Plains', '100'],
-    ['NGO B', 'Education', 'Coast', '300']
+    ['NGO B', 'Education', 'Coast', '300'],
 ]
 
 
@@ -173,14 +173,14 @@ class TestAddColumnsFilter(AbstractBaseFilterTest):
 
     def test_before(self):
         self.assertEqual(
-            ['#country', '#org', '#sector', '#adm1', '#meta'],
-            self.source.add_columns(self.spec, True).tags
+            ['#country', '#org', '#sector+list', '#adm1', '#meta+count'],
+            self.source.add_columns(self.spec, True).display_tags
         )
 
     def test_after(self):
         self.assertEqual(
-            ['#org', '#sector', '#adm1', '#meta', '#country'],
-            self.source.add_columns(self.spec).tags
+            ['#org', '#sector+list', '#adm1', '#meta+count', '#country'],
+            self.source.add_columns(self.spec).display_tags
         )
 
     def test_headers(self):
@@ -206,14 +206,14 @@ class TestAppendFilter(AbstractBaseFilterTest):
 
     APPEND_DATA = [
         ['Org', 'Targeted', 'Sector 1', 'Sector 2'],
-        ['#org', '#targeted', '#sector', '#sector'],
+        ['#org', '#targeted', '#sector+list', '#sector+list'],
         ['NGO A', '200', 'WASH', ''],
         ['NGO C', '500', 'Health', 'Food']
     ]
 
     COMBINED_DATA = [
         ['Organisation', 'Cluster', 'District', 'Count', 'Targeted', 'Sector 2'],
-        ['#org', '#sector', '#adm1', '#meta+count', '#targeted', '#sector'],
+        ['#org', '#sector+list', '#adm1', '#meta+count', '#targeted', '#sector+list'],
         ['NGO A', 'WASH', 'Coast', '200', '', ''],
         ['NGO B', 'Education', 'Plains', '100', '', ''],
         ['NGO B', 'Education', 'Coast', '300', '', ''],
@@ -223,7 +223,7 @@ class TestAppendFilter(AbstractBaseFilterTest):
 
     COMBINED_DATA_ORIG_COLUMNS = [
         ['Organisation', 'Cluster', 'District', 'Count'],
-        ['#org', '#sector', '#adm1', '#meta+count'],
+        ['#org', '#sector+list', '#adm1', '#meta+count'],
         ['NGO A', 'WASH', 'Coast', '200'],
         ['NGO B', 'Education', 'Plains', '100'],
         ['NGO B', 'Education', 'Coast', '300'],
@@ -233,7 +233,7 @@ class TestAppendFilter(AbstractBaseFilterTest):
 
     COMBINED_DATA_FILTERED = [
         ['Organisation', 'Cluster', 'District', 'Count', 'Targeted', 'Sector 2'],
-        ['#org', '#sector', '#adm1', '#meta+count', '#targeted', '#sector'],
+        ['#org', '#sector+list', '#adm1', '#meta+count', '#targeted', '#sector+list'],
         ['NGO A', 'WASH', 'Coast', '200', '', ''],
         ['NGO B', 'Education', 'Plains', '100', '', ''],
         ['NGO B', 'Education', 'Coast', '300', '', ''],
@@ -291,7 +291,7 @@ class TestCleanFilter(AbstractBaseFilterTest):
     def test_whitespace(self):
         DATA_IN = [
             ['Organisation', 'Cluster', 'District', 'Count'],
-            ['#org', '#sector', '#adm1', '#meta+count'],
+            ['#org', '#sector+list', '#adm1', '#meta+count'],
             ['NGO A', '  WASH', 'Coast', '200'],
             ['NGO B', 'Education  ', 'Plains', '100'],
             ['NGO B', 'Child    Protection', 'Coast', '300']
@@ -306,7 +306,7 @@ class TestCleanFilter(AbstractBaseFilterTest):
     def test_numbers(self):
         DATA_IN = [
             ['Organisation', 'Cluster', 'District', 'Count'],
-            ['#org', '#sector', '#adm1', '#meta+count'],
+            ['#org', '#sector+list', '#adm1', '#meta+count'],
             ['NGO A', 'WASH', 'Coast', '  200'],
             ['NGO B', 'Education', 'Plains', '1,100 '],
             ['NGO B', 'Child Protection', 'Coast', '300.'],
@@ -323,7 +323,7 @@ class TestCleanFilter(AbstractBaseFilterTest):
     def test_dates(self):
         DATA_IN = [
             ['Organisation', 'Cluster', 'District', 'Date'],
-            ['#org', '#sector', '#adm1', '#date'],
+            ['#org', '#sector+list', '#adm1', '#date'],
             ['NGO A', 'WASH', 'Coast', 'January 1 2015'],
             ['NGO B', 'Education', 'Plains', '1/1/15'],
             ['NGO B', 'Child Protection', 'Coast', '1 Jan/15']
@@ -363,21 +363,21 @@ class TestCleanFilter(AbstractBaseFilterTest):
 class TestColumnFilter(AbstractBaseFilterTest):
 
     def test_with_columns(self):
-        expected = ['#sector']
-        self.assertEqual(expected, self.source.with_columns('#sector').tags)
-        self.assertEqual(expected, self.source.with_columns(['#sector']).tags)
+        expected = ['#sector+list']
+        self.assertEqual(expected, self.source.with_columns('#sector').display_tags)
+        self.assertEqual(expected, self.source.with_columns(['#sector']).display_tags)
 
     def test_without_columns(self):
-        expected = ['#org', '#adm1', '#meta']
-        self.assertEqual(expected, self.source.without_columns('#sector').tags)
-        self.assertEqual(expected, self.source.without_columns(['#sector']).tags)
+        expected = ['#org', '#adm1', '#meta+count']
+        self.assertEqual(expected, self.source.without_columns('#sector').display_tags)
+        self.assertEqual(expected, self.source.without_columns(['#sector']).display_tags)
 
 
 class TestCountFilter(AbstractBaseFilterTest):
 
     def test_tags(self):
-        expected = ['#sector', '#meta']
-        self.assertEqual(expected, self.source.count('#sector').tags)
+        expected = ['#sector+list', '#meta+count']
+        self.assertEqual(expected, self.source.count('#sector').display_tags)
 
     def test_values(self):
         expected = [
@@ -388,13 +388,13 @@ class TestCountFilter(AbstractBaseFilterTest):
 
     def test_missing_column(self):
         expected_headers = [None, 'Cluster', 'Count']
-        expected_tags = [None, '#sector', '#meta']
+        expected_tags = ['', '#sector+list', '#meta+count']
         source = self.source.count('region,sector')
         self.assertEqual(expected_headers, source.headers)
-        self.assertEqual(expected_tags, source.tags)
+        self.assertEqual(expected_tags, source.display_tags)
 
     def test_aggregation_tags(self):
-        expected = ['#sector', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
+        expected = ['#sector+list', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
         self.assertEqual(expected, self.source.count('#sector', '#meta').display_tags)
 
     def test_aggregation_values(self):
@@ -437,7 +437,7 @@ class TestDeduplicationFilter (AbstractBaseFilterTest):
 
     DATA_OUT_FILTERED = [
         ['Organisation', 'Cluster', 'District', 'Count'],
-        ['#org', '#sector', '#adm1', '#meta+count'],
+        ['#org', '#sector+list', '#adm1', '#meta+count'],
         ['NGO A', 'WASH', 'Coast', '200'],
         ['NGO B', 'Education', 'Plains', '100'],
         ['NGO B', 'Education', 'Coast', '300'],
@@ -466,7 +466,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
 
     MERGE_OUT = [
         ['Organisation', 'Cluster', 'District', 'Count', 'P-code'],
-        ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code'],
+        ['#org', '#sector+list', '#adm1', '#meta+count', '#adm1+code'],
         ['NGO A', 'WASH', 'Coast', '200', '001'],
         ['NGO B', 'Education', 'Plains', '100', '002'],
         ['NGO B', 'Education', 'Coast', '300', '001']
@@ -481,7 +481,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
 
     MERGE_EXTRA_OUT = [
         ['Organisation', 'Cluster', 'District', 'Count', 'P-code', 'Population'],
-        ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code', '#population'],
+        ['#org', '#sector+list', '#adm1', '#meta+count', '#adm1+code', '#population'],
         ['NGO A', 'WASH', 'Coast', '200', '001', '10000'],
         ['NGO B', 'Education', 'Plains', '100', '002', ''],
         ['NGO B', 'Education', 'Coast', '300', '001', '10000']
@@ -513,7 +513,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
 
     def test_blank_merge(self):
         data1 = hxl.data([
-            ['#sector', '#org+name', '#org+name'],
+            ['#sector+list', '#org+name', '#org+name'],
             ['Health', '', 'Red Cross']
             ])
         data2 = hxl.data([
@@ -522,7 +522,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
             ['Red Cross', 'IFRC']
             ])
         expected = [
-            ['#sector', '#org+name', '#org+name', '#org+code'],
+            ['#sector+list', '#org+name', '#org+name', '#org+code'],
             ['Health', '', 'Red Cross', 'IFRC']
             ]
         merged = data1.merge_data(data2, '#org+name', '#org+code')
@@ -531,7 +531,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
     # def test_values_displaced_key(self):
     #     """Test that the filter scans all candidate keys."""
     #     data1 = hxl.data([
-    #         ['#sector', '#org+name', '#org+name'],
+    #         ['#sector+list', '#org+name', '#org+name'],
     #         ['Health', 'xxx', 'Red Cross']
     #         ])
     #     data2 = hxl.data([
@@ -540,7 +540,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
     #         ['Red Cross', 'IFRC']
     #         ])
     #     expected = [
-    #         ['#sector', '#org+name', '#org+name', '#org+code'],
+    #         ['#sector+list', '#org+name', '#org+name', '#org+code'],
     #         ['Health', 'xxx', 'Red Cross', 'IFRC']
     #         ]
     #     merged = data1.merge_data(data2, '#org+name', '#org+code')
@@ -556,7 +556,7 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
         ]
         MERGE_OUT = [
             ['Organisation', 'Cluster', 'District', 'Count', 'P-code'],
-            ['#org', '#sector', '#adm1', '#meta+count', '#adm1+code'],
+            ['#org', '#sector+list', '#adm1', '#meta+count', '#adm1+code'],
             ['NGO A', 'WASH', 'Coast', '200', '003'],
             ['NGO B', 'Education', 'Plains', '100', '002'],
             ['NGO B', 'Education', 'Coast', '300', '003']
