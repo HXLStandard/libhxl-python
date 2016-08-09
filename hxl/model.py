@@ -423,6 +423,10 @@ class Column(object):
         else:
             return ''
 
+    def has_attribute(self, attribute):
+        """Check if an attribute is present."""
+        return (attribute in self.attribute_list)
+
     def add_attribute(self, attribute):
         """Add an attribute to the column."""
         if attribute not in self.attributes:
@@ -505,15 +509,22 @@ class Row(object):
         self.values.append(value)
         return value
 
-    def get(self, tag, index=None, default=None):
+    def get(self, tag, index=None, default=None, parsed=False):
         """
         Get a single value for a tag in a row.
         If no index is provided ("None"), return the first non-empty value.
-        @param tag A TagPattern or a string value for a tag.
-        @param index The zero-based index if there are multiple values for the tag (default: None)
-        @param default The default value if not found (default: None)
-        @return The value found, or the default value provided.
+        @param tag: A TagPattern or a string value for a tag.
+        @param index: The zero-based index if there are multiple values for the tag (default: None)
+        @param default: The default value if not found (default: None). Never parsed, even if parsed=True
+        @param parsed: If true, use attributes as hints to try to parse the value (e.g. number, list, date)
+        @return The value found, or the default value provided (default: False)
         """
+
+        def parse(column, value):
+            if parsed:
+                if column.has_attribute('list'):
+                    return re.split("\s*,\s*", value)
+            return value
 
         if type(tag) is TagPattern:
             pattern = tag
@@ -528,11 +539,11 @@ class Row(object):
                     # None (the default) is a special case: it means look
                     # for the first truthy value
                     if self.values[i]:
-                        return self.values[i]
+                        return parse(column, self.values[i])
                 else:
                     # Otherwise, look for a specific index
                     if index == 0:
-                        return self.values[i]
+                        return parse(column, self.values[i])
                     else:
                         index = index - 1
         return default

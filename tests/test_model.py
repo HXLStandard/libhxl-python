@@ -166,13 +166,13 @@ class TestColumn(unittest.TestCase):
 class TestRow(unittest.TestCase):
 
     ROW_NUMBER = 5
-    TAGS = ['#sector', '#org', '#country']
-    CONTENT = ['Health', 'WFP', 'Liberia'];
+    TAGS = ['#sector+list', '#org', '#country']
+    CONTENT = ['Health, Education', 'WFP', 'Liberia'];
 
     def setUp(self):
         columns = []
         for column_number, tag in enumerate(TestRow.TAGS):
-            columns.append(Column(tag=tag))
+            columns.append(Column.parse(tag))
         self.row = Row(columns=columns, values=self.CONTENT, row_number=self.ROW_NUMBER)
 
     def test_row_number(self):
@@ -196,6 +196,10 @@ class TestRow(unittest.TestCase):
 
     def test_get(self):
         self.assertEqual('WFP', self.row.get('#org'))
+
+    def test_list(self):
+        self.assertEqual('Health, Education', self.row.get('#sector'))
+        self.assertEqual(['Health', 'Education'], self.row.get('#sector', parsed=True))
 
     def test_get_skip_blanks(self):
         columns = [Column.parse(tag) for tag in ['#sector', '#org', '#org']]
