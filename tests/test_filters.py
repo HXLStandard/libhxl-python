@@ -21,6 +21,7 @@ DATA = [
     ['NGO A', 'WASH', 'Coast', '200'],
     ['NGO B', 'Education', 'Plains', '100'],
     ['NGO B', 'Education', 'Coast', '300'],
+    ['NGO A', 'Education, Protection', 'Plains', '150'],
 ]
 
 
@@ -217,6 +218,7 @@ class TestAppendFilter(AbstractBaseFilterTest):
         ['NGO A', 'WASH', 'Coast', '200', '', ''],
         ['NGO B', 'Education', 'Plains', '100', '', ''],
         ['NGO B', 'Education', 'Coast', '300', '', ''],
+        ['NGO A', 'Education, Protection', 'Plains', '150', '', ''],
         ['NGO A', 'WASH', '', '', '200', ''],
         ['NGO C', 'Health', '', '', '500', 'Food']
     ]
@@ -226,7 +228,7 @@ class TestAppendFilter(AbstractBaseFilterTest):
         ['#org', '#sector+list', '#adm1', '#meta+count'],
         ['NGO A', 'WASH', 'Coast', '200'],
         ['NGO B', 'Education', 'Plains', '100'],
-        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO B', 'Education', 'Coast', '150'],
         ['NGO A', 'WASH', '', ''],
         ['NGO C', 'Health', '', '']
     ]
@@ -237,6 +239,7 @@ class TestAppendFilter(AbstractBaseFilterTest):
         ['NGO A', 'WASH', 'Coast', '200', '', ''],
         ['NGO B', 'Education', 'Plains', '100', '', ''],
         ['NGO B', 'Education', 'Coast', '300', '', ''],
+        ['NGO A', 'Education, Protection', 'Plains', '150', '', ''],
         ['NGO C', 'Health', '', '', '500', 'Food']
     ]
 
@@ -274,7 +277,7 @@ class TestCacheFilter(AbstractBaseFilterTest):
         source = hxl.data(DATA).cache()
         rows1 = [row.values for row in source]
         rows2 = [row.values for row in source]
-        self.assertEqual(3, len(rows1))
+        self.assertEqual(4, len(rows1))
         self.assertEqual(rows1, rows2)
 
     def test_repeat_sub(self):
@@ -282,7 +285,7 @@ class TestCacheFilter(AbstractBaseFilterTest):
         source = hxl.data(DATA).cache().with_rows('org=NGO A')
         rows1 = [row.values for row in source]
         rows2 = [row.values for row in source]
-        self.assertEqual(1, len(rows1))
+        self.assertEqual(2, len(rows1))
         self.assertEqual(rows1, rows2)
 
 
@@ -339,7 +342,8 @@ class TestCleanFilter(AbstractBaseFilterTest):
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],
             ['NGO B', 'EDUCATION', 'Plains', '100'],
-            ['NGO B', 'EDUCATION', 'Coast', '300']
+            ['NGO B', 'EDUCATION', 'Coast', '300'],
+            ['NGO A', 'EDUCATION, PROTECTION', 'Plains', '150'],
         ]
         self.assertEqual(DATA_OUT, self.source.clean_data(upper='sector').values)
 
@@ -347,7 +351,8 @@ class TestCleanFilter(AbstractBaseFilterTest):
         DATA_OUT = [
             ['NGO A', 'wash', 'Coast', '200'],
             ['NGO B', 'education', 'Plains', '100'],
-            ['NGO B', 'education', 'Coast', '300']
+            ['NGO B', 'education', 'Coast', '300'],
+            ['NGO A', 'education, protection', 'Plains', '150']
         ]
         self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector').values)
 
@@ -355,7 +360,8 @@ class TestCleanFilter(AbstractBaseFilterTest):
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],
             ['NGO B', 'education', 'Plains', '100'],
-            ['NGO B', 'Education', 'Coast', '300']
+            ['NGO B', 'Education', 'Coast', '300'],
+            ['NGO A', 'education, protection', 'Plains', '150']
         ]
         self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector', queries='adm1=Plains').values)
 
@@ -382,7 +388,8 @@ class TestCountFilter(AbstractBaseFilterTest):
     def test_values(self):
         expected = [
             ['Education', 2],
-            ['WASH', 1]
+            ['Education, Protection', 1],
+            ['WASH', 1],
         ]
         self.assertEqual(expected, self.source.count('#sector').values)
 
@@ -400,6 +407,7 @@ class TestCountFilter(AbstractBaseFilterTest):
     def test_aggregation_values(self):
         expected = [
             ['Education', 2, 400, 200, 100, 300],
+            ['Education, Protection', 1, 150, 150, 150, 150],
             ['WASH', 1, 200, 200, 200, 200]
         ]
         self.assertEqual(expected, self.source.count('#sector', '#meta').values)
@@ -441,7 +449,9 @@ class TestDeduplicationFilter (AbstractBaseFilterTest):
         ['NGO A', 'WASH', 'Coast', '200'],
         ['NGO B', 'Education', 'Plains', '100'],
         ['NGO B', 'Education', 'Coast', '300'],
-        ['NGO A', 'WASH', 'Coast', '200']
+        ['NGO A', 'Education, Protection', 'Plains', '150'],
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO A', 'Education, Protection', 'Plains', '150'],
     ]
 
     def setUp(self):
@@ -469,7 +479,8 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
         ['#org', '#sector+list', '#adm1', '#meta+count', '#adm1+code'],
         ['NGO A', 'WASH', 'Coast', '200', '001'],
         ['NGO B', 'Education', 'Plains', '100', '002'],
-        ['NGO B', 'Education', 'Coast', '300', '001']
+        ['NGO B', 'Education', 'Coast', '300', '001'],
+        ['NGO A', 'Education, Protection', 'Plains', '150', '002'],
     ]
 
     MERGE_EXTRA = [
@@ -484,7 +495,8 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
         ['#org', '#sector+list', '#adm1', '#meta+count', '#adm1+code', '#population'],
         ['NGO A', 'WASH', 'Coast', '200', '001', '10000'],
         ['NGO B', 'Education', 'Plains', '100', '002', ''],
-        ['NGO B', 'Education', 'Coast', '300', '001', '10000']
+        ['NGO B', 'Education', 'Coast', '300', '001', '10000'],
+        ['NGO A', 'Education, Protection', 'Plains', '150', '002', ''],
     ]
 
     MERGE_DISPLACED_KEY = [
@@ -559,7 +571,8 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
             ['#org', '#sector+list', '#adm1', '#meta+count', '#adm1+code'],
             ['NGO A', 'WASH', 'Coast', '200', '003'],
             ['NGO B', 'Education', 'Plains', '100', '002'],
-            ['NGO B', 'Education', 'Coast', '300', '003']
+            ['NGO B', 'Education', 'Coast', '300', '003'],
+            ['NGO A', 'Education, Protection', 'Plains', '150', '002'],
         ]
         merged = self.source.merge_data(hxl.data(MERGE_IN), 'adm1-code', 'adm1+code', queries='foo=hack')
         self.assertEqual(MERGE_OUT[2:], merged.values)
@@ -625,7 +638,7 @@ class TestReplaceFilter(AbstractBaseFilterTest):
             ['NGO C', 'NGO Charlie', 'org']
         ]
         source = self.source.append(NEW_DATA)
-        self.assertEqual('NGO Charlie', source.replace_data_map(hxl.data(MAPPING)).values[3][0])
+        self.assertEqual('NGO Charlie', source.replace_data_map(hxl.data(MAPPING)).values[4][0])
 
     def test_queries(self):
         result = self.source.replace_data('Coast', 'Coastal District', '#adm1', queries='org=NGO A')
@@ -639,7 +652,7 @@ class TestRowCountFilter(AbstractBaseFilterTest):
         counter = self.source.row_counter()
         for row in counter:
             pass
-        self.assertEqual(3, counter.row_count)
+        self.assertEqual(4, counter.row_count)
 
     def test_queries(self):
         counter = self.source.row_counter('org=NGO B')
@@ -651,8 +664,8 @@ class TestRowCountFilter(AbstractBaseFilterTest):
 class TestRowFilter(AbstractBaseFilterTest):
 
     def test_with_rows(self):
-        self.assertEqual(DATA[3:], self.source.with_rows(['#sector=education']).values)
-        self.assertEqual(DATA[3:], self.source.with_rows('#sector=education').values)
+        self.assertEqual(DATA[3:5], self.source.with_rows(['#sector=education']).values)
+        self.assertEqual(DATA[3:5], self.source.with_rows('#sector=education').values)
 
     def test_without_rows(self):
         self.assertEqual(DATA[3:], self.source.without_rows(['#sector=wash']).values)
@@ -733,7 +746,7 @@ class TestChaining(AbstractBaseFilterTest):
             self.source.with_rows('#sector=wash').count('#org').values
         )
         self.assertEqual(
-            [['NGO B', 2]],
+            [['NGO A', 1], ['NGO B', 2]],
             self.source.without_rows('#sector=wash').count('#org').values
         )
 

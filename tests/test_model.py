@@ -145,22 +145,22 @@ class TestColumn(unittest.TestCase):
 
     def test_case_insensitive(self):
         column = Column(tag='Foo', attributes=['X', 'y'])
-        self.assertEquals('foo', column.tag)
-        self.assertEquals(set(['x', 'y']), column.attributes)
+        self.assertEqual('foo', column.tag)
+        self.assertEqual(set(['x', 'y']), column.attributes)
 
     def test_eq(self):
         col1 = Column(tag='xxx', attributes={'b','c','a'}, header='foo')
         col2 = Column(tag='xxx', attributes={'a', 'b','c'}, header='bar')
         col3 = Column(tag='xxx', attributes={'b','c'})
-        self.assertEquals(col1, col2)
-        self.assertNotEquals(col1, col3)
+        self.assertEqual(col1, col2)
+        self.assertNotEqual(col1, col3)
 
     def test_hash(self):
         col1 = Column(tag='xxx', attributes={'b','c','a'}, header='foo')
         col2 = Column(tag='xxx', attributes={'a', 'b','c'}, header='bar')
         col3 = Column(tag='xxx', attributes={'b','c'})
-        self.assertEquals(hash(col1), hash(col2))
-        self.assertNotEquals(hash(col1), hash(col3))
+        self.assertEqual(hash(col1), hash(col2))
+        self.assertNotEqual(hash(col1), hash(col3))
 
 
 class TestRow(unittest.TestCase):
