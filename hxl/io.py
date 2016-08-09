@@ -51,11 +51,14 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False, sheet_index=None):
+def data(data, allow_local=False, sheet_index=None, timeout=None):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
-    @param data a HXL data provider, file object, array, or string (representing a URL or file name).
+    @param data: a HXL data provider, file object, array, or string (representing a URL or file name).
+    @param allow_local: if true, allow opening local filenames as well as remote URLs (default: False).
+    @param sheet_index: if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
+    @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
     """
 
     if isinstance(data, hxl.model.Dataset):
@@ -63,7 +66,7 @@ def data(data, allow_local=False, sheet_index=None):
         return data
 
     else:
-        return HXLReader(make_input(data, allow_local, sheet_index))
+        return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout))
 
     
 def write_hxl(output, source, show_headers=True, show_tags=True):
@@ -123,7 +126,7 @@ else:
     encode = _encode_py3
 
     
-def make_input(raw_source, allow_local=False, sheet_index=None):
+def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None):
     """Figure out what kind of input to create.
 
     Can detect a URL or filename, an input stream, or an array.
@@ -133,6 +136,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
     @param raw_source: the raw data source (e.g. a URL or input stream).
     @param allow_local: if True, allow opening local files as well as remote URLs (default: False).
     @param sheet_index: if a number, read that sheet from an Excel workbook (default: None).
+    @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
     @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
     """
 
@@ -162,7 +166,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
             input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
-            input = wrap_stream(open_url_or_file(raw_source, allow_local=allow_local))
+            input = wrap_stream(open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout))
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
@@ -176,16 +180,17 @@ def make_input(raw_source, allow_local=False, sheet_index=None):
             return CSVInput(input)
 
 
-def open_url_or_file(url_or_filename, allow_local=False):
+def open_url_or_file(url_or_filename, allow_local=False, timeout=None):
     """Try opening a local or remote resource.
     Allows only HTTP(S) and (S)FTP URLs.
     @param url_or_filename: the string to try openining.
     @param allow_local: if True, OK to open local files; otherwise, only remote URLs allowed (default: False).
+    @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
     @return: an io stream.
     """
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
-        response = requests.get(munge_url(url_or_filename), stream=True)
+        response = requests.get(munge_url(url_or_filename), stream=True, timeout=timeout)
         if response.status_code != 200:
             raise IOError('Received HTTP response code {}'.format(response.status_code))
         return RequestResponseIOWrapper(response)

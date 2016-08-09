@@ -41,7 +41,7 @@ class TestBadInput(unittest.TestCase):
 
     def test_bad_url(self):
         with self.assertRaises(IOError):
-            source = hxl.data('http://example.org/XXXXX')
+            source = hxl.data('http://x.example.org/XXXXX')
 
 class TestParser(unittest.TestCase):
 
@@ -126,11 +126,11 @@ class TestParser(unittest.TestCase):
         """Test reading from a Google Sheet (will fail without connectivity)."""
 
         # default tab
-        with hxl.data(URL_GOOGLE_NOHASH) as source:
+        with hxl.data(URL_GOOGLE_NOHASH, timeout=5) as source:
             self.compare_input(source)
 
         # specific tab
-        with hxl.data(URL_GOOGLE_HASH) as source:
+        with hxl.data(URL_GOOGLE_HASH, timeout=5) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):
