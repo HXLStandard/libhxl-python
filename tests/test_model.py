@@ -200,6 +200,7 @@ class TestRow(unittest.TestCase):
     def test_list(self):
         self.assertEqual('Health, Education', self.row.get('#sector'))
         self.assertEqual(['Health', 'Education'], self.row.get('#sector', parsed=True))
+        self.assertEqual(['WFP'], self.row.get('#org', parsed=True))
 
     def test_get_skip_blanks(self):
         columns = [Column.parse(tag) for tag in ['#sector', '#org', '#org']]

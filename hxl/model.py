@@ -517,13 +517,15 @@ class Row(object):
         @param index: The zero-based index if there are multiple values for the tag (default: None)
         @param default: The default value if not found (default: None). Never parsed, even if parsed=True
         @param parsed: If true, use attributes as hints to try to parse the value (e.g. number, list, date)
-        @return The value found, or the default value provided (default: False)
+        @return The value found, or the default value provided. If parsed=True, the return value will be a list (default: False)
         """
 
         def parse(column, value):
             if parsed:
                 if column.has_attribute('list'):
                     return re.split("\s*,\s*", value)
+                else:
+                    return [value]
             return value
 
         if type(tag) is TagPattern:
