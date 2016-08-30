@@ -1,3 +1,12 @@
+2016-08-30 Release 3.2
+	- add timeout option for opening URLs (avoids long wait in unit
+	  tests)
+	- encoding fixes for Python2
+	- add HXLColumn.has_attribute() method
+	- add an optional parsed attribute to HXLRow.get() to try parsing
+	  the value according to attributes (currently supports +list)
+	- add experimental support for the +list attribute
+
 2016-07-28 Release 3.1
 	- change request handling to work better with requests_cache (no
 	  more streaming directly from the raw object in the request response)
