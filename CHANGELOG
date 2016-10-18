@@ -1,4 +1,5 @@
-	- ~ and !~ operators in row queries now match anywhere in the cell
+2016-10-17 Release 3.3
+	- Regex ~ and !~ operators in row queries now match anywhere in the cell
 	- make row query smart about date comparisons with #date hashtag
 	- block numeric/date conversion in row queries for ~ and !~
 
