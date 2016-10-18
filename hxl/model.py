@@ -9,6 +9,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import abc
 import copy
+import dateutil
 import re
 import csv
 import json
@@ -593,16 +594,22 @@ class Row(object):
 class RowQuery(object):
     """Query to execute against a row of HXL data."""
 
-    def __init__(self, pattern, op, value):
+    def __init__(self, pattern, op, value, is_quantitative=True):
         self.pattern = TagPattern.parse(pattern)
         self.op = op
         self.value = value
+        self.is_quantitative = is_quantitative
         self._saved_indices = None
-        try:
-            float(value)
-            self._is_numeric = True
-        except:
-            self._is_numeric = False
+        self._date = None
+        self._number = None
+        if self.is_quantitative:
+            if pattern.tag == '#date':
+                self._date = dateutil.parser.parse(value)
+            else:
+                try:
+                    self._number = float(value)
+                except ValueError:
+                    pass
 
     def match_row(self, row):
         """Check if a key-value pair appears in a HXL row"""
@@ -617,9 +624,13 @@ class RowQuery(object):
         """Try an operator as numeric first, then string"""
         # TODO add dates
         # TODO use knowledge about HXL tags
-        if self._is_numeric:
+        if self._date is not None:
+            date_value = dateutil.parser.parse(value)
+            if date_value:
+                return self.op(date_value, self._date)
+        if self._number is not None:
             try:
-                return self.op(float(value), float(self.value))
+                return self.op(float(value), self._number)
             except ValueError:
                 pass
         return self.op(hxl.common.normalise_string(value), hxl.common.normalise_string(self.value))
@@ -642,9 +653,10 @@ class RowQuery(object):
             return query
         parts = re.split(r'([<>]=?|!?=|!?~)', query, maxsplit=1)
         pattern = TagPattern.parse(parts[0])
-        op = RowQuery.OPERATOR_MAP[parts[1]]
+        op = RowQuery.OPERATOR_MAP[parts[1]][0]
         value = parts[2]
-        return RowQuery(pattern, op, value)
+        is_quantitative = RowQuery.OPERATOR_MAP[parts[1]][1]
+        return RowQuery(pattern, op, value, is_quantitative)
 
     @staticmethod
     def parse_list(queries):
@@ -681,19 +693,20 @@ class RowQuery(object):
         return not re.search(pattern, s)
 
     # Constant map of comparison operators
+    # Second value is true for a quantitative operator like <, false for a non-quantitative one like ~
     OPERATOR_MAP = {
-        '=': operator.eq,
-        '!=': operator.ne,
-        '<': operator.lt,
-        '<=': operator.le,
-        '>': operator.gt,
-        '>=': operator.ge
+        '=': (operator.eq, True),
+        '!=': (operator.ne, True),
+        '<': (operator.lt, True),
+        '<=': (operator.le, True),
+        '>': (operator.gt, True),
+        '>=': (operator.ge, True)
     }
 
 
 # Extra static initialisation
-RowQuery.OPERATOR_MAP['~'] = RowQuery.operator_re
-RowQuery.OPERATOR_MAP['!~'] = RowQuery.operator_nre
+RowQuery.OPERATOR_MAP['~'] = (RowQuery.operator_re, False)
+RowQuery.OPERATOR_MAP['!~'] = (RowQuery.operator_nre, False)
 
 
 # end

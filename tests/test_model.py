@@ -287,8 +287,27 @@ class TestRowQuery(unittest.TestCase):
         self.assertTrue(RowQuery.parse("sector!~W$").match_row(self.row))
         self.assertFalse(RowQuery.parse("sector!~w").match_row(self.row))
 
+    def test_whitespace(self):
+        self.assertTrue(RowQuery.parse("adm1=coast").match_row(self.row))
 
-    def test_numeric(self):
+    def test_dates(self):
+        # =
+        self.assertTrue(RowQuery.parse("date=2015-12-13").match_row(self.row))
+        self.assertFalse(RowQuery.parse("date=2015-12-12").match_row(self.row))
+        # <=
+        self.assertTrue(RowQuery.parse("date<=2015-12-13").match_row(self.row))
+        self.assertFalse(RowQuery.parse("date<=2015-12-12").match_row(self.row))
+        # <
+        self.assertTrue(RowQuery.parse("date<2015-12-14").match_row(self.row))
+        self.assertFalse(RowQuery.parse("date<2015-12-13").match_row(self.row))
+        # >=
+        self.assertTrue(RowQuery.parse("date>=2015-12-13").match_row(self.row))
+        self.assertFalse(RowQuery.parse("date>=2015-12-14").match_row(self.row))
+        # >
+        self.assertTrue(RowQuery.parse("date>2015-12-12").match_row(self.row))
+        self.assertFalse(RowQuery.parse("date>2015-12-13").match_row(self.row))
+
+    def test_numbers(self):
         """Test that we're doing numeric rather than lexical comparison"""
         # =
         self.assertTrue(RowQuery.parse("affected=200").match_row(self.row))

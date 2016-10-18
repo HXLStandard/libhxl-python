@@ -1,4 +1,6 @@
 	- ~ and !~ operators in row queries now match anywhere in the cell
+	- make row query smart about date comparisons with #date hashtag
+	- block numeric/date conversion in row queries for ~ and !~
 
 2016-08-30 Release 3.2
 	- add timeout option for opening URLs (avoids long wait in unit
