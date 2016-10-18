@@ -9,7 +9,7 @@ License: Public Domain
 import unittest
 import hxl
 from hxl.common import normalise_string
-from hxl.model import TagPattern, Column, Row
+from hxl.model import TagPattern, Column, Row, RowQuery
 
 DATA = [
     ['Organisation', 'Cluster', 'District', 'Affected'],
@@ -236,5 +236,83 @@ class TestRow(unittest.TestCase):
         for column in [Column.parse(spec) for spec in specs]:
             self.assertEqual('#tag', column.tag)
             self.assertEqual(['bar', 'foo'], sorted(column.attributes))
+
+
+class TestRowQuery(unittest.TestCase):
+
+    ROW_NUMBER = 5
+    TAGS = ['#sector', '#date', '#adm1+name', '#affected', '#inneed', '#population']
+    CONTENT = ['WASH', '12/13/2015', '  Coast  ', '200', ' 500 ', '1,000']
+
+    def setUp(self):
+        columns = []
+        for column_number, tag in enumerate(self.TAGS):
+            columns.append(Column.parse(tag))
+        self.row = Row(columns=columns, values=self.CONTENT, row_number=self.ROW_NUMBER)
+
+    def test_string(self):
+        # =
+        self.assertTrue(RowQuery.parse("sector=WASH").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector=wash").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector=Health").match_row(self.row))
+        # <=
+        self.assertTrue(RowQuery.parse("sector<=WASH").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector<=wash").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector<=Health").match_row(self.row))
+        # <
+        self.assertTrue(RowQuery.parse("sector<ZZZ").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector<zzz").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector<WASH").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector<wash").match_row(self.row))
+        # >=
+        self.assertTrue(RowQuery.parse("sector>=WASH").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector>=wash").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector>=ZZZ").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector>=zzz").match_row(self.row))
+        # >
+        self.assertTrue(RowQuery.parse("sector>AAA").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector>aaa").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector>WASH").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector>wash").match_row(self.row))
+        # ~
+        self.assertTrue(RowQuery.parse("sector~^W").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector~W").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector~AS").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector~sh$").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector~W$").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector~AS$").match_row(self.row))
+        # !~
+        self.assertTrue(RowQuery.parse("sector!~^A").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector!~X").match_row(self.row))
+        self.assertTrue(RowQuery.parse("sector!~W$").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector!~w").match_row(self.row))
+
+
+    def test_numeric(self):
+        """Test that we're doing numeric rather than lexical comparison"""
+        # =
+        self.assertTrue(RowQuery.parse("affected=200").match_row(self.row))
+        self.assertFalse(RowQuery.parse("affected=300").match_row(self.row))
+        # <=
+        self.assertTrue(RowQuery.parse("affected<=200").match_row(self.row))
+        self.assertFalse(RowQuery.parse("affected<=199").match_row(self.row))
+        # <
+        self.assertTrue(RowQuery.parse("affected<1000").match_row(self.row))
+        self.assertFalse(RowQuery.parse("affected<100").match_row(self.row))
+        # >=
+        self.assertTrue(RowQuery.parse("affected>=200").match_row(self.row))
+        self.assertFalse(RowQuery.parse("affected>=201").match_row(self.row))
+        # >
+        self.assertTrue(RowQuery.parse("affected>9").match_row(self.row))
+        self.assertFalse(RowQuery.parse("affected>900").match_row(self.row))
+
+    def test_number_conversion(self):
+        # hexadecimal
+        self.assertTrue(RowQuery.parse("affected>0x01").match_row(self.row))
+        # exponential notation
+        self.assertTrue(RowQuery.parse("affected<1.0e+06").match_row(self.row))
+        # whitespace
+        self.assertTrue(RowQuery.parse("inneed>400").match_row(self.row))
+        self.assertTrue(RowQuery.parse("inneed<600").match_row(self.row))
 
 # end

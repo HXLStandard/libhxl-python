@@ -673,12 +673,12 @@ class RowQuery(object):
     @staticmethod
     def operator_re(s, pattern):
         """Regular-expression comparison operator."""
-        return re.match(pattern, s)
+        return re.search(pattern, s)
 
     @staticmethod
     def operator_nre(s, pattern):
         """Regular-expression negative comparison operator."""
-        return not re.match(pattern, s)
+        return not re.search(pattern, s)
 
     # Constant map of comparison operators
     OPERATOR_MAP = {
