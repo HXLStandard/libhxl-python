@@ -594,7 +594,7 @@ class RowQuery(object):
     """Query to execute against a row of HXL data."""
 
     def __init__(self, pattern, op, value):
-        self.pattern = pattern
+        self.pattern = TagPattern.parse(pattern)
         self.op = op
         self.value = value
         self._saved_indices = None
