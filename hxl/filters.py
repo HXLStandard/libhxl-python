@@ -55,9 +55,24 @@ class HXLFilterException(hxl.common.HXLException):
     """
     pass
 
+def req_arg(spec, property):
+    """Get a required property, and raise an exception if missing."""
+    value = spec.get(property)
+    if value is None:
+        raise HXLFilterException("Filter {} is missing required property {}".format(type, property))
+    return value
+
+def opt_arg(spec, property, default_value=None):
+    """Get an optional property, possibly with a default value."""
+    value = spec.get(property)
+    if value is None:
+        return default_value
+    else:
+        return value
+
 #
 # Base class for filters
-
+#
 class AbstractBaseFilter(hxl.model.Dataset):
     """Abstract base class for composable filters.
 
@@ -136,6 +151,11 @@ class AbstractBaseFilter(hxl.model.Dataset):
 
         """
         return self.source.columns
+
+    @staticmethod
+    def _load (spec):
+        """Create an instance of the filter from a dict."""
+        raise NotImplementedError("No static _load method implemented.")
 
     
 class AbstractStreamingFilter(AbstractBaseFilter):
@@ -453,6 +473,15 @@ class AddColumnsFilter(AbstractStreamingFilter):
         else:
             raise HXLFilterException("Badly formatted new-column spec: " + spec)
 
+    @staticmethod
+    def _load(source, spec):
+        """New instance from a dict."""
+        return AddColumnsFilter(
+            source=source,
+            specs=req_arg(spec, 'specs'),
+            before=opt_arg(spec, 'before', False)
+        )
+
 
 class AppendFilter(AbstractBaseFilter):
 
@@ -568,6 +597,7 @@ class AppendFilter(AbstractBaseFilter):
         # return the (usually cached) columns
         return columns_out
 
+
     def __iter__(self):
         self.columns # make sure this is triggered first
         return AppendFilter._Iterator(self)
@@ -617,6 +647,16 @@ class AppendFilter(AbstractBaseFilter):
             return row_out
 
         next = __next__
+
+    @staticmethod
+    def _load(source, spec):
+        """Create an AppendFilter from a dict spec."""
+        return AppendFilter(
+            source=source,
+            append_source=req_arg(spec, 'append_source'),
+            add_columns=opt_arg(spec, 'add_columns', True),
+            queries=opt_arg(spec, 'queries', [])
+        )
 
 
 class CacheFilter(AbstractCachingFilter):
@@ -1681,6 +1721,27 @@ class SortFilter(AbstractCachingFilter):
 # Compile a filter chain
 #
 
+LOAD_MAP = {
+        'add_columns': AddColumnsFilter._load,
+        'append': AppendFilter._load,
+        'cache': CacheFilter._load,
+        'clean_data': CleanDataFilter._load,
+        'count': CountFilter._load,
+        'dedup': DeduplicationFilter._load,
+        'explode': ExplodeFilter._load,
+        'merge_data': MergeDataFilter._load,
+        'rename_columns': RenameFilter._load,
+        'replace_data': ReplaceDataFilter._load,
+        'replace_data_map': ReplaceDataFilter._load,
+        'sort': SortFilter._load,
+        'with_columns': ColumnFilter._load,
+        'with_rows': RowFilter._load,
+        'without_columns': ColumnFilter._load,
+        'without_rows': RowFilter._load,
+}
+"""Static functions for creating filters from dicts (from JSON, typically)."""
+
+
 def from_recipe(source, recipe):
     """Build a filter chain from a JSON-like list of filter specs.
 
@@ -1727,17 +1788,10 @@ def from_recipe(source, recipe):
             return value
 
         if type == 'add_columns':
-            source = source.add_columns(
-                req('specs'),
-                opt('before', False)
-            )
+            source = LOAD_MAP['add_columns'](source, spec)
 
         elif type == 'append':
-            source = source.append(
-                req('append_source'),
-                opt('add_columns', True),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['append'](source, spec)
 
         elif type == 'cache':
             source = source.cache()
