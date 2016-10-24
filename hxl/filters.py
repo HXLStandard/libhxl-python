@@ -730,6 +730,11 @@ class CacheFilter(AbstractCachingFilter):
             values.append(row.values)
         return values
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a new CacheFilter from a dict spec."""
+        return CacheFilter(source)
+
 
 class CleanDataFilter(AbstractStreamingFilter):
     """Data-cleaning filter.
@@ -885,6 +890,19 @@ class CleanDataFilter(AbstractStreamingFilter):
                     return True
             return False
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a new clean-data filter from a dict spec."""
+        return CleanDataFilter(
+            source=source,
+            whitespace=opt_arg(spec,'whitespace', []),
+            upper=opt_arg(spec, 'upper', []),
+            lower=opt_arg(spec, 'lower', []),
+            date=opt_arg(spec, 'date', []),
+            number=opt_arg(spec, 'number', []),
+            queries=opt_arg(spec, 'queries', [])
+        )
+
 
 class ColumnFilter(AbstractStreamingFilter):
     """Composable filter class to remove columns from a HXL dataset.
@@ -969,6 +987,19 @@ class ColumnFilter(AbstractStreamingFilter):
         else:
             # no whitelist
             return True
+
+    @staticmethod
+    def _load(source, spec):
+        if spec.get('filter') == 'with_columns':
+            return ColumnFilter(
+                source=source,
+                include_tags=req_arg(spec, 'whitelist')
+            )
+        else:
+            return ColumnFilter(
+                source=source,
+                exclude_tags=req_arg(spec, 'blacklist')
+            )
 
 
 class CountFilter(AbstractCachingFilter):
@@ -1156,6 +1187,17 @@ class CountFilter(AbstractCachingFilter):
                         # if we got an exception on number conversion, ignore the value
                         pass
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a new count filter from a dict spec."""
+        return CountFilter(
+            source = source,
+            patterns=req_arg(spec, 'patterns'),
+            aggregate_pattern=opt_arg(spec, 'aggregate_pattern'),
+            count_spec=opt_arg(spec, 'count_spec', 'Count#meta+count'),
+            queries=opt_arg(spec, 'queries', [])
+        )
+
 
 class DeduplicationFilter(AbstractStreamingFilter):
     """Composable filter to deduplicate a HXL dataset.
@@ -1215,6 +1257,15 @@ class DeduplicationFilter(AbstractStreamingFilter):
             if self._is_key(row.columns[i]):
                 key.append(hxl.common.normalise_string(value))
         return tuple(key)
+
+    @staticmethod
+    def _load(source, spec):
+        """Create a dedup filter from a dict spec."""
+        return DeduplicationFilter(
+            source = source,
+            patterns=opt_arg(spec, 'patterns', []),
+            queries=opt_arg(spec, 'queries', [])
+        )
 
         
 class ExplodeFilter(AbstractBaseFilter):
@@ -1309,6 +1360,15 @@ class ExplodeFilter(AbstractBaseFilter):
             else:
                 plan.append(index)
         return plan
+
+    @staticmethod
+    def _load(source, spec):
+        """Create an explode filter from a dict spec."""
+        return ExplodeFilter(
+            source=source,
+            header_attribute=opt_arg(spec, 'header_attribute', 'header'),
+            value_attribute=opt_arg(spec, 'value_attribute', 'value')
+        )
 
 
 class MergeDataFilter(AbstractStreamingFilter):
@@ -1418,6 +1478,19 @@ class MergeDataFilter(AbstractStreamingFilter):
                 merge_map[self._make_key(row)] = values
         return merge_map
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a merge filter from a dict spec."""
+        return MergeDataFilter(
+            source=source,
+            merge_source=req_arg(spec, 'merge_source'),
+            keys=req_arg(spec, 'keys'),
+            tags=req_arg(spec, 'tags'),
+            replace=opt_arg(spec, 'replace', False),
+            overwrite=opt_arg(spec, 'overwrite', False),
+            queries=opt_arg(spec, 'queries', [])
+        )
+
 
 class RenameFilter(AbstractStreamingFilter):
     """
@@ -1475,6 +1548,14 @@ class RenameFilter(AbstractStreamingFilter):
                 raise HXLFilterException("Bad rename expression: " + s)
         else:
             return s
+
+    @staticmethod
+    def _load(source, spec):
+        """Create a rename filter from a dict spec."""
+        return RenameFilter(
+            source=source,
+            rename=req_arg(spec, 'specs')
+        )
 
 
 class ReplaceDataFilter(AbstractStreamingFilter):
@@ -1564,6 +1645,34 @@ class ReplaceDataFilter(AbstractStreamingFilter):
                         ))
             return replacements
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a replace-data filter from a dict spec."""
+
+        replacements = []
+
+        if spec.get('filter') == 'replace-data-map':
+            # using an external map
+            replacements = ReplaceDataFilter.Replacement.parse_map(
+                hxl.data(req_arg(spec, 'map_source'))
+            )
+        elif spec.get('filter') == 'replace-data':
+            # simple replacement
+            replacements = [
+                ReplaceDataFilter.Replacement(
+                    original=req_arg(spec, 'original'),
+                    replacement=req_arg(spec, 'replacement'),
+                    pattern=opt_arg(spec, 'pattern', None),
+                    use_regex=opt_arg(spec, 'use_regex', False)
+                )
+            ]
+
+        return ReplaceDataFilter(
+            source=source,
+            replacements=replacements,
+            queries=opt_arg(spec, 'queries', [])
+        )
+
         
 class RowCountFilter(AbstractStreamingFilter):
     """
@@ -1627,6 +1736,20 @@ class RowFilter(AbstractStreamingFilter):
             if not hxl.model.RowQuery.match_list(row, self.queries, self.reverse):
                 return None
         return row.values
+
+    @staticmethod
+    def _load(source, spec):
+        """Construct a row filter from a dict spec."""
+        
+        reverse = False
+        if spec.get('filter') == 'without_rows':
+            reverse = True
+
+        return RowFilter(
+            source=source,
+            queries=req_arg(spec, 'queries'),
+            mask=opt_arg(spec, 'mask', [])
+        )
 
     
 class SortFilter(AbstractCachingFilter):
@@ -1716,6 +1839,15 @@ class SortFilter(AbstractCachingFilter):
             except:
                 return (float('inf'), norm)
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a sort filter from a dict spec."""
+        return SortFilter(
+            source = source,
+            tags=opt_arg(spec, 'keys', []),
+            reverse=opt_arg(spec, 'reverse', False)
+        )
+
 
 #
 # Compile a filter chain
@@ -1794,78 +1926,37 @@ def from_recipe(source, recipe):
             source = LOAD_MAP['append'](source, spec)
 
         elif type == 'cache':
-            source = source.cache()
+            source = LOAD_MAP['cache'](source, spec)
 
         elif type == 'clean_data':
-            source = source.clean_data(
-                opt('whitespace', []),
-                opt('upper', []),
-                opt('lower', []),
-                opt('date', []),
-                opt('number', []),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['clean_data'](source, spec)
 
         elif type == 'count':
-            source = source.count(
-                req('patterns'),
-                opt('aggregate_pattern'),
-                opt('count_spec', 'Count#meta+count'),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['count'](source, spec)
 
         elif type == 'dedup':
-            source = source.dedup(
-                opt('patterns', []),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['dedup'](source, spec)
 
         elif type == 'explode':
-            source = source.explode(
-                opt('header_attribute', 'header'),
-                opt('value_attribute', 'value')
-            )
+            source = LOAD_MAP['explode'](source, spec)
             
         elif type == 'merge_data':
-            source = source.merge_data(
-                req('merge_source'),
-                req('keys'),
-                req('tags'),
-                opt('replace', False),
-                opt('overwrite', False),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['merge_data'](source, spec)
             
         elif type == 'rename_columns':
-            source = source.rename_columns(
-                req('specs')
-            )
+            source = LOAD_MAP['rename_columns'](source, spec)
             
         elif type == 'replace_data':
-            source = source.replace_data(
-                req('original'),
-                req('replacement'),
-                opt('pattern'),
-                opt('use_regex', False),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['replace_data'](source, spec)
             
         elif type == 'replace_data_map':
-            source = source.replace_data_map(
-                req('map_source'),
-                opt('queries', [])
-            )
+            source = LOAD_MAP['replace_data_map'](source, spec)
             
         elif type == 'sort':
-            source = source.sort(
-                opt('keys'),
-                opt('reverse', False)
-            )
+            source = LOAD_MAP['sort'](source, spec)
             
         elif type == 'with_columns':
-            source = source.with_columns(
-                req('whitelist')
-            )
+            source = LOAD_MAP['with_columns'](source, spec)
             
         elif type == 'with_rows':
             source = source.with_rows(
@@ -1874,9 +1965,7 @@ def from_recipe(source, recipe):
             )
             
         elif type == 'without_columns':
-            source = source.without_columns(
-                req('blacklist')
-            )
+            source = LOAD_MAP['without_columns'](source, spec)
             
         elif type == 'without_rows':
             source = source.without_rows(
