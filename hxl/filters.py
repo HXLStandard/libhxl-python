@@ -1651,19 +1651,19 @@ class ReplaceDataFilter(AbstractStreamingFilter):
 
         replacements = []
 
-        if spec.get('filter') == 'replace-data-map':
+        if spec.get('filter') == 'replace_data_map':
             # using an external map
             replacements = ReplaceDataFilter.Replacement.parse_map(
                 hxl.data(req_arg(spec, 'map_source'))
             )
-        elif spec.get('filter') == 'replace-data':
+        elif spec.get('filter') == 'replace_data':
             # simple replacement
             replacements = [
                 ReplaceDataFilter.Replacement(
                     original=req_arg(spec, 'original'),
                     replacement=req_arg(spec, 'replacement'),
                     pattern=opt_arg(spec, 'pattern', None),
-                    use_regex=opt_arg(spec, 'use_regex', False)
+                    is_regex=opt_arg(spec, 'use_regex', False)
                 )
             ]
 
@@ -1873,19 +1873,6 @@ LOAD_MAP = {
         'without_rows': RowFilter._load,
 }
 """Static functions for creating filters from dicts (from JSON, typically)."""
-
-def from_spec(spec):
-    """Build a full spec (including source) from a JSON-like data structure."""
-    
-    if isinstance(spec, six.string_types):
-        # a JSON string (parse it first)
-        spec = json.loads(spec)
-
-    data_source = req_arg(spec, 'data-source')
-    filters = opt_arg(spec, 'filters', [])
-
-    return from_recipe(hxl.data(data_source), filters)
-        
 
 def from_recipe(source, recipe):
     """Build a filter chain from a JSON-like list of filter specs.

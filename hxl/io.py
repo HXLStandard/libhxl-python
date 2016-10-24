@@ -65,9 +65,9 @@ def data(data, allow_local=False, sheet_index=None, timeout=None):
         # it's already HXL data
         return data
 
-    elif isinstance(data, dict) and data.get('data-source'):
+    elif isinstance(data, dict) and data.get('data_source'):
         """If it's a JSON-type spec, try parsing it."""
-        return hxl.filters.from_spec(data)
+        return hxl.io.from_spec(data)
 
     else:
         return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout))
@@ -549,5 +549,21 @@ class HXLReader(hxl.model.Dataset):
         """Context-end support."""
         if self._input:
             self._input.__exit__(value, type, traceback)
+
+
+def from_spec(spec):
+    """Build a full spec (including source) from a JSON-like data structure."""
+    
+    if isinstance(spec, six.string_types):
+        # a JSON string (parse it first)
+        spec = json.loads(spec)
+
+    data_source = spec.get('data_source')
+    filters = spec.get('filters', [])
+
+    if not data_source:
+        raise hxl.common.HXLException("No data_source property specified.")
+
+    return hxl.filters.from_recipe(hxl.data(data_source), filters)
 
 # end
