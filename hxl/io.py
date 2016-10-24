@@ -67,7 +67,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None):
 
     elif isinstance(data, dict) and data.get('data-source'):
         """If it's a JSON-type spec, try parsing it."""
-        return filters.from_spec(data)
+        return hxl.filters.from_spec(data)
 
     else:
         return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout))

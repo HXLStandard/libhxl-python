@@ -39,6 +39,26 @@ class AbstractBaseFilterTest(unittest.TestCase):
 
 class TestRecipe(AbstractBaseFilterTest):
 
+    def test_spec(self):
+        filtered = hxl.data({
+            'data-source': DATA
+        })
+        self.assertEqual(filtered.values, DATA[2:])
+
+    def test_recursive(self):
+        # try appending a dataset to itself
+        data_source = {
+            'data-source': DATA
+        }
+        filtered = hxl.data(data_source).recipe([
+            {
+                'filter': 'append',
+                'append_source': hxl.data(data_source)
+            }
+        ])
+        self.assertEqual(filtered.values, DATA[2:] + DATA[2:])
+
+
     def test_multiple(self):
         filtered = self.source.recipe([
             {
