@@ -1231,7 +1231,7 @@ class ExplodeFilter(AbstractBaseFilter):
         """Custom iterator to produce exploded rows."""
         for row in self.source:
             for values in self._expand(row, self._plan):
-                yield hxl.model.Row(self.source.columns, values)
+                yield hxl.model.Row(self.columns, values)
 
     def _expand(self, row, plan, values_in=[]):
         """Recursive generator for the row data.
