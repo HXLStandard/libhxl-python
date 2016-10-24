@@ -53,10 +53,18 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = hxl.data(data_source).recipe([
             {
                 'filter': 'append',
-                'append_source': hxl.data(data_source)
+                'append_source': {
+                    'data-source': DATA,
+                    'filters': [
+                        {
+                            'filter': 'with_rows',
+                            'queries': 'org=ngo b'
+                        }
+                    ]
+                }
             }
         ])
-        self.assertEqual(filtered.values, DATA[2:] + DATA[2:])
+        self.assertEqual(filtered.values, DATA[2:] + DATA[3:5])
 
 
     def test_multiple(self):
