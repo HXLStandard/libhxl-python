@@ -59,7 +59,7 @@ def req_arg(spec, property):
     """Get a required property, and raise an exception if missing."""
     value = spec.get(property)
     if value is None:
-        raise HXLFilterException("Filter {} is missing required property {}".format(type, property))
+        raise HXLFilterException("Missing required property {}".format(property))
     return value
 
 def opt_arg(spec, property, default_value=None):
@@ -1748,6 +1748,7 @@ class RowFilter(AbstractStreamingFilter):
         return RowFilter(
             source=source,
             queries=req_arg(spec, 'queries'),
+            reverse=reverse,
             mask=opt_arg(spec, 'mask', [])
         )
 
@@ -1902,83 +1903,15 @@ def from_recipe(source, recipe):
     # Process each filter in turn
     for spec in recipe:
 
-        def opt(property, default_value=None):
-            """Get an optional property, possibly with a default value."""
-            value = spec.get(property)
-            if value is None:
-                return default_value
-            else:
-                return value
-
-        type = opt('filter')
-
-        def req(property):
-            """Get a required property, and raise an exception if missing."""
-            value = spec.get(property)
-            if value is None:
-                raise HXLFilterException("Filter {} is missing required property {}".format(type, property))
-            return value
-
-        if type == 'add_columns':
-            source = LOAD_MAP['add_columns'](source, spec)
-
-        elif type == 'append':
-            source = LOAD_MAP['append'](source, spec)
-
-        elif type == 'cache':
-            source = LOAD_MAP['cache'](source, spec)
-
-        elif type == 'clean_data':
-            source = LOAD_MAP['clean_data'](source, spec)
-
-        elif type == 'count':
-            source = LOAD_MAP['count'](source, spec)
-
-        elif type == 'dedup':
-            source = LOAD_MAP['dedup'](source, spec)
-
-        elif type == 'explode':
-            source = LOAD_MAP['explode'](source, spec)
-            
-        elif type == 'merge_data':
-            source = LOAD_MAP['merge_data'](source, spec)
-            
-        elif type == 'rename_columns':
-            source = LOAD_MAP['rename_columns'](source, spec)
-            
-        elif type == 'replace_data':
-            source = LOAD_MAP['replace_data'](source, spec)
-            
-        elif type == 'replace_data_map':
-            source = LOAD_MAP['replace_data_map'](source, spec)
-            
-        elif type == 'sort':
-            source = LOAD_MAP['sort'](source, spec)
-            
-        elif type == 'with_columns':
-            source = LOAD_MAP['with_columns'](source, spec)
-            
-        elif type == 'with_rows':
-            source = source.with_rows(
-                req('queries'),
-                opt('mask', [])
-            )
-            
-        elif type == 'without_columns':
-            source = LOAD_MAP['without_columns'](source, spec)
-            
-        elif type == 'without_rows':
-            source = source.without_rows(
-                req('queries'),
-                opt('mask', [])
-            )
-
-        elif type:
+        # Find the loader method
+        type = req_arg(spec, 'filter')
+        loader = LOAD_MAP.get(type)
+        if not loader:
             raise HXLFilterException("Unknown filter type {}".format(type))
 
-        else:
-            raise HXLFilterException("No 'filter' property specified")
-            
+        # Create the filter
+        source = loader(source, spec)
+        
     return source
 
 
