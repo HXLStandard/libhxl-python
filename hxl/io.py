@@ -573,21 +573,35 @@ def from_spec(spec):
     data_source = spec.get('data_source')
     tagger = spec.get('tagger', None)
     filters = spec.get('filters', [])
+    allow_local = spec.get('allow_local', False)
+    sheet_index = spec.get('sheet_index', None)
+    timeout = spec.get('timeout', None)
 
     if not data_source:
         raise hxl.common.HXLException("No data_source property specified.")
 
     if tagger:
         return hxl.filters.from_recipe(
-            hxl.tagger(
+            source=hxl.tagger(
                 data_source,
                 specs=tagger.get('specs', []),
                 default_tag=tagger.get('default_tag', None),
-                match_all=tagger.get('match_all', False)
+                match_all=tagger.get('match_all', False),
+                allow_local=allow_local,
+                sheet_index=sheet_index,
+                timeout=timeout
             ),
-            filters
+            recipe=filters
         )
     else:
-        return hxl.filters.from_recipe(hxl.data(data_source), filters)
+        return hxl.filters.from_recipe(
+            source=hxl.data(
+                data_source,
+                allow_local=allow_local,
+                sheet_index=sheet_index,
+                timeout=timeout
+            ),
+            recipe=filters
+        )
 
 # end
