@@ -570,38 +570,37 @@ def from_spec(spec):
         # a JSON string (parse it first)
         spec = json.loads(spec)
 
+    # source
     data_source = spec.get('data_source')
-    tagger = spec.get('tagger', None)
-    filters = spec.get('filters', [])
     allow_local = spec.get('allow_local', False)
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
 
+    # recipe
+    tagger_spec = spec.get('tagger', None)
+    filter_specs = spec.get('filters', [])
+
     if not data_source:
         raise hxl.common.HXLException("No data_source property specified.")
 
-    if tagger:
-        return hxl.filters.from_recipe(
-            source=hxl.tagger(
-                data_source,
-                specs=tagger.get('specs', []),
-                default_tag=tagger.get('default_tag', None),
-                match_all=tagger.get('match_all', False),
-                allow_local=allow_local,
-                sheet_index=sheet_index,
-                timeout=timeout
-            ),
-            recipe=filters
-        )
+    # set up the input
+    input = make_input(
+        raw_source=data_source,
+        allow_local=allow_local,
+        sheet_index=sheet_index,
+        timeout=timeout
+    )
+
+    # autotag if requested
+    if tagger_spec:
+        source = hxl.converters.Tagger._load(input, tagger_spec)
     else:
-        return hxl.filters.from_recipe(
-            source=hxl.data(
-                data_source,
-                allow_local=allow_local,
-                sheet_index=sheet_index,
-                timeout=timeout
-            ),
-            recipe=filters
-        )
+        source = HXLReader(input)
+
+    # compile the main recipe
+    return hxl.filters.from_recipe(
+        source=source,
+        recipe=filter_specs
+    )
 
 # end
