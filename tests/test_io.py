@@ -33,6 +33,45 @@ URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZo
 URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 
 
+class TestFunctions(unittest.TestCase):
+
+    DATA = [
+        ['Sector', 'Organisation', 'Province name'],
+        ['#sector', '#org', '#adm1'],
+        ['WASH', 'Org A', 'Coast'],
+        ['Health', 'Org B', 'Plains']
+    ]
+
+    def test_from_spec_tagged(self):
+        source = hxl.from_spec({
+            'data_source': self.DATA,
+            'filters': [
+                {
+                    'filter': 'cache'
+                }
+            ]
+        })
+        self.assertEqual(self.DATA[2:], source.values)
+
+    def test_from_spec_untagged(self):
+        source = hxl.from_spec({
+            'data_source': self.DATA[0:1]+self.DATA[2:],
+            'tagger': {
+                'specs': {
+                    'sector': '#sector',
+                    'organisation': '#org',
+                    'province name': '#adm1'
+                }
+            },
+            'filters': [
+                {
+                    'filter': 'cache'
+                }
+            ]
+        })
+        self.assertEqual(self.DATA[2:], source.values)
+
+
 class TestBadInput(unittest.TestCase):
 
     def test_bad_file(self):

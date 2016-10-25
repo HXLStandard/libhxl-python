@@ -571,11 +571,23 @@ def from_spec(spec):
         spec = json.loads(spec)
 
     data_source = spec.get('data_source')
+    tagger = spec.get('tagger', None)
     filters = spec.get('filters', [])
 
     if not data_source:
         raise hxl.common.HXLException("No data_source property specified.")
 
-    return hxl.filters.from_recipe(hxl.data(data_source), filters)
+    if tagger:
+        return hxl.filters.from_recipe(
+            hxl.tagger(
+                data_source,
+                specs=tagger.get('specs', []),
+                default_tag=tagger.get('default_tag', None),
+                match_all=tagger.get('match_all', False)
+            ),
+            filters
+        )
+    else:
+        return hxl.filters.from_recipe(hxl.data(data_source), filters)
 
 # end
