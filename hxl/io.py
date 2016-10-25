@@ -65,7 +65,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None):
         # it's already HXL data
         return data
 
-    elif isinstance(data, dict) and data.get('data_source'):
+    elif isinstance(data, dict) and data.get('input'):
         """If it's a JSON-type spec, try parsing it."""
         return hxl.io.from_spec(data)
 
@@ -571,7 +571,7 @@ def from_spec(spec):
         spec = json.loads(spec)
 
     # source
-    data_source = spec.get('data_source')
+    input_spec = spec.get('input')
     allow_local = spec.get('allow_local', False)
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
@@ -580,12 +580,12 @@ def from_spec(spec):
     tagger_spec = spec.get('tagger', None)
     recipe_spec = spec.get('recipe', [])
 
-    if not data_source:
-        raise hxl.common.HXLException("No data_source property specified.")
+    if not input_spec:
+        raise hxl.common.HXLException("No input property specified.")
 
     # set up the input
     input = make_input(
-        raw_source=data_source,
+        raw_source=input_spec,
         allow_local=allow_local,
         sheet_index=sheet_index,
         timeout=timeout
