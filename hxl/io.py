@@ -73,6 +73,18 @@ def data(data, allow_local=False, sheet_index=None, timeout=None):
         return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout))
 
     
+def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None):
+    """Open an untagged data source and add hashtags."""
+    return hxl.data(
+        hxl.converters.Tagger(
+            input=make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout),
+            specs=specs,
+            default_tag=default_tag,
+            match_all=match_all
+        )
+    )
+
+    
 def write_hxl(output, source, show_headers=True, show_tags=True):
     """Serialize a HXL dataset to an output stream."""
     for line in source.gen_csv(show_headers, show_tags):

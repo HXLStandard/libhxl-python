@@ -32,7 +32,7 @@ class TaggerTest(unittest.TestCase):
     def test_basic(self):
         """Basic tagging operation."""
         tagging_specs = [('Country Name', '#country+name'), ('Country Code', '#country+code')]
-        source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs))
+        source = hxl.tagger(self.UNTAGGED, tagging_specs)
         self.assertEqual(self.EXPECTED_TAGS_SIMPLE, source.display_tags)
 
     def test_case_insensitive(self):
