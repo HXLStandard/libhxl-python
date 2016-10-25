@@ -578,7 +578,7 @@ def from_spec(spec):
 
     # recipe
     tagger_spec = spec.get('tagger', None)
-    filter_specs = spec.get('filters', [])
+    recipe_spec = spec.get('recipe', [])
 
     if not data_source:
         raise hxl.common.HXLException("No data_source property specified.")
@@ -600,7 +600,7 @@ def from_spec(spec):
     # compile the main recipe
     return hxl.filters.from_recipe(
         source=source,
-        recipe=filter_specs
+        recipe=recipe_spec
     )
 
 # end
