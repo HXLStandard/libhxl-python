@@ -41,21 +41,21 @@ class TestRecipe(AbstractBaseFilterTest):
 
     def test_spec(self):
         filtered = hxl.data({
-            'data_source': DATA
+            'input': DATA
         })
         self.assertEqual(filtered.values, DATA[2:])
 
     def test_recursive(self):
         # try appending a dataset to itself
-        data_source = {
-            'data_source': DATA
+        input = {
+            'input': DATA
         }
-        filtered = hxl.data(data_source).recipe([
+        filtered = hxl.data(input).recipe([
             {
                 'filter': 'append',
                 'append_source': {
-                    'data_source': DATA,
-                    'filters': [
+                    'input': DATA,
+                    'recipe': [
                         {
                             'filter': 'with_rows',
                             'queries': 'org=ngo b'

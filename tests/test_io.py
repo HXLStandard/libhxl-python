@@ -44,8 +44,8 @@ class TestFunctions(unittest.TestCase):
 
     def test_from_spec_tagged(self):
         source = hxl.from_spec({
-            'data_source': self.DATA,
-            'filters': [
+            'input': self.DATA,
+            'recipe': [
                 {
                     'filter': 'cache'
                 }
@@ -55,7 +55,7 @@ class TestFunctions(unittest.TestCase):
 
     def test_from_spec_untagged(self):
         source = hxl.from_spec({
-            'data_source': self.DATA[0:1]+self.DATA[2:],
+            'input': self.DATA[0:1]+self.DATA[2:],
             'tagger': {
                 'specs': {
                     'sector': '#sector',
@@ -63,7 +63,7 @@ class TestFunctions(unittest.TestCase):
                     'province name': '#adm1'
                 }
             },
-            'filters': [
+            'recipe': [
                 {
                     'filter': 'cache'
                 }
