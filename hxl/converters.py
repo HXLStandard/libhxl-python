@@ -46,6 +46,9 @@ class Tagger(hxl.io.AbstractInput):
         @param match_all: if True, require that the full header string match; otherwise, match substrings (default: False).
         @param default_tag: default tagspec to use for any column without a match.
         """
+        if isinstance(specs, dict):
+            # convert to list of tuples if needed
+            specs = [(key, specs[key]) for key in specs]
         self.specs = [(hxl.common.normalise_string(spec[0]), spec[1]) for spec in specs]
         self.default_tag = default_tag
         self.match_all = match_all

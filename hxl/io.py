@@ -65,8 +65,24 @@ def data(data, allow_local=False, sheet_index=None, timeout=None):
         # it's already HXL data
         return data
 
+    elif isinstance(data, dict) and data.get('data_source'):
+        """If it's a JSON-type spec, try parsing it."""
+        return hxl.io.from_spec(data)
+
     else:
         return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout))
+
+    
+def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None):
+    """Open an untagged data source and add hashtags."""
+    return hxl.data(
+        hxl.converters.Tagger(
+            input=make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout),
+            specs=specs,
+            default_tag=default_tag,
+            match_all=match_all
+        )
+    )
 
     
 def write_hxl(output, source, show_headers=True, show_tags=True):
@@ -545,5 +561,47 @@ class HXLReader(hxl.model.Dataset):
         """Context-end support."""
         if self._input:
             self._input.__exit__(value, type, traceback)
+
+
+def from_spec(spec):
+    """Build a full spec (including source) from a JSON-like data structure."""
+    
+    if isinstance(spec, six.string_types):
+        # a JSON string (parse it first)
+        spec = json.loads(spec)
+
+    data_source = spec.get('data_source')
+    tagger = spec.get('tagger', None)
+    filters = spec.get('filters', [])
+    allow_local = spec.get('allow_local', False)
+    sheet_index = spec.get('sheet_index', None)
+    timeout = spec.get('timeout', None)
+
+    if not data_source:
+        raise hxl.common.HXLException("No data_source property specified.")
+
+    if tagger:
+        return hxl.filters.from_recipe(
+            source=hxl.tagger(
+                data_source,
+                specs=tagger.get('specs', []),
+                default_tag=tagger.get('default_tag', None),
+                match_all=tagger.get('match_all', False),
+                allow_local=allow_local,
+                sheet_index=sheet_index,
+                timeout=timeout
+            ),
+            recipe=filters
+        )
+    else:
+        return hxl.filters.from_recipe(
+            source=hxl.data(
+                data_source,
+                allow_local=allow_local,
+                sheet_index=sheet_index,
+                timeout=timeout
+            ),
+            recipe=filters
+        )
 
 # end

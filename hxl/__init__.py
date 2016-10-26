@@ -45,7 +45,7 @@ actions as above in a shell script like this::
 
 from hxl.common import HXLException
 from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
-from hxl.io import data, HXLParseException, write_hxl, make_input
+from hxl.io import data, tagger, HXLParseException, write_hxl, make_input, from_spec
 from hxl.validation import schema, HXLValidationException
 
 # end
