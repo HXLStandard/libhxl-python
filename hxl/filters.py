@@ -445,7 +445,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
             values.append(re.sub(AddColumnsFilter._SUBST_PATTERN, do_sub, value))
         return values
 
-    _SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     _SUBST_PATTERN = '{{(#' + hxl.common.TOKEN_PATTERN + '(?:[+-]' + hxl.common.TOKEN_PATTERN + ')*)}}';
 
@@ -464,7 +464,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
 
         if not isinstance(spec, six.string_types):
             return spec
-        result = re.match(AddColumnsFilter._SPEC_PATTERN, spec)
+        result = re.match(AddColumnsFilter.SPEC_PATTERN, spec)
         if result:
             header = result.group(1)
             tag = '#' + result.group(2)
@@ -1128,7 +1128,7 @@ class CountFilter(AbstractCachingFilter):
         # sort the aggregators by their keys
         return sorted(aggregators.items())
 
-    _SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
     """Pattern for a count spec."""
 
     @staticmethod
@@ -1136,7 +1136,7 @@ class CountFilter(AbstractCachingFilter):
         """Parse a specification for the column containing the count."""
         if not isinstance(spec, six.string_types):
             return spec
-        result = re.match(CountFilter._SPEC_PATTERN, spec)
+        result = re.match(CountFilter.SPEC_PATTERN, spec)
         if result:
             header = result.group(1)
             tag = '#' + result.group(2)
@@ -1186,6 +1186,34 @@ class CountFilter(AbstractCachingFilter):
                     except:
                         # if we got an exception on number conversion, ignore the value
                         pass
+
+    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    
+    AGGREGATOR_PATTERN = r'\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?'.format(
+        token = hxl.common.TOKEN_PATTERN,
+        tag = TAG_PATTERN,
+        col = COL_PATTERN
+    )
+    """ Regular expression for an aggregation pattern
+    Matches 1=aggregator, 2=tag pattern, 3=column header, 4=column tag
+    """
+
+    @staticmethod
+    def parse_aggregators(s):
+        aggregators = []
+        match = re.match(CountFilter.AGGREGATOR_PATTERN, s)
+        while match:
+            aggregators.append((
+                match.group(1),
+                hxl.model.TagPattern.parse(match.group(2)),
+                hxl.model.Column.parse(match.group(4), header=match.group(3), use_exception=True),
+            ))
+            s = s[match.end():]
+            match = re.match(CountFilter.AGGREGATOR_PATTERN, s)
+        if re.search(r'[^\s]', s):
+            raise HXLFilterException("Bad text in count aggregators: {}".format(s))
+        return aggregators
 
     @staticmethod
     def _load(source, spec):
