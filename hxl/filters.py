@@ -436,9 +436,9 @@ class Aggregator(object):
     def parse(spec):
         if isinstance(spec, Aggregator):
             return spec
-        match = re.match(CountFilter.AGGREGATOR_PATTERN, spec)
+        match = re.match(Aggregator.AGGREGATOR_PATTERN, spec)
         if not match:
-            raise FilterException("Malformed aggregator: {}".format(spec))
+            raise HXLFilterException("Malformed aggregator: {}".format(spec))
         return Aggregator(
             type=match.group(1),
             pattern=hxl.model.TagPattern.parse(match.group(2)),

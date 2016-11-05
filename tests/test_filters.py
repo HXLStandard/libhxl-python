@@ -409,10 +409,6 @@ class TestColumnFilter(AbstractBaseFilterTest):
 
 class TestCountFilter(AbstractBaseFilterTest):
 
-    def test_tags(self):
-        expected = ['#sector+list', '#meta+count']
-        self.assertEqual(expected, self.source.count('#sector').display_tags)
-
     def test_values(self):
         expected = [
             ['Education', 2],
@@ -428,19 +424,23 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected_headers, source.headers)
         self.assertEqual(expected_tags, source.display_tags)
 
-    def test_aggregation_tags(self):
-        expected = ['#sector+list', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
-        self.assertEqual(expected, self.source.count('#sector', '#meta').display_tags)
+    def test_legacy_tags(self):
+        expected = ['#sector+list', '#meta+count']
+        self.assertEqual(expected, self.source.count('#sector').display_tags)
 
-    def test_aggregation_values(self):
+    def test_legacy_aggregation_tags(self):
+        expected = ['#sector+list', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
+        self.assertEqual(expected, self.source.count('#sector', aggregate_pattern='#meta').display_tags)
+
+    def test_legacy_aggregation_values(self):
         expected = [
             ['Education', 2, 400, 200, 100, 300],
             ['Education, Protection', 1, 150, 150, 150, 150],
             ['WASH', 1, 200, 200, 200, 200]
         ]
-        self.assertEqual(expected, self.source.count('#sector', '#meta').values)
+        self.assertEqual(expected, self.source.count('#sector', aggregate_pattern='#meta').values)
 
-    def test_custom_tag(self):
+    def test_legacy_custom_tag(self):
         input = [
             ['Organisation'],
             ['#org'],
