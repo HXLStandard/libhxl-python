@@ -433,6 +433,42 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
         
+    def test_average_aggregator(self):
+        expected = [
+            ['Organisation', 'Average affected'],
+            ['#org', '#affected+average'],
+            ['NGO A', 175],
+            ['NGO B', 200]
+        ]
+        filtered = self.source.count('org', 'average(#affected) as Average affected#affected+average')
+        self.assertEqual(expected[0], filtered.headers)
+        self.assertEqual(expected[1], filtered.display_tags)
+        self.assertEqual(expected[2:], filtered.values)
+        
+    def test_min_aggregator(self):
+        expected = [
+            ['Organisation', 'Minimum affected'],
+            ['#org', '#affected+min'],
+            ['NGO A', 150],
+            ['NGO B', 100]
+        ]
+        filtered = self.source.count('org', 'min(#affected) as Minimum affected#affected+min')
+        self.assertEqual(expected[0], filtered.headers)
+        self.assertEqual(expected[1], filtered.display_tags)
+        self.assertEqual(expected[2:], filtered.values)
+        
+    def test_max_aggregator(self):
+        expected = [
+            ['Organisation', 'Maximum affected'],
+            ['#org', '#affected+max'],
+            ['NGO A', 200],
+            ['NGO B', 300]
+        ]
+        filtered = self.source.count('org', 'max(#affected) as Maximum affected#affected+max')
+        self.assertEqual(expected[0], filtered.headers)
+        self.assertEqual(expected[1], filtered.display_tags)
+        self.assertEqual(expected[2:], filtered.values)
+        
     def test_legacy_tags(self):
         expected = ['#sector+list', '#meta+count']
         self.assertEqual(expected, self.source.count('#sector').display_tags)
