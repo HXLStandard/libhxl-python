@@ -281,23 +281,18 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
     parser.add_argument(
         '-a',
-        '--aggregate',
-        help='Hashtag to aggregate.',
-        metavar='tag',
-        type=hxl.model.TagPattern.parse
-        )
-    parser.add_argument(
-        '-C',
-        '--count-column',
-        help='Column spec for count column.',
-        metavar='Header#tag',
-        default='Count#meta+count'
+        '--aggregator',
+        help='Aggregator statement',
+        metavar='statement',
+        action='append',
+        type=hxl.filters.Aggregator.parse,
+        default=[]
         )
     add_queries_arg(parser, 'Count only rows that match at least one query.')
 
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate, count_spec=args.count_column, queries=args.query)
+        filter = hxl.filters.CountFilter(source, patterns=args.tags, aggregators=args.aggregator, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK

@@ -1,6 +1,6 @@
-Organización,Departamento/Provincia/Estado,Count,Sum,Average (mean),Minimum value,Maximum value
-#org,#adm1,#meta+count,#meta+sum,#meta+average,#meta+min,#meta+max
-ACNUR,Los Santos,2,200,100,100,100
-OMS,Amazonas,2,175,87.5,80,95
-OMS,Cauca,2,,,,
-UNICEF,Chocó,2,550,275,250,300
+Organización,Departamento/Provincia/Estado,Total targeted
+#org,#adm1,#targeted+total
+ACNUR,Los Santos,200
+OMS,Amazonas,175
+OMS,Cauca,
+UNICEF,Chocó,550
