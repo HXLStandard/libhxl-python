@@ -1116,10 +1116,6 @@ class CountFilter(AbstractCachingFilter):
 
       filter = hxl.data(url).count(['org', 'sector'])
 
-    To produce other aggregates, like averages, min, max, and sum, use the I{aggregate_pattern} argument::
-
-      filter = hxl.data(url).count('adm1', aggregate_pattern='affected')
-
     You can also use the I{queries} argument to limit the counting to
     specific fields. This example will count only the rows where C{#adm1} is set to "Coast"::
 
@@ -1127,33 +1123,20 @@ class CountFilter(AbstractCachingFilter):
 
     """
 
-    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', aggregators=[], queries=[]):
+    def __init__(self, source, patterns, aggregators=None, queries=[]):
         """Construct a new count filter
+        If the caller does not supply any aggregators, use "count() as Count#meta+count"
         @param source: a L{hxl.model.Dataset}
         @param patterns: a single L{tag pattern<hxl.model.TagPattern>} or list of tag patterns that, together, form a unique key for counting.
-        @param aggregate_pattern: (optional) a single tag pattern for advanced aggregation (sum, min, max, and average).
-        @param count_spec: a L{tag spec<hxl.model.Column>} to apply to the column containing the counts (defaults to 'Count#meta+count').
+        @param aggregators: one or more Aggregator objects or string representations to define the output.
         @param queries: an optional list of L{row queries<hxl.model.RowQuery>} to filter the rows being counted.
         """
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
+        if not aggregators:
+            aggregators = 'count() as Count#meta+count'
         self.aggregators = Aggregator.parse_list(aggregators)
         self.queries = hxl.model.RowQuery.parse_list(queries)
-        self._handle_legacy(aggregate_pattern, count_spec)
-
-    def _handle_legacy(self, aggregate_pattern, count_spec):
-
-        # If there are no aggregators, add a default count aggregator for legacy compatibility
-        if not self.aggregators:
-            self.aggregators.append(Aggregator('count', None, count_spec))
-
-        # If aggregate_pattern is supplied, fill in some default legacy aggregators
-        if aggregate_pattern:
-                self.aggregators.append(Aggregator('sum', aggregate_pattern, 'Sum#meta+sum'))
-                self.aggregators.append(Aggregator('average', aggregate_pattern, 'Average (mean)#meta+average'))
-                self.aggregators.append(Aggregator('min', aggregate_pattern, 'Minimum value#meta+min'))
-                self.aggregators.append(Aggregator('max', aggregate_pattern, 'Maximum value#meta+max'))
-
 
     def filter_columns(self):
         """Internal: generate the columns for the report."""
@@ -1213,8 +1196,7 @@ class CountFilter(AbstractCachingFilter):
         return CountFilter(
             source = source,
             patterns=req_arg(spec, 'patterns'),
-            aggregate_pattern=opt_arg(spec, 'aggregate_pattern'),
-            count_spec=opt_arg(spec, 'count_spec', 'Count#meta+count'),
+            aggregators=opt_arg(spec, 'aggregators', None),
             queries=opt_arg(spec, 'queries', [])
         )
 

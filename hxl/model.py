@@ -288,11 +288,11 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
-    def count(self, patterns, aggregators=[], queries=[], aggregate_pattern=None, count_spec='Count#meta+count'):
+    def count(self, patterns, aggregators=None, queries=[]):
         """Count values in the dataset (caching)."""
         import hxl.filters
         return hxl.filters.CountFilter(
-            self, patterns=patterns, aggregators=aggregators, queries=queries, aggregate_pattern=aggregate_pattern, count_spec=count_spec
+            self, patterns=patterns, aggregators=aggregators, queries=queries
         )
 
     def row_counter(self, queries=[]):

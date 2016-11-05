@@ -113,7 +113,8 @@ class TestRecipe(AbstractBaseFilterTest):
     def test_count(self):
         filtered = self.source.recipe({
             'filter': 'count',
-            'patterns': 'sector'
+            'patterns': 'sector',
+            'aggregators': 'sum(affected)'
         })
         self.assertEqual(type(filtered).__name__, 'CountFilter')
 
@@ -484,54 +485,6 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
         
-    def test_legacy_tags(self):
-        expected = ['#sector+list', '#meta+count']
-        self.assertEqual(expected, self.source.count('#sector').display_tags)
-
-    def test_legacy_values(self):
-        expected = [
-            ['Education', 2],
-            ['Education, Protection', 1],
-            ['WASH', 1],
-        ]
-        self.assertEqual(expected, self.source.count('#sector').values)
-
-    def test_legacy_missing_column(self):
-        expected_headers = [None, 'Cluster', 'Count']
-        expected_tags = ['', '#sector+list', '#meta+count']
-        source = self.source.count('region,sector')
-        self.assertEqual(expected_headers, source.headers)
-        self.assertEqual(expected_tags, source.display_tags)
-
-    def test_legacy_aggregation_tags(self):
-        expected = ['#sector+list', '#meta+count', '#meta+sum', '#meta+average', '#meta+min', '#meta+max']
-        self.assertEqual(expected, self.source.count('#sector', aggregate_pattern='#affected').display_tags)
-
-    def test_legacy_aggregation_values(self):
-        expected = [
-            ['Education', 2, 400, 200, 100, 300],
-            ['Education, Protection', 1, 150, 150, 150, 150],
-            ['WASH', 1, 200, 200, 200, 200]
-        ]
-        self.assertEqual(expected, self.source.count('#sector', aggregate_pattern='#affected').values)
-
-    def test_legacy_custom_tag(self):
-        input = [
-            ['Organisation'],
-            ['#org'],
-            ['UNICEF'],
-            ['WHO'],
-            ['UNICEF']
-        ]
-        expected = [
-            ['Organisation', 'Activities'],
-            ['#org', '#output+activities'],
-            ['UNICEF', 2],
-            ['WHO', 1]
-        ]
-        source = hxl.data(input).count('org', count_spec='Activities#output+activities')
-        self.assertEqual(expected, [row for row in source.gen_raw(show_headers=True)])
-
     def test_queries(self):
         expected = [
             ['Education', 1],
