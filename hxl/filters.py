@@ -382,7 +382,7 @@ class Aggregator(object):
         else:
             raise HXLFilterException('Pattern missing for {} aggregator in count filter'.format(type))
         if not column:
-            column = '{type}#meta+{type}'.format(self.type)
+            column = '{type}#meta+{type}'.format(type=self.type)
         self.column = hxl.model.Column.parse_spec(column)
 
         self.total = 0
@@ -441,8 +441,8 @@ class Aggregator(object):
             raise HXLFilterException("Malformed aggregator: {}".format(spec))
         return Aggregator(
             type=match.group(1),
-            pattern=hxl.model.TagPattern.parse(match.group(2)),
-            column=hxl.model.Column.parse(match.group(4), header=match.group(3), use_exception=True),
+            pattern=hxl.model.TagPattern.parse(match.group(2)) if match.group(2) else None,
+            column=hxl.model.Column.parse(match.group(4), header=match.group(3), use_exception=True) if match.group(4) else None,
         )
 
     @staticmethod

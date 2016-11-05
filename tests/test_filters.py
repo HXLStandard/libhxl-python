@@ -468,6 +468,21 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[0], filtered.headers)
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
+
+    def test_multiple_aggregators(self):
+        expected = [
+            ['Organisation', 'Minimum affected', 'Maximum affected'],
+            ['#org', '#affected+min', '#affected+max'],
+            ['NGO A', 150, 200],
+            ['NGO B', 100, 300]
+        ]
+        filtered = self.source.count('org', [
+            'min(#affected) as Minimum affected#affected+min',
+            'max(#affected) as Maximum affected#affected+max'
+        ])
+        self.assertEqual(expected[0], filtered.headers)
+        self.assertEqual(expected[1], filtered.display_tags)
+        self.assertEqual(expected[2:], filtered.values)
         
     def test_legacy_tags(self):
         expected = ['#sector+list', '#meta+count']
