@@ -381,10 +381,9 @@ class Aggregator(object):
             self.pattern = None
         else:
             raise HXLFilterException('Pattern missing for {} aggregator in count filter'.format(type))
-        if column:
-            self.column = column
-        else:
-            column = hxl.model.Column.parse('#meta+{}'.format(type), header='Count')
+        if not column:
+            column = '{type}#meta+{type}'.format(self.type)
+        self.column = hxl.model.Column.parse_spec(column)
 
         self.total = 0
         """Total number of rows used."""
@@ -1146,12 +1145,12 @@ class CountFilter(AbstractCachingFilter):
 
         # If there are no aggregators, add a default count aggregator for legacy compatibility
         if not self.aggregators:
-            self.aggregators.append(Aggregator('count', None, CountFilter._parse_column_spec(count_spec)))
+            self.aggregators.append(Aggregator('count', None, count_spec))
 
         # If aggregate_pattern is supplied, fill in some default legacy aggregators
         if aggregate_pattern:
                 self.aggregators.append(Aggregator('sum', aggregate_pattern, 'Sum#meta+sum'))
-                self.aggregators.append(Aggregator('average', aggregate_pattern, 'Average#meta+average'))
+                self.aggregators.append(Aggregator('average', aggregate_pattern, 'Average (mean)#meta+average'))
                 self.aggregators.append(Aggregator('min', aggregate_pattern, 'Minimum value#meta+min'))
                 self.aggregators.append(Aggregator('max', aggregate_pattern, 'Maximum value#meta+max'))
 
@@ -1207,22 +1206,6 @@ class CountFilter(AbstractCachingFilter):
 
         # sort the aggregators by their keys
         return sorted(aggregators.items())
-
-    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
-    """Pattern for a count spec."""
-
-    @staticmethod
-    def _parse_column_spec(spec):
-        """Parse a specification for the column containing the count."""
-        if not isinstance(spec, six.string_types):
-            return spec
-        result = re.match(CountFilter.SPEC_PATTERN, spec)
-        if result:
-            header = result.group(1)
-            tag = '#' + result.group(2)
-            return hxl.model.Column.parse(tag, header=header)
-        else:
-            raise HXLFilterException("Badly formatted column spec: " + spec)
 
     @staticmethod
     def _load(source, spec):

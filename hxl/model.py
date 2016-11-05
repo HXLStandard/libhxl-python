@@ -466,6 +466,10 @@ class Column(object):
         """
         Attempt to parse a full hashtag specification.
         """
+        # Already parsed?
+        if isinstance(raw_string, Column):
+            return raw_string
+        
         # Pattern for a single tag
         result = re.match(Column.PATTERN, raw_string)
         if result:
@@ -481,6 +485,19 @@ class Column(object):
                 raise hxl.common.HXLException("Malformed tag expression: " + raw_string)
             else:
                 return None
+
+    @staticmethod
+    def parse_spec(raw_string, use_exception=False):
+        """Attempt to parse a single-string header/hashtag spec"""
+        # Already parsed?
+        if isinstance(raw_string, Column):
+            return raw_string
+        
+        matches = re.match(r'^(.*)(#.*)$', raw_string)
+        if matches:
+            return Column.parse(matches.group(2), header=matches.group(1))
+        else:
+            raise HXLException("Bad column spec: {}".format(raw_string))
 
 class Row(object):
     """
