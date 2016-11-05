@@ -367,6 +367,94 @@ class AbstractCachingFilter(AbstractBaseFilter):
         
         next = __next__
 
+#
+# Utility classes
+#
+class Aggregator(object):
+    """Class for aggregating a single value."""
+
+    def __init__(self, type='count', pattern=None, column=None):
+        self.type = type.lower()
+        if pattern:
+            self.pattern = hxl.model.TagPattern.parse(pattern)
+        elif type == 'count':
+            self.pattern = None
+        else:
+            raise HXLFilterException('Pattern missing for {} aggregator in count filter'.format(type))
+        if column:
+            self.column = column
+        else:
+            column = hxl.model.Column.parse('#meta+{}'.format(type), header='Count')
+
+        self.total = 0
+        """Total number of rows used."""
+        self.value = None
+        """Resulting aggregation value."""
+
+    def evaluate_row(self, row):
+        """Evaluate a single row of HXL data against this aggregator."""
+
+        if self.type == 'count':
+            if self.value is None: self.value = 0
+            self.value += 1
+            return
+
+        value = row.get(self.pattern)
+        if value is not '' and value is not None:
+            try:
+                n = float(value)
+                self.total += 1
+                if self.type == 'sum':
+                    if not self.value: self.value = 0
+                    self.value += n
+                elif self.type == 'average':
+                    if not self.value: self.value = 0
+                    self.value = ((self.value * (self.total - 1)) + n) / self.total
+                elif self.type == 'min':
+                    if self.value is None or self.value > n:
+                        self.value = n
+                elif self.type == 'max':
+                    if self.value is None or self.value < n:
+                        self.value = n
+                else:
+                    raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
+            except:
+                pass
+
+    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+
+    AGGREGATOR_PATTERN = r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(
+        token = hxl.common.TOKEN_PATTERN,
+        tag = TAG_PATTERN,
+        col = COL_PATTERN
+    )
+    """ Regular expression for an aggregation pattern
+    Matches 1=aggregator, 2=tag pattern, 3=column header, 4=column tag
+    """
+
+    @staticmethod
+    def parse(spec):
+        if isinstance(spec, Aggregator):
+            return spec
+        match = re.match(CountFilter.AGGREGATOR_PATTERN, spec)
+        if not match:
+            raise FilterException("Malformed aggregator: {}".format(spec))
+        return Aggregator(
+            type=match.group(1),
+            pattern=hxl.model.TagPattern.parse(match.group(2)),
+            column=hxl.model.Column.parse(match.group(4), header=match.group(3), use_exception=True),
+        )
+
+    @staticmethod
+    def parse_list(specs):
+        result = []
+        if isinstance(specs, six.string_types):
+            specs = [specs]
+        for spec in specs:
+            result.append(Aggregator.parse(spec))
+        return result
+
 
 #
 # Filter classes
@@ -1040,7 +1128,7 @@ class CountFilter(AbstractCachingFilter):
 
     """
 
-    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', queries=[]):
+    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', aggregators=[], queries=[]):
         """Construct a new count filter
         @param source: a L{hxl.model.Dataset}
         @param patterns: a single L{tag pattern<hxl.model.TagPattern>} or list of tag patterns that, together, form a unique key for counting.
@@ -1050,9 +1138,23 @@ class CountFilter(AbstractCachingFilter):
         """
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
-        self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
-        self.count_column = CountFilter._parse_column_spec(count_spec)
+        self.aggregators = Aggregator.parse_list(aggregators)
         self.queries = hxl.model.RowQuery.parse_list(queries)
+        self._handle_legacy(aggregate_pattern, count_spec)
+
+    def _handle_legacy(self, aggregate_pattern, count_spec):
+
+        # If there are no aggregators, add a default count aggregator for legacy compatibility
+        if not self.aggregators:
+            self.aggregators.append(Aggregator('count', None, CountFilter._parse_column_spec(count_spec)))
+
+        # If aggregate_pattern is supplied, fill in some default legacy aggregators
+        if aggregate_pattern:
+                self.aggregators.append(Aggregator('sum', aggregate_pattern, 'Sum#meta+sum'))
+                self.aggregators.append(Aggregator('average', aggregate_pattern, 'Average#meta+average'))
+                self.aggregators.append(Aggregator('min', aggregate_pattern, 'Minimum value#meta+min'))
+                self.aggregators.append(Aggregator('max', aggregate_pattern, 'Maximum value#meta+max'))
+
 
     def filter_columns(self):
         """Internal: generate the columns for the report."""
@@ -1066,15 +1168,9 @@ class CountFilter(AbstractCachingFilter):
             else:
                 columns.append(hxl.Column())
 
-        # Add column to hold count
-        columns.append(self.count_column)
-
-        # If we're aggregating, add the aggregate columns
-        if self.aggregate_pattern is not None:
-            columns.append(hxl.model.Column.parse('#meta+sum', header='Sum'))
-            columns.append(hxl.model.Column.parse('#meta+average', header='Average (mean)'))
-            columns.append(hxl.model.Column.parse('#meta+min', header='Minimum value'))
-            columns.append(hxl.model.Column.parse('#meta+max', header='Maximum value'))
+        # Add generated columns
+        for aggregator in self.aggregators:
+            columns.append(aggregator.column)
             
         return columns
 
@@ -1084,31 +1180,14 @@ class CountFilter(AbstractCachingFilter):
         raw_data = []
 
         # each item is a sequence containing a tuple of key values and an _Aggregator object
-        for aggregate in self._make_aggregates():
-            row_values = list(aggregate[0]) # convert to a list so we can modify it
-            aggregator = aggregate[1]
-
-            # add the basic count (always present)
-            row_values.append(aggregator.count)
-
-            # if the user requested other aggregates, add them
-            if self.aggregate_pattern:
-                if aggregator.seen_numbers:
-                    # if there were numbers to aggregate, show them
-                    row_values += [
-                        aggregator.sum,
-                        aggregator.average,
-                        aggregator.min,
-                        aggregator.max
-                    ]
-                else:
-                    # if there were no numbers, add blank values as placeholders
-                    row_values += ['', '', '', '']
-            raw_data.append(row_values)
+        for aggregate in self._aggregate_data():
+            raw_data.append(
+                list(aggregate[0]) + [hxl.common.normalise_number(aggregator.value) if aggregator.value is not None else '' for aggregator in aggregate[1]]
+            )
             
         return raw_data
 
-    def _make_aggregates(self):
+    def _aggregate_data(self):
         """Read the entire source dataset and produce saved aggregate data."""
         aggregators = {}
 
@@ -1122,8 +1201,9 @@ class CountFilter(AbstractCachingFilter):
                     # make a dict key for the aggregator
                     key = tuple(values)
                     if not key in aggregators:
-                        aggregators[key] = CountFilter._Aggregator(self.aggregate_pattern)
-                    aggregators[key].add(row)
+                        aggregators[key] = [copy.copy(aggregator) for aggregator in self.aggregators]
+                    for aggregator in aggregators[key]:
+                        aggregator.evaluate_row(row)
 
         # sort the aggregators by their keys
         return sorted(aggregators.items())
@@ -1143,77 +1223,6 @@ class CountFilter(AbstractCachingFilter):
             return hxl.model.Column.parse(tag, header=header)
         else:
             raise HXLFilterException("Badly formatted column spec: " + spec)
-
-    class _Aggregator(object):
-        """ Class to collect aggregates for a single combination of keys
-        Accumulates count, sum, average, min, and max
-        """
-
-        def __init__(self, pattern):
-            """Constructor
-            @param pattern: the L{tag pattern<hxl.model.TagPattern>} being counted in the row.
-            """
-            self.pattern = pattern
-            self.count = 0
-            self.sum = 0.0
-            self.average = 0.0
-            self.min = None
-            self.max = None
-            self.seen_numbers = False
-
-        def add(self, row):
-            """Add a new row of data to the aggregator. 
-            @param row: a L{hxl.model.Row} object"""
-
-            # always increment count
-            self.count += 1
-
-            # if we have a pattern for advanced aggregates ...
-            if self.pattern:
-
-                value = row.get(self.pattern, default='')
-                # if there is a value
-                if value:
-                    try:
-                        n = float(value)
-                        self.sum += n
-                        self.average = self.sum / self.count
-                        if self.min is None or n < self.min:
-                            self.min = n
-                        if self.max is None or n > self.max:
-                            self.max = n
-                        self.seen_numbers = True
-                    except:
-                        # if we got an exception on number conversion, ignore the value
-                        pass
-
-    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.common.TOKEN_PATTERN)
-    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.common.TOKEN_PATTERN)
-    
-    AGGREGATOR_PATTERN = r'\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?'.format(
-        token = hxl.common.TOKEN_PATTERN,
-        tag = TAG_PATTERN,
-        col = COL_PATTERN
-    )
-    """ Regular expression for an aggregation pattern
-    Matches 1=aggregator, 2=tag pattern, 3=column header, 4=column tag
-    """
-
-    @staticmethod
-    def parse_aggregators(s):
-        aggregators = []
-        match = re.match(CountFilter.AGGREGATOR_PATTERN, s)
-        while match:
-            aggregators.append((
-                match.group(1),
-                hxl.model.TagPattern.parse(match.group(2)),
-                hxl.model.Column.parse(match.group(4), header=match.group(3), use_exception=True),
-            ))
-            s = s[match.end():]
-            match = re.match(CountFilter.AGGREGATOR_PATTERN, s)
-        if re.search(r'[^\s]', s):
-            raise HXLFilterException("Bad text in count aggregators: {}".format(s))
-        return aggregators
 
     @staticmethod
     def _load(source, spec):
