@@ -1179,13 +1179,12 @@ class CountFilter(AbstractCachingFilter):
             if hxl.model.RowQuery.match_list(row, self.queries):
                 # get the values in the order we need them
                 values = [str(row.get(pattern, default='')) for pattern in self.patterns]
-                if values:
-                    # make a dict key for the aggregator
-                    key = tuple(values)
-                    if not key in aggregators:
-                        aggregators[key] = [copy.copy(aggregator) for aggregator in self.aggregators]
-                    for aggregator in aggregators[key]:
-                        aggregator.evaluate_row(row)
+                # make a dict key for the aggregator
+                key = tuple(values)
+                if not key in aggregators:
+                    aggregators[key] = [copy.copy(aggregator) for aggregator in self.aggregators]
+                for aggregator in aggregators[key]:
+                    aggregator.evaluate_row(row)
 
         # sort the aggregators by their keys
         return sorted(aggregators.items())

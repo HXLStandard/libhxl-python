@@ -288,7 +288,7 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
-    def count(self, patterns, aggregators=None, queries=[]):
+    def count(self, patterns=[], aggregators=None, queries=[]):
         """Count values in the dataset (caching)."""
         import hxl.filters
         return hxl.filters.CountFilter(
