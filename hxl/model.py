@@ -489,7 +489,7 @@ class Column(object):
                 return None
 
     @staticmethod
-    def parse_spec(raw_string, use_exception=False):
+    def parse_spec(raw_string, default_header=None, use_exception=False):
         """Attempt to parse a single-string header/hashtag spec"""
         # Already parsed?
         if isinstance(raw_string, Column):
@@ -497,7 +497,8 @@ class Column(object):
         
         matches = re.match(r'^(.*)(#.*)$', raw_string)
         if matches:
-            return Column.parse(matches.group(2), header=matches.group(1))
+            header = matches.group(1) if matches.group(1) else default_header
+            return Column.parse(matches.group(2), header=header)
         else:
             raise HXLException("Bad column spec: {}".format(raw_string))
 
