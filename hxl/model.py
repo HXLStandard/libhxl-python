@@ -500,7 +500,7 @@ class Column(object):
             header = matches.group(1) if matches.group(1) else default_header
             return Column.parse(matches.group(2), header=header)
         else:
-            raise HXLException("Bad column spec: {}".format(raw_string))
+            return Column.parse('#' + raw_string, header=default_header)
 
 class Row(object):
     """
