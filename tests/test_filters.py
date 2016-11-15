@@ -575,6 +575,29 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
     def test_values(self):
         self.assertEqual(self.MERGE_OUT[2:], self.merged.values)
 
+    def test_merge_patterns(self):
+        SOURCE_DATA = [
+            ['P-code', 'District'],
+            ['#adm1+code', '#adm1+name'],
+            ['001', 'Coast'],
+            ['002', 'Plains'],
+        ]
+        MERGE_DATA = [
+            ['P-code', 'Population (female)', 'Population (male)', 'Population (total)'],
+            ['#adm1+code', '#population+f', '#population+m', '#population+total'],
+            ['002', '51000', '49000', '100000'],
+            ['001', '76000', '74000', '150000'],
+        ]
+        EXPECTED = [
+            ['P-code', 'District', 'Population (female)', 'Population (male)', 'Population (total)'],
+            ['#adm1+code', '#adm1+name', '#population+f', '#population+m', '#population+total'],
+            ['001', 'Coast', '76000', '74000', '150000'],
+            ['002', 'Plains', '51000', '49000', '100000'],
+        ]
+        result = hxl.data(SOURCE_DATA).merge_data(hxl.data(MERGE_DATA), '#adm1+code', '#population')
+        self.assertEqual(EXPECTED[1], result.tags)
+        
+
     def test_chaining(self):
         merged_extra = self.merged.merge_data(hxl.data(self.MERGE_EXTRA), '#adm1+code', '#population')
         self.assertEqual(self.MERGE_EXTRA_OUT[2:], merged_extra.values)
