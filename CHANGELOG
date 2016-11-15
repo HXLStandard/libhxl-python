@@ -3,6 +3,9 @@
 	- Fix bug that caused select filter to fail after explode filter
 	- Added top-level hxl.tagger() function, similar to hxl.data()
 	- add optional default_header arg to hxl.model.Column.parse_spec
+	- major overhaul of the merge_data filter: now merges *all* columns
+	  matching the pattern supplied, and doesn't create an empty
+	  column if there are no matching columns in the merge dataset
 
 2016-10-17 Release 3.3
 	- Regex ~ and !~ operators in row queries now match anywhere in the cell

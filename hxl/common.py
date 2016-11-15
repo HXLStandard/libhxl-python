@@ -42,6 +42,14 @@ def normalise_number(n):
     else:
         return n
 
+def is_empty(s):
+    """Is this an empty value?
+    None or whitespace only counts as empty; anything else doesn't.
+    @param s: value to test.
+    @returns: True if empty
+    """
+    return (s is None or s.isspace())
+
 def normalise_string(s):
     """Normalise a string.  
 

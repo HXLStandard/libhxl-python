@@ -1373,20 +1373,32 @@ class ExplodeFilter(AbstractBaseFilter):
 
 
 class MergeDataFilter(AbstractStreamingFilter):
-    """
-    Composable filter class to merge values from two HXL datasets.
+    """Composable filter class to merge values from two HXL datasets.
 
-    This is the class supporting the hxlmerge command-line utility.
+    Merges the values for the *last* matching row in the merge
+    dataset. Can patterns to match multiple cells for merging (keys
+    always use just the first match, though, to keep key lengths
+    consistent). Can overwrite existing columns and values.
 
-    Merges the values for the *last* matching row in the merge dataset.
-
-    Warning: this filter may store a large amount of data in memory, depending on the merge.
+    Warning: this filter may store a large amount of data in memory,
+    depending on the merge.
 
     Usage:
 
     <pre>
-    hxl.data(url).merge(merge_source=merge_source, keys='adm1_id', tags='adm1')
+    MergeDataFilter(source, merge_source=merge_source, keys='adm1+code', tags='adm1+name')
     </pre>
+
+    <pre>
+    hxl.data(url).merge_data(merge_source=merge_source, keys='adm1+code', tags='adm1+name')
+    </pre>
+
+    (Add the column matching #adm1+name from the merge dataset to the
+    source dataset, syncing the rows using the value of #adm1+code in
+    each dataset.)
+
+    @see hxl.model.Dataset.merge_data
+    @see hxl.scripts.hxlmerge_main
     """
 
     def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
@@ -1406,64 +1418,85 @@ class MergeDataFilter(AbstractStreamingFilter):
         self.overwrite = overwrite
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
-        self.merge_column_indices = []
-        """Indices for mapping columns from merge source to output dataset"""
+        self._merge_indices = []
+        """Indices for mapping columns from merge source to output dataset
+        [source_index, output_index, overwrite_ok]
+        """
         
-        self.merge_map = None
+        self._merge_values = None
         """Dictionary of values from merge source, indexed by key."""
 
     def filter_columns(self):
-        """Filter the columns to add newly-merged ones."""
+        """Filter the columns to add newly-merged ones.  
+        Note: this is called only once, the first time someone
+        accesses the Dataset.columns property, then the result is saved for future use.
+        As a side effect, builds the _merge_indices specs for generating the merged data.
+        @see hxl.filters.AbstractBaseFilter.filter_columns
+        """
+
         new_columns = list(self.source.columns)
+        """The new column list to return."""
+        
+        # Check every pattern
         for pattern in self.merge_tags:
+
             merge_column_index = len(self.source.columns)
+            """Target index for merging into the output dataset"""
+            
+            # Check the pattern against every column
             for index, column in enumerate(self.merge_source.columns):
+
                 seen_replacement = False
+                """We can replace inline exactly once for every pattern."""
+
                 if pattern.match(column):
+
+                    # Replace inside existing columns, if conditions are met
                     if self.replace and not seen_replacement and pattern.find_column(self.source.columns):
-                        self.merge_column_indices.append([index, pattern.find_column_index(self.source.columns)])
-                        # will use existing column
+                        # TODO: check for closest match
+                        # TODO: allow for multiple replacements per pattern
+                        self._merge_indices.append([index, pattern.find_column_index(self.source.columns), self.overwrite])
                         seen_replacement = True
+
+                    # Replace into a new column on the right
                     else:
                         new_columns.append(column)
-                        self.merge_column_indices.append([index, merge_column_index])
+                        self._merge_indices.append([index, merge_column_index, True])
                         merge_column_index += 1
-        return new_columns
+
+            return new_columns
 
     def filter_row(self, row):
-        """Set up a merged data row, replacing existing values if requested."""
-        
-        # First, check if we already have the merge map, and read it if not
-        if self.merge_map is None:
-            self.merge_map = self._read_merge()
+        """Set up a merged data row, replacing existing values if requested.
+        Uses the _merge_indices map created by filter_columns.
+        @param row: the data row to filter.
+        @return: a list of filtered values for the row.
+        @see hxl.filters.AbstractStreamingFilter.filter_row
+        """
 
-        # Make a copy of the values
+        # First, check if we already have the merge map, and read it if not
+        if self._merge_values is None:
+            self._merge_values = self._read_merge()
+
+        # Make an initial array of the correct length
         values = copy.copy(row.values)
+        values += ([''] * (len(self.columns) - len(row.values)))
 
         # Look up the merge values, based on the --keys
-        merge_values = self.merge_map.get(self._make_key(row), {})
+        merge_values = self._merge_values.get(self._make_key(row))
 
-        # Go through the merge tags
-        for pattern in self.merge_tags:
-            value = merge_values.get(pattern)
-            # force always to empty string (not None)
-            if not value:
-                value = ''
-            # Try to substitute in place?
-            if self.replace:
-                index = pattern.find_column_index(self.source.columns)
-                if index is not None:
-                    if self.overwrite or not row.values[index]:
-                        values[index] = value
-                    continue
+        if merge_values:
+            for i, spec in enumerate(self._merge_indices):
+                if spec[2] or hxl.common.is_empty(values[spec[1]]):
+                    values[spec[1]] = merge_values[i]
 
-            # otherwise, fall through
-            values.append(value)
         return values
 
     def _make_key(self, row):
-        """
-        Make a tuple key for a row.
+        """Make a tuple key for a row.
+        Uses only the first matching value for each tag pattern.
+        @param row: Generate a key for this row.
+        @returns: A tuple containing the key.
         """
         values = []
         for pattern in self.keys:
@@ -1471,19 +1504,32 @@ class MergeDataFilter(AbstractStreamingFilter):
         return tuple(values)
 
     def _read_merge(self):
-        """
-        Read the second (merging) dataset into memory.
+        """Read the second (merging) dataset into memory.
         Stores only the values necessary for the merge.
+        Uses *last* matching row for each key (top to bottom).
         @return a map of merge values
         """
-        merge_map = {}
+        
+        self.columns # make sure we've created the _merge_indices map
+
+        merge_values = {}
+        """Map of keys to merge values from the merge source."""
+
         for row in self.merge_source:
             if hxl.model.RowQuery.match_list(row, self.queries):
-                values = {}
-                for pattern in self.merge_tags:
-                    values[pattern] = row.get(pattern, default='')
-                merge_map[self._make_key(row)] = values
-        return merge_map
+                values = []
+
+                # Save only the values we need
+                for spec in self._merge_indices:
+                    try:
+                        values.append(row.values[spec[0]])
+                    except IndexError:
+                        values.append('')
+
+                # Generate a key tuple and add to the map
+                merge_values[self._make_key(row)] = values
+
+        return merge_values
 
     @staticmethod
     def _load(source, spec):
