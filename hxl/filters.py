@@ -1437,12 +1437,12 @@ class MergeDataFilter(AbstractStreamingFilter):
         new_columns = list(self.source.columns)
         """The new column list to return."""
         
+        merge_column_index = len(self.source.columns)
+        """Target index for merging into the output dataset"""
+            
         # Check every pattern
         for pattern in self.merge_tags:
 
-            merge_column_index = len(self.source.columns)
-            """Target index for merging into the output dataset"""
-            
             # Check the pattern against every column
             for index, column in enumerate(self.merge_source.columns):
 
@@ -1464,7 +1464,7 @@ class MergeDataFilter(AbstractStreamingFilter):
                         self._merge_indices.append([index, merge_column_index, True])
                         merge_column_index += 1
 
-            return new_columns
+        return new_columns
 
     def filter_row(self, row):
         """Set up a merged data row, replacing existing values if requested.
