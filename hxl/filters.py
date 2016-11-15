@@ -1406,23 +1406,22 @@ class MergeDataFilter(AbstractStreamingFilter):
         self.overwrite = overwrite
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
+        self.merge_column_indices = []
         self.merge_map = None
 
     def filter_columns(self):
         """Filter the columns to add newly-merged ones."""
-        new_columns = []
+        new_columns = list(self.source.columns)
         for pattern in self.merge_tags:
-            if self.replace and pattern.find_column(self.source.columns):
-                # will use existing column
-                continue
-            else:
-                column = pattern.find_column(self.merge_source.columns)
-                if column:
-                    header = column.header
-                else:
-                    header = None
-                new_columns.append(hxl.model.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-        return self.source.columns + new_columns
+            for column in self.merge_source.columns:
+                seen_replacement = False
+                if pattern.match(column):
+                    if self.replace and not seen_replacement and pattern.find_column(self.source.columns):
+                        # will use existing column
+                        seen_replacement = True
+                    else:
+                        new_columns.append(column)
+        return new_columns
 
     def filter_row(self, row):
         """Set up a merged data row, replacing existing values if requested."""

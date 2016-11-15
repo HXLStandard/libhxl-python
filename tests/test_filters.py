@@ -595,7 +595,9 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
             ['002', 'Plains', '51000', '49000', '100000'],
         ]
         result = hxl.data(SOURCE_DATA).merge_data(hxl.data(MERGE_DATA), '#adm1+code', '#population')
-        self.assertEqual(EXPECTED[1], result.tags)
+        self.assertEqual(EXPECTED[0], result.headers)
+        self.assertEqual(EXPECTED[1], result.display_tags)
+        self.assertEqual(EXPECTED[2:], result.values)
         
 
     def test_chaining(self):
