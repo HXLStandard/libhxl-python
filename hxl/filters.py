@@ -647,7 +647,7 @@ class AppendFilter(AbstractBaseFilter):
         super(AppendFilter, self).__init__(source)
 
         # parameters
-        if not isinstance(append_sources, collections.Sequence):
+        if is_sourcey(append_sources):
             append_sources = [append_sources]
         self.append_sources = [hxl.data(src) for src in append_sources] # so that we can take a plain UR
         self.add_columns = add_columns
@@ -703,6 +703,7 @@ class AppendFilter(AbstractBaseFilter):
             
             self._iterator = iter(outer.source)
             self._column_map = {i: i for i in range(len(self.outer.source.columns))}
+            self._is_source = True
 
             self._sources = list(self.outer.append_sources)
             self._column_positions = list(self.outer._column_positions)
@@ -714,6 +715,9 @@ class AppendFilter(AbstractBaseFilter):
 
             def make_row():
                 row_in = next(self._iterator)
+                while ((not self._is_source) and (not hxl.model.RowQuery.match_list(row_in, self.outer.queries))):
+                    row_in = next(self._iterator)
+
                 row_out = hxl.model.Row(
                     columns=self.outer.columns,
                     values=copy.deepcopy(self.outer._template_row)
@@ -735,6 +739,7 @@ class AppendFilter(AbstractBaseFilter):
                         self._column_map = self._column_positions[0]
                         self._sources = self._sources[1:]
                         self._column_positions = self._column_positions[0]
+                        self._is_source = False
                     else:
                         self._iterator = None
 
@@ -1973,6 +1978,26 @@ def from_recipe(source, recipe):
         
     return source
 
+
+def is_sourcey (arg):
+    """Test whether arg looks like a single source spec.
+    This is a particularly tricky problem, because a source can be a string URL, a JSON spec,
+    or a DataSet object.
+    @param arg: the thing to test
+    @returns: True if this looks like a single source.
+    """
+    if (isinstance(arg, six.string_types) or
+        isinstance(arg, hxl.model.Dataset) or
+        isinstance(arg, dict)):
+        # a normal source spec
+        return True
+    else:
+        try:
+            # hacky test for a list of lists
+            arg[0][0]
+            return True
+        except:
+            return False
 
 # end
 
