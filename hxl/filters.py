@@ -657,14 +657,14 @@ class AppendFilter(AbstractBaseFilter):
         """Internal: generate the columns for the combined dataset"""
         columns_out = copy.deepcopy(self.source.columns)
         column_positions = {}
-        original_tags = self.source.display_tags
+        original_columns = copy.copy(self.source.columns)
 
         # see if there's a corresponding column in the source
         for i, column in enumerate(self.append_source.columns):
-            for j, tag in enumerate(original_tags):
-                if tag and (column.display_tag == tag):
+            for j, original_column in enumerate(original_columns):
+                if column == original_column:
                     # yes, there is one; clear it, so it's not reused
-                    original_tags[j] = None
+                    original_columns[j] = None
                     column_positions[i] = j
                     break
             else:

@@ -456,7 +456,10 @@ class Column(object):
     def __eq__(self, other):
         """Test for comparison with another object.
         For equality, only the hashtag and attributes have to be the same."""
-        return (self.tag == other.tag and self.attributes == other.attributes)
+        try:
+            return (self.tag == other.tag and self.attributes == other.attributes)
+        except:
+            return False
 
     def __repr__(self):
         return self.display_tag
