@@ -53,7 +53,7 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = hxl.data(input).recipe([
             {
                 'filter': 'append',
-                'append_source': {
+                'append_sources': {
                     'input': DATA,
                     'recipe': [
                         {
@@ -98,7 +98,7 @@ class TestRecipe(AbstractBaseFilterTest):
     def test_append(self):
         filtered = self.source.recipe({
             'filter': 'append',
-            'append_source': DATA
+            'append_sources': DATA
         })
         self.assertEqual(type(filtered).__name__, 'AppendFilter')
 

@@ -6,6 +6,8 @@
 	- major overhaul of the merge_data filter: now merges *all* columns
 	  matching the pattern supplied, and doesn't create an empty
 	  column if there are no matching columns in the merge dataset
+	- refactored append filter to allow multiple append files in
+	  single filter
 
 2016-10-17 Release 3.3
 	- Regex ~ and !~ operators in row queries now match anywhere in the cell

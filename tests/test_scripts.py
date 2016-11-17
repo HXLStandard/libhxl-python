@@ -88,7 +88,6 @@ class TestClean(BaseTest):
         self.input_file = 'input-simple.csv'
 
     def test_noheaders(self):
-        self.assertOutput(['-r'], 'clean-output-noheaders.csv')
         self.assertOutput(['--remove-headers'], 'clean-output-noheaders.csv')
 
     def test_headers(self):

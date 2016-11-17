@@ -37,7 +37,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import sys, re, six, abc, copy, json
+import sys, re, six, abc, copy, json, collections
 import dateutil.parser
 
 import hxl
@@ -634,49 +634,54 @@ class AppendFilter(AbstractBaseFilter):
 
     """
 
-    def __init__(self, source, append_source, add_columns=True, queries=[]):
+    def __init__(self, source, append_sources, add_columns=True, queries=[]):
         """Construct a new I{AppendFilter}
         @param source: a L{hxl.model.Dataset} object for the principal data
-        @param append_source: a L{hxl.model.Dataset} object for the dataset to append (or a string containing a URL)
-        @param add_columns: flag for adding extra columns in append_source but not source (default True)
+        @param append_sources: one or more L{hxl.model.Dataset} objects for the dataset to append (or strings containing URLs)
+        @param add_columns: flag for adding extra columns in append_sources but not source (default True)
         @param queries: optional list of L{hxl.model.RowQuery} objects
         (or a single strig) to select which rows to include from the
         second dataset
 
         """
         super(AppendFilter, self).__init__(source)
+
         # parameters
-        self.append_source = hxl.data(append_source) # so that we can take a plain URL
+        if not isinstance(append_sources, collections.Sequence):
+            append_sources = [append_sources]
+        self.append_sources = [hxl.data(src) for src in append_sources] # so that we can take a plain UR
         self.add_columns = add_columns
         self.queries = hxl.model.RowQuery.parse_list(queries)
+
         # internal properties
-        self._column_positions = None
-        self._template_row = None
+        self._column_positions = []
+        self._template_row = []
 
     def filter_columns(self):
         """Internal: generate the columns for the combined dataset"""
+
         columns_out = copy.deepcopy(self.source.columns)
-        column_positions = {}
-        original_columns = copy.copy(self.source.columns)
 
-        # see if there's a corresponding column in the source
-        for i, column in enumerate(self.append_source.columns):
-            for j, original_column in enumerate(original_columns):
-                if column == original_column:
-                    # yes, there is one; clear it, so it's not reused
-                    original_columns[j] = None
-                    column_positions[i] = j
-                    break
-            else:
-                # no -- we need to add a new column
-                if self.add_columns:
-                    column_positions[i] = len(columns_out)
-                    columns_out.append(copy.deepcopy(column))
-                else:
-                    column_positions[i] = None
+        for i, append_source in enumerate(self.append_sources):
 
-        # save the position map
-        self._column_positions = column_positions
+            columns_in = list(columns_out)
+            self._column_positions.append({})
+
+            # see if there's a corresponding column in the source
+            for j, column in enumerate(append_source.columns):
+                for k, original_column in enumerate(columns_in):
+                    if column == original_column:
+                        # yes, there is one; clear it, so it's not reused
+                        self._column_positions[i][j] = k
+                        columns_in[k] = None
+                        break
+                if self._column_positions[i].get(j) is None:
+                    # no -- we need to add a new column
+                    if self.add_columns:
+                        self._column_positions[i][j] = len(columns_out)
+                        columns_out.append(copy.deepcopy(column))
+                    else:
+                        self._column_positions[i][j] = None
 
         # make an empty template for each row
         self._template_row = [''] * len(columns_out)
@@ -690,49 +695,51 @@ class AppendFilter(AbstractBaseFilter):
         return AppendFilter._Iterator(self)
 
     class _Iterator:
-        """Custom iterator to return the contents of both sources, in sequence."""
+        """Custom iterator to return the contents of all sources, in sequence."""
 
         def __init__(self, outer):
             """@param outer: reference to outer object"""
             self.outer = outer
-            self.source_iter = iter(outer.source)
-            self.append_iter = iter(outer.append_source)
+            
+            self._iterator = iter(outer.source)
+            self._column_map = {i: i for i in range(len(self.outer.source.columns))}
+
+            self._sources = list(self.outer.append_sources)
+            self._column_positions = list(self.outer._column_positions)
 
         def __iter__(self):
             return self
 
         def __next__(self):
 
-            # Make a new row with the new columns
-            row_out = hxl.model.Row(
-                columns=self.outer.columns,
-                values=copy.deepcopy(self.outer._template_row)
-            )
+            def make_row():
+                row_in = next(self._iterator)
+                row_out = hxl.model.Row(
+                    columns=self.outer.columns,
+                    values=copy.deepcopy(self.outer._template_row)
+                )
 
-            # Read from the original source first
-            if self.source_iter is not None:
+                for i, value in enumerate(row_in.values):
+                    pos = self._column_map[i]
+                    if pos is not None:
+                        row_out.values[pos] = value
+
+                return row_out
+
+            while self._iterator is not None:
                 try:
-                    row_in = next(self.source_iter)
-                    for i, value in enumerate(row_in):
-                        row_out.values[i] = row_in.values[i]
-                    return row_out
+                    return make_row()
                 except StopIteration:
-                    # don't let the end of the first source finish the iteration
-                    self.source_iter = None
+                    if self._sources:
+                        self._iterator = iter(self._sources[0])
+                        self._column_map = self._column_positions[0]
+                        self._sources = self._sources[1:]
+                        self._column_positions = self._column_positions[0]
+                    else:
+                        self._iterator = None
 
-            # Fall through to the append source
-
-            # filtering through queries
-            row_in = next(self.append_iter)
-            while not hxl.model.RowQuery.match_list(row_in, self.outer.queries):
-                row_in = next(self.append_iter)
-            
-            for i, value in enumerate(row_in):
-                pos = self.outer._column_positions[i]
-                if pos is not None:
-                    row_out.values[pos] = value
-            return row_out
-
+            raise StopIteration()
+        
         next = __next__
 
     @staticmethod
@@ -740,7 +747,7 @@ class AppendFilter(AbstractBaseFilter):
         """Create an AppendFilter from a dict spec."""
         return AppendFilter(
             source=source,
-            append_source=req_arg(spec, 'append_source'),
+            append_sources=req_arg(spec, 'append_sources'),
             add_columns=opt_arg(spec, 'add_columns', True),
             queries=opt_arg(spec, 'queries', [])
         )
