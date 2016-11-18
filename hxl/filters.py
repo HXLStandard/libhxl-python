@@ -37,7 +37,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import sys, re, six, abc, copy, json, collections
+import sys, re, six, abc, copy, json
 import dateutil.parser
 
 import hxl
@@ -738,7 +738,7 @@ class AppendFilter(AbstractBaseFilter):
                         self._iterator = iter(self._sources[0])
                         self._column_map = self._column_positions[0]
                         self._sources = self._sources[1:]
-                        self._column_positions = self._column_positions[0]
+                        self._column_positions = self._column_positions[1:]
                         self._is_source = False
                     else:
                         self._iterator = None
@@ -1979,25 +1979,24 @@ def from_recipe(source, recipe):
     return source
 
 
-def is_sourcey (arg):
-    """Test whether arg looks like a single source spec.
-    This is a particularly tricky problem, because a source can be a string URL, a JSON spec,
-    or a DataSet object.
-    @param arg: the thing to test
-    @returns: True if this looks like a single source.
-    """
-    if (isinstance(arg, six.string_types) or
-        isinstance(arg, hxl.model.Dataset) or
-        isinstance(arg, dict)):
-        # a normal source spec
+def is_sourcey(arg):
+
+    # Not a list
+    if ((not hasattr(arg, '__len__')) or
+        isinstance(arg, dict) or
+        isinstance(arg, six.string_types) or
+        isinstance(arg, hxl.model.Dataset)):
         return True
-    else:
-        try:
-            # hacky test for a list of lists
-            arg[0][0]
+
+    # Quick-and-dirty test for a list representation of a HXL dataset
+    try:
+        if ((not hasattr(arg[0][0], '__len__')) or isinstance(arg[0][0], six.string_types)):
             return True
-        except:
-            return False
+    except:
+        pass
+
+    return False
+
 
 # end
 
