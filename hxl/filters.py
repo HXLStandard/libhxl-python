@@ -1980,6 +1980,11 @@ def from_recipe(source, recipe):
 
 
 def is_sourcey(arg):
+    """Convoluted method to try to distinguish a single HXL data source from a list of sources.
+    Trying to recognise all the source types supported by hxl.io.make_input
+    @param arg: the thing to test (we want to know if it's a single source or lists of sources)
+    @return: True if we think it's a single source; False otherwise.
+    """
 
     # Not a list
     if ((not hasattr(arg, '__len__')) or
@@ -1990,7 +1995,9 @@ def is_sourcey(arg):
 
     # Quick-and-dirty test for a list representation of a HXL dataset
     try:
-        if ((not hasattr(arg[0][0], '__len__')) or isinstance(arg[0][0], six.string_types)):
+        if (isinstance(arg[0], six.string_types)):
+            return False
+        elif ((not hasattr(arg[0][0], '__len__')) or isinstance(arg[0][0], six.string_types)):
             return True
     except:
         pass
