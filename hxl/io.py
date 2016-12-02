@@ -65,7 +65,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None):
         # it's already HXL data
         return data
 
-    elif isinstance(data, dict) and data.get('data_source'):
+    elif isinstance(data, dict) and data.get('input'):
         """If it's a JSON-type spec, try parsing it."""
         return hxl.io.from_spec(data)
 
@@ -570,38 +570,37 @@ def from_spec(spec):
         # a JSON string (parse it first)
         spec = json.loads(spec)
 
-    data_source = spec.get('data_source')
-    tagger = spec.get('tagger', None)
-    filters = spec.get('filters', [])
+    # source
+    input_spec = spec.get('input')
     allow_local = spec.get('allow_local', False)
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
 
-    if not data_source:
-        raise hxl.common.HXLException("No data_source property specified.")
+    # recipe
+    tagger_spec = spec.get('tagger', None)
+    recipe_spec = spec.get('recipe', [])
 
-    if tagger:
-        return hxl.filters.from_recipe(
-            source=hxl.tagger(
-                data_source,
-                specs=tagger.get('specs', []),
-                default_tag=tagger.get('default_tag', None),
-                match_all=tagger.get('match_all', False),
-                allow_local=allow_local,
-                sheet_index=sheet_index,
-                timeout=timeout
-            ),
-            recipe=filters
-        )
+    if not input_spec:
+        raise hxl.common.HXLException("No input property specified.")
+
+    # set up the input
+    input = make_input(
+        raw_source=input_spec,
+        allow_local=allow_local,
+        sheet_index=sheet_index,
+        timeout=timeout
+    )
+
+    # autotag if requested
+    if tagger_spec:
+        source = hxl.converters.Tagger._load(input, tagger_spec)
     else:
-        return hxl.filters.from_recipe(
-            source=hxl.data(
-                data_source,
-                allow_local=allow_local,
-                sheet_index=sheet_index,
-                timeout=timeout
-            ),
-            recipe=filters
-        )
+        source = HXLReader(input)
+
+    # compile the main recipe
+    return hxl.filters.from_recipe(
+        source=source,
+        recipe=recipe_spec
+    )
 
 # end

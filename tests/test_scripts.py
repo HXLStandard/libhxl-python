@@ -88,7 +88,6 @@ class TestClean(BaseTest):
         self.input_file = 'input-simple.csv'
 
     def test_noheaders(self):
-        self.assertOutput(['-r'], 'clean-output-noheaders.csv')
         self.assertOutput(['--remove-headers'], 'clean-output-noheaders.csv')
 
     def test_headers(self):
@@ -118,10 +117,10 @@ class TestCount(BaseTest):
         self.assertOutput(['--tags', 'org,adm1'], 'count-output-simple.csv')
 
     def test_aggregated(self):
-        self.assertOutput(['-t', 'org,adm1', '-a', 'targeted'], 'count-output-aggregated.csv')
+        self.assertOutput(['-t', 'org,adm1', '-a', 'sum(targeted) as Total targeted#targeted+total'], 'count-output-aggregated.csv')
 
     def test_count_colspec(self):
-        self.assertOutput(['-t', 'org,adm1', '-C', 'Activities#output+activities'], 'count-output-colspec.csv')
+        self.assertOutput(['-t', 'org,adm1', '-a', 'count() as Activities#output+activities'], 'count-output-colspec.csv')
 
 
 class TestCut(BaseTest):

@@ -240,10 +240,10 @@ class Dataset(object):
     # Filters
     #
 
-    def append(self, append_source, add_columns=True, queries=[]):
+    def append(self, append_sources, add_columns=True, queries=[]):
         """Append a second dataset."""
         import hxl.filters
-        return hxl.filters.AppendFilter(self, append_source, add_columns, queries=queries)
+        return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)
 
     def cache(self):
         """Add a caching filter to the dataset."""
@@ -288,10 +288,12 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.SortFilter(self, tags=keys, reverse=reverse)
 
-    def count(self, patterns, aggregate_pattern=None, count_spec='Count#meta+count', queries=[]):
+    def count(self, patterns=[], aggregators=None, queries=[]):
         """Count values in the dataset (caching)."""
         import hxl.filters
-        return hxl.filters.CountFilter(self, patterns=patterns, aggregate_pattern=aggregate_pattern, count_spec=count_spec, queries=queries)
+        return hxl.filters.CountFilter(
+            self, patterns=patterns, aggregators=aggregators, queries=queries
+        )
 
     def row_counter(self, queries=[]):
         """Count the number of rows while streaming."""
@@ -454,7 +456,10 @@ class Column(object):
     def __eq__(self, other):
         """Test for comparison with another object.
         For equality, only the hashtag and attributes have to be the same."""
-        return (self.tag == other.tag and self.attributes == other.attributes)
+        try:
+            return (self.tag == other.tag and self.attributes == other.attributes)
+        except:
+            return False
 
     def __repr__(self):
         return self.display_tag
@@ -466,6 +471,10 @@ class Column(object):
         """
         Attempt to parse a full hashtag specification.
         """
+        # Already parsed?
+        if isinstance(raw_string, Column):
+            return raw_string
+        
         # Pattern for a single tag
         result = re.match(Column.PATTERN, raw_string)
         if result:
@@ -481,6 +490,20 @@ class Column(object):
                 raise hxl.common.HXLException("Malformed tag expression: " + raw_string)
             else:
                 return None
+
+    @staticmethod
+    def parse_spec(raw_string, default_header=None, use_exception=False):
+        """Attempt to parse a single-string header/hashtag spec"""
+        # Already parsed?
+        if isinstance(raw_string, Column):
+            return raw_string
+        
+        matches = re.match(r'^(.*)(#.*)$', raw_string)
+        if matches:
+            header = matches.group(1) if matches.group(1) else default_header
+            return Column.parse(matches.group(2), header=header)
+        else:
+            return Column.parse('#' + raw_string, header=default_header)
 
 class Row(object):
     """

@@ -367,6 +367,93 @@ class AbstractCachingFilter(AbstractBaseFilter):
         
         next = __next__
 
+#
+# Utility classes
+#
+class Aggregator(object):
+    """Class for aggregating a single value."""
+
+    def __init__(self, type='count', pattern=None, column=None):
+        self.type = type.lower()
+        if pattern:
+            self.pattern = hxl.model.TagPattern.parse(pattern)
+        elif type == 'count':
+            self.pattern = None
+        else:
+            raise HXLFilterException('Pattern missing for {} aggregator in count filter'.format(type))
+        if not column:
+            column = '{type}#meta+{type}'.format(type=self.type)
+        self.column = hxl.model.Column.parse_spec(column)
+
+        self.total = 0
+        """Total number of rows used."""
+        self.value = None
+        """Resulting aggregation value."""
+
+    def evaluate_row(self, row):
+        """Evaluate a single row of HXL data against this aggregator."""
+
+        if self.type == 'count':
+            if self.value is None: self.value = 0
+            self.value += 1
+            return
+
+        value = row.get(self.pattern)
+        if value is not '' and value is not None:
+            try:
+                n = float(value)
+                self.total += 1
+                if self.type == 'sum':
+                    if not self.value: self.value = 0
+                    self.value += n
+                elif self.type == 'average':
+                    if not self.value: self.value = 0
+                    self.value = ((self.value * (self.total - 1)) + n) / self.total
+                elif self.type == 'min':
+                    if self.value is None or self.value > n:
+                        self.value = n
+                elif self.type == 'max':
+                    if self.value is None or self.value < n:
+                        self.value = n
+                else:
+                    raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
+            except:
+                pass
+
+    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+
+    AGGREGATOR_PATTERN = r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(
+        token = hxl.common.TOKEN_PATTERN,
+        tag = TAG_PATTERN,
+        col = COL_PATTERN
+    )
+    """ Regular expression for an aggregation pattern
+    Matches 1=aggregator, 2=tag pattern, 3=column header, 4=column tag
+    """
+
+    @staticmethod
+    def parse(spec):
+        if isinstance(spec, Aggregator):
+            return spec
+        match = re.match(Aggregator.AGGREGATOR_PATTERN, spec)
+        if not match:
+            raise HXLFilterException("Malformed aggregator: {}".format(spec))
+        return Aggregator(
+            type=match.group(1),
+            pattern=hxl.model.TagPattern.parse(match.group(2)) if match.group(2) else None,
+            column=hxl.model.Column.parse(match.group(4), header=match.group(3), use_exception=True) if match.group(4) else None,
+        )
+
+    @staticmethod
+    def parse_list(specs):
+        result = []
+        if isinstance(specs, six.string_types):
+            specs = [specs]
+        for spec in specs:
+            result.append(Aggregator.parse(spec))
+        return result
+
 
 #
 # Filter classes
@@ -445,7 +532,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
             values.append(re.sub(AddColumnsFilter._SUBST_PATTERN, do_sub, value))
         return values
 
-    _SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     _SUBST_PATTERN = '{{(#' + hxl.common.TOKEN_PATTERN + '(?:[+-]' + hxl.common.TOKEN_PATTERN + ')*)}}';
 
@@ -464,7 +551,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
 
         if not isinstance(spec, six.string_types):
             return spec
-        result = re.match(AddColumnsFilter._SPEC_PATTERN, spec)
+        result = re.match(AddColumnsFilter.SPEC_PATTERN, spec)
         if result:
             header = result.group(1)
             tag = '#' + result.group(2)
@@ -547,49 +634,54 @@ class AppendFilter(AbstractBaseFilter):
 
     """
 
-    def __init__(self, source, append_source, add_columns=True, queries=[]):
+    def __init__(self, source, append_sources, add_columns=True, queries=[]):
         """Construct a new I{AppendFilter}
         @param source: a L{hxl.model.Dataset} object for the principal data
-        @param append_source: a L{hxl.model.Dataset} object for the dataset to append (or a string containing a URL)
-        @param add_columns: flag for adding extra columns in append_source but not source (default True)
+        @param append_sources: one or more L{hxl.model.Dataset} objects for the dataset to append (or strings containing URLs)
+        @param add_columns: flag for adding extra columns in append_sources but not source (default True)
         @param queries: optional list of L{hxl.model.RowQuery} objects
         (or a single strig) to select which rows to include from the
         second dataset
 
         """
         super(AppendFilter, self).__init__(source)
+
         # parameters
-        self.append_source = hxl.data(append_source) # so that we can take a plain URL
+        if is_sourcey(append_sources):
+            append_sources = [append_sources]
+        self.append_sources = [hxl.data(src) for src in append_sources] # so that we can take a plain UR
         self.add_columns = add_columns
         self.queries = hxl.model.RowQuery.parse_list(queries)
+
         # internal properties
-        self._column_positions = None
-        self._template_row = None
+        self._column_positions = []
+        self._template_row = []
 
     def filter_columns(self):
         """Internal: generate the columns for the combined dataset"""
+
         columns_out = copy.deepcopy(self.source.columns)
-        column_positions = {}
-        original_tags = self.source.display_tags
 
-        # see if there's a corresponding column in the source
-        for i, column in enumerate(self.append_source.columns):
-            for j, tag in enumerate(original_tags):
-                if tag and (column.display_tag == tag):
-                    # yes, there is one; clear it, so it's not reused
-                    original_tags[j] = None
-                    column_positions[i] = j
-                    break
-            else:
-                # no -- we need to add a new column
-                if self.add_columns:
-                    column_positions[i] = len(columns_out)
-                    columns_out.append(copy.deepcopy(column))
-                else:
-                    column_positions[i] = None
+        for i, append_source in enumerate(self.append_sources):
 
-        # save the position map
-        self._column_positions = column_positions
+            columns_in = list(columns_out)
+            self._column_positions.append({})
+
+            # see if there's a corresponding column in the source
+            for j, column in enumerate(append_source.columns):
+                for k, original_column in enumerate(columns_in):
+                    if column == original_column:
+                        # yes, there is one; clear it, so it's not reused
+                        self._column_positions[i][j] = k
+                        columns_in[k] = None
+                        break
+                if self._column_positions[i].get(j) is None:
+                    # no -- we need to add a new column
+                    if self.add_columns:
+                        self._column_positions[i][j] = len(columns_out)
+                        columns_out.append(copy.deepcopy(column))
+                    else:
+                        self._column_positions[i][j] = None
 
         # make an empty template for each row
         self._template_row = [''] * len(columns_out)
@@ -603,49 +695,56 @@ class AppendFilter(AbstractBaseFilter):
         return AppendFilter._Iterator(self)
 
     class _Iterator:
-        """Custom iterator to return the contents of both sources, in sequence."""
+        """Custom iterator to return the contents of all sources, in sequence."""
 
         def __init__(self, outer):
             """@param outer: reference to outer object"""
             self.outer = outer
-            self.source_iter = iter(outer.source)
-            self.append_iter = iter(outer.append_source)
+            
+            self._iterator = iter(outer.source)
+            self._column_map = {i: i for i in range(len(self.outer.source.columns))}
+            self._is_source = True
+
+            self._sources = list(self.outer.append_sources)
+            self._column_positions = list(self.outer._column_positions)
 
         def __iter__(self):
             return self
 
         def __next__(self):
 
-            # Make a new row with the new columns
-            row_out = hxl.model.Row(
-                columns=self.outer.columns,
-                values=copy.deepcopy(self.outer._template_row)
-            )
+            def make_row():
+                row_in = next(self._iterator)
+                while ((not self._is_source) and (not hxl.model.RowQuery.match_list(row_in, self.outer.queries))):
+                    row_in = next(self._iterator)
 
-            # Read from the original source first
-            if self.source_iter is not None:
+                row_out = hxl.model.Row(
+                    columns=self.outer.columns,
+                    values=copy.deepcopy(self.outer._template_row)
+                )
+
+                for i, value in enumerate(row_in.values):
+                    pos = self._column_map[i]
+                    if pos is not None:
+                        row_out.values[pos] = value
+
+                return row_out
+
+            while self._iterator is not None:
                 try:
-                    row_in = next(self.source_iter)
-                    for i, value in enumerate(row_in):
-                        row_out.values[i] = row_in.values[i]
-                    return row_out
+                    return make_row()
                 except StopIteration:
-                    # don't let the end of the first source finish the iteration
-                    self.source_iter = None
+                    if self._sources:
+                        self._iterator = iter(self._sources[0])
+                        self._column_map = self._column_positions[0]
+                        self._sources = self._sources[1:]
+                        self._column_positions = self._column_positions[1:]
+                        self._is_source = False
+                    else:
+                        self._iterator = None
 
-            # Fall through to the append source
-
-            # filtering through queries
-            row_in = next(self.append_iter)
-            while not hxl.model.RowQuery.match_list(row_in, self.outer.queries):
-                row_in = next(self.append_iter)
-            
-            for i, value in enumerate(row_in):
-                pos = self.outer._column_positions[i]
-                if pos is not None:
-                    row_out.values[pos] = value
-            return row_out
-
+            raise StopIteration()
+        
         next = __next__
 
     @staticmethod
@@ -653,7 +752,7 @@ class AppendFilter(AbstractBaseFilter):
         """Create an AppendFilter from a dict spec."""
         return AppendFilter(
             source=source,
-            append_source=req_arg(spec, 'append_source'),
+            append_sources=req_arg(spec, 'append_sources'),
             add_columns=opt_arg(spec, 'add_columns', True),
             queries=opt_arg(spec, 'queries', [])
         )
@@ -1029,10 +1128,6 @@ class CountFilter(AbstractCachingFilter):
 
       filter = hxl.data(url).count(['org', 'sector'])
 
-    To produce other aggregates, like averages, min, max, and sum, use the I{aggregate_pattern} argument::
-
-      filter = hxl.data(url).count('adm1', aggregate_pattern='affected')
-
     You can also use the I{queries} argument to limit the counting to
     specific fields. This example will count only the rows where C{#adm1} is set to "Coast"::
 
@@ -1040,18 +1135,19 @@ class CountFilter(AbstractCachingFilter):
 
     """
 
-    def __init__(self, source, patterns, aggregate_pattern=None, count_spec='Count#meta+count', queries=[]):
+    def __init__(self, source, patterns, aggregators=None, queries=[]):
         """Construct a new count filter
+        If the caller does not supply any aggregators, use "count() as Count#meta+count"
         @param source: a L{hxl.model.Dataset}
         @param patterns: a single L{tag pattern<hxl.model.TagPattern>} or list of tag patterns that, together, form a unique key for counting.
-        @param aggregate_pattern: (optional) a single tag pattern for advanced aggregation (sum, min, max, and average).
-        @param count_spec: a L{tag spec<hxl.model.Column>} to apply to the column containing the counts (defaults to 'Count#meta+count').
+        @param aggregators: one or more Aggregator objects or string representations to define the output.
         @param queries: an optional list of L{row queries<hxl.model.RowQuery>} to filter the rows being counted.
         """
         super(CountFilter, self).__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
-        self.aggregate_pattern = hxl.model.TagPattern.parse(aggregate_pattern) if aggregate_pattern else None
-        self.count_column = CountFilter._parse_column_spec(count_spec)
+        if not aggregators:
+            aggregators = 'count() as Count#meta+count'
+        self.aggregators = Aggregator.parse_list(aggregators)
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_columns(self):
@@ -1066,15 +1162,9 @@ class CountFilter(AbstractCachingFilter):
             else:
                 columns.append(hxl.Column())
 
-        # Add column to hold count
-        columns.append(self.count_column)
-
-        # If we're aggregating, add the aggregate columns
-        if self.aggregate_pattern is not None:
-            columns.append(hxl.model.Column.parse('#meta+sum', header='Sum'))
-            columns.append(hxl.model.Column.parse('#meta+average', header='Average (mean)'))
-            columns.append(hxl.model.Column.parse('#meta+min', header='Minimum value'))
-            columns.append(hxl.model.Column.parse('#meta+max', header='Maximum value'))
+        # Add generated columns
+        for aggregator in self.aggregators:
+            columns.append(aggregator.column)
             
         return columns
 
@@ -1084,31 +1174,14 @@ class CountFilter(AbstractCachingFilter):
         raw_data = []
 
         # each item is a sequence containing a tuple of key values and an _Aggregator object
-        for aggregate in self._make_aggregates():
-            row_values = list(aggregate[0]) # convert to a list so we can modify it
-            aggregator = aggregate[1]
-
-            # add the basic count (always present)
-            row_values.append(aggregator.count)
-
-            # if the user requested other aggregates, add them
-            if self.aggregate_pattern:
-                if aggregator.seen_numbers:
-                    # if there were numbers to aggregate, show them
-                    row_values += [
-                        aggregator.sum,
-                        aggregator.average,
-                        aggregator.min,
-                        aggregator.max
-                    ]
-                else:
-                    # if there were no numbers, add blank values as placeholders
-                    row_values += ['', '', '', '']
-            raw_data.append(row_values)
+        for aggregate in self._aggregate_data():
+            raw_data.append(
+                list(aggregate[0]) + [hxl.common.normalise_number(aggregator.value) if aggregator.value is not None else '' for aggregator in aggregate[1]]
+            )
             
         return raw_data
 
-    def _make_aggregates(self):
+    def _aggregate_data(self):
         """Read the entire source dataset and produce saved aggregate data."""
         aggregators = {}
 
@@ -1118,74 +1191,15 @@ class CountFilter(AbstractCachingFilter):
             if hxl.model.RowQuery.match_list(row, self.queries):
                 # get the values in the order we need them
                 values = [str(row.get(pattern, default='')) for pattern in self.patterns]
-                if values:
-                    # make a dict key for the aggregator
-                    key = tuple(values)
-                    if not key in aggregators:
-                        aggregators[key] = CountFilter._Aggregator(self.aggregate_pattern)
-                    aggregators[key].add(row)
+                # make a dict key for the aggregator
+                key = tuple(values)
+                if not key in aggregators:
+                    aggregators[key] = [copy.copy(aggregator) for aggregator in self.aggregators]
+                for aggregator in aggregators[key]:
+                    aggregator.evaluate_row(row)
 
         # sort the aggregators by their keys
         return sorted(aggregators.items())
-
-    _SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
-    """Pattern for a count spec."""
-
-    @staticmethod
-    def _parse_column_spec(spec):
-        """Parse a specification for the column containing the count."""
-        if not isinstance(spec, six.string_types):
-            return spec
-        result = re.match(CountFilter._SPEC_PATTERN, spec)
-        if result:
-            header = result.group(1)
-            tag = '#' + result.group(2)
-            return hxl.model.Column.parse(tag, header=header)
-        else:
-            raise HXLFilterException("Badly formatted column spec: " + spec)
-
-    class _Aggregator(object):
-        """ Class to collect aggregates for a single combination of keys
-        Accumulates count, sum, average, min, and max
-        """
-
-        def __init__(self, pattern):
-            """Constructor
-            @param pattern: the L{tag pattern<hxl.model.TagPattern>} being counted in the row.
-            """
-            self.pattern = pattern
-            self.count = 0
-            self.sum = 0.0
-            self.average = 0.0
-            self.min = None
-            self.max = None
-            self.seen_numbers = False
-
-        def add(self, row):
-            """Add a new row of data to the aggregator. 
-            @param row: a L{hxl.model.Row} object"""
-
-            # always increment count
-            self.count += 1
-
-            # if we have a pattern for advanced aggregates ...
-            if self.pattern:
-
-                value = row.get(self.pattern, default='')
-                # if there is a value
-                if value:
-                    try:
-                        n = float(value)
-                        self.sum += n
-                        self.average = self.sum / self.count
-                        if self.min is None or n < self.min:
-                            self.min = n
-                        if self.max is None or n > self.max:
-                            self.max = n
-                        self.seen_numbers = True
-                    except:
-                        # if we got an exception on number conversion, ignore the value
-                        pass
 
     @staticmethod
     def _load(source, spec):
@@ -1193,8 +1207,7 @@ class CountFilter(AbstractCachingFilter):
         return CountFilter(
             source = source,
             patterns=req_arg(spec, 'patterns'),
-            aggregate_pattern=opt_arg(spec, 'aggregate_pattern'),
-            count_spec=opt_arg(spec, 'count_spec', 'Count#meta+count'),
+            aggregators=opt_arg(spec, 'aggregators', None),
             queries=opt_arg(spec, 'queries', [])
         )
 
@@ -1372,20 +1385,32 @@ class ExplodeFilter(AbstractBaseFilter):
 
 
 class MergeDataFilter(AbstractStreamingFilter):
-    """
-    Composable filter class to merge values from two HXL datasets.
+    """Composable filter class to merge values from two HXL datasets.
 
-    This is the class supporting the hxlmerge command-line utility.
+    Merges the values for the *last* matching row in the merge
+    dataset. Can patterns to match multiple cells for merging (keys
+    always use just the first match, though, to keep key lengths
+    consistent). Can overwrite existing columns and values.
 
-    Merges the values for the *last* matching row in the merge dataset.
-
-    Warning: this filter may store a large amount of data in memory, depending on the merge.
+    Warning: this filter may store a large amount of data in memory,
+    depending on the merge.
 
     Usage:
 
     <pre>
-    hxl.data(url).merge(merge_source=merge_source, keys='adm1_id', tags='adm1')
+    MergeDataFilter(source, merge_source=merge_source, keys='adm1+code', tags='adm1+name')
     </pre>
+
+    <pre>
+    hxl.data(url).merge_data(merge_source=merge_source, keys='adm1+code', tags='adm1+name')
+    </pre>
+
+    (Add the column matching #adm1+name from the merge dataset to the
+    source dataset, syncing the rows using the value of #adm1+code in
+    each dataset.)
+
+    @see hxl.model.Dataset.merge_data
+    @see hxl.scripts.hxlmerge_main
     """
 
     def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
@@ -1405,58 +1430,85 @@ class MergeDataFilter(AbstractStreamingFilter):
         self.overwrite = overwrite
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
-        self.merge_map = None
+        self._merge_indices = []
+        """Indices for mapping columns from merge source to output dataset
+        [source_index, output_index, overwrite_ok]
+        """
+        
+        self._merge_values = None
+        """Dictionary of values from merge source, indexed by key."""
 
     def filter_columns(self):
-        """Filter the columns to add newly-merged ones."""
-        new_columns = []
+        """Filter the columns to add newly-merged ones.  
+        Note: this is called only once, the first time someone
+        accesses the Dataset.columns property, then the result is saved for future use.
+        As a side effect, builds the _merge_indices specs for generating the merged data.
+        @see hxl.filters.AbstractBaseFilter.filter_columns
+        """
+
+        new_columns = list(self.source.columns)
+        """The new column list to return."""
+        
+        merge_column_index = len(self.source.columns)
+        """Target index for merging into the output dataset"""
+            
+        # Check every pattern
         for pattern in self.merge_tags:
-            if self.replace and pattern.find_column(self.source.columns):
-                # will use existing column
-                continue
-            else:
-                column = pattern.find_column(self.merge_source.columns)
-                if column:
-                    header = column.header
-                else:
-                    header = None
-                new_columns.append(hxl.model.Column(tag=pattern.tag, attributes=pattern.include_attributes, header=header))
-        return self.source.columns + new_columns
+
+            # Check the pattern against every column
+            for index, column in enumerate(self.merge_source.columns):
+
+                seen_replacement = False
+                """We can replace inline exactly once for every pattern."""
+
+                if pattern.match(column):
+
+                    # Replace inside existing columns, if conditions are met
+                    if self.replace and not seen_replacement and pattern.find_column(self.source.columns):
+                        # TODO: check for closest match
+                        # TODO: allow for multiple replacements per pattern
+                        self._merge_indices.append([index, pattern.find_column_index(self.source.columns), self.overwrite])
+                        seen_replacement = True
+
+                    # Replace into a new column on the right
+                    else:
+                        new_columns.append(column)
+                        self._merge_indices.append([index, merge_column_index, True])
+                        merge_column_index += 1
+
+        return new_columns
 
     def filter_row(self, row):
-        """Set up a merged data row, replacing existing values if requested."""
-        
-        # First, check if we already have the merge map, and read it if not
-        if self.merge_map is None:
-            self.merge_map = self._read_merge()
+        """Set up a merged data row, replacing existing values if requested.
+        Uses the _merge_indices map created by filter_columns.
+        @param row: the data row to filter.
+        @return: a list of filtered values for the row.
+        @see hxl.filters.AbstractStreamingFilter.filter_row
+        """
 
-        # Make a copy of the values
+        # First, check if we already have the merge map, and read it if not
+        if self._merge_values is None:
+            self._merge_values = self._read_merge()
+
+        # Make an initial array of the correct length
         values = copy.copy(row.values)
+        values += ([''] * (len(self.columns) - len(row.values)))
 
         # Look up the merge values, based on the --keys
-        merge_values = self.merge_map.get(self._make_key(row), {})
+        merge_values = self._merge_values.get(self._make_key(row))
 
-        # Go through the merge tags
-        for pattern in self.merge_tags:
-            value = merge_values.get(pattern)
-            # force always to empty string (not None)
-            if not value:
-                value = ''
-            # Try to substitute in place?
-            if self.replace:
-                index = pattern.find_column_index(self.source.columns)
-                if index is not None:
-                    if self.overwrite or not row.values[index]:
-                        values[index] = value
-                    continue
+        if merge_values:
+            for i, spec in enumerate(self._merge_indices):
+                if spec[2] or hxl.common.is_empty(values[spec[1]]):
+                    values[spec[1]] = merge_values[i]
 
-            # otherwise, fall through
-            values.append(value)
         return values
 
     def _make_key(self, row):
-        """
-        Make a tuple key for a row.
+        """Make a tuple key for a row.
+        Uses only the first matching value for each tag pattern.
+        @param row: Generate a key for this row.
+        @returns: A tuple containing the key.
         """
         values = []
         for pattern in self.keys:
@@ -1464,19 +1516,32 @@ class MergeDataFilter(AbstractStreamingFilter):
         return tuple(values)
 
     def _read_merge(self):
-        """
-        Read the second (merging) dataset into memory.
+        """Read the second (merging) dataset into memory.
         Stores only the values necessary for the merge.
+        Uses *last* matching row for each key (top to bottom).
         @return a map of merge values
         """
-        merge_map = {}
+        
+        self.columns # make sure we've created the _merge_indices map
+
+        merge_values = {}
+        """Map of keys to merge values from the merge source."""
+
         for row in self.merge_source:
             if hxl.model.RowQuery.match_list(row, self.queries):
-                values = {}
-                for pattern in self.merge_tags:
-                    values[pattern] = row.get(pattern, default='')
-                merge_map[self._make_key(row)] = values
-        return merge_map
+                values = []
+
+                # Save only the values we need
+                for spec in self._merge_indices:
+                    try:
+                        values.append(row.values[spec[0]])
+                    except IndexError:
+                        values.append('')
+
+                # Generate a key tuple and add to the map
+                merge_values[self._make_key(row)] = values
+
+        return merge_values
 
     @staticmethod
     def _load(source, spec):
@@ -1912,6 +1977,32 @@ def from_recipe(source, recipe):
         source = loader(source, spec)
         
     return source
+
+
+def is_sourcey(arg):
+    """Convoluted method to try to distinguish a single HXL data source from a list of sources.
+    Trying to recognise all the source types supported by hxl.io.make_input
+    @param arg: the thing to test (we want to know if it's a single source or lists of sources)
+    @return: True if we think it's a single source; False otherwise.
+    """
+
+    # Not a list
+    if ((not hasattr(arg, '__len__')) or
+        isinstance(arg, dict) or
+        isinstance(arg, six.string_types) or
+        isinstance(arg, hxl.model.Dataset)):
+        return True
+
+    # Quick-and-dirty test for a list representation of a HXL dataset
+    try:
+        if (isinstance(arg[0], six.string_types)):
+            return False
+        elif ((not hasattr(arg[0][0], '__len__')) or isinstance(arg[0][0], six.string_types)):
+            return True
+    except:
+        pass
+
+    return False
 
 
 # end

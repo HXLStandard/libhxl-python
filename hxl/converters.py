@@ -126,3 +126,13 @@ class Tagger(hxl.io.AbstractInput):
             return (result.group(1), hxl.model.Column.parse(result.group(2), use_exception=True).display_tag)
         else:
             raise HXLFilterException("Bad tagging spec: " + s)
+
+    @staticmethod
+    def _load(input, spec):
+        """Create a tagger from a dict spec."""
+        return Tagger(
+            input=input,
+            specs=spec.get('specs', []),
+            default_tag=spec.get('default_tag', None),
+            match_all=spec.get('match_all', False)
+        )

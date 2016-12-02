@@ -34,6 +34,22 @@ class HXLException(Exception):
     def __str__(self):
         return "<HXLException: " + str(self.message) + ">"
 
+def normalise_number(n):
+    if n == '' or n is None:
+        return ''
+    if n == int(n):
+        return int(n)
+    else:
+        return n
+
+def is_empty(s):
+    """Is this an empty value?
+    None or whitespace only counts as empty; anything else doesn't.
+    @param s: value to test.
+    @returns: True if empty
+    """
+    return (s is None or s.isspace())
+
 def normalise_string(s):
     """Normalise a string.  
 

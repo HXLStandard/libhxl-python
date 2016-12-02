@@ -150,14 +150,8 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         '--append',
         help='HXL file to append (may repeat option).',
         metavar='file_or_url',
-        action='append'
-        )
-    parser.add_argument(
-        '-f',
-        '--file',
-        help='File listing HXL datasets to merge (one per line).',
-        metavar='file_or_url',
-        required=False
+        action='append',
+        default=[]
         )
     parser.add_argument(
         '-x',
@@ -171,23 +165,14 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
-    def append_data(source, output, urls):
-        """Recursively process all append files."""
-        if not urls:
-            hxl.io.write_hxl(output.output, source, not args.strip_tags)
-        else:
-            with hxl.io.data(urls.pop(), True) as append_source:
-                filter = hxl.filters.AppendFilter(source, append_source, not args.exclude_extra_columns, queries=arg.query)
-                append_data(filter, output, urls)
-
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        # use a recursive function so that we can close all sources on the way out
-        datasets = args.append or []
-        if args.file:
-            # FIXME works only with Python3
-            with open(args.file, 'r') as input:
-                datasets += [line.strip("\n") for line in input.readlines()]
-        append_data(source, output, datasets)
+        filter = hxl.filters.AppendFilter(
+            source,
+            append_sources=[hxl.data(url, True) for url in args.append],
+            add_columns=(not args.exclude_extra_columns),
+            queries=args.query
+        )
+        hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -237,14 +222,6 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
-    parser.add_argument(
-        '-r',
-        '--remove-headers',
-        help='Remove text header row above HXL hashtags',
-        action='store_const',
-        const=False,
-        default=True
-        )
     add_queries_arg(parser, 'Clean only rows matching at least one query.')
 
     args = parser.parse_args(args)
@@ -255,7 +232,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
             date=args.date, number=args.number, queries=args.query
         )
-        hxl.io.write_hxl(output.output, filter, args.remove_headers, show_tags= not args.strip_tags)
+        hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -281,23 +258,18 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
     parser.add_argument(
         '-a',
-        '--aggregate',
-        help='Hashtag to aggregate.',
-        metavar='tag',
-        type=hxl.model.TagPattern.parse
-        )
-    parser.add_argument(
-        '-C',
-        '--count-column',
-        help='Column spec for count column.',
-        metavar='Header#tag',
-        default='Count#meta+count'
+        '--aggregator',
+        help='Aggregator statement',
+        metavar='statement',
+        action='append',
+        type=hxl.filters.Aggregator.parse,
+        default=[]
         )
     add_queries_arg(parser, 'Count only rows that match at least one query.')
 
     args = parser.parse_args(args)
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.CountFilter(source, args.tags, args.aggregate, count_spec=args.count_column, queries=args.query)
+        filter = hxl.filters.CountFilter(source, patterns=args.tags, aggregators=args.aggregator, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
@@ -755,6 +727,13 @@ def make_args(description):
         metavar='number',
         type=int,
         nargs='?'
+        )
+    parser.add_argument(
+        '--remove-headers',
+        help='Strip text headers from the CSV output',
+        action='store_const',
+        const=True,
+        default=False
         )
     parser.add_argument(
         '--strip-tags',
