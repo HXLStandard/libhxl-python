@@ -1,3 +1,4 @@
+2016-12-02 Release 4.0
 	- Fully modularised JSON specs and recipes.
 	- Made JSON specs and recipes work recursively.
 	- Fix bug that caused select filter to fail after explode filter
