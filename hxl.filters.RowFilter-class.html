@@ -86,10 +86,9 @@
           <td><span class="summary-sig"><a href="hxl.filters.RowFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">source</span>,
         <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>,
-        <span class="summary-sig-arg">reverse</span>=<span class="summary-sig-default">False</span>)</span><br />
-      Constructor @param source the HXL data source @param queries a series
-      for parsed queries @param reverse True to reverse the sense of the 
-      select</td>
+        <span class="summary-sig-arg">reverse</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">mask</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Constructor</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#RowFilter.__init__">source&nbsp;code</a></span>
             
@@ -107,27 +106,9 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.RowFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Filter a single row of data.</td>
+      Filter data row-wise.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#RowFilter.filter_row">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="match_row"></a><span class="summary-sig-name">match_row</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">row</span>)</span><br />
-      Check if any of the queries matches the row (implied OR).</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#RowFilter.match_row">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -152,6 +133,7 @@
       <code><a href="hxl.model.Dataset-class.html#count">count</a></code>,
       <code><a href="hxl.model.Dataset-class.html#dedup">dedup</a></code>,
       <code><a href="hxl.model.Dataset-class.html#display_tags">display_tags</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#explode">explode</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_csv">gen_csv</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_json">gen_json</a></code>,
       <code><a href="hxl.model.Dataset-class.html#gen_raw">gen_raw</a></code>,
@@ -159,6 +141,7 @@
       <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
       <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
       <code><a href="hxl.model.Dataset-class.html#merge_data">merge_data</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#recipe">recipe</a></code>,
       <code><a href="hxl.model.Dataset-class.html#rename_columns">rename_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data">replace_data</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data_map">replace_data_map</a></code>,
@@ -256,7 +239,8 @@
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
         <span class="sig-arg">source</span>,
         <span class="sig-arg">queries</span>=<span class="sig-default">[]</span>,
-        <span class="sig-arg">reverse</span>=<span class="sig-default">False</span>)</span>
+        <span class="sig-arg">reverse</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">mask</span>=<span class="sig-default">[]</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -264,13 +248,15 @@
     </td>
   </tr></table>
   
-  <p>Constructor @param source the HXL data source @param queries a series 
-  for parsed queries @param reverse True to reverse the sense of the 
-  select</p>
+  <p>Constructor</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>source</code></strong> - the source dataset</li>
+        <li><strong class="pname"><code>source</code></strong> - the HXL data source</li>
+        <li><strong class="pname"><code>queries</code></strong> - a series of predicates for rows to include or ignore</li>
+        <li><strong class="pname"><code>reverse</code></strong> - True to reverse the sense of the select</li>
+        <li><strong class="pname"><code>mask</code></strong> - a series of predicates to limit the rows to test (default: [] to 
+          test all)</li>
     </ul></dd>
     <dt>Overrides:
         object.__init__
@@ -293,10 +279,7 @@
     </td>
   </tr></table>
   
-  <p>Filter a single row of data.</p>
-  <p>By default, this method returns the row's values, unchanged. 
-  Subclasses can use it to replace, add or suppress rows on the fly, 
-  without having to keep a copy of the entire dataset in memory.</p>
+  <p>Filter data row-wise.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -308,7 +291,6 @@
           <code>None</code> to skip the row.</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -341,7 +323,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Fri Feb  5 15:21:26 2016
+    on Wed Dec  7 16:06:32 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

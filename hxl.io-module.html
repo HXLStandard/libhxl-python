@@ -83,6 +83,14 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a href="hxl.io.RequestResponseIOWrapper-class.html" class="summary-name">RequestResponseIOWrapper</a><br />
+      Wrapper for a Response object from the requests library.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="hxl.io.AbstractInput-class.html" class="summary-name">AbstractInput</a><br />
       Abstract base class for input classes.
     </td>
@@ -134,59 +142,36 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="get_status"></a><span class="summary-sig-name">get_status</span>(<span class="summary-sig-arg">response</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#get_status">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="wrap_stream"></a><span class="summary-sig-name">wrap_stream</span>(<span class="summary-sig-arg">stream</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#wrap_stream">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="wrap_input"></a><span class="summary-sig-name">wrap_input</span>(<span class="summary-sig-arg">input</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#wrap_input">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
           <td><span class="summary-sig"><a href="hxl.io-module.html#data" class="summary-sig-name">data</a>(<span class="summary-sig-arg">data</span>,
-        <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>)</span><br />
+        <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
       Convenience method for reading a HXL dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#data">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="tagger"></a><span class="summary-sig-name">tagger</span>(<span class="summary-sig-arg">data</span>,
+        <span class="summary-sig-arg">specs</span>,
+        <span class="summary-sig-arg">default_tag</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">match_all</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Open an untagged data source and add hashtags.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#tagger">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -274,9 +259,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="make_input"></a><span class="summary-sig-name">make_input</span>(<span class="summary-sig-arg">data</span>,
+          <td><span class="summary-sig"><a href="hxl.io-module.html#make_input" class="summary-sig-name">make_input</a>(<span class="summary-sig-arg">raw_source</span>,
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
-        <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
       Figure out what kind of input to create.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#make_input">source&nbsp;code</a></span>
@@ -293,11 +279,29 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="make_stream"></a><span class="summary-sig-name">make_stream</span>(<span class="summary-sig-arg">origin</span>,
-        <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>)</span><br />
-      Figure out whether to open a file or a URL.</td>
+          <td><span class="summary-sig"><a href="hxl.io-module.html#open_url_or_file" class="summary-sig-name">open_url_or_file</a>(<span class="summary-sig-arg">url_or_filename</span>,
+        <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Try opening a local or remote resource.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#make_stream">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.io-pysrc.html#open_url_or_file">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="from_spec"></a><span class="summary-sig-name">from_spec</span>(<span class="summary-sig-arg">spec</span>)</span><br />
+      Build a full spec (including source) from a JSON-like data structure.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#from_spec">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -314,13 +318,6 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Variables</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="open_url"></a><span class="summary-name">open_url</span> = <code title="urllib.request.urlopen">urllib.request.urlopen</code>
-    </td>
-  </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
@@ -382,7 +379,9 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">data</span>(<span class="sig-arg">data</span>,
-        <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>)</span>
+        <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">sheet_index</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="hxl.io-pysrc.html#data">source&nbsp;code</a></span>&nbsp;
@@ -390,9 +389,89 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
   </tr></table>
   
   <p>Convenience method for reading a HXL dataset. If passed an existing 
-  Dataset, simply returns it. @param data a HXL data provider, file object,
-  array, or string (representing a URL or file name).</p>
+  Dataset, simply returns it.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> - a HXL data provider, file object, array, or string (representing 
+          a URL or file name).</li>
+        <li><strong class="pname"><code>allow_local</code></strong> - if true, allow opening local filenames as well as remote URLs 
+          (default: False).</li>
+        <li><strong class="pname"><code>sheet_index</code></strong> - if supplied, use the specified 1-based index to choose a sheet 
+          from an Excel workbook (default: None)</li>
+        <li><strong class="pname"><code>timeout</code></strong> - if supplied, time out an HTTP(S) request after the specified 
+          number of seconds with no data received (default: None)</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="make_input"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">make_input</span>(<span class="sig-arg">raw_source</span>,
+        <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">sheet_index</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.io-pysrc.html#make_input">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Figure out what kind of input to create.</p>
+  <p>Can detect a URL or filename, an input stream, or an array. Will also 
+  try to detect HTML and Excel before defaulting to CSV. The result is an 
+  object that can deliver rows of data for the HXL library to parse.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>raw_source</code></strong> - the raw data source (e.g. a URL or input stream).</li>
+        <li><strong class="pname"><code>allow_local</code></strong> - if True, allow opening local files as well as remote URLs 
+          (default: False).</li>
+        <li><strong class="pname"><code>sheet_index</code></strong> - if a number, read that sheet from an Excel workbook (default: 
+          None).</li>
+        <li><strong class="pname"><code>timeout</code></strong> - if supplied, time out an HTTP(S) request after the specified 
+          number of seconds with no data received (default: None)</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>an object belonging to a subclass of AbstractInput, returning 
+          rows of raw data.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="open_url_or_file"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">open_url_or_file</span>(<span class="sig-arg">url_or_filename</span>,
+        <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.io-pysrc.html#open_url_or_file">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Try opening a local or remote resource. Allows only HTTP(S) and (S)FTP
+  URLs.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>url_or_filename</code></strong> - the string to try openining.</li>
+        <li><strong class="pname"><code>allow_local</code></strong> - if True, OK to open local files; otherwise, only remote URLs 
+          allowed (default: False).</li>
+        <li><strong class="pname"><code>timeout</code></strong> - if supplied, time out an HTTP(S) request after the specified 
+          number of seconds with no data received (default: None)</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>an io stream.</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -489,7 +568,7 @@ r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Fri Feb  5 15:21:26 2016
+    on Wed Dec  7 16:06:32 2016
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

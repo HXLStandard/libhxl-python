@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>hxl.model.RowQuery</title>
+  <title>hxl.filters.Aggregator</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -38,8 +38,8 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="hxl-module.html">Package&nbsp;hxl</a> ::
-        <a href="hxl.model-module.html">Module&nbsp;model</a> ::
-        Class&nbsp;RowQuery
+        <a href="hxl.filters-module.html">Module&nbsp;filters</a> ::
+        Class&nbsp;Aggregator
       </span>
     </td>
     <td>
@@ -50,15 +50,15 @@
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class RowQuery</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.model-pysrc.html#RowQuery">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class Aggregator</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator">source&nbsp;code</a></span></p>
 <pre class="base-tree">
 object --+
          |
-        <strong class="uidshort">RowQuery</strong>
+        <strong class="uidshort">Aggregator</strong>
 </pre>
 
 <hr />
-<p>Query to execute against a row of HXL data.</p>
+<p>Class for aggregating a single value.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -74,14 +74,13 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.model.RowQuery-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">pattern</span>,
-        <span class="summary-sig-arg">op</span>,
-        <span class="summary-sig-arg">value</span>,
-        <span class="summary-sig-arg">is_quantitative</span>=<span class="summary-sig-default">True</span>)</span><br />
+          <td><span class="summary-sig"><a href="hxl.filters.Aggregator-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">type</span>=<span class="summary-sig-default">'count'</span>,
+        <span class="summary-sig-arg">pattern</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">column</span>=<span class="summary-sig-default">None</span>)</span><br />
       x.__init__(...) initializes x; see help(type(x)) for signature</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.__init__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.__init__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -95,29 +94,11 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="match_row"></a><span class="summary-sig-name">match_row</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a name="evaluate_row"></a><span class="summary-sig-name">evaluate_row</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Check if a key-value pair appears in a HXL row</td>
+      Evaluate a single row of HXL data against this aggregator.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.match_row">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="match_value"></a><span class="summary-sig-name">match_value</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">value</span>)</span><br />
-      Try an operator as numeric first, then string</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.match_value">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.evaluate_row">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -158,10 +139,9 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse"></a><span class="summary-sig-name">parse</span>(<span class="summary-sig-arg">query</span>)</span><br />
-      Parse a filter expression</td>
+          <td><span class="summary-sig"><a name="parse"></a><span class="summary-sig-name">parse</span>(<span class="summary-sig-arg">spec</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.parse">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.parse">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -175,65 +155,9 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse_list"></a><span class="summary-sig-name">parse_list</span>(<span class="summary-sig-arg">queries</span>)</span><br />
-      Parse a single query spec or a list of specs.</td>
+          <td><span class="summary-sig"><a name="parse_list"></a><span class="summary-sig-name">parse_list</span>(<span class="summary-sig-arg">specs</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.parse_list">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="match_list"></a><span class="summary-sig-name">match_list</span>(<span class="summary-sig-arg">row</span>,
-        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">reverse</span>=<span class="summary-sig-default">False</span>)</span><br />
-      See if any query in a list matches a row.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.match_list">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="operator_re"></a><span class="summary-sig-name">operator_re</span>(<span class="summary-sig-arg">s</span>,
-        <span class="summary-sig-arg">pattern</span>)</span><br />
-      Regular-expression comparison operator.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.operator_re">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="operator_nre"></a><span class="summary-sig-name">operator_nre</span>(<span class="summary-sig-arg">s</span>,
-        <span class="summary-sig-arg">pattern</span>)</span><br />
-      Regular-expression negative comparison operator.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.operator_nre">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.parse_list">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -254,9 +178,49 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.RowQuery-class.html#OPERATOR_MAP" class="summary-name">OPERATOR_MAP</a> = <code title="{'=':(operator.eq, True), '!=':(operator.ne, True), '&lt;':(operator.lt, \
-True), '&lt;=':(operator.le, True), '&gt;':(operator.gt, True), '&gt;=':(operat\
-or.ge, True)}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="variable-ellipsis">...</code></code>
+        <a href="hxl.filters.Aggregator-class.html#TAG_PATTERN" class="summary-name">TAG_PATTERN</a> = <code title="'#?{token}(?:\s*[+-]{token})*'.format(token= hxl.common.TOKEN_PATTERN)">'#?{token}(?:\s*[+-]{token})*'.format(token= hxl<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.filters.Aggregator-class.html#COL_PATTERN" class="summary-name">COL_PATTERN</a> = <code title="'#{token}(?:\s*\+{token})*'.format(token= hxl.common.TOKEN_PATTERN)">'#{token}(?:\s*\+{token})*'.format(token= hxl.co<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.filters.Aggregator-class.html#AGGREGATOR_PATTERN" class="summary-name">AGGREGATOR_PATTERN</a> = <code title="r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(token=\
+ hxl.common.TOKEN_PATTERN, tag= TAG_PATTERN, col= COL_PATTERN)">r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^<code class="variable-ellipsis">...</code></code><br />
+      Regular expression for an aggregation pattern Matches 1=aggregator, 
+      2=tag pattern, 3=column header, 4=column tag
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="total"></a><span class="summary-name">total</span><br />
+      Total number of rows used.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="value"></a><span class="summary-name">value</span><br />
+      Resulting aggregation value.
     </td>
   </tr>
 </table>
@@ -293,14 +257,13 @@ or.ge, True)}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="varia
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">pattern</span>,
-        <span class="sig-arg">op</span>,
-        <span class="sig-arg">value</span>,
-        <span class="sig-arg">is_quantitative</span>=<span class="sig-default">True</span>)</span>
+        <span class="sig-arg">type</span>=<span class="sig-default">'count'</span>,
+        <span class="sig-arg">pattern</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">column</span>=<span class="sig-default">None</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.__init__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.__init__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
@@ -323,21 +286,57 @@ or.ge, True)}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="varia
     <span class="table-header">Class Variable Details</span></td>
 </tr>
 </table>
-<a name="OPERATOR_MAP"></a>
+<a name="TAG_PATTERN"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
-  <h3 class="epydoc">OPERATOR_MAP</h3>
+  <h3 class="epydoc">TAG_PATTERN</h3>
   
   <dl class="fields">
   </dl>
   <dl class="fields">
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
-{'=':(operator.eq, True), '!=':(operator.ne, True), '&lt;':(operator.lt, <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-True), '&lt;=':(operator.le, True), '&gt;':(operator.gt, True), '&gt;=':(operat<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-or.ge, True)}
+'#?{token}(?:\s*[+-]{token})*'.format(token= hxl.common.TOKEN_PATTERN)
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="COL_PATTERN"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">COL_PATTERN</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+'#{token}(?:\s*\+{token})*'.format(token= hxl.common.TOKEN_PATTERN)
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="AGGREGATOR_PATTERN"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">AGGREGATOR_PATTERN</h3>
+  <p>Regular expression for an aggregation pattern Matches 1=aggregator, 
+  2=tag pattern, 3=column header, 4=column tag</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(token=<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ hxl.common.TOKEN_PATTERN, tag= TAG_PATTERN, col= COL_PATTERN)
 </pre></td></tr></table>
 </dd>
   </dl>
