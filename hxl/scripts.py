@@ -694,6 +694,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 def run_script(func):
     """Try running a command-line script, with exception handling."""
+    func(sys.argv[1:])
     try:
         sys.exit(func(sys.argv[1:], STDIN, sys.stdout))
     except KeyboardInterrupt:
@@ -701,10 +702,12 @@ def run_script(func):
         sys.exit(EXIT_ERROR)
     except Exception as e:
         # show a generic error message
-        if hasattr(e, 'args') and hasattr(e.args, '__len__'):
+        if hasattr(e, 'args') and hasattr(e.args, '__len__') and len(e.args) > 0:
             message = str(e.args[0])
         else:
             message = str(e)
+        if not message:
+            message = type(e).__name__
         print("Error: {}".format(message), file=sys.stderr)
         sys.exit(EXIT_ERROR)
 
