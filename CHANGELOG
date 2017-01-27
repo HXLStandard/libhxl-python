@@ -2,6 +2,7 @@
 	- add verify parameter to hxl.io.data, hxl.io.make_input,
   	  etc. Defaults to True; if False, don't try to validate SSL certs
 	- fix bug with error messages from scripts
+	- fix output bug in command-line scripts
 
 2016-12-02 Release 4.0
 	- Fully modularised JSON specs and recipes.

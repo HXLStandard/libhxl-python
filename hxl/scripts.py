@@ -694,7 +694,6 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 def run_script(func):
     """Try running a command-line script, with exception handling."""
-    func(sys.argv[1:])
     try:
         sys.exit(func(sys.argv[1:], STDIN, sys.stdout))
     except KeyboardInterrupt:
@@ -782,7 +781,7 @@ class FileOutput(object):
         return self
 
     def __exit__(self, value, type, traceback):
-        close(self.output)
+        self.output.close()
 
 class StreamOutput(object):
 
