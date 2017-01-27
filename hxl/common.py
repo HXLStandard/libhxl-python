@@ -48,7 +48,7 @@ def is_empty(s):
     @param s: value to test.
     @returns: True if empty
     """
-    return (s is None or s.isspace())
+    return (s is None or s == '' or s.isspace())
 
 def normalise_string(s):
     """Normalise a string.  
