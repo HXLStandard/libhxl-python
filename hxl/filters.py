@@ -629,7 +629,7 @@ class AppendFilter(AbstractBaseFilter):
     L{AbstractBaseFilter} directly, and implements its own custom
     iterator.
 
-    @see: L{MergeFilter}, which combines two datasets horizontally
+    @see: L{MergeDataFilter}, which combines two datasets horizontally
     rather than vertically.
 
     """
