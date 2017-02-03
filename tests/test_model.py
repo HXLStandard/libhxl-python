@@ -316,6 +316,9 @@ class TestRowQuery(unittest.TestCase):
         # >
         self.assertTrue(RowQuery.parse("date>2015-12-12").match_row(self.row))
         self.assertFalse(RowQuery.parse("date>2015-12-13").match_row(self.row))
+        # is (not) date
+        self.assertTrue(RowQuery.parse("date is date").match_row(self.row))
+        self.assertFalse(RowQuery.parse("date is not date").match_row(self.row))
 
     def test_numbers(self):
         """Test that we're doing numeric rather than lexical comparison"""
@@ -334,6 +337,9 @@ class TestRowQuery(unittest.TestCase):
         # >
         self.assertTrue(RowQuery.parse("affected>9").match_row(self.row))
         self.assertFalse(RowQuery.parse("affected>900").match_row(self.row))
+        # is (not) number
+        self.assertTrue(RowQuery.parse("affected is number").match_row(self.row))
+        self.assertFalse(RowQuery.parse("affected is not number").match_row(self.row))
 
     def test_number_conversion(self):
         # hexadecimal
