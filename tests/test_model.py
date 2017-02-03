@@ -290,6 +290,12 @@ class TestRowQuery(unittest.TestCase):
         # is empty
         self.assertTrue(RowQuery.parse("sector is not empty").match_row(self.row))
         self.assertFalse(RowQuery.parse("sector is empty").match_row(self.row))
+        # is number
+        self.assertTrue(RowQuery.parse("sector is not number").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector is number").match_row(self.row))
+        # is date
+        self.assertTrue(RowQuery.parse("sector is not date").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector is date").match_row(self.row))
 
     def test_whitespace(self):
         self.assertTrue(RowQuery.parse("adm1=coast").match_row(self.row))

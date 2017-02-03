@@ -193,10 +193,7 @@ class SchemaRule(object):
     def _test_type(self, value, row, column):
         """Check the datatype."""
         if self.data_type == 'number':
-            try:
-                float(value)
-                return True
-            except ValueError:
+            if not hxl.common.is_number(value):
                 return self._report_error("Expected a number", value, row, column)
         elif self.data_type == 'url':
             pieces = urlparse(value)

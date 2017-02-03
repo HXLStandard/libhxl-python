@@ -8,7 +8,7 @@
 
 """
 
-import re, unidecode, sys
+import re, unidecode, sys, dateutil
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """Regular-expression pattern for a single token."""
@@ -50,8 +50,27 @@ def is_empty(s):
     """
     return (s is None or s == '' or s.isspace())
 
+def is_number(s):
+    """Can we parse this as a number?"""
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+def normalise_date(s):
+    """Normalise a date.
+
+    Return the normalised version, or False if this can't be parsed as a date.
+    """
+    try:
+        return dateutil.parser.parse(s).strftime('%Y-%m-%d')
+    except:
+        return False
+    
+
 def normalise_string(s):
-    """Normalise a string.  
+    """Normalise a string.
 
     Remove all leading and trailing whitespace. Convert to lower
     case. Replace all internal whitespace (including lineends) with a single space.

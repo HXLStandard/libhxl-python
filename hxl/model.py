@@ -722,6 +722,14 @@ class RowQuery(object):
             return hxl.common.is_empty(s)
         elif condition == 'not empty':
             return not hxl.common.is_empty(s)
+        elif condition == 'number':
+            return hxl.common.is_number(s)
+        elif condition == 'not number':
+            return not hxl.common.is_number(s)
+        elif condition == 'date':
+            return (hxl.common.normalise_date(s) is not False)
+        elif condition == 'not date':
+            return (hxl.common.normalise_date(s) is False)
         else:
             raise hxl.common.HXLException('Unknown is condition: {}'.format(condition))
     
