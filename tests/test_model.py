@@ -241,8 +241,8 @@ class TestRow(unittest.TestCase):
 class TestRowQuery(unittest.TestCase):
 
     ROW_NUMBER = 5
-    TAGS = ['#sector', '#date', '#adm1+name', '#affected', '#inneed', '#population']
-    CONTENT = ['WASH', '12/13/2015', '  Coast  ', '200', ' 500 ', '1,000']
+    TAGS = ['#sector', '#date', '#adm1+name', '#affected', '#inneed', '#population', '#meta']
+    CONTENT = ['WASH', '12/13/2015', '  Coast  ', '200', ' 500 ', '1,000', '']
 
     def setUp(self):
         columns = []
@@ -286,6 +286,10 @@ class TestRowQuery(unittest.TestCase):
         self.assertTrue(RowQuery.parse("sector!~X").match_row(self.row))
         self.assertTrue(RowQuery.parse("sector!~W$").match_row(self.row))
         self.assertFalse(RowQuery.parse("sector!~w").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector !~ w").match_row(self.row))
+        # is empty
+        self.assertTrue(RowQuery.parse("sector is not empty").match_row(self.row))
+        self.assertFalse(RowQuery.parse("sector is empty").match_row(self.row))
 
     def test_whitespace(self):
         self.assertTrue(RowQuery.parse("adm1=coast").match_row(self.row))

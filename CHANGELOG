@@ -4,6 +4,7 @@
 	- fix bug with error messages from scripts
 	- fix output bug in command-line scripts
 	- fixed bug in merge filter
+	- added new "is (not)" operator for row queries
 
 2016-12-02 Release 4.0
 	- Fully modularised JSON specs and recipes.

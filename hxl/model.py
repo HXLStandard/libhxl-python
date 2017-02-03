@@ -674,7 +674,7 @@ class RowQuery(object):
         if isinstance(query, RowQuery):
             # already parsed
             return query
-        parts = re.split(r'([<>]=?|!?=|!?~)', query, maxsplit=1)
+        parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.common.normalise_string(query), maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op = RowQuery.OPERATOR_MAP[parts[1]][0]
         value = parts[2]
@@ -715,6 +715,17 @@ class RowQuery(object):
         """Regular-expression negative comparison operator."""
         return not re.search(pattern, s)
 
+    @staticmethod
+    def operator_is(s, condition):
+        """Advanced tests"""
+        if condition == 'empty':
+            return hxl.common.is_empty(s)
+        elif condition == 'not empty':
+            return not hxl.common.is_empty(s)
+        else:
+            raise hxl.common.HXLException('Unknown is condition: {}'.format(condition))
+    
+
     # Constant map of comparison operators
     # Second value is true for a quantitative operator like <, false for a non-quantitative one like ~
     OPERATOR_MAP = {
@@ -723,13 +734,14 @@ class RowQuery(object):
         '<': (operator.lt, True),
         '<=': (operator.le, True),
         '>': (operator.gt, True),
-        '>=': (operator.ge, True)
+        '>=': (operator.ge, True),
     }
 
 
 # Extra static initialisation
 RowQuery.OPERATOR_MAP['~'] = (RowQuery.operator_re, False)
 RowQuery.OPERATOR_MAP['!~'] = (RowQuery.operator_nre, False)
+RowQuery.OPERATOR_MAP['is'] = (RowQuery.operator_is, False)
 
 
 # end
