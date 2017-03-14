@@ -9,15 +9,15 @@ About HXL: http://hxlstandard.org
 
 # Usage
 
-The _hxl()_ function (in the package ``hxl``) reads HXL from a file
-object, filename, URL, or list of arrays and makes it available for
-processing, much like ``$()`` in JQuery:
+The _hxl.data()_ function reads HXL from a file object, filename, URL,
+or list of arrays and makes it available for processing, much like
+``$()`` in JQuery:
 
 ```
 import sys
-from hxl import hxl
+import hxl
 
-dataset = hxl(sys.stdin)
+dataset = hxl.data(sys.stdin)
 ```
 
 You can add additional methods to process the data.  This example
@@ -25,7 +25,7 @@ shows an identity transformation in a pipeline (See "Generators",
 below):
 
 ```
-for line in hxl(sys.stdin).gen_csv():
+for line in hxl.data(sys.stdin).gen_csv():
     print(line)
 ```
 
@@ -33,7 +33,7 @@ This is the Same transformation, but loading the entire dataset into
 memory as an intermediate step (see "Filters", below):
 
 ```
-for line in hxl(sys.stdin).cache().gen_csv():
+for line in hxl.data(sys.stdin).cache().gen_csv():
     print(line)
 ```
 
@@ -46,7 +46,7 @@ row that has a #sector of "WASH" and print the organisation mentioned
 in the row:
 
 ```
-for row in hxl(sys.stdin).with_rows('#sector=WASH'):
+for row in hxl.data(sys.stdin).with_rows('#sector=WASH'):
     print('The organisation is {}'.format(row.get('#org')))
 ```
 
@@ -55,7 +55,7 @@ number of times each organisation appears in the remaining rows:
 
 ```
 url = 'http://example.org/data.csv'
-result = hxl(url).with_rows('#sector!=WASH').count('#org')
+result = hxl.data(url).with_rows('#sector!=WASH').count('#org')
 ```
 
 The following filters are available:
@@ -67,36 +67,68 @@ The following filters are available:
   </thead>
   <tbody>
     <tr>
-      <td><code>Dataset.cache()</code></td>
+      <td><code>.append(append_sources, add_columns=True, queries=[])</code></td>
+      <td>Append a second HXL dataset to the current one, lining up columns.</td>
+    </tr>
+    <tr>
+      <td><code>.cache()</code></td>
       <td>Cache an in-memory version of the dataset (for processing multiple times).</td>
     </tr>
     <tr>
-      <td><code>Dataset.with_columns(patterns)</code></td>
-      <td>Include only columns that match the tag pattern(s), e.g. "#org+impl".</td>
+      <td><code>.dedup(patterns=[], queries=[])</code></td>
+      <td>Deduplicate the rows in a dataset, optionally looking only at specific columns.</td>
     </tr>
     <tr>
-      <td><code>Dataset.without_columns(patterns)</code></td>
-      <td>Include all columns <em>except</em> those that match the tag patterns.</td>
+      <td><code>.with_columns(whitelist)</code></td>
+      <td>Include only columns that match the whitelisted tag pattern(s), e.g. "#org+impl".</td>
     </tr>
     <tr>
-      <td><code>Dataset.with_rows(queries)</code></td>
-      <td>Include only rows that match at least one of the queries, e.g. "#sector=WASH".</td>
+      <td><code>.without_columns(blacklist)</code></td>
+      <td>Include all columns <em>except</em> those that match the blacklisted tag patterns.</td>
     </tr>
     <tr>
-      <td><code>Dataset.without_rows(queries)</code></td>
-      <td>Exclude rows that match at least one of the queries, e.g. "#sector=WASH".</td>
+      <td><code>.with_rows(queries, mask=[])</code></td>
+      <td>Include only rows that match at least one of the queries, e.g. "#sector=WASH". Optionally ignore rows that don't match a mask pattern.</td>
     </tr>
     <tr>
-      <td><code>Dataset.sort(patterns, reverse=False)</code></td>
+      <td><code>.without_rows(queries, mask=[])</code></td>
+      <td>Exclude rows that match at least one of the queries, e.g. "#sector=WASH". Optionally ignore rows that don't match a mask pattern.</td>
+    </tr>
+    <tr>
+      <td><code>.sort(keys=None, reverse=False)</code></td>
       <td>Sort the rows, optionally using the pattern(s) provided as sort keys. Set _reverse_ to True for a descending sort.</td>
     </tr>
     <tr>
-      <td><code>Dataset.count(patterns, aggregate_pattern=None)</code></td>
-      <td>Count the number of value combinations that appear for the pattern(s), e.g. ['#sector', '#org']</td>
+      <td><code>.count(patterns=[], aggregators=None, queries=[])</code></td>
+      <td>Count the number of value combinations that appear for the pattern(s), e.g. ['#sector', '#org']. Optionally perform other aggregations, such as sums or averages.</td>
     </tr>
     <tr>
-      <td><code>Dataset.add_columns(specs, before=False)</code></td>
+      <td><code>.replace_data(original, replacement, pattern=None, use_regex=False, queries=[])</code></td>
+      <td>Replace values in a HXL dataset.</td>
+    </tr>
+    <tr>
+      <td><code>.replace_data_map(map_source, queries=[])</code></td>
+      <td>Replace values in a HXL dataset using a replacement map in another HXL dataset.</td>
+    </tr>
+    <tr>
+      <td><code>.add_columns(specs, before=False)</code></td>
       <td>Add columns with fixed values to the dataset, e.g. "Country#country=Kenya" to add a new column #country with the text header "Country" and the value "Kenya" in every row.</td>
+    </tr>
+    <tr>
+      <td><code>.rename_columns(specs)</code></td>
+      <td>Change the header text and HXL hashtags for one or more columns.</td>
+    </tr>
+    <tr>
+      <td><code>.clean_data(whitespace=[], upper=[], lower=[], date=[], number=[], queries=[])</code></td>
+      <td>Clean whitespace, normalise dates and numbers, etc., optionally limited to specific columns.</td>
+    </tr>
+    <tr>
+      <td><code>.merge_data(merge_source, keys, tags, replace=False, overwrite=False, queries=[])</code></td>
+      <td>Merge values horizontally from a second dataset, based on shared keys (like a SQL join).</td>
+    </tr>
+    <tr>
+      <td><code>.explode(header_attribute='header', value_attribute='value')</code></td>
+      <td>Explode a "wide" dataset into a "long" dataset, using the HXL +label attribute.</td>
     </tr>
   </tbody>
 </table>
@@ -110,13 +142,13 @@ Sinks take a HXL stream and convert it into something that's not HXL.
 To validate a HXL dataset against a schema (also in HXL), use the ``validate`` sink:
 
 ```
-is_valid = hxl(url).validate('my-schema.csv')
+is_valid = hxl.data(url).validate('my-schema.csv')
 ```
 
 If you don't specify a schema, the library will use a simple, built-in schema:
 
 ```
-is_valid = hxl(url).validate()
+is_valid = hxl.data(url).validate()
 ```
 
 If you include a callback, you can collect details about the errors and warnings:
@@ -126,7 +158,7 @@ def my_callback(error_info):
     # error_info is a HXLValidationException
     sys.stderr.write(error_info)
 
-is_valid = hxl(url).validate(schema='my-schema.csv', callback=my_callback)
+is_valid = hxl.data(url).validate(schema='my-schema.csv', callback=my_callback)
 ```
 
 ### Generators
@@ -134,7 +166,7 @@ is_valid = hxl(url).validate(schema='my-schema.csv', callback=my_callback)
 Generators allow the re-serialising of HXL data, returning something that works like an iterator.  Example:
 
 ```
-for line in hxl(url).gen_csv():
+for line in hxl.data(url).gen_csv():
     print(line)
 ```
 
