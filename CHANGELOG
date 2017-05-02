@@ -1,4 +1,7 @@
 
+	- support JSON input (list of rows)
+	- use MIME type and extension where available to help choose type
+	- grab character encoding from HTTP response if available
 	- add verify parameter to hxl.io.data, hxl.io.make_input,
   	  etc. Defaults to True; if False, don't try to validate SSL certs
 	- fix bug with error messages from scripts

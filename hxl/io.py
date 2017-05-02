@@ -423,9 +423,13 @@ class JSONInput(AbstractInput):
         else:
             self._input = io.TextIOWrapper(input, encoding=encoding)
         self._iterator = iter(json.load(self._input, encoding=encoding))
+        self._encoding = encoding
 
     def __next__(self):
         row =  next(self._iterator)
+        if sys.version_info < (3,):
+            # Restore non-Unicode encoding (blech), because CSV parser doesn't Unicode encode
+            row = [cell.encode(self._encoding) for cell in row]
         return row
 
     next = __next__
