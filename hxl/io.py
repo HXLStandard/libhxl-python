@@ -398,17 +398,11 @@ class AbstractInput(object):
 class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    def __init__(self, input):
+    def __init__(self, input, encoding='utf-8'):
         if sys.version_info < (3,):
             self._input = input
         else:
-            if hasattr(input, 'response'):
-                # Trick - if this is a wrapper, we can get at the response
-                encoding = input.response.encoding
-            else:
-                encoding = 'utf-8'
             self._input = io.TextIOWrapper(input, encoding=encoding)
-                
         self._reader = csv.reader(self._input)
 
     def __next__(self):
@@ -423,21 +417,16 @@ class CSVInput(AbstractInput):
 class JSONInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    def __init__(self, input):
+    def __init__(self, input, encoding='utf-8'):
         if sys.version_info < (3,):
             self._input = input
         else:
-            if hasattr(input, 'response'):
-                # Trick - if this is a wrapper, we can get at the response
-                encoding = input.response.encoding
-            else:
-                encoding = 'utf-8'
             self._input = io.TextIOWrapper(input, encoding=encoding)
-                
-        self._iterator = iter(json.load(self._input))
+        self._iterator = iter(json.load(self._input, encoding=encoding))
 
     def __next__(self):
-        return next(self._iterator)
+        row =  next(self._iterator)
+        return row
 
     next = __next__
 
