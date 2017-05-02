@@ -36,10 +36,34 @@ DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'
 
 # opening signatures for well-known file types
+
+JSON_MIME_TYPES = [
+    'application/json'
+]
+
+JSON_FILE_EXTS = [
+    'json'
+]
+
+EXCEL_MIME_TYPES = [
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+]
+
+EXCEL_FILE_EXTS = [
+    'xls',
+    'xlsx'
+]
+
 EXCEL_SIGS = [
     b"PK\x03\x04",
     b"\xd0\xcf\x11\xe0"
 ]
+
+HTML5_MIME_TYPES = [
+    'text/html'
+]
+
 HTML5_SIGS = [
     b"<!DO",
     b"\n<!D"
@@ -190,16 +214,19 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             input = wrap_stream(input)
 
         sig = input.peek(4)[:4]
-        if sig in HTML5_SIGS:
+
+        if (mime_type in HTML5_MIME_TYPES) or (sig in HTML5_SIGS):
             raise hxl.common.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {'input': input}
             )
-        elif sig in EXCEL_SIGS:
+
+        elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or (sig in EXCEL_SIGS):
             return ExcelInput(input, sheet_index=sheet_index)
-        elif sig[:1] == b'[':
-            # FIXME - horrible kludge!
+
+        elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS):
             return JSONInput(input)
+
         else:
             return CSVInput(input)
 
