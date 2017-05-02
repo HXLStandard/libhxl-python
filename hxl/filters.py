@@ -1691,7 +1691,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             if self.pattern and not self.pattern.match(column):
                 return value
             elif self.is_regex:
-                return re.sub(self.original, self.replacement, value)
+                return re.sub(self.original, self.replacement, str(value))
             elif self.original == hxl.common.normalise_string(value):
                 return self.replacement
             else:
