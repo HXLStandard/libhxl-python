@@ -177,12 +177,17 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         return ArrayInput(raw_source)
 
     else:
+        mime_type = None
+        file_ext = None
+        encoding = None
+        
         if hasattr(raw_source, 'read'):
             # it's an input stream
             input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
-            input = wrap_stream(open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout, verify=verify))
+            (input, mime_type, file_ext, encoding) = open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout, verify=verify)
+            input = wrap_stream(input)
 
         sig = input.peek(4)[:4]
         if sig in HTML5_SIGS:
@@ -207,15 +212,36 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify=Tr
     @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
     @return: an io stream.
     """
+    mime_type = None
+    file_ext = None
+    encoding = None
+
+    # Try for file extension
+    result = re.search(r'\.([A-Za-z0-9]{1,5})$', url_or_filename)
+    if result:
+        file_ext = result.group(1).lower()
+    
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
         response = requests.get(munge_url(url_or_filename, verify), stream=True, verify=verify, timeout=timeout)
         if response.status_code != 200:
             raise IOError('Received HTTP response code {}'.format(response.status_code))
-        return RequestResponseIOWrapper(response)
+
+        content_type = response.headers['Content-type']
+        if content_type:
+            result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
+            if result:
+                mime_type = result.group(1).lower()
+                encoding = result.group(2).lower()
+            else:
+                mime_type = content_type.lower()
+
+        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding)
+
     elif allow_local:
         # Default to a local file, if allowed
-        return io.open(url_or_filename, 'rb')
+        return (io.open(url_or_filename, 'rb'), mime_type, file_ext, encoding)
+
     else:
         # Forbidden to trye local (allow_local is False), so give up.
         raise IOError("Only http(s) and (s)ftp URLs allowed: {}".format(url_or_filename))
