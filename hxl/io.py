@@ -192,6 +192,9 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             )
         elif sig in EXCEL_SIGS:
             return ExcelInput(input, sheet_index=sheet_index)
+        elif sig[:1] == b'[':
+            # FIXME - horrible kludge!
+            return JSONInput(input)
         else:
             return CSVInput(input)
 
@@ -311,6 +314,10 @@ class RequestResponseIOWrapper(io.RawIOBase):
         else:
             return True
 
+    @property
+    def content_type(self):
+        return self.response.headers.get('Content-type')
+
     def close(self):
         """Close the streaming response."""
         return self.response.close()
@@ -353,6 +360,31 @@ class CSVInput(AbstractInput):
 
     def __next__(self):
         return next(self._reader)
+
+    next = __next__
+
+    def __exit__(self, value, type, traceback):
+        self._input.close()
+
+
+class JSONInput(AbstractInput):
+    """Read raw CSV input from a URL or filename."""
+
+    def __init__(self, input):
+        if sys.version_info < (3,):
+            self._input = input
+        else:
+            if hasattr(input, 'response'):
+                # Trick - if this is a wrapper, we can get at the response
+                encoding = input.response.encoding
+            else:
+                encoding = 'utf-8'
+            self._input = io.TextIOWrapper(input, encoding=encoding)
+                
+        self._iterator = iter(json.load(self._input))
+
+    def __next__(self):
+        return next(self._iterator)
 
     next = __next__
 

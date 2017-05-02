@@ -24,11 +24,13 @@ def _resolve_file(filename):
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
+FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
 FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
 URL_EXCEL = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
+URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.json'
 URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 
@@ -151,6 +153,11 @@ class TestParser(unittest.TestCase):
         with hxl.data(FILE_EXCEL, True) as source:
             self.compare_input(source)
 
+    def test_local_json(self):
+        """Test reading from a local JSON file."""
+        with hxl.data(FILE_JSON, True) as source:
+            self.compare_input(source)
+
     def test_remote_csv(self):
         """Test reading from a remote CSV file (will fail without connectivity)."""
         with hxl.data(URL_CSV) as source:
@@ -159,6 +166,11 @@ class TestParser(unittest.TestCase):
     def test_remote_excel(self):
         """Test reading from a remote Excel file (will fail without connectivity)."""
         with hxl.data(URL_EXCEL) as source:
+            self.compare_input(source)
+
+    def x_test_remote_json(self):
+        """Test reading from a remote JSON file (will fail without connectivity)."""
+        with hxl.data(URL_JSON) as source:
             self.compare_input(source)
 
     def test_remote_google(self):
