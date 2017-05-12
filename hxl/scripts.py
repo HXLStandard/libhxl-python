@@ -216,6 +216,12 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
+        '--date-format',
+        help='Date formatting string in strftime format (defaults to %Y-%m-%d).',
+        default='%Y-%m-%d',
+        metavar='format',
+        )
+    parser.add_argument(
         '-n',
         '--number',
         help='Comma-separated list of tags for number normalisation.',
@@ -230,7 +236,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
         filter = hxl.filters.CleanDataFilter(
             source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
-            date=args.date, number=args.number, queries=args.query
+            date=args.date, date_format=args.date_format, number=args.number, queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 

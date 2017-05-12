@@ -366,6 +366,28 @@ class TestCleanFilter(AbstractBaseFilterTest):
             ['NGO B', 'Child Protection', 'Coast', '2015-01-01']
         ]
         self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(date='date').values)
+
+    def test_custom_dates(self):
+        # User-supplied data formats
+        DATA_IN = [
+            ['Organisation', 'Cluster', 'District', 'Date'],
+            ['#org', '#sector+list', '#adm1', '#date'],
+            ['NGO A', 'WASH', 'Coast', 'January 1 2015'],
+            ['NGO B', 'Education', 'Plains', '1/1/15'],
+            ['NGO B', 'Child Protection', 'Coast', '1 Jan/15']
+        ]
+        DATA_OUT_Y = [
+            ['NGO A', 'WASH', 'Coast', '2015'],
+            ['NGO B', 'Education', 'Plains', '2015'],
+            ['NGO B', 'Child Protection', 'Coast', '2015']
+        ]
+        DATA_OUT_Y_M = [
+            ['NGO A', 'WASH', 'Coast', '2015-01'],
+            ['NGO B', 'Education', 'Plains', '2015-01'],
+            ['NGO B', 'Child Protection', 'Coast', '2015-01']
+        ]
+        self.assertEqual(DATA_OUT_Y, hxl.data(DATA_IN).clean_data(date='date', date_format='%Y').values)
+        self.assertEqual(DATA_OUT_Y_M, hxl.data(DATA_IN).clean_data(date='date', date_format='%Y-%m').values)
         
     def test_upper_case(self):
         DATA_OUT = [

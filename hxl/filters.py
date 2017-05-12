@@ -884,7 +884,7 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], number=[], queries=[]):
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format='%Y-%m-%d', number=[], queries=[]):
         """Construct a new data-cleaning filter.
 
         The I{upper}, I{lower}, I{date}, and I{number} arguments all
@@ -900,6 +900,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param upper: a tag pattern or list of tag patterns for conversion to uppercase
         @param lower: a tag pattern or list of tag patterns for conversion to lowercase
         @param date: a tag pattern or list of tag patterns for date normalisation
+        @param date_format a date-format string for output, as used by strftime
         @param number: a tag pattern or list of tag patterns for number normalisation
         @param queries: optional list of queries to select rows to be cleaned.
 
@@ -909,6 +910,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.upper = hxl.model.TagPattern.parse_list(upper)
         self.lower = hxl.model.TagPattern.parse_list(lower)
         self.date = hxl.model.TagPattern.parse_list(date)
+        self.date_format = date_format
         self.number = hxl.model.TagPattern.parse_list(number)
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
@@ -953,7 +955,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         # Date
         if self._match_patterns(self.date, column):
             if value:
-                value = dateutil.parser.parse(value).strftime('%Y-%m-%d')
+                value = dateutil.parser.parse(value).strftime(self.date_format)
 
         # Number
         if self._match_patterns(self.number, column) and re.search('\d', value):
@@ -998,6 +1000,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             upper=opt_arg(spec, 'upper', []),
             lower=opt_arg(spec, 'lower', []),
             date=opt_arg(spec, 'date', []),
+            date_format=opt_arg(spec, 'date_format', '%Y-%m-%d'),
             number=opt_arg(spec, 'number', []),
             queries=opt_arg(spec, 'queries', [])
         )
