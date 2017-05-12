@@ -218,7 +218,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '--date-format',
         help='Date formatting string in strftime format (defaults to %Y-%m-%d).',
-        default='%Y-%m-%d',
+        default=None,
         metavar='format',
         )
     parser.add_argument(

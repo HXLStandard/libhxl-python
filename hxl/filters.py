@@ -884,7 +884,7 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format='%Y-%m-%d', number=[], queries=[]):
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None, number=[], queries=[]):
         """Construct a new data-cleaning filter.
 
         The I{upper}, I{lower}, I{date}, and I{number} arguments all
@@ -910,7 +910,10 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.upper = hxl.model.TagPattern.parse_list(upper)
         self.lower = hxl.model.TagPattern.parse_list(lower)
         self.date = hxl.model.TagPattern.parse_list(date)
-        self.date_format = date_format
+        if date_format is None:
+            self.date_format = '%Y-%m-%d'
+        else:
+            self.date_format = date_format
         self.number = hxl.model.TagPattern.parse_list(number)
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
