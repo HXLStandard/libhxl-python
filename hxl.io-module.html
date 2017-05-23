@@ -107,6 +107,14 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a href="hxl.io.JSONInput-class.html" class="summary-name">JSONInput</a><br />
+      Read raw CSV input from a URL or filename.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="hxl.io.ExcelInput-class.html" class="summary-name">ExcelInput</a><br />
       Read raw XLS input from a URL or filename.
     </td>
@@ -145,7 +153,8 @@
           <td><span class="summary-sig"><a href="hxl.io-module.html#data" class="summary-sig-name">data</a>(<span class="summary-sig-arg">data</span>,
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">verify</span>=<span class="summary-sig-default">True</span>)</span><br />
       Convenience method for reading a HXL dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#data">source&nbsp;code</a></span>
@@ -168,7 +177,8 @@
         <span class="summary-sig-arg">match_all</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">verify</span>=<span class="summary-sig-default">True</span>)</span><br />
       Open an untagged data source and add hashtags.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#tagger">source&nbsp;code</a></span>
@@ -225,7 +235,8 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="munge_url"></a><span class="summary-sig-name">munge_url</span>(<span class="summary-sig-arg">url</span>)</span><br />
+          <td><span class="summary-sig"><a name="munge_url"></a><span class="summary-sig-name">munge_url</span>(<span class="summary-sig-arg">url</span>,
+        <span class="summary-sig-arg">verify</span>=<span class="summary-sig-default">True</span>)</span><br />
       Munge a URL to get at underlying data for well-known types.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#munge_url">source&nbsp;code</a></span>
@@ -262,7 +273,8 @@
           <td><span class="summary-sig"><a href="hxl.io-module.html#make_input" class="summary-sig-name">make_input</a>(<span class="summary-sig-arg">raw_source</span>,
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">verify</span>=<span class="summary-sig-default">True</span>)</span><br />
       Figure out what kind of input to create.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#make_input">source&nbsp;code</a></span>
@@ -281,7 +293,8 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.io-module.html#open_url_or_file" class="summary-sig-name">open_url_or_file</a>(<span class="summary-sig-arg">url_or_filename</span>,
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
-        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">verify</span>=<span class="summary-sig-default">True</span>)</span><br />
       Try opening a local or remote resource.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#open_url_or_file">source&nbsp;code</a></span>
@@ -351,7 +364,43 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="JSON_MIME_TYPES"></a><span class="summary-name">JSON_MIME_TYPES</span> = <code title="['application/json']">['application/json']</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="JSON_FILE_EXTS"></a><span class="summary-name">JSON_FILE_EXTS</span> = <code title="['json']">['json']</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.io-module.html#EXCEL_MIME_TYPES" class="summary-name">EXCEL_MIME_TYPES</a> = <code title="['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedoc\
+ument.spreadsheetml.sheet']">['application/vnd.ms-excel', 'application/v<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="EXCEL_FILE_EXTS"></a><span class="summary-name">EXCEL_FILE_EXTS</span> = <code title="['xls', 'xlsx']">['xls', 'xlsx']</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a name="EXCEL_SIGS"></a><span class="summary-name">EXCEL_SIGS</span> = <code title="[b&quot;PK\x03\x04&quot;, b&quot;\xd0\xcf\x11\xe0&quot;]">[b&quot;PK\x03\x04&quot;, b&quot;\xd0\xcf\x11\xe0&quot;]</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="HTML5_MIME_TYPES"></a><span class="summary-name">HTML5_MIME_TYPES</span> = <code title="['text/html']">['text/html']</code>
     </td>
   </tr>
 <tr>
@@ -381,7 +430,8 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
   <h3 class="epydoc"><span class="sig"><span class="sig-name">data</span>(<span class="sig-arg">data</span>,
         <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
         <span class="sig-arg">sheet_index</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>)</span>
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">verify</span>=<span class="sig-default">True</span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="hxl.io-pysrc.html#data">source&nbsp;code</a></span>&nbsp;
@@ -415,7 +465,8 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
   <h3 class="epydoc"><span class="sig"><span class="sig-name">make_input</span>(<span class="sig-arg">raw_source</span>,
         <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
         <span class="sig-arg">sheet_index</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>)</span>
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">verify</span>=<span class="sig-default">True</span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="hxl.io-pysrc.html#make_input">source&nbsp;code</a></span>&nbsp;
@@ -452,7 +503,8 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">open_url_or_file</span>(<span class="sig-arg">url_or_filename</span>,
         <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
-        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>)</span>
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">verify</span>=<span class="sig-default">True</span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="hxl.io-pysrc.html#open_url_or_file">source&nbsp;code</a></span>&nbsp;
@@ -540,6 +592,25 @@ r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'
   </dl>
 </td></tr></table>
 </div>
+<a name="EXCEL_MIME_TYPES"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">EXCEL_MIME_TYPES</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedoc<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ument.spreadsheetml.sheet']
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
 <br />
 <!-- ==================== NAVIGATION BAR ==================== -->
 <table class="navbar" border="0" width="100%" cellpadding="0"
@@ -568,7 +639,7 @@ r'^(https?://[^/]+)/dataset/([^/]+)/resource/([a-z0-9-]{36})$'
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Wed Dec  7 16:06:32 2016
+    on Tue May 23 14:02:22 2017
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
