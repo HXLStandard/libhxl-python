@@ -99,6 +99,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify=True):
     
 def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify=True):
     """Open an untagged data source and add hashtags."""
+    import hxl.converters
     return hxl.data(
         hxl.converters.Tagger(
             input=make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify=verify),

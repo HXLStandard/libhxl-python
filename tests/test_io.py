@@ -204,3 +204,27 @@ class TestParser(unittest.TestCase):
                     self.assertEqual(float(TestParser.EXPECTED_CONTENT[i][j]), float(value))
                 except:
                     self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
+
+class TestFunctions(unittest.TestCase):
+    """Test module-level convenience functions."""
+
+    DATA_TAGGED = [
+        ["District", "Sector", "Organisation"],
+        ["#adm1", "#sector", "#org"],
+        ["Coast", "Health", "NGO A"],
+        ["Plains", "Education", "NGO B"],
+        ["Forest", "WASH", "NGO C"],
+    ]
+
+    DATA_UNTAGGED = [
+        ["District", "Sector", "Organisation"],
+        ["Coast", "Health", "NGO A"],
+        ["Plains", "Education", "NGO B"],
+        ["Forest", "WASH", "NGO C"],
+    ]
+
+    def test_tagger(self):
+        input = hxl.io.tagger(TestFunctions.DATA_UNTAGGED, {
+                "District": "#org"
+        })
+        self.assertEqual(TestFunctions.DATA_UNTAGGED[1:], [row.values for row in input])
