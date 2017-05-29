@@ -153,7 +153,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
         return self.source.columns
 
     @staticmethod
-    def _load (spec):
+    def _load (source, spec):
         """Create an instance of the filter from a dict."""
         raise NotImplementedError("No static _load method implemented.")
 
@@ -1680,6 +1680,15 @@ class FillDataFilter(AbstractStreamingFilter):
                     self._indices.add(i)
         return self._indices
 
+    @staticmethod
+    def _load(source, spec):
+        """Create a fill-data filter from a dict spec."""
+        return FillDataFilter(
+            source=source,
+            pattern=opt_arg(spec, 'pattern'),
+            queries=opt_arg(spec, 'queries'),
+        )
+
     
 class ReplaceDataFilter(AbstractStreamingFilter):
     """
@@ -1979,22 +1988,23 @@ class SortFilter(AbstractCachingFilter):
 #
 
 LOAD_MAP = {
-        'add_columns': AddColumnsFilter._load,
-        'append': AppendFilter._load,
-        'cache': CacheFilter._load,
-        'clean_data': CleanDataFilter._load,
-        'count': CountFilter._load,
-        'dedup': DeduplicationFilter._load,
-        'explode': ExplodeFilter._load,
-        'merge_data': MergeDataFilter._load,
-        'rename_columns': RenameFilter._load,
-        'replace_data': ReplaceDataFilter._load,
-        'replace_data_map': ReplaceDataFilter._load,
-        'sort': SortFilter._load,
-        'with_columns': ColumnFilter._load,
-        'with_rows': RowFilter._load,
-        'without_columns': ColumnFilter._load,
-        'without_rows': RowFilter._load,
+    'add_columns': AddColumnsFilter._load,
+    'append': AppendFilter._load,
+    'cache': CacheFilter._load,
+    'clean_data': CleanDataFilter._load,
+    'count': CountFilter._load,
+    'dedup': DeduplicationFilter._load,
+    'explode': ExplodeFilter._load,
+    'fill_data': FillDataFilter._load,
+    'merge_data': MergeDataFilter._load,
+    'rename_columns': RenameFilter._load,
+    'replace_data': ReplaceDataFilter._load,
+    'replace_data_map': ReplaceDataFilter._load,
+    'sort': SortFilter._load,
+    'with_columns': ColumnFilter._load,
+    'with_rows': RowFilter._load,
+    'without_columns': ColumnFilter._load,
+    'without_rows': RowFilter._load,
 }
 """Static functions for creating filters from dicts (from JSON, typically)."""
 

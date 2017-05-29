@@ -126,6 +126,10 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = self.source.recipe({'filter': 'explode'})
         self.assertEqual(type(filtered).__name__, 'ExplodeFilter')
 
+    def test_fill_data(self):
+        filtered = self.source.recipe({'filter': 'fill_data'})
+        self.assertEqual(type(filtered).__name__, 'FillDataFilter')
+
     def test_merge_data(self):
         filtered = self.source.recipe({
             'filter': 'merge_data',
