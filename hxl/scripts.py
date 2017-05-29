@@ -77,6 +77,10 @@ def hxlreplace():
     """Console script for hxlreplace."""
     run_script(hxlreplace_main)
 
+def hxlfill():
+    """Console script for hxlreplace."""
+    run_script(hxlfill_main)
+
 def hxlselect():
     """Console script for hxlselect."""
     run_script(hxlselect_main)
@@ -480,6 +484,35 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             for tag in args.tags:
                 replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
         filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlfill with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = make_args('Fill empty cells in a HXL dataset')
+
+    parser.add_argument(
+        '-t',
+        '--tag',
+        help='Fill empty cells only in matching columns (default: fill in all)',
+        metavar='tagpattern,...',
+        type=hxl.model.TagPattern.parse,
+        )
+    add_queries_arg(parser, 'Fill only in rows that match at least one query.')
+
+    args = parser.parse_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.FillDataFilter(source, pattern=args.tag, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
