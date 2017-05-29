@@ -1,8 +1,9 @@
 
 	- support JSON input (list of rows)
+	- add fill_data filter to fill empty cells from previous rows
 	- use MIME type and extension where available to help choose type
 	- grab character encoding from HTTP response if available
-	- add verify parameter to hxl.io.data, hxl.io.make_input,
+	- add verify_ssl parameter to hxl.io.data, hxl.io.make_input,
   	  etc. Defaults to True; if False, don't try to validate SSL certs
 	- add new "is (not)" operator for row queries
 	- add optional date_format parameter for clean data filter

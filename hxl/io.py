@@ -75,7 +75,7 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False, sheet_index=None, timeout=None, verify=True):
+def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
@@ -94,15 +94,15 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify=True):
         return hxl.io.from_spec(data)
 
     else:
-        return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify=True))
+        return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify_ssl=True))
 
     
-def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify=True):
+def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
     """Open an untagged data source and add hashtags."""
     import hxl.converters
     return hxl.data(
         hxl.converters.Tagger(
-            input=make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify=verify),
+            input=make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify_ssl=verify_ssl),
             specs=specs,
             default_tag=default_tag,
             match_all=match_all
@@ -122,7 +122,7 @@ def write_json(output, source, show_headers=True, show_tags=True):
         output.write(line)
 
 
-def munge_url(url, verify=True):
+def munge_url(url, verify_ssl=True):
     """Munge a URL to get at underlying data for well-known types."""
 
     # Is it a Google URL?
@@ -142,7 +142,7 @@ def munge_url(url, verify=True):
     result = re.match(CKAN_URL, url)
     if result:
         ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
-        ckan_api_result = requests.get(ckan_api_query, verify=verify).json()
+        ckan_api_result = requests.get(ckan_api_query, verify_ssl=verify_ssl).json()
         return ckan_api_result['result']['url']
 
     # No changes
@@ -167,7 +167,7 @@ else:
     encode = _encode_py3
 
     
-def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify=True):
+def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
     """Figure out what kind of input to create.
 
     Can detect a URL or filename, an input stream, or an array.
@@ -211,7 +211,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
-            (input, mime_type, file_ext, encoding) = open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout, verify=verify)
+            (input, mime_type, file_ext, encoding) = open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout, verify_ssl=verify_ssl)
             input = wrap_stream(input)
 
         sig = input.peek(4)[:4]
@@ -232,7 +232,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             return CSVInput(input)
 
 
-def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify=True):
+def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True):
     """Try opening a local or remote resource.
     Allows only HTTP(S) and (S)FTP URLs.
     @param url_or_filename: the string to try openining.
@@ -251,7 +251,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify=Tr
     
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
-        response = requests.get(munge_url(url_or_filename, verify), stream=True, verify=verify, timeout=timeout)
+        response = requests.get(munge_url(url_or_filename, verify_ssl), stream=True, verify=verify_ssl, timeout=timeout)
         if response.status_code != 200:
             raise IOError('Received HTTP response code {}'.format(response.status_code))
 
@@ -654,7 +654,7 @@ def from_spec(spec):
     allow_local = spec.get('allow_local', False)
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
-    verify = spec.get('verify', True)
+    verify_ssl = spec.get('verify_ssl', True)
 
     # recipe
     tagger_spec = spec.get('tagger', None)
@@ -669,7 +669,7 @@ def from_spec(spec):
         allow_local=allow_local,
         sheet_index=sheet_index,
         timeout=timeout,
-        verify=verify
+        verify_ssl=verify_ssl
     )
 
     # autotag if requested
