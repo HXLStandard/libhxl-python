@@ -1655,13 +1655,12 @@ class FillDataFilter(AbstractStreamingFilter):
         values = list(row.values)
 
         # Fill if there are no row queries, or this row matches one
-        if (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
-            indices = self._get_indices()
-            for i in indices:
-                if values[i]:
-                    self._saved[i] = values[i]
-                else:
-                    values[i] = self._saved[i] if self._saved[i] else ''
+        indices = self._get_indices()
+        for i in indices:
+            if values[i]:
+                self._saved[i] = values[i]
+            elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
+                values[i] = self._saved[i] if self._saved.get(i) else ''
                     
         return values
 

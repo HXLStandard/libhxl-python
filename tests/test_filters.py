@@ -899,7 +899,7 @@ class TestFillDataFilter(AbstractBaseFilterTest):
     def test_fill_queries(self):
         """Fill only in selected rows."""
         self.assertEqual(
-            hxl.data(self.DATA_IN).fill_data(queries='#org=NGO B').values,
+            hxl.data(self.DATA_IN).fill_data(queries='org=NGO B').values,
             self.VALUES_OUT_QUERIES
         )
 
