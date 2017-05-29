@@ -343,7 +343,7 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
 
-    def fill(self, pattern=None, queries=[]):
+    def fill_data(self, pattern=None, queries=[]):
         """Fills empty cells in a column using the last non-empty value.
         @param pattern: Fill only in columns matching the pattern.
         @param queries: a predicate or list of predicates for rows to fill (leave any blank that don't match).

@@ -846,7 +846,7 @@ class TestExplodeFilter(AbstractBaseFilterTest):
         )
 
         
-class TestFillFilter(AbstractBaseFilterTest):
+class TestFillDataFilter(AbstractBaseFilterTest):
 
     DATA_IN = [
         ['Organisation', 'Cluster', 'District', 'Affected'],
@@ -864,29 +864,39 @@ class TestFillFilter(AbstractBaseFilterTest):
         ['NGO A', 'Education', 'Coast', '150'],
     ]
 
-    VALUES_OUT_COL = [
+    VALUES_OUT_PATTERN = [
         ['NGO A', 'WASH', 'Coast', '200'],
         ['NGO B', 'Education', 'Plains', '100'],
         ['NGO B', 'Education', 'Coast', '300'],
         ['NGO A', 'Education', '', '150'],
     ]
 
+    VALUES_OUT_QUERIES = [
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO A', '', '', '150'],
+    ]
+
     def test_fill_all(self):
+        """Fill everywhere."""
         self.assertEqual(
-            hxl.data(self.DATA_IN).fill().values,
+            hxl.data(self.DATA_IN).fill_data().values,
             self.VALUES_OUT_ALL
         )
 
-    def test_fill_column(self):
+    def test_fill_pattern(self):
+        """Fill only in selected columns."""
         self.assertEqual(
-            hxl.data(self.DATA_IN).fill(pattern='#sector').values,
-            self.VALUES_OUT_COL
+            hxl.data(self.DATA_IN).fill_data(pattern='#sector').values,
+            self.VALUES_OUT_PATTERN
         )
 
-    def xtest_fill_filtered(self):
+    def test_fill_queries(self):
+        """Fill only in selected rows."""
         self.assertEqual(
-            hxl.data(self.DATA_IN).fill(filter='').values,
-            self.VALUES_OUT_FILTERED
+            hxl.data(self.DATA_IN).fill_data(queries='#org=NGO B').values,
+            self.VALUES_OUT_QUERIES
         )
 
 
