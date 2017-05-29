@@ -1628,7 +1628,36 @@ class RenameFilter(AbstractStreamingFilter):
             rename=req_arg(spec, 'specs')
         )
 
+    
+class FillDataFilter(AbstractStreamingFilter):
+    """Fill empty cells in a dataset.
+    By default, fill all empty cells with the closest non-empty value in a preceeding row.
+    Optionally restrict to specific columns and/or rows.
+    """
 
+    def __init__(self, source, pattern=None, queries=[]):
+        """Constructor
+        @param source: the source dataset
+        @param pattern: restrict filling to columns matching this tag pattern (default: fill all columns).
+        @param queries: restrict filling to rows matching one of these queries (default: fill all rows).
+        """
+        super(FillDataFilter, self).__init__(source)
+        self.pattern = pattern
+        self.queries = queries
+        self._saved = {}
+
+    def filter_row(self, row):
+        """Fill empty cells in the row."""
+        values = []
+        for i, value in enumerate(row.values):
+            if value:
+                self._saved[i] = value
+                values.append(value)
+            else:
+                values.append(self._saved[i] if self._saved[i] else '')
+        return values
+
+    
 class ReplaceDataFilter(AbstractStreamingFilter):
     """
     Composable filter class to replace values in a HXL dataset.

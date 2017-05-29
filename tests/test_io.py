@@ -82,7 +82,7 @@ class TestBadInput(unittest.TestCase):
 
     def test_bad_url(self):
         with self.assertRaises(IOError):
-            source = hxl.data('http://x.example.org/XXXXX', timeout=1)
+            source = hxl.data('http://x.localhost/XXXXX', timeout=1)
 
 class TestParser(unittest.TestCase):
 

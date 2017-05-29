@@ -335,13 +335,23 @@ class Dataset(object):
     def explode(self, header_attribute='header', value_attribute='value'):
         """Explodes a wide dataset into a long datasets.
         @param header_attribute: the attribute to add to the hashtag of the column with the former header (default 'header')
-        @param vaue_attribute: the attribute to add to the hashtag of the column with the former value (default 'value')
-        @return: new new, filtered dataset.
-        @see hxl.model.ExplodeFilter
+        @param value_attribute: the attribute to add to the hashtag of the column with the former value (default 'value')
+        @return: filtered dataset.
+        @see hxl.filters.ExplodeFilter
         """
         
         import hxl.filters
         return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
+
+    def fill(self, pattern=None, queries=[]):
+        """Fills empty cells in a column using the last non-empty value.
+        @param pattern: Fill only in columns matching the pattern.
+        @param queries: a predicate or list of predicates for rows to fill (leave any blank that don't match).
+        @return filtered dataset
+        @see hxl.filters.FillFilter
+        """
+        import hxl.filters
+        return hxl.filters.FillDataFilter(self, pattern, queries)
 
     #
     # Generators

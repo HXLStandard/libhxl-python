@@ -845,6 +845,43 @@ class TestExplodeFilter(AbstractBaseFilterTest):
             self.DATA_OUT[2:]
         )
 
+        
+class TestFillFilter(AbstractBaseFilterTest):
+
+    DATA_IN = [
+        ['Organisation', 'Cluster', 'District', 'Affected'],
+        ['#org', '#sector+list', '#adm1', '#affected'],
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', '', 'Coast', '300'],
+        ['NGO A', '', '', '150'],
+    ]
+
+    VALUES_OUT_ALL = [
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO A', 'Education', 'Coast', '150'],
+    ]
+
+    def test_fill_all(self):
+        self.assertEqual(
+            hxl.data(self.DATA_IN).fill().values,
+            self.VALUES_OUT_ALL
+        )
+
+    def xtest_fill_column(self):
+        self.assertEqual(
+            hxl.data(self.DATA_IN).fill(pattern='cluster').values,
+            self.VALUES_OUT_COL
+        )
+
+    def xtest_fill_filtered(self):
+        self.assertEqual(
+            hxl.data(self.DATA_IN).fill(filter='').values,
+            self.VALUES_OUT_FILTERED
+        )
+
 
 class TestChaining(AbstractBaseFilterTest):
 
