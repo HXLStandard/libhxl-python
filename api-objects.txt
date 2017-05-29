@@ -14,6 +14,7 @@ hxl.filters.LOAD_MAP	hxl.filters-module.html#LOAD_MAP
 hxl.filters.is_sourcey	hxl.filters-module.html#is_sourcey
 hxl.filters.req_arg	hxl.filters-module.html#req_arg
 hxl.filters.opt_arg	hxl.filters-module.html#opt_arg
+hxl.formula	hxl.formula-module.html
 hxl.io	hxl.io-module.html
 hxl.io._encode_py3	hxl.io-module.html#_encode_py3
 hxl.io.GOOGLE_SHEETS_URL	hxl.io-module.html#GOOGLE_SHEETS_URL
@@ -42,6 +43,7 @@ hxl.py2compat	hxl.py2compat-module.html
 hxl.scripts	hxl.scripts-module.html
 hxl.scripts.hxlrename_main	hxl.scripts-module.html#hxlrename_main
 hxl.scripts.hxladd	hxl.scripts-module.html#hxladd
+hxl.scripts.hxlfill_main	hxl.scripts-module.html#hxlfill_main
 hxl.scripts.STDIN	hxl.scripts-module.html#STDIN
 hxl.scripts.hxlcount_main	hxl.scripts-module.html#hxlcount_main
 hxl.scripts.hxltag_main	hxl.scripts-module.html#hxltag_main
@@ -66,6 +68,7 @@ hxl.scripts.hxlclean_main	hxl.scripts-module.html#hxlclean_main
 hxl.scripts.hxlselect_main	hxl.scripts-module.html#hxlselect_main
 hxl.scripts.hxlcut_main	hxl.scripts-module.html#hxlcut_main
 hxl.scripts.make_output	hxl.scripts-module.html#make_output
+hxl.scripts.hxlfill	hxl.scripts-module.html#hxlfill
 hxl.scripts.make_args	hxl.scripts-module.html#make_args
 hxl.scripts.hxlmerge	hxl.scripts-module.html#hxlmerge
 hxl.scripts.make_source	hxl.scripts-module.html#make_source
@@ -121,6 +124,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.model.Dataset.__iter__	hxl.model.Dataset-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -157,6 +161,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractCachingFilter.__iter__	hxl.filters.AbstractCachingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -195,6 +200,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -234,6 +240,7 @@ hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
 hxl.filters.AddColumnsFilter.parse_spec	hxl.filters.AddColumnsFilter-class.html#parse_spec
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -282,6 +289,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AppendFilter.__iter__	hxl.filters.AppendFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -320,6 +328,7 @@ hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractCachingFilter.__iter__	hxl.filters.AbstractCachingFilter-class.html#__iter__
 hxl.model.Dataset.row_counter	hxl.model.Dataset-class.html#row_counter
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.filters.CacheFilter.overflow	hxl.filters.CacheFilter-class.html#overflow
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -342,6 +351,7 @@ hxl.model.Dataset.replace_data	hxl.model.Dataset-class.html#replace_data
 hxl.model.Dataset.recipe	hxl.model.Dataset-class.html#recipe
 hxl.model.Dataset.gen_csv	hxl.model.Dataset-class.html#gen_csv
 hxl.model.Dataset.display_tags	hxl.model.Dataset-class.html#display_tags
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.gen_json	hxl.model.Dataset-class.html#gen_json
 hxl.filters.AbstractBaseFilter.filter_columns	hxl.filters.AbstractBaseFilter-class.html#filter_columns
 hxl.filters.CleanDataFilter.filter_row	hxl.filters.CleanDataFilter-class.html#filter_row
@@ -398,6 +408,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -435,6 +446,7 @@ hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.model.Dataset.sort	hxl.model.Dataset-class.html#sort
 hxl.filters.AbstractCachingFilter.__iter__	hxl.filters.AbstractCachingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -475,6 +487,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -513,10 +526,50 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.ExplodeFilter.__iter__	hxl.filters.ExplodeFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
 hxl.filters.ExplodeFilter._load	hxl.filters.ExplodeFilter-class.html#_load
+hxl.model.Dataset.count	hxl.model.Dataset-class.html#count
+hxl.model.Dataset.add_columns	hxl.model.Dataset-class.html#add_columns
+hxl.model.Dataset.explode	hxl.model.Dataset-class.html#explode
+hxl.model.Dataset.headers	hxl.model.Dataset-class.html#headers
+hxl.model.Dataset.row_counter	hxl.model.Dataset-class.html#row_counter
+hxl.model.Dataset.values	hxl.model.Dataset-class.html#values
+hxl.model.Dataset.get_value_set	hxl.model.Dataset-class.html#get_value_set
+hxl.model.Dataset.merge_data	hxl.model.Dataset-class.html#merge_data
+hxl.filters.FillDataFilter	hxl.filters.FillDataFilter-class.html
+hxl.model.Dataset.with_rows	hxl.model.Dataset-class.html#with_rows
+hxl.model.Dataset.gen_raw	hxl.model.Dataset-class.html#gen_raw
+hxl.model.Dataset.replace_data_map	hxl.model.Dataset-class.html#replace_data_map
+hxl.model.Dataset.replace_data	hxl.model.Dataset-class.html#replace_data
+hxl.model.Dataset.recipe	hxl.model.Dataset-class.html#recipe
+hxl.model.Dataset.gen_csv	hxl.model.Dataset-class.html#gen_csv
+hxl.model.Dataset.display_tags	hxl.model.Dataset-class.html#display_tags
+hxl.model.Dataset.gen_json	hxl.model.Dataset-class.html#gen_json
+hxl.filters.AbstractBaseFilter.filter_columns	hxl.filters.AbstractBaseFilter-class.html#filter_columns
+hxl.filters.AbstractStreamingFilter.__metaclass__	hxl.filters.AbstractStreamingFilter-class.html#__metaclass__
+hxl.filters.FillDataFilter.filter_row	hxl.filters.FillDataFilter-class.html#filter_row
+hxl.model.Dataset.append	hxl.model.Dataset-class.html#append
+hxl.model.Dataset.has_headers	hxl.model.Dataset-class.html#has_headers
+hxl.model.Dataset.cache	hxl.model.Dataset-class.html#cache
+hxl.model.Dataset.dedup	hxl.model.Dataset-class.html#dedup
+hxl.filters.AbstractBaseFilter.source	hxl.filters.AbstractBaseFilter-class.html#source
+hxl.filters.FillDataFilter.__init__	hxl.filters.FillDataFilter-class.html#__init__
+hxl.model.Dataset.without_rows	hxl.model.Dataset-class.html#without_rows
+hxl.filters.AbstractBaseFilter.columns	hxl.filters.AbstractBaseFilter-class.html#columns
+hxl.model.Dataset.sort	hxl.model.Dataset-class.html#sort
+hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
+hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
+hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
+hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.filters.FillDataFilter._get_indices	hxl.filters.FillDataFilter-class.html#_get_indices
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
+hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
+hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
+hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
+hxl.filters.FillDataFilter._load	hxl.filters.FillDataFilter-class.html#_load
 hxl.model.Dataset.count	hxl.model.Dataset-class.html#count
 hxl.model.Dataset.add_columns	hxl.model.Dataset-class.html#add_columns
 hxl.model.Dataset.explode	hxl.model.Dataset-class.html#explode
@@ -558,6 +611,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -599,6 +653,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -636,6 +691,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -678,6 +734,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -715,6 +772,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractStreamingFilter.__iter__	hxl.filters.AbstractStreamingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -753,6 +811,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.filters.AbstractCachingFilter.__iter__	hxl.filters.AbstractCachingFilter-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.filters.SortFilter._make_indices	hxl.filters.SortFilter-class.html#_make_indices
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -767,6 +826,18 @@ hxl.model.Dataset.get_value_set	hxl.model.Dataset-class.html#get_value_set
 hxl.model.Dataset.merge_data	hxl.model.Dataset-class.html#merge_data
 hxl.filters.SortFilter._make_sort_value	hxl.filters.SortFilter-class.html#_make_sort_value
 hxl.filters.SortFilter.filter_rows	hxl.filters.SortFilter-class.html#filter_rows
+hxl.formula.AbstractValue	hxl.formula.AbstractValue-class.html
+hxl.formula.AbstractValue.__metaclass__	hxl.formula.AbstractValue-class.html#__metaclass__
+hxl.formula.AbstractValue.value	hxl.formula.AbstractValue-class.html#value
+hxl.formula.Constant	hxl.formula.Constant-class.html
+hxl.formula.AbstractValue.__metaclass__	hxl.formula.AbstractValue-class.html#__metaclass__
+hxl.formula.Constant.value	hxl.formula.Constant-class.html#value
+hxl.formula.Constant.__construct__	hxl.formula.Constant-class.html#__construct__
+hxl.formula.Function	hxl.formula.Function-class.html
+hxl.formula.AbstractValue.__metaclass__	hxl.formula.AbstractValue-class.html#__metaclass__
+hxl.formula.AbstractValue.value	hxl.formula.AbstractValue-class.html#value
+hxl.formula.Function.__construct__	hxl.formula.Function-class.html#__construct__
+hxl.formula.Function.apply	hxl.formula.Function-class.html#apply
 hxl.io.AbstractInput	hxl.io.AbstractInput-class.html
 hxl.io.AbstractInput.__next__	hxl.io.AbstractInput-class.html#__next__
 hxl.io.AbstractInput.__exit__	hxl.io.AbstractInput-class.html#__exit__
@@ -831,6 +902,7 @@ hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.io.HXLReader.__next__	hxl.io.HXLReader-class.html#__next__
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.io.HXLReader.__iter__	hxl.io.HXLReader-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data
@@ -899,6 +971,7 @@ hxl.model.Dataset.tags	hxl.model.Dataset-class.html#tags
 hxl.model.Dataset.rename_columns	hxl.model.Dataset-class.html#rename_columns
 hxl.model.Dataset.without_columns	hxl.model.Dataset-class.html#without_columns
 hxl.model.Dataset.__iter__	hxl.model.Dataset-class.html#__iter__
+hxl.model.Dataset.fill_data	hxl.model.Dataset-class.html#fill_data
 hxl.model.Dataset.with_columns	hxl.model.Dataset-class.html#with_columns
 hxl.model.Dataset.validate	hxl.model.Dataset-class.html#validate
 hxl.model.Dataset.clean_data	hxl.model.Dataset-class.html#clean_data

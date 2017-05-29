@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>hxl.io.ArrayInput</title>
+  <title>hxl.formula.Constant</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -38,8 +38,8 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="hxl-module.html">Package&nbsp;hxl</a> ::
-        <a href="hxl.io-module.html">Module&nbsp;io</a> ::
-        Class&nbsp;ArrayInput
+        <a href="hxl.formula-module.html">Module&nbsp;formula</a> ::
+        Class&nbsp;Constant
       </span>
     </td>
     <td>
@@ -50,17 +50,17 @@
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class ArrayInput</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.io-pysrc.html#ArrayInput">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class Constant</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.formula-pysrc.html#Constant">source&nbsp;code</a></span></p>
 <pre class="base-tree">
    object --+    
             |    
-<a href="hxl.io.AbstractInput-class.html">AbstractInput</a> --+
+<a href="hxl.formula.AbstractValue-class.html">AbstractValue</a> --+
                 |
-               <strong class="uidshort">ArrayInput</strong>
+               <strong class="uidshort">Constant</strong>
 </pre>
 
 <hr />
-<p>Read raw input from an array.</p>
+<p>Constant value in a formula (string, number, or date).</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -76,11 +76,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.io.ArrayInput-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">data</span>)</span><br />
-      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+          <td><span class="summary-sig"><a name="__construct__"></a><span class="summary-sig-name">__construct__</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">v</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#ArrayInput.__init__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.formula-pysrc.html#Constant.__construct__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -94,25 +93,9 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.io.ArrayInput-class.html#__next__" class="summary-sig-name">__next__</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.formula.Constant-class.html#value" class="summary-sig-name">value</a>(<span class="summary-sig-arg">self</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#ArrayInput.__next__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="next"></a><span class="summary-sig-name">next</span>(<span class="summary-sig-arg">self</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#ArrayInput.__next__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.formula-pysrc.html#Constant.value">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -122,16 +105,12 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.io.AbstractInput-class.html">AbstractInput</a></code></b>:
-      <code><a href="hxl.io.AbstractInput-class.html#__enter__">__enter__</a></code>,
-      <code><a href="hxl.io.AbstractInput-class.html#__exit__">__exit__</a></code>,
-      <code><a href="hxl.io.AbstractInput-class.html#__iter__">__iter__</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__delattr__</code>,
       <code>__format__</code>,
       <code>__getattribute__</code>,
       <code>__hash__</code>,
+      <code>__init__</code>,
       <code>__new__</code>,
       <code>__reduce__</code>,
       <code>__reduce_ex__</code>,
@@ -154,8 +133,8 @@
 </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.io.AbstractInput-class.html">AbstractInput</a></code></b>:
-      <code><a href="hxl.io.AbstractInput-class.html#__metaclass__">__metaclass__</a></code>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.formula.AbstractValue-class.html">AbstractValue</a></code></b>:
+      <code><a href="hxl.formula.AbstractValue-class.html#__metaclass__">__metaclass__</a></code>
       </p>
     </td>
   </tr>
@@ -185,49 +164,24 @@
     <span class="table-header">Method Details</span></td>
 </tr>
 </table>
-<a name="__init__"></a>
+<a name="value"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">data</span>)</span>
-    <br /><em class="fname">(Constructor)</em>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">value</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#ArrayInput.__init__">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
-  <dl class="fields">
-    <dt>Overrides:
-        object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
-    </dt>
-  </dl>
-</td></tr></table>
-</div>
-<a name="__next__"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__next__</span>(<span class="sig-arg">self</span>)</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#ArrayInput.__next__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.formula-pysrc.html#Constant.value">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
   
   <dl class="fields">
     <dt>Overrides:
-        <a href="hxl.io.AbstractInput-class.html#__next__">AbstractInput.__next__</a>
+        <a href="hxl.formula.AbstractValue-class.html#value">AbstractValue.value</a>
     </dt>
   </dl>
 </td></tr></table>

@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>hxl.filters.AbstractStreamingFilter</title>
+  <title>hxl.filters.FillDataFilter</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -39,7 +39,7 @@
       <span class="breadcrumbs">
         <a href="hxl-module.html">Package&nbsp;hxl</a> ::
         <a href="hxl.filters-module.html">Module&nbsp;filters</a> ::
-        Class&nbsp;AbstractStreamingFilter
+        Class&nbsp;FillDataFilter
       </span>
     </td>
     <td>
@@ -50,58 +50,25 @@
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class AbstractStreamingFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class FillDataFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#FillDataFilter">source&nbsp;code</a></span></p>
 <pre class="base-tree">
-    object --+        
-             |        
- <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+    
-                 |    
-<a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+
-                     |
-                    <strong class="uidshort">AbstractStreamingFilter</strong>
+     object --+            
+              |            
+  <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+        
+                  |        
+ <a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+    
+                      |    
+<a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a> --+
+                          |
+                         <strong class="uidshort">FillDataFilter</strong>
 </pre>
 
 <hr />
-<p>Abstract base class for streaming filters.</p>
-  <p>A streaming filter processes one row at a time.  It can skip rows, but
-  it never reorders them.  As a result, a streaming filter is <i>much</i> 
-  more efficient than a <a 
-  href="hxl.filters.AbstractCachingFilter-class.html" class="link">caching 
-  filter</a>, since it needs to hold only one row in memory at a time.</p>
-  <p>It is not possible to replay the data from a streaming filter (e.g. to
-  run a second processing pass), unless it has a caching filter higher up 
-  the filter chain; if you are reading directly from disk or a URL, the 
-  data is gone once it has passed through the filter once.</p>
-  <p>If you are implementing your own filter class, you should subclass 
-  <i>AbstractStreamingFilter</i> whenever possible. Child classes may 
-  implement the <a 
-  href="hxl.filters.AbstractBaseFilter-class.html#filter_columns" 
-  class="link">AbstractBaseFilter.filter_columns</a> method to change the 
-  columns and tags, and/or this class's <a 
-  href="hxl.filters.AbstractStreamingFilter-class.html#filter_row" 
-  class="link">filter_row</a> method to change, add, or suppress individual
-  rows, like this:</p>
-<pre class="literalblock">
- class MyFilter(hxl.filters.AbstractStreamingFilter):
+<p>Fill empty cells in a dataset. By default, fill all empty cells with 
+  the closest non-empty value in a preceeding row. Optionally restrict to 
+  specific columns and/or rows.</p>
 
-     def __init__(self, source):
-         super(AbstractStreamingFilter, self).__init__(source)
-
-     def filter_row(self, row):
-         if row.get('org+name') == &quot;Unknown&quot;:
-             return None # remove from output
-         else:
-             return row
-</pre>
-  <p>This simple filter will produce a copy of the source data, but 
-  omitting rows where the org name is &quot;Unknown&quot;.</p>
-
-<hr />
-<div class="fields">      <p><strong>See Also:</strong>
-        <a href="hxl.filters.AbstractCachingFilter-class.html" 
-        class="link">AbstractCachingFilter</a>
-      </p>
-</div><!-- ==================== INSTANCE METHODS ==================== -->
+<!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -115,11 +82,13 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.AbstractStreamingFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">source</span>)</span><br />
-      Construct a new streaming filter.</td>
+          <td><span class="summary-sig"><a href="hxl.filters.FillDataFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">pattern</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
+      Constructor</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter.__init__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#FillDataFilter.__init__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -133,28 +102,11 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="hxl.filters.FillDataFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Filter a single row of data.</td>
+      Fill empty cells in the row.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter.filter_row">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Get the iterator over the rows.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter.__iter__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#FillDataFilter.filter_row">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -164,6 +116,9 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__">__iter__</a></code>
+      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
       <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>,
       <code><a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">filter_columns</a></code>
@@ -224,11 +179,11 @@
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Class Variables</span></td>
 </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="__metaclass__"></a><span class="summary-name">__metaclass__</span> = <code title="abc.ABCMeta">abc.ABCMeta</code>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractStreamingFilter-class.html">AbstractStreamingFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__metaclass__">__metaclass__</a></code>
+      </p>
     </td>
   </tr>
 </table>
@@ -281,19 +236,25 @@
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">source</span>)</span>
+        <span class="sig-arg">source</span>,
+        <span class="sig-arg">pattern</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">queries</span>=<span class="sig-default">[]</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter.__init__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#FillDataFilter.__init__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Construct a new streaming filter.</p>
+  <p>Constructor</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
         <li><strong class="pname"><code>source</code></strong> - the source dataset</li>
+        <li><strong class="pname"><code>pattern</code></strong> - restrict filling to columns matching this tag pattern (default: 
+          fill all columns).</li>
+        <li><strong class="pname"><code>queries</code></strong> - restrict filling to rows matching one of these queries (default: 
+          fill all rows).</li>
     </ul></dd>
     <dt>Overrides:
         object.__init__
@@ -312,14 +273,11 @@
         <span class="sig-arg">row</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter.filter_row">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#FillDataFilter.filter_row">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Filter a single row of data.</p>
-  <p>By default, this method returns the row's values, unchanged. 
-  Subclasses can use it to replace, add or suppress rows on the fly, 
-  without having to keep a copy of the entire dataset in memory.</p>
+  <p>Fill empty cells in the row.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -329,36 +287,8 @@
     <dt>Returns:</dt>
         <dd>A list of string values (<i>not</i> a Row object) or 
           <code>None</code> to skip the row.</dd>
-    <dt>Decorators:</dt>
-    <dd><ul class="nomargin-top">
-        <li><code>@abc.abstractmethod</code></li>
-    </ul></dd>
-  </dl>
-<div class="fields">      <p><strong>See Also:</strong>
-        <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns" 
-        class="link">AbstractBaseFilter.filter_columns</a>
-      </p>
-</div></td></tr></table>
-</div>
-<a name="__iter__"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__iter__</span>(<span class="sig-arg">self</span>)</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#AbstractStreamingFilter.__iter__">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>Get the iterator over the rows.</p>
-  <dl class="fields">
     <dt>Overrides:
-        <a href="hxl.model.Dataset-class.html#__iter__">model.Dataset.__iter__</a>
-        <dd><em class="note">(inherited documentation)</em></dd>
+        <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
     </dt>
   </dl>
 </td></tr></table>

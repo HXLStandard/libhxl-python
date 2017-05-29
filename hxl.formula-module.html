@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>hxl.model</title>
+  <title>hxl.formula</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -38,7 +38,7 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="hxl-module.html">Package&nbsp;hxl</a> ::
-        Module&nbsp;model
+        Module&nbsp;formula
       </span>
     </td>
     <td>
@@ -49,11 +49,10 @@
   </tr>
 </table>
 <!-- ==================== MODULE DESCRIPTION ==================== -->
-<h1 class="epydoc">Module model</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.model-pysrc.html">source&nbsp;code</a></span></p>
-<p>Data model for the Humanitarian Exchange Language (HXL) v1.0 David 
-  Megginson Started October 2014</p>
-  <p>License: Public Domain Documentation: 
-  https://github.com/HXLStandard/libhxl-python/wiki</p>
+<h1 class="epydoc">Module formula</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.formula-pysrc.html">source&nbsp;code</a></span></p>
+<p>Formulas for the Humanitarian Exchange Language (HXL).</p>
+  <p>Formulas operate horizontally across a row, so that they use constant 
+  memory in a large dataset.</p>
 
 <!-- ==================== CLASSES ==================== -->
 <a name="section-Classes"></a>
@@ -67,40 +66,22 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.TagPattern-class.html" class="summary-name">TagPattern</a><br />
-      Pattern for matching a tag.
+        <a href="hxl.formula.AbstractValue-class.html" class="summary-name">AbstractValue</a>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.Dataset-class.html" class="summary-name">Dataset</a><br />
-      Abstract base class for a HXL data source.
+        <a href="hxl.formula.Constant-class.html" class="summary-name">Constant</a><br />
+      Constant value in a formula (string, number, or date).
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.Column-class.html" class="summary-name">Column</a><br />
-      The definition of a logical column in the HXL data.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.Row-class.html" class="summary-name">Row</a><br />
-      An iterable row of values in a HXL dataset.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="hxl.model.RowQuery-class.html" class="summary-name">RowQuery</a><br />
-      Query to execute against a row of HXL data.
+        <a href="hxl.formula.Function-class.html" class="summary-name">Function</a>
     </td>
   </tr>
 </table>
