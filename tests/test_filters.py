@@ -864,15 +864,22 @@ class TestFillFilter(AbstractBaseFilterTest):
         ['NGO A', 'Education', 'Coast', '150'],
     ]
 
+    VALUES_OUT_COL = [
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO A', 'Education', '', '150'],
+    ]
+
     def test_fill_all(self):
         self.assertEqual(
             hxl.data(self.DATA_IN).fill().values,
             self.VALUES_OUT_ALL
         )
 
-    def xtest_fill_column(self):
+    def test_fill_column(self):
         self.assertEqual(
-            hxl.data(self.DATA_IN).fill(pattern='cluster').values,
+            hxl.data(self.DATA_IN).fill(pattern='#sector').values,
             self.VALUES_OUT_COL
         )
 

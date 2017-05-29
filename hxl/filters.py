@@ -1642,20 +1642,39 @@ class FillDataFilter(AbstractStreamingFilter):
         @param queries: restrict filling to rows matching one of these queries (default: fill all rows).
         """
         super(FillDataFilter, self).__init__(source)
-        self.pattern = pattern
-        self.queries = queries
+        if pattern:
+            self.pattern = hxl.model.TagPattern.parse(pattern)
+        else:
+            self.pattern = None
+        self.queries = hxl.model.RowQuery.parse_list(queries)
         self._saved = {}
+        self._indices = None
 
     def filter_row(self, row):
         """Fill empty cells in the row."""
-        values = []
-        for i, value in enumerate(row.values):
-            if value:
-                self._saved[i] = value
-                values.append(value)
+        values = list(row.values)
+        indices = self._get_indices()
+        for i in indices:
+            if values[i]:
+                self._saved[i] = values[i]
             else:
-                values.append(self._saved[i] if self._saved[i] else '')
+                values[i] = self._saved[i] if self._saved[i] else ''
         return values
+
+    def _get_indices(self):
+        """Get indices of columns to fill.
+        If there's no column pattern, then fill all columns.
+        @return a set of indices for filling.
+        """
+        if not self._indices:
+            self._indices = set()
+            for i, column in enumerate(self.source.columns):
+                if self.pattern:
+                    if self.pattern.match(column):
+                        self._indices.add(i)
+                else:
+                    self._indices.add(i)
+        return self._indices
 
     
 class ReplaceDataFilter(AbstractStreamingFilter):
