@@ -1,3 +1,6 @@
+2017-06-06 Release 4.2
+	- fixed bug with disabling SSL checks via requests library
+	
 2017-06-05 Release 4.1
 	- support JSON input (list of rows)
 	- add fill_data filter to fill empty cells from previous rows

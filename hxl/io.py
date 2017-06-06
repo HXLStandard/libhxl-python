@@ -142,7 +142,7 @@ def munge_url(url, verify_ssl=True):
     result = re.match(CKAN_URL, url)
     if result:
         ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
-        ckan_api_result = requests.get(ckan_api_query, verify_ssl=verify_ssl).json()
+        ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl).json()
         return ckan_api_result['result']['url']
 
     # No changes
