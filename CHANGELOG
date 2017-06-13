@@ -1,4 +1,4 @@
-2017-06-13 Release 4.2
+2017-06-13 Release 4.3
 	- fixed bug with disabling SSL checks via requests library
 	- improved Excel data handling — use integers instead of floats
 	  when possible, and fix bug when trying to parse numbers as dates
