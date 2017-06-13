@@ -658,14 +658,18 @@ class RowQuery(object):
         # TODO add dates
         # TODO use knowledge about HXL tags
         if self._date is not None:
-            date_value = dateutil.parser.parse(value)
-            if date_value:
-                return self.op(date_value, self._date)
+            try:
+                date_value = dateutil.parser.parse(str(value))
+                if date_value:
+                    return self.op(date_value, self._date)
+            except ValueError:
+                pass
         if self._number is not None:
             try:
                 return self.op(float(value), self._number)
             except ValueError:
                 pass
+        #raise Exception(hxl.common.normalise_string(value), hxl.common.normalise_string(self.value))
         return self.op(hxl.common.normalise_string(value), hxl.common.normalise_string(self.value))
 
     def _get_saved_indices(self, columns):

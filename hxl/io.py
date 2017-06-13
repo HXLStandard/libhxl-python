@@ -475,13 +475,28 @@ class ExcelInput(AbstractInput):
         pass
 
     def _fix_value(self, cell):
-        if not cell.value:
+        """Clean up an Excel value for CSV-like representation."""
+
+        if cell.value is None or cell.ctype == xlrd.XL_CELL_EMPTY:
             return ''
-        elif cell.ctype == 3: # FIXME - use constant
+
+        elif cell.ctype == xlrd.XL_CELL_NUMBER:
+            # let numbers be integers if possible
+            if float(cell.value).is_integer():
+                return int(cell.value)
+            else:
+                return cell.value
+
+        elif cell.ctype == xlrd.XL_CELL_DATE:
+            # dates need to be formatted
             data = xlrd.xldate_as_tuple(cell.value, 0)
             return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
-        else:
-            if sys.version_info < (3,):
+
+        elif cell.ctype == xlrd.XL_CELL_BOOLEAN:
+            return int(cell.value)
+
+        else: # XL_CELL_TEXT, or anything else
+            if sys.version_info < (3,): # kludge for Python 2.x
                 try:
                     return cell.value.encode('utf8')
                 except:
