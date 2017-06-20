@@ -25,6 +25,7 @@ def _resolve_file(filename):
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
+FILE_JSON_OBJECTS = _resolve_file('./files/test_io/input-valid-objects.json')
 FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
@@ -156,6 +157,11 @@ class TestParser(unittest.TestCase):
     def test_local_json(self):
         """Test reading from a local JSON file."""
         with hxl.data(FILE_JSON, True) as source:
+            self.compare_input(source)
+
+    def test_local_json_objects(self):
+        """Test reading from a local JSON file."""
+        with hxl.data(FILE_JSON_OBJECTS, True) as source:
             self.compare_input(source)
 
     def test_remote_csv(self):

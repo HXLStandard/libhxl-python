@@ -11,6 +11,7 @@ from __future__ import absolute_import
 
 import abc
 import io
+import collections
 import csv
 import json
 import sys
@@ -423,11 +424,53 @@ class JSONInput(AbstractInput):
             self._input = input
         else:
             self._input = io.TextIOWrapper(input, encoding=encoding)
-        self._iterator = iter(json.load(self._input, encoding=encoding))
+
+        json_data = json.load(self._input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
+
+        # JSON data must be an array at the top level
+        if not isinstance(json_data, collections.Sequence) or isinstance(json_data, six.string_types):
+            raise HXLParseException("JSON data must be an array of objects or an array of arrays")
+
+        self.type = None
+        self.headers = []
+        self.show_headers = False
+
+        for item in json_data:
+            if isinstance(item, dict):
+                if self.type == 'array':
+                    raise HXLParseException("Cannot mix objects and arrays in JSON data.")
+                else:
+                    self.type = 'object'
+                    self.show_headers = True
+                    for key in item:
+                        if not key in self.headers:
+                            self.headers.append(key)
+            elif isinstance(item, collections.Sequence) and not isinstance(item, six.string_types):
+                if self.type == 'object':
+                    raise HXLParseException("Cannot mix objects and arrays in JSON data.")
+                else:
+                    self.type = 'array'
+            else:
+                raise HXLParseException("Bad JSON data (must be array or object): {}", format(item))
+        
+        self._iterator = iter(json_data)
         self._encoding = encoding
 
     def __next__(self):
-        row =  next(self._iterator)
+        """Return the next row in a tabular view of the data."""
+
+        if self.show_headers:
+            # Add the header row first if reading an array of JSON objects
+            self.show_headers = False
+            row = self.headers
+        elif self.type == 'object':
+            # Construct a row in an array of JSON objects
+            obj = next(self._iterator)
+            row = [obj.get(header) for header in self.headers]
+        elif self.type == 'array':
+            # Simply dump a row in an array of JSON arrays
+            row =  next(self._iterator)
+            
         if sys.version_info < (3,):
             # Restore non-Unicode encoding (blech), because CSV parser doesn't Unicode encode
             row = [cell.encode(self._encoding) for cell in row]

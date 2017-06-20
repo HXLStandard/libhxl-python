@@ -1,0 +1,42 @@
+[
+    {
+        "": "001",
+        "#sector+es": "WASH",
+        "#subsector+es": "Higiene",
+        "#org+es": "ACNUR",
+        "#targeted+f": "100",
+        "#targeted+m": "100",
+        "#country": "Panamá",
+        "#adm1": "Los Santos",
+        "#date+reported": "1 March 2015"
+    },
+    {
+        "": "002",
+        "#sector+es": "Salud",
+        "#subsector+es": "Vacunación",
+        "#org+es": "OMS",
+        "#country": "Colombia",
+        "#adm1": "Cauca"
+    }, 
+    {
+        "": "003",
+        "#sector+es": "Educación",
+        "#subsector+es": "Formación de enseñadores",
+        "#org+es": "UNICEF",
+        "#targeted+f": "250",
+        "#targeted+m": "300",
+        "#country": "Colombia",
+        "#adm1": "Chocó"
+    }, 
+    {
+        "": "004",
+        "#sector+es": "WASH",
+        "#subsector+es": "Urbano",
+        "#org+es": "OMS",
+        "#targeted+f": "80",
+        "#targeted+m": "95",
+        "#country": "Venezuela",
+        "#adm1":
+        "Amazonas"
+    }
+]
