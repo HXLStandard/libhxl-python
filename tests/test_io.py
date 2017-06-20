@@ -205,6 +205,8 @@ class TestParser(unittest.TestCase):
         """Compare an external source to the expected content."""
         for i, row in enumerate(source):
             for j, value in enumerate(row):
+                if value is None:
+                    value = ''
                 # For Excel, numbers may be pre-parsed
                 try:
                     self.assertEqual(float(TestParser.EXPECTED_CONTENT[i][j]), float(value))
