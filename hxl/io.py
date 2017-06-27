@@ -76,7 +76,7 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
+def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, selector=None):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
@@ -84,6 +84,8 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
     @param allow_local: if true, allow opening local filenames as well as remote URLs (default: False).
     @param sheet_index: if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
     @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+    @param verify_ssl: if False, don't verify SSL certificates (e.g. for self-signed certs).
+    @param selector: selector property for a JSON file (will later also cover tabs, etc.)
     """
 
     if isinstance(data, hxl.model.Dataset):
@@ -95,7 +97,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
         return hxl.io.from_spec(data)
 
     else:
-        return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify_ssl=True))
+        return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify_ssl=True, selector=selector))
 
     
 def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
@@ -168,7 +170,7 @@ else:
     encode = _encode_py3
 
     
-def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
+def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, selector=None):
     """Figure out what kind of input to create.
 
     Can detect a URL or filename, an input stream, or an array.
@@ -179,6 +181,8 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     @param allow_local: if True, allow opening local files as well as remote URLs (default: False).
     @param sheet_index: if a number, read that sheet from an Excel workbook (default: None).
     @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+    @param verify_ssl: if False, don't try to verify SSL certificates (e.g. for self-signed certs).
+    @param selector: a property to select the data in a JSON record (may later extend to spreadsheet tabs).
     @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
     """
 
@@ -227,7 +231,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             return ExcelInput(input, sheet_index=sheet_index)
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS):
-            return JSONInput(input)
+            return JSONInput(input, selector=selector)
 
         else:
             return CSVInput(input)
@@ -419,21 +423,28 @@ class CSVInput(AbstractInput):
 class JSONInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    def __init__(self, input, encoding='utf-8'):
+    def __init__(self, input, encoding='utf-8', selector=None):
         if sys.version_info < (3,):
             self._input = input
         else:
             self._input = io.TextIOWrapper(input, encoding=encoding)
 
+        self.type = None
+        self.headers = []
+        self.show_headers = False
+        self._encoding = encoding
+
+        # prepare data for iteration
         json_data = json.load(self._input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
+        self._scan_data_element(json_data)
+        self._iterator = iter(json_data)
+
+    def _scan_data_element(self, json_data):
+        """Scan a data sequence to see if it's a list of lists or list of arrays."""
 
         # JSON data must be an array at the top level
         if not isinstance(json_data, collections.Sequence) or isinstance(json_data, six.string_types):
             raise HXLParseException("JSON data must be an array of objects or an array of arrays")
-
-        self.type = None
-        self.headers = []
-        self.show_headers = False
 
         for item in json_data:
             if isinstance(item, dict):
@@ -452,10 +463,8 @@ class JSONInput(AbstractInput):
                     self.type = 'array'
             else:
                 raise HXLParseException("Bad JSON data (must be array or object): {}", format(item))
-        
-        self._iterator = iter(json_data)
-        self._encoding = encoding
 
+            
     def __next__(self):
         """Return the next row in a tabular view of the data."""
 
