@@ -1,4 +1,5 @@
 	- support JSON arrays of objects as well as arrays of arrays
+	- recursively search for HXL data inside a JSON dataset
 
 2017-06-13 Release 4.3
 	- fixed bug with disabling SSL checks via requests library

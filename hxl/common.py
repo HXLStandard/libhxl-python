@@ -8,7 +8,7 @@
 
 """
 
-import re, unidecode, sys, dateutil
+import re, unidecode, sys, dateutil, six, collections
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """Regular-expression pattern for a single token."""
@@ -94,3 +94,9 @@ def normalise_string(s):
     else:
         return ''
 
+def is_list(e):
+    """Return True if e is a sequence that's not a string."""
+    if not isinstance(e, collections.Sequence) or isinstance(e, six.string_types):
+        return False
+    else:
+        return True

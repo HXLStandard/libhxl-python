@@ -435,21 +435,32 @@ class JSONInput(AbstractInput):
         self._encoding = encoding
 
         # prepare data for iteration
+        last_exception = None
         json_data = json.load(self._input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
+
+        if selector is not None and is_instance(data_element, dict):
+            json_data = json_data.get(selector)
+            if not self._scan_data_element(json_data):
+                raise HXLParseException("Selected JSON data is not usable as HXL input (must be array of objects or array of arrays).")
+        else:
+            json_data = self._search_data(json_data)
+            if json_data is None:
+                raise HXLParseException("Could not usable JSON data (need array of objects or array of arrays)")
+                
         self._scan_data_element(json_data)
         self._iterator = iter(json_data)
 
-    def _scan_data_element(self, json_data):
+    def _scan_data_element(self, data_element):
         """Scan a data sequence to see if it's a list of lists or list of arrays."""
 
         # JSON data must be an array at the top level
-        if not isinstance(json_data, collections.Sequence) or isinstance(json_data, six.string_types):
-            raise HXLParseException("JSON data must be an array of objects or an array of arrays")
+        if not hxl.common.is_list(data_element):
+            return False
 
-        for item in json_data:
+        for item in data_element:
             if isinstance(item, dict):
                 if self.type == 'array':
-                    raise HXLParseException("Cannot mix objects and arrays in JSON data.")
+                    return False
                 else:
                     self.type = 'object'
                     self.show_headers = True
@@ -458,12 +469,29 @@ class JSONInput(AbstractInput):
                             self.headers.append(key)
             elif isinstance(item, collections.Sequence) and not isinstance(item, six.string_types):
                 if self.type == 'object':
-                    raise HXLParseException("Cannot mix objects and arrays in JSON data.")
+                    return False
                 else:
                     self.type = 'array'
             else:
-                raise HXLParseException("Bad JSON data (must be array or object): {}", format(item))
+                return False
 
+        return True
+
+    def _search_data(self, data):
+        """Recursive, depth-first search for usable tabular data (JSON array of arrays or array of objects)"""
+        if self._scan_data_element(data):
+            return data
+        elif hxl.common.is_list(data):
+            for item in data:
+                data_out = self._search_data(item)
+                if data_out is not None:
+                    return data_out
+        elif isinstance(data, dict):
+            for key in data:
+                data_out = self._search_data(data.get(key))
+                if data_out is not None:
+                    return data_out
+        return None
             
     def __next__(self):
         """Return the next row in a tabular view of the data."""
