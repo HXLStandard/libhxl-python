@@ -423,7 +423,7 @@ class CSVInput(AbstractInput):
 class JSONInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    def __init__(self, input, encoding='utf-8', selector=None):
+    def __init__(self, input, encoding='utf-8', selector='hxl'):
         if sys.version_info < (3,):
             self._input = input
         else:
@@ -439,11 +439,11 @@ class JSONInput(AbstractInput):
         json_data = json.load(self._input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
 
         if selector is not None and is_instance(data_element, dict):
-            json_data = json_data.get(selector)
             if not self._scan_data_element(json_data):
                 raise HXLParseException("Selected JSON data is not usable as HXL input (must be array of objects or array of arrays).")
         else:
-            json_data = self._search_data(json_data)
+            if not self._scan_data_element(json_data):
+                json_data = self._search_data(json_data)
             if json_data is None:
                 raise HXLParseException("Could not usable JSON data (need array of objects or array of arrays)")
                 
@@ -478,16 +478,18 @@ class JSONInput(AbstractInput):
         return True
 
     def _search_data(self, data):
-        """Recursive, depth-first search for usable tabular data (JSON array of arrays or array of objects)"""
+        """Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)"""
 
-        if self._scan_data_element(data):
-            return data
-        elif hxl.common.is_list(data):
+        if hxl.common.is_list(data):
             data_in = data
         elif isinstance(data, dict):
             data_in = data.values()
         else:
             return None
+
+        for item in data_in:
+            if self._scan_data_element(item):
+                return item
 
         for item in data_in:
             data_out = self._search_data(item)

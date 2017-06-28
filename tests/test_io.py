@@ -172,12 +172,12 @@ class TestParser(unittest.TestCase):
 
     def test_remote_csv(self):
         """Test reading from a remote CSV file (will fail without connectivity)."""
-        with hxl.data(URL_CSV) as source:
+        with hxl.data(URL_CSV, timeout=5) as source:
             self.compare_input(source)
 
     def test_remote_excel(self):
         """Test reading from a remote Excel file (will fail without connectivity)."""
-        with hxl.data(URL_EXCEL) as source:
+        with hxl.data(URL_EXCEL, timeout=5) as source:
             self.compare_input(source)
 
     def x_test_remote_json(self):
