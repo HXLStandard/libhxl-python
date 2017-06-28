@@ -479,18 +479,21 @@ class JSONInput(AbstractInput):
 
     def _search_data(self, data):
         """Recursive, depth-first search for usable tabular data (JSON array of arrays or array of objects)"""
+
         if self._scan_data_element(data):
             return data
         elif hxl.common.is_list(data):
-            for item in data:
-                data_out = self._search_data(item)
-                if data_out is not None:
-                    return data_out
+            data_in = data
         elif isinstance(data, dict):
-            for key in data:
-                data_out = self._search_data(data.get(key))
-                if data_out is not None:
-                    return data_out
+            data_in = data.values()
+        else:
+            return None
+
+        for item in data_in:
+            data_out = self._search_data(item)
+            if data_out is not None:
+                return data_out
+
         return None
             
     def __next__(self):
