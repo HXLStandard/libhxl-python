@@ -257,8 +257,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
         response = requests.get(munge_url(url_or_filename, verify_ssl), stream=True, verify=verify_ssl, timeout=timeout)
-        if response.status_code != 200:
-            raise IOError('Received HTTP response code {}'.format(response.status_code))
+        response.raise_for_status()
 
         content_type = response.headers['Content-type']
         if content_type:
