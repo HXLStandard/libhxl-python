@@ -423,6 +423,20 @@ class TestCleanFilter(AbstractBaseFilterTest):
 
 class TestColumnFilter(AbstractBaseFilterTest):
 
+    UNTAGGED_DATA_IN = [
+        ['Col A', 'Col B', 'Col C'],
+        ['#adm1', '', '#org'],
+        ['Plains', 'WASH', 'UNICEF'],
+        ['Coast', 'Health', 'WHO'],
+    ]
+
+    UNTAGGED_DATA_OUT = [
+        ['Col A', 'Col C'],
+        ['#adm1', '#org'],
+        ['Plains', 'UNICEF'],
+        ['Coast', 'WHO'],
+    ]
+
     def test_with_columns(self):
         expected = ['#sector+list']
         self.assertEqual(expected, self.source.with_columns('#sector').display_tags)
@@ -432,6 +446,12 @@ class TestColumnFilter(AbstractBaseFilterTest):
         expected = ['#org', '#adm1', '#affected']
         self.assertEqual(expected, self.source.without_columns('#sector').display_tags)
         self.assertEqual(expected, self.source.without_columns(['#sector']).display_tags)
+
+    def test_untagged(self):
+        source = hxl.data(self.UNTAGGED_DATA_IN).without_columns(skip_untagged=True)
+        self.assertEqual(self.UNTAGGED_DATA_OUT[0], source.headers)
+        self.assertEqual(self.UNTAGGED_DATA_OUT[1], source.display_tags)
+        self.assertEqual(self.UNTAGGED_DATA_OUT[2:], source. values)
 
 
 class TestCountFilter(AbstractBaseFilterTest):

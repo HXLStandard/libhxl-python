@@ -1039,15 +1039,17 @@ class ColumnFilter(AbstractStreamingFilter):
     @see: L{RowFilter}
     """
 
-    def __init__(self, source, include_tags=[], exclude_tags=[]):
+    def __init__(self, source, include_tags=[], exclude_tags=[], skip_untagged=False):
         """Construct a column filter.
         @param source: a L{hxl.model.Dataset}
         @param include_tags: a whitelist of L{tag patterns<hxl.model.TagPattern>} objects to include
         @param exclude_tags: a blacklist of tag patterns objects to exclude
+        @param skip_untagged: True if all columns without HXL hashtags should be removed
         """
         super(ColumnFilter, self).__init__(source)
         self.include_tags = hxl.model.TagPattern.parse_list(include_tags)
         self.exclude_tags = hxl.model.TagPattern.parse_list(exclude_tags)
+        self.skip_untagged = skip_untagged
         self.indices = [] # saved indices for columns to include
 
     def filter_columns(self):
@@ -1074,13 +1076,6 @@ class ColumnFilter(AbstractStreamingFilter):
         """Test whether a  column should be included in the output.
         If there is a whitelist, it must be in the whitelist; if there is a blacklist, it must not be in the blacklist.
         """
-        if self.exclude_tags:
-            # blacklist
-            for pattern in self.exclude_tags:
-                if pattern.match(column):
-                    # fail as soon as we match an excluded pattern
-                    return False
-
         if self.include_tags:
             # whitelist
             for pattern in self.include_tags:
@@ -1089,9 +1084,19 @@ class ColumnFilter(AbstractStreamingFilter):
                     return True
             # fail if there was a whitelist and we didn't match
             return False
-        else:
-            # no whitelist
-            return True
+
+        if self.exclude_tags or self.skip_untagged:
+            # skip untagged columns?
+            if self.skip_untagged and not column.tag:
+                return False
+            # blacklist
+            for pattern in self.exclude_tags:
+                if pattern.match(column):
+                    # fail as soon as we match an excluded pattern
+                    return False
+
+        # not a whitelist, and no reason to exclude
+        return True
 
     @staticmethod
     def _load(source, spec):

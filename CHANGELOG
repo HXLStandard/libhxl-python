@@ -1,3 +1,6 @@
+	- add skip_untagged parameter to without_columns and ColumnFilter,
+	  for removing columns without HXL hashtags
+
 2017-11-22 Release 4.4
 	- throw proper exception for failed HTTP request from requests library
 	- support JSON arrays of objects as well as arrays of arrays

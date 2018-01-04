@@ -260,10 +260,10 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.ColumnFilter(self, include_tags=whitelist)
 
-    def without_columns(self, blacklist):
+    def without_columns(self, blacklist=None, skip_untagged=False):
         """Select non-matching columns."""
         import hxl.filters
-        return hxl.filters.ColumnFilter(self, exclude_tags=blacklist)
+        return hxl.filters.ColumnFilter(self, exclude_tags=blacklist, skip_untagged=skip_untagged)
 
     def with_rows(self, queries, mask=[]):
         """Select matching rows.
