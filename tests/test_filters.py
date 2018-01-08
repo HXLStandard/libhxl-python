@@ -672,23 +672,23 @@ class TestMergeDataFilter(AbstractBaseFilterTest):
         merged = data1.merge_data(data2, '#org+name', '#org+code')
         self.assertEqual(expected[1:], merged.values)
 
-    # def test_values_displaced_key(self):
-    #     """Test that the filter scans all candidate keys."""
-    #     data1 = hxl.data([
-    #         ['#sector+list', '#org+name', '#org+name'],
-    #         ['Health', 'xxx', 'Red Cross']
-    #         ])
-    #     data2 = hxl.data([
-    #         ['#org+name', '#org+code'],
-    #         ['XX', 'YY'],
-    #         ['Red Cross', 'IFRC']
-    #         ])
-    #     expected = [
-    #         ['#sector+list', '#org+name', '#org+name', '#org+code'],
-    #         ['Health', 'xxx', 'Red Cross', 'IFRC']
-    #         ]
-    #     merged = data1.merge_data(data2, '#org+name', '#org+code')
-    #     self.assertEqual(expected[1:], merged.values)
+    def test_values_displaced_key(self):
+        """Test that the filter scans all candidate keys."""
+        data1 = hxl.data([
+            ['#sector+list', '#org+name', '#org+name'],
+            ['Health', 'xxx', 'Red Cross']
+            ])
+        data2 = hxl.data([
+            ['#org+name', '#org+code'],
+            ['XX', 'YY'],
+            ['Red Cross', 'IFRC']
+            ])
+        expected = [
+            ['#sector+list', '#org+name', '#org+name', '#org+code'],
+            ['Health', 'xxx', 'Red Cross', 'IFRC']
+            ]
+        merged = data1.merge_data(data2, '#org+name', '#org+code')
+        self.assertEqual(expected[1:], merged.values)
 
     def test_queries(self):
         MERGE_IN = [

@@ -100,3 +100,14 @@ def is_list(e):
         return False
     else:
         return True
+
+def list_product(lists, head=[]):
+    """Given a list of lists, return their cartesian product."""
+    if lists:
+        result = []
+        for item in lists[0]:
+            tail = list_product(lists[1:], head + [item])
+            result = result + tail
+        return result
+    else:
+        return [head]

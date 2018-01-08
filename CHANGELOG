@@ -1,5 +1,9 @@
+2018-01-31 Release 4.5
+	- the merge-data filter now looks for keys in *all* candidate
+	  columns (not just the first-matching ones)
 	- add skip_untagged parameter to without_columns and ColumnFilter,
 	  for removing columns without HXL hashtags
+	- hxl.model.Row.get_all can take a default value
 
 2017-11-22 Release 4.4
 	- throw proper exception for failed HTTP request from requests library

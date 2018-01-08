@@ -1399,9 +1399,10 @@ class MergeDataFilter(AbstractStreamingFilter):
     """Composable filter class to merge values from two HXL datasets.
 
     Merges the values for the *last* matching row in the merge
-    dataset. Can patterns to match multiple cells for merging (keys
-    always use just the first match, though, to keep key lengths
-    consistent). Can overwrite existing columns and values.
+    dataset. Can use patterns to match multiple cells for merging
+    (using all candidate columns when there are muliple columns
+    matching the same hashtag pattern). Can overwrite existing columns
+    and values.
 
     Warning: this filter may store a large amount of data in memory,
     depending on the merge.
@@ -1422,6 +1423,7 @@ class MergeDataFilter(AbstractStreamingFilter):
 
     @see hxl.model.Dataset.merge_data
     @see hxl.scripts.hxlmerge_main
+
     """
 
     def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
@@ -1505,26 +1507,22 @@ class MergeDataFilter(AbstractStreamingFilter):
         values = copy.copy(row.values)
         values += ([''] * (len(self.columns) - len(row.values)))
 
-        # Look up the merge values, based on the --keys
-        merge_values = self._merge_values.get(self._make_key(row))
-
-        if merge_values:
-            for i, spec in enumerate(self._merge_indices):
-                if spec[2] or hxl.common.is_empty(values[spec[1]]):
-                    values[spec[1]] = merge_values[i]
+        # Look up the merge values, based on the keys
+        for key in self._make_keys(row):
+            merge_values = self._merge_values.get(key)
+            if merge_values:
+                for i, spec in enumerate(self._merge_indices):
+                    if spec[2] or hxl.common.is_empty(values[spec[1]]):
+                        values[spec[1]] = merge_values[i]
 
         return values
 
-    def _make_key(self, row):
-        """Make a tuple key for a row.
-        Uses only the first matching value for each tag pattern.
-        @param row: Generate a key for this row.
-        @returns: A tuple containing the key.
-        """
-        values = []
+    def _make_keys(self, row):
+        """Return all possible key-value combinations for the row as tuples."""
+        candidate_values = []
         for pattern in self.keys:
-            values.append(hxl.common.normalise_string(row.get(pattern, default='')))
-        return tuple(values)
+            candidate_values.append(hxl.common.normalise_string(value) for value in row.get_all(pattern, default=''))
+        return [tuple(value) for value in hxl.common.list_product(candidate_values)]
 
     def _read_merge(self):
         """Read the second (merging) dataset into memory.
@@ -1550,7 +1548,8 @@ class MergeDataFilter(AbstractStreamingFilter):
                         values.append('')
 
                 # Generate a key tuple and add to the map
-                merge_values[self._make_key(row)] = values
+                for key in self._make_keys(row):
+                    merge_values[key] = values
 
         return merge_values
 

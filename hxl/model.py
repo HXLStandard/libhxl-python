@@ -554,6 +554,7 @@ class Row(object):
         @return The value found, or the default value provided. If parsed=True, the return value will be a list (default: False)
         """
 
+        # FIXME - move externally, use for get_all as well, and support numbers and dates
         def parse(column, value):
             if parsed:
                 if column.has_attribute('list'):
@@ -584,7 +585,7 @@ class Row(object):
                         index = index - 1
         return default
 
-    def get_all(self, tag):
+    def get_all(self, tag, default=None):
         """
         Get all values for a specific tag in a row
         @param tag A TagPattern or a string value for a tag.
@@ -601,7 +602,10 @@ class Row(object):
             if i >= len(self.values):
                 break
             if pattern.match(column):
-                result.append(self.values[i])
+                value = self.values[i]
+                if default is not None and not value:
+                    value = default
+                result.append(value)
         return result
 
     def __getitem__(self, index):
