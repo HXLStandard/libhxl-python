@@ -361,15 +361,33 @@ class TestCleanFilter(AbstractBaseFilterTest):
             ['Organisation', 'Cluster', 'District', 'Date'],
             ['#org', '#sector+list', '#adm1', '#date'],
             ['NGO A', 'WASH', 'Coast', 'January 1 2015'],
-            ['NGO B', 'Education', 'Plains', '1/1/15'],
-            ['NGO B', 'Child Protection', 'Coast', '1 Jan/15']
+            ['NGO B', 'Education', 'Plains', '2/2/15'],
+            ['NGO B', 'Child Protection', 'Coast', '1 Mar/15']
         ]
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '2015-01-01'],
-            ['NGO B', 'Education', 'Plains', '2015-01-01'],
-            ['NGO B', 'Child Protection', 'Coast', '2015-01-01']
+            ['NGO B', 'Education', 'Plains', '2015-02-02'],
+            ['NGO B', 'Child Protection', 'Coast', '2015-03-01']
+        ]
+        DATA_OUT_WEEK = [
+            ['NGO A', 'WASH', 'Coast', '2015-W01'],
+            ['NGO B', 'Education', 'Plains', '2015-W06'],
+            ['NGO B', 'Child Protection', 'Coast', '2015-W09']
+        ]
+        DATA_OUT_MONTH = [
+            ['NGO A', 'WASH', 'Coast', '2015-01'],
+            ['NGO B', 'Education', 'Plains', '2015-02'],
+            ['NGO B', 'Child Protection', 'Coast', '2015-03']
+        ]
+        DATA_OUT_YEAR = [
+            ['NGO A', 'WASH', 'Coast', '2015'],
+            ['NGO B', 'Education', 'Plains', '2015'],
+            ['NGO B', 'Child Protection', 'Coast', '2015']
         ]
         self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(date='date').values)
+        self.assertEqual(DATA_OUT_WEEK, hxl.data(DATA_IN).clean_data(date='date', date_format="%Y-W%V").values)
+        self.assertEqual(DATA_OUT_MONTH, hxl.data(DATA_IN).clean_data(date='date', date_format="%Y-%m").values)
+        self.assertEqual(DATA_OUT_YEAR, hxl.data(DATA_IN).clean_data(date='date', date_format="%Y").values)
 
     def test_custom_dates(self):
         # User-supplied data formats
