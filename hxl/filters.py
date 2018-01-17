@@ -1103,8 +1103,7 @@ class ColumnFilter(AbstractStreamingFilter):
         if spec.get('filter') == 'with_columns':
             return ColumnFilter(
                 source=source,
-                include_tags=req_arg(spec, 'whitelist'),
-                skip_untagged=opt_arg(spec, 'skip_untagged')
+                include_tags=req_arg(spec, 'whitelist')
             )
         else:
             return ColumnFilter(
