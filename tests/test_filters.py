@@ -185,9 +185,11 @@ class TestRecipe(AbstractBaseFilterTest):
     def test_without_columns(self):
         filtered = self.source.recipe({
             'filter': 'without_columns',
-            'blacklist': 'sector'
+            'blacklist': 'sector',
+            'skip_untagged': True
         })
         self.assertEqual(type(filtered).__name__, 'ColumnFilter')
+        self.assertTrue(filtered.skip_untagged)
 
     def test_without_rows(self):
         filtered = self.source.recipe({
