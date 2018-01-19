@@ -1009,6 +1009,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             date=opt_arg(spec, 'date', []),
             date_format=opt_arg(spec, 'date_format', '%Y-%m-%d'),
             number=opt_arg(spec, 'number', []),
+            number_format=opt_arg(spec, 'number_format', None),
             queries=opt_arg(spec, 'queries', [])
         )
 

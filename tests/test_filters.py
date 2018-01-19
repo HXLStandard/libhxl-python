@@ -107,8 +107,12 @@ class TestRecipe(AbstractBaseFilterTest):
         self.assertEqual(type(filtered).__name__, 'CacheFilter')
 
     def test_clean_data(self):
-        filtered = self.source.recipe({'filter': 'clean_data'})
+        filtered = self.source.recipe({
+            'filter': 'clean_data',
+            'number_format': '0.2f'
+        })
         self.assertEqual(type(filtered).__name__, 'CleanDataFilter')
+        self.assertEqual('0.2f', filtered.number_format)
 
     def test_count(self):
         filtered = self.source.recipe({
