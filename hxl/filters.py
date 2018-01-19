@@ -884,7 +884,7 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None, number=[], queries=[]):
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None, number=[], number_format=None, queries=[]):
         """Construct a new data-cleaning filter.
 
         The I{upper}, I{lower}, I{date}, and I{number} arguments all
@@ -900,8 +900,9 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param upper: a tag pattern or list of tag patterns for conversion to uppercase
         @param lower: a tag pattern or list of tag patterns for conversion to lowercase
         @param date: a tag pattern or list of tag patterns for date normalisation
-        @param date_format a date-format string for output, as used by strftime
+        @param date_format: a date-format string for output, as used by strftime
         @param number: a tag pattern or list of tag patterns for number normalisation
+        @param number_format: a number-format string for output, as used by format.
         @param queries: optional list of queries to select rows to be cleaned.
 
         """
@@ -915,6 +916,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         else:
             self.date_format = date_format
         self.number = hxl.model.TagPattern.parse_list(number)
+        self.number_format = number_format
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
@@ -966,7 +968,9 @@ class CleanDataFilter(AbstractStreamingFilter):
             def try_number(value):
                 try:
                     n = float(value)
-                    if n.is_integer():
+                    if self.number_format:
+                        return format(n, self.number_format)
+                    elif n.is_integer():
                         return str(int(n))
                     else:
                         return str(n)

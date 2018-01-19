@@ -322,11 +322,19 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.RenameFilter(self, specs)
 
-    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], date_format=None, number=[], queries=[]):
+    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], date_format=None, number=[], number_format=None, queries=[]):
         """Clean data fields."""
         import hxl.filters
-        return hxl.filters.CleanDataFilter(self, whitespace=whitespace, upper=upper, lower=lower, date=date, date_format=date_format, number=number, queries=queries)
-
+        return hxl.filters.CleanDataFilter(
+            self,
+            whitespace=whitespace,
+            upper=upper,
+            lower=lower,
+            date=date, date_format=date_format,
+            number=number, number_format=number_format,
+            queries=queries
+        )
+    
     def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
         """Merges values from a second dataset."""
         import hxl.filters

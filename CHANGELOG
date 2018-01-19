@@ -4,6 +4,7 @@
 	- add skip_untagged parameter to without_columns and ColumnFilter,
 	  for removing columns without HXL hashtags
 	- hxl.model.Row.get_all can take a default value
+	- the clean-data filter has a number_format option (e.g. "0.2f")
 
 2017-11-22 Release 4.4
 	- throw proper exception for failed HTTP request from requests library

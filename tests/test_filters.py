@@ -324,7 +324,7 @@ class TestCacheFilter(AbstractBaseFilterTest):
         self.assertEqual(rows1, rows2)
 
 
-class TestCleanFilter(AbstractBaseFilterTest):
+class TestCleanDataFilter(AbstractBaseFilterTest):
 
     def test_whitespace(self):
         DATA_IN = [
@@ -356,7 +356,17 @@ class TestCleanFilter(AbstractBaseFilterTest):
             ['NGO B', 'Child Protection', 'Coast', '300'],
             ['NGO A', 'Logistics', 'Coast', '170000']
         ]
+        DATA_OUT_FORMATTED = [
+            ['NGO A', 'WASH', 'Coast', '200.00'],
+            ['NGO B', 'Education', 'Plains', '1100.00'],
+            ['NGO B', 'Child Protection', 'Coast', '300.00'],
+            ['NGO A', 'Logistics', 'Coast', '170000.00']
+        ]
         self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(number='meta+count').values)
+        self.assertEqual(
+            DATA_OUT_FORMATTED,
+            hxl.data(DATA_IN).clean_data(number='meta+count', number_format='0.2f').values
+        )
         
     def test_dates(self):
         DATA_IN = [
