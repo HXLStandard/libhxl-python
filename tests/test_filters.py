@@ -351,7 +351,7 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
             ['#org', '#sector+list', '#adm1', '#meta+count'],
             ['NGO A', 'WASH', 'Coast', '  200'],
             ['NGO B', 'Education', 'Plains', '1,100 '],
-            ['NGO B', 'Child Protection', 'Coast', '300.'],
+            ['NGO B', 'Child Protection', 'Coast', 300],
             ['NGO A', 'Logistics', 'Coast', '1.7E5']
         ]
         DATA_OUT = [
