@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='libhxl',
-      version='4.4',
+      version='4.5dev',
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       author_email='contact@megginson.com',
