@@ -7,6 +7,8 @@
 	- the clean-data filter has a number_format option (e.g. "0.2f")
 	- hxl.model.Column.display_tag always shows attributes sorted, per HXL
 	  1.1 beta
+	- added hxl.model.Row.dictionary property to return row as a
+	  Python dict
 	- hxl.model.Source.gen_json() has a new use_objects option to use
 	  the JSON list-of-objects format from HXL 1.1 beta as output
 	- hxl.io.write_json() has the use_objects option to pass on to

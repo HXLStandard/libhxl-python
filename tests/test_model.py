@@ -213,6 +213,13 @@ class TestRow(unittest.TestCase):
         self.assertTrue(type(result) is list)
         self.assertEqual(1, len(result))
 
+    def test_dictionary(self):
+        self.assertEqual({
+            '#country': 'Liberia',
+            '#org': 'WFP',
+            '#sector+list': 'Health, Education'
+        }, self.row.dictionary)
+
     def test_outofrange(self):
         # what happens when a row is too short?
         self.row.values = self.CONTENT[0:1]

@@ -404,18 +404,12 @@ class Dataset(object):
                 else:
                     yield ",\n" + json.dumps(raw)
         else:
-            data = {}
             for row in self.rows:
-                values = row.values
-                for i, col in enumerate(self.columns):
-                    key = col.display_tag
-                    if (not key in data) and (i < count(values)):
-                        data[key] = values[i]
                 if is_first:
                     is_first = False
-                    yield json.dumps(data)
+                    yield json.dumps(row.dictionary)
                 else:
-                    yield ",\n" + json.dumps(data)
+                    yield ",\n" + json.dumps(row.dictionary)
         yield "\n]\n"
 
 
@@ -629,6 +623,20 @@ class Row(object):
                     value = default
                 result.append(value)
         return result
+
+    @property
+    def dictionary(self):
+        """Return the row as a Python dict.
+        The keys will be HXL hashtags and attributes, normalised per HXL 1.1.
+        If two or more columns have the same hashtags and attributes, only the first will be included.
+        @return: The row as a Python dictionary.
+        """
+        data = {}
+        for i, col in enumerate(self.columns):
+            key = col.display_tag
+            if (not key in data) and (i < len(self.values)):
+                data[key] = self.values[i]
+        return data
 
     def __getitem__(self, index):
         """
