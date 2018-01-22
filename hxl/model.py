@@ -392,16 +392,30 @@ class Dataset(object):
             writer.writerow(raw)
             yield output.get()
 
-    def gen_json(self, show_headers=True, show_tags=True):
+    def gen_json(self, show_headers=True, show_tags=True, use_objects=False):
         """Generate a JSON representation of a HXL dataset, one row at a time."""
         is_first = True
         yield "[\n"
-        for raw in self.gen_raw(show_headers, show_tags):
-            if is_first:
-                is_first = False
-                yield json.dumps(raw)
-            else:
-                yield ",\n" + json.dumps(raw)
+        if use_objects:
+            for raw in self.gen_raw(show_headers, show_tags):
+                if is_first:
+                    is_first = False
+                    yield json.dumps(raw)
+                else:
+                    yield ",\n" + json.dumps(raw)
+        else:
+            data = {}
+            for row in self.rows:
+                values = row.values
+                for i, col in enumerate(self.columns):
+                    key = col.display_tag
+                    if (not key in data) and (i < count(values)):
+                        data[key] = values[i]
+                if is_first:
+                    is_first = False
+                    yield json.dumps(data)
+                else:
+                    yield ",\n" + json.dumps(data)
         yield "\n]\n"
 
 
@@ -438,7 +452,7 @@ class Column(object):
         """
         if self.tag:
             s = self.tag
-            for attribute in self.attribute_list:
+            for attribute in sorted(self.attribute_list):
                 s += '+' + attribute
             return s
         else:

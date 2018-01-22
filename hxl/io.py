@@ -119,9 +119,9 @@ def write_hxl(output, source, show_headers=True, show_tags=True):
         output.write(line)
 
         
-def write_json(output, source, show_headers=True, show_tags=True):
+def write_json(output, source, show_headers=True, show_tags=True, use_objects=False):
     """Serialize a dataset to JSON."""
-    for line in source.gen_json(show_headers, show_tags):
+    for line in source.gen_json(show_headers, show_tags, use_objects):
         output.write(line)
 
 

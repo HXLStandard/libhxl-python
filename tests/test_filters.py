@@ -886,14 +886,14 @@ class TestExplodeFilter(AbstractBaseFilterTest):
     def test_headers(self):
         source = hxl.data(self.DATA_IN).explode()
         self.assertEqual(
-            ['#adm1', '#date', '#affected+num+header', '#affected+num+value'],
+            ['#adm1', '#date', '#affected+header+num', '#affected+num+value'],
             source.display_tags
         )
 
     def test_custom_atts(self):
         source = hxl.data(self.DATA_IN).explode('foo', 'bar')
         self.assertEqual(
-            ['#adm1', '#date', '#affected+num+foo', '#affected+num+bar'],
+            ['#adm1', '#date', '#affected+foo+num', '#affected+bar+num'],
             source.display_tags
         )
 

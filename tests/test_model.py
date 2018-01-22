@@ -141,7 +141,7 @@ class TestColumn(unittest.TestCase):
         self.assertEqual(TestColumn.HEADER_TEXT, self.column.header)
 
     def test_display_tag(self):
-        self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(TestColumn.ATTRIBUTES), self.column.display_tag)
+        self.assertEqual(TestColumn.HXL_TAG + '+' + "+".join(sorted(TestColumn.ATTRIBUTES)), self.column.display_tag)
 
     def test_case_insensitive(self):
         column = Column(tag='Foo', attributes=['X', 'y'])
