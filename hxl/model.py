@@ -397,19 +397,19 @@ class Dataset(object):
         is_first = True
         yield "[\n"
         if use_objects:
+            for row in self:
+                if is_first:
+                    is_first = False
+                    yield json.dumps(row.dictionary, sort_keys=True, indent=2)
+                else:
+                    yield ",\n" + json.dumps(row.dictionary, sort_keys=True, indent=2)
+        else:
             for raw in self.gen_raw(show_headers, show_tags):
                 if is_first:
                     is_first = False
                     yield json.dumps(raw)
                 else:
                     yield ",\n" + json.dumps(raw)
-        else:
-            for row in self.rows:
-                if is_first:
-                    is_first = False
-                    yield json.dumps(row.dictionary)
-                else:
-                    yield ",\n" + json.dumps(row.dictionary)
         yield "\n]\n"
 
 
@@ -634,7 +634,7 @@ class Row(object):
         data = {}
         for i, col in enumerate(self.columns):
             key = col.display_tag
-            if (not key in data) and (i < len(self.values)):
+            if key and (not key in data) and (i < len(self.values)):
                 data[key] = self.values[i]
         return data
 

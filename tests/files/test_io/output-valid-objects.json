@@ -1,0 +1,42 @@
+[
+{
+  "#adm1": "Los Santos",
+  "#country": "Panam\u00e1",
+  "#date+reported": "1 March 2015",
+  "#org+es": "ACNUR",
+  "#sector+es": "WASH",
+  "#subsector+es": "Higiene",
+  "#targeted+f": "100",
+  "#targeted+m": "100"
+},
+{
+  "#adm1": "Cauca",
+  "#country": "Colombia",
+  "#date+reported": "",
+  "#org+es": "OMS",
+  "#sector+es": "Salud",
+  "#subsector+es": "Vacunaci\u00f3n",
+  "#targeted+f": "",
+  "#targeted+m": ""
+},
+{
+  "#adm1": "Choc\u00f3",
+  "#country": "Colombia",
+  "#date+reported": "",
+  "#org+es": "UNICEF",
+  "#sector+es": "Educaci\u00f3n",
+  "#subsector+es": "Formaci\u00f3n de ense\u00f1adores",
+  "#targeted+f": "250",
+  "#targeted+m": "300"
+},
+{
+  "#adm1": "Amazonas",
+  "#country": "Venezuela",
+  "#date+reported": "",
+  "#org+es": "OMS",
+  "#sector+es": "WASH",
+  "#subsector+es": "Urbano",
+  "#targeted+f": "80",
+  "#targeted+m": "95"
+}
+]

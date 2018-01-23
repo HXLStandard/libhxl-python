@@ -1,0 +1,8 @@
+[
+["Registro", "Sector/Cluster", "Subsector", "Organizaci\u00f3n", "Hombres", "Mujeres", "Pa\u00eds", "Departamento/Provincia/Estado", null],
+["", "#sector+es", "#subsector+es", "#org+es", "#targeted+f", "#targeted+m", "#country", "#adm1", "#date+reported"],
+["001", "WASH", "Higiene", "ACNUR", "100", "100", "Panam\u00e1", "Los Santos", "1 March 2015"],
+["002", "Salud", "Vacunaci\u00f3n", "OMS", "", "", "Colombia", "Cauca", ""],
+["003", "Educaci\u00f3n", "Formaci\u00f3n de ense\u00f1adores", "UNICEF", "250", "300", "Colombia", "Choc\u00f3", ""],
+["004", "WASH", "Urbano", "OMS", "80", "95", "Venezuela", "Amazonas", ""]
+]

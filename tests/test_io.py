@@ -10,10 +10,13 @@ License: Public Domain
 import unittest
 import os
 import sys
+import io
 if sys.version_info < (3,):
     from urllib2 import HTTPError
+    import StringIO
 else:
     from urllib.error import HTTPError
+    from io import StringIO
 
 import hxl
 from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
@@ -23,9 +26,12 @@ def _resolve_file(filename):
     return os.path.join(os.path.dirname(__file__), filename)
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
+FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
+FILE_JSON_OUT = _resolve_file('./files/test_io/output-valid.json')
 FILE_JSON_OBJECTS = _resolve_file('./files/test_io/input-valid-objects.json')
+FILE_JSON_OBJECTS_OUT = _resolve_file('./files/test_io/output-valid-objects.json')
 FILE_JSON_NESTED = _resolve_file('./files/test_io/input-valid-nested.json')
 FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
@@ -242,3 +248,28 @@ class TestFunctions(unittest.TestCase):
                 "District": "#org"
         })
         self.assertEqual(TestFunctions.DATA_UNTAGGED[1:], [row.values for row in input])
+
+    def test_write_csv(self):
+        with open(FILE_CSV_OUT, 'rb') as input:
+            expected = input.read()
+            buffer = StringIO()
+            with hxl.data(FILE_CSV, True) as source:
+                hxl.io.write_hxl(buffer, source)
+                # Need to work with bytes to handle CRLF
+                self.assertEqual(expected, bytes(buffer.getvalue(), 'utf-8'))
+
+    def test_write_json_lists(self):
+        with open(FILE_JSON_OUT) as input:
+            expected = input.read()
+            buffer = StringIO()
+            with hxl.data(FILE_CSV, True) as source:
+                hxl.io.write_json(buffer, source)
+                self.assertEqual(expected, buffer.getvalue())
+
+    def test_write_json_objects(self):
+        with open(FILE_JSON_OBJECTS_OUT) as input:
+            expected = input.read()
+            buffer = StringIO()
+            with hxl.data(FILE_CSV, True) as source:
+                hxl.io.write_json(buffer, source, use_objects=True)
+                self.assertEqual(expected, buffer.getvalue())
