@@ -224,7 +224,11 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         if (mime_type in HTML5_MIME_TYPES) or (sig in HTML5_SIGS):
             raise hxl.common.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
-                {'input': input}
+                {
+                    'input': input,
+                    'source': raw_source,
+                    'munged': munge_url(raw_source) if str(raw_source).startswith('http') else None
+                }
             )
 
         elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or (sig in EXCEL_SIGS):
