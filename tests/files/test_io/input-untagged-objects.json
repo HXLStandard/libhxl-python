@@ -1,0 +1,42 @@
+[
+    {
+        "Registro": "001",
+        "Sector/Cluster": "WASH",
+        "Subsector": "Higiene",
+        "Organización": "ACNUR",
+        "Hombres": "100",
+        "Mujeres": "100",
+        "País": "Panamá",
+        "Departamento/Provincia/Estado": "Los Santos"
+    }, 
+    {
+        "Registro": "002",
+        "Sector/Cluster": "Salud",
+        "Subsector": "Vacunación",
+        "Organización": "OMS",
+        "Hombres": "",
+        "Mujeres": "",
+        "País": "Colombia",
+        "Departamento/Provincia/Estado": "Cauca"
+    }, 
+    {
+        "Registro": "003",
+        "Sector/Cluster": "Educación",
+        "Subsector": "Formación de enseñadores",
+        "Organización": "UNICEF",
+        "Hombres": "250",
+        "Mujeres": "300",
+        "País": "Colombia",
+        "Departamento/Provincia/Estado": "Chocó"
+    }, 
+    {
+        "Registro": "004",
+        "Sector/Cluster": "WASH",
+        "Subsector": "Urbano",
+        "Organización": "OMS",
+        "Hombres": "80",
+        "Mujeres": "95",
+        "País": "Venezuela",
+        "Departamento/Provincia/Estado": "Amazonas"
+    }
+]

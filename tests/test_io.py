@@ -29,8 +29,10 @@ FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
+FILE_JSON_UNTAGGED = _resolve_file('./files/test_io/input-untagged.json')
 FILE_JSON_OUT = _resolve_file('./files/test_io/output-valid.json')
 FILE_JSON_OBJECTS = _resolve_file('./files/test_io/input-valid-objects.json')
+FILE_JSON_OBJECTS_UNTAGGED = _resolve_file('./files/test_io/input-untagged-objects.json')
 FILE_JSON_OBJECTS_OUT = _resolve_file('./files/test_io/output-valid-objects.json')
 FILE_JSON_NESTED = _resolve_file('./files/test_io/input-valid-nested.json')
 FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
@@ -42,6 +44,28 @@ URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/t
 URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 
+class TestUntaggedInput(unittest.TestCase):
+
+    def test_untagged_json(self):
+        with hxl.io.make_input(FILE_JSON_UNTAGGED, allow_local=True) as input:
+            self.assertEqual([
+                ['Qué?', '', '', 'Quién?', 'Para quién?', '', 'Dónde?', 'Cuándo?'],
+                ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
+                ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos', '1 March 2015'],
+                ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca', ''],
+                ['003', 'Educación', 'Formación de enseñadores', 'UNICEF', '250', '300', 'Colombia', 'Chocó', ''],
+                ['004', 'WASH', 'Urbano', 'OMS', '80', '95', 'Venezuela', 'Amazonas', '']
+            ], list(input))
+
+    def test_untagged_json_objects(self):
+        with hxl.io.make_input(FILE_JSON_OBJECTS_UNTAGGED, allow_local=True) as input:
+            self.assertEqual([
+                ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
+                ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos'],
+                ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca'],
+                ['003', 'Educación', 'Formación de enseñadores', 'UNICEF', '250', '300', 'Colombia', 'Chocó'],
+                ['004', 'WASH', 'Urbano', 'OMS', '80', '95', 'Venezuela', 'Amazonas']
+            ], list(input))
 
 class TestFunctions(unittest.TestCase):
 
