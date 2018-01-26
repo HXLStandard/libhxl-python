@@ -13,6 +13,8 @@
 	  the JSON list-of-objects format from HXL 1.1 beta as output
 	- hxl.io.write_json() has the use_objects option to pass on to
 	  hxl.model.Source.gen_json()
+	- try to recognise JSON data even if it doesn't have a JSON MIME
+	  type or file extension
 
 2017-11-22 Release 4.4
 	- throw proper exception for failed HTTP request from requests library

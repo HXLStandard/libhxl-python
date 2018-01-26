@@ -29,6 +29,7 @@ FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
+FILE_JSON_TXT = _resolve_file('./files/test_io/input-valid-json.txt')
 FILE_JSON_UNTAGGED = _resolve_file('./files/test_io/input-untagged.json')
 FILE_JSON_OUT = _resolve_file('./files/test_io/output-valid.json')
 FILE_JSON_OBJECTS = _resolve_file('./files/test_io/input-valid-objects.json')
@@ -188,6 +189,11 @@ class TestParser(unittest.TestCase):
     def test_local_json(self):
         """Test reading from a local JSON file."""
         with hxl.data(FILE_JSON, True) as source:
+            self.compare_input(source)
+
+    def test_local_json_text(self):
+        """Test reading from a local JSON file that doesn't have a JSON extension."""
+        with hxl.data(FILE_JSON_TXT, True) as source:
             self.compare_input(source)
 
     def test_local_json_objects(self):

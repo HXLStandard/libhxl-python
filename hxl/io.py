@@ -46,6 +46,13 @@ JSON_FILE_EXTS = [
     'json'
 ]
 
+JSON_SIGS = [
+    b'[',
+    b' [',
+    b'{',
+    b' {'
+]
+
 EXCEL_MIME_TYPES = [
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -198,6 +205,12 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         else:
             return io.BufferedReader(stream)
 
+    def match_sigs(sig, sigs):
+        for s in sigs:
+            if sig.startswith(s):
+                return True
+        return False
+
     if isinstance(raw_source, AbstractInput):
         # already an input source: no op
         return raw_source
@@ -221,7 +234,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
         sig = input.peek(4)[:4]
 
-        if (mime_type in HTML5_MIME_TYPES) or (sig in HTML5_SIGS):
+        if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
             raise hxl.common.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {
@@ -231,14 +244,17 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             )
 
-        elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or (sig in EXCEL_SIGS):
+        elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
             return ExcelInput(input, sheet_index=sheet_index)
 
-        elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS):
-            return JSONInput(input, selector=selector)
+        elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
+            try:
+                return JSONInput(input, selector=selector)
+            except:
+                pass
 
-        else:
-            return CSVInput(input)
+        # fall back to CSV if all else fails
+        return CSVInput(input)
 
 
 def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True):
