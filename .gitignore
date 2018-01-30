@@ -1,5 +1,6 @@
 *.pyc
 /.eggs
+/.pypirc
 /build
 /dist
 /libhxl.egg-info
