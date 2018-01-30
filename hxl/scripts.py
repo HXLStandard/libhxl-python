@@ -50,7 +50,7 @@ def hxlappend():
     run_script(hxlappend_main)
 
 def hxlclean():
-    """Console script for hxlclean."""
+    """Console script for hxlclean"""
     run_script(hxlclean_main)
 
 def hxlcount():
@@ -221,7 +221,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
     parser.add_argument(
         '--date-format',
-        help='Date formatting string in strftime format (defaults to %Y-%m-%d).',
+        help='Date formatting string in strftime format (defaults to %%Y-%%m-%%d).',
         default=None,
         metavar='format',
         )
@@ -232,6 +232,12 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
+    parser.add_argument(
+        '--number-format',
+        help='Number formatting string in printf format (without leading %%).',
+        default=None,
+        metavar='format',
+        )
     add_queries_arg(parser, 'Clean only rows matching at least one query.')
 
     args = parser.parse_args(args)
@@ -240,7 +246,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
         filter = hxl.filters.CleanDataFilter(
             source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
-            date=args.date, date_format=args.date_format, number=args.number, queries=args.query
+            date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 
