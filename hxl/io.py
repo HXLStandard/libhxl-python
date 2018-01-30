@@ -534,7 +534,7 @@ class JSONInput(AbstractInput):
             
         if sys.version_info < (3,):
             # Restore non-Unicode encoding (blech), because CSV parser doesn't Unicode encode
-            row = [cell.encode(self._encoding) for cell in row]
+            row = [cell.encode(self._encoding) if cell else cell for cell in row]
         return row
 
     next = __next__
