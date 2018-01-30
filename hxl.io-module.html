@@ -154,7 +154,8 @@
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">verify_ssl</span>=<span class="summary-sig-default">True</span>)</span><br />
+        <span class="summary-sig-arg">verify_ssl</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">selector</span>=<span class="summary-sig-default">None</span>)</span><br />
       Convenience method for reading a HXL dataset.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#data">source&nbsp;code</a></span>
@@ -218,7 +219,8 @@
           <td><span class="summary-sig"><a name="write_json"></a><span class="summary-sig-name">write_json</span>(<span class="summary-sig-arg">output</span>,
         <span class="summary-sig-arg">source</span>,
         <span class="summary-sig-arg">show_headers</span>=<span class="summary-sig-default">True</span>,
-        <span class="summary-sig-arg">show_tags</span>=<span class="summary-sig-default">True</span>)</span><br />
+        <span class="summary-sig-arg">show_tags</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">use_objects</span>=<span class="summary-sig-default">False</span>)</span><br />
       Serialize a dataset to JSON.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#write_json">source&nbsp;code</a></span>
@@ -274,7 +276,8 @@
         <span class="summary-sig-arg">allow_local</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">sheet_index</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">verify_ssl</span>=<span class="summary-sig-default">True</span>)</span><br />
+        <span class="summary-sig-arg">verify_ssl</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">selector</span>=<span class="summary-sig-default">None</span>)</span><br />
       Figure out what kind of input to create.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#make_input">source&nbsp;code</a></span>
@@ -378,6 +381,13 @@ d=([0-9]+))?.*$'">r'^https?://docs.google.com/.*spreadsheets<code class="variabl
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="JSON_SIGS"></a><span class="summary-name">JSON_SIGS</span> = <code title="[b'[', b' [', b'{', b' {']">[b'[', b' [', b'{', b' {']</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="hxl.io-module.html#EXCEL_MIME_TYPES" class="summary-name">EXCEL_MIME_TYPES</a> = <code title="['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedoc\
 ument.spreadsheetml.sheet']">['application/vnd.ms-excel', 'application/v<code class="variable-ellipsis">...</code></code>
     </td>
@@ -431,7 +441,8 @@ ument.spreadsheetml.sheet']">['application/vnd.ms-excel', 'application/v<code cl
         <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
         <span class="sig-arg">sheet_index</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">verify_ssl</span>=<span class="sig-default">True</span>)</span>
+        <span class="sig-arg">verify_ssl</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">selector</span>=<span class="sig-default">None</span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="hxl.io-pysrc.html#data">source&nbsp;code</a></span>&nbsp;
@@ -451,6 +462,10 @@ ument.spreadsheetml.sheet']">['application/vnd.ms-excel', 'application/v<code cl
           from an Excel workbook (default: None)</li>
         <li><strong class="pname"><code>timeout</code></strong> - if supplied, time out an HTTP(S) request after the specified 
           number of seconds with no data received (default: None)</li>
+        <li><strong class="pname"><code>verify_ssl</code></strong> - if False, don't verify SSL certificates (e.g. for self-signed 
+          certs).</li>
+        <li><strong class="pname"><code>selector</code></strong> - selector property for a JSON file (will later also cover tabs, 
+          etc.)</li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -466,7 +481,8 @@ ument.spreadsheetml.sheet']">['application/vnd.ms-excel', 'application/v<code cl
         <span class="sig-arg">allow_local</span>=<span class="sig-default">False</span>,
         <span class="sig-arg">sheet_index</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">verify_ssl</span>=<span class="sig-default">True</span>)</span>
+        <span class="sig-arg">verify_ssl</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">selector</span>=<span class="sig-default">None</span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="hxl.io-pysrc.html#make_input">source&nbsp;code</a></span>&nbsp;
@@ -487,6 +503,10 @@ ument.spreadsheetml.sheet']">['application/vnd.ms-excel', 'application/v<code cl
           None).</li>
         <li><strong class="pname"><code>timeout</code></strong> - if supplied, time out an HTTP(S) request after the specified 
           number of seconds with no data received (default: None)</li>
+        <li><strong class="pname"><code>verify_ssl</code></strong> - if False, don't try to verify SSL certificates (e.g. for 
+          self-signed certs).</li>
+        <li><strong class="pname"><code>selector</code></strong> - a property to select the data in a JSON record (may later extend 
+          to spreadsheet tabs).</li>
     </ul></dd>
     <dt>Returns:</dt>
         <dd>an object belonging to a subclass of AbstractInput, returning 
@@ -639,7 +659,7 @@ ument.spreadsheetml.sheet']
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Mon May 29 15:44:10 2017
+    on Tue Jan 30 16:06:55 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
