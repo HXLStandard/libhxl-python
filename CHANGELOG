@@ -5,6 +5,7 @@
 	  for removing columns without HXL hashtags
 	- hxl.model.Row.get_all can take a default value
 	- the clean-data filter has a number_format option (e.g. "0.2f")
+	- the hxlclean command-line script has a --number-format option
 	- hxl.model.Column.display_tag always shows attributes sorted, per HXL
 	  1.1 beta
 	- added hxl.model.Row.dictionary property to return row as a
