@@ -1,3 +1,7 @@
+2018-02-05 Release 4.5.1
+	- bug-fix release: do not let a misspelled date cause a fatal
+	  exception
+
 2018-01-31 Release 4.5
 	- the merge-data filter now looks for keys in *all* candidate
 	  columns (not just the first-matching ones)

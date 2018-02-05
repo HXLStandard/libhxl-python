@@ -960,7 +960,10 @@ class CleanDataFilter(AbstractStreamingFilter):
         # Date
         if self._match_patterns(self.date, column):
             if value:
-                value = dateutil.parser.parse(value).strftime(self.date_format)
+                try:
+                    value = dateutil.parser.parse(value).strftime(self.date_format)
+                except:
+                    pass # TODO log warning
 
         # Number
         if self._match_patterns(self.number, column) and re.search('\d', value):
