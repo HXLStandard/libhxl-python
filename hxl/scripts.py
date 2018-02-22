@@ -16,6 +16,7 @@ import sys
 import re
 import argparse
 import json
+import logging
 
 
 # Do not import hxl, to avoid circular imports
@@ -788,7 +789,14 @@ def make_args(description):
         action='store_const',
         const=True,
         default=False
-        )
+    )
+    parser.add_argument(
+        '--log',
+        help='Set minimum logging level',
+        metavar='debug|info|warning|error|critical|none',
+        choices=['debug', 'info', 'warning', 'error', 'critical'],
+        default='error'
+    )
     return parser
 
 def add_queries_arg(parser, help='Apply only to rows matching at least one query.'):
@@ -804,6 +812,10 @@ def add_queries_arg(parser, help='Apply only to rows matching at least one query
 
 def make_source(args, stdin=STDIN):
     """Create a HXL input source."""
+
+    # logging
+    logging.basicConfig(format='%(levelname)s (%(name)s): %(message)s', level=args.log.upper())
+    
     sheet_index = args.sheet
     if sheet_index is not None:
         sheet_index -= 1

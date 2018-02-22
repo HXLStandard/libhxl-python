@@ -14,6 +14,7 @@ import io
 import collections
 import csv
 import json
+import logging
 import sys
 import re
 import xlrd
@@ -22,6 +23,7 @@ import requests
 
 import hxl
 
+logger = logging.getLogger(__name__)
 
 ########################################################################
 # Constants
@@ -164,6 +166,7 @@ def _encode_py2(value):
     try:
         return value.encode('utf-8')
     except:
+        logger.exception('Failed to encode string as UTF-8: {}'.format(value))
         return value
 
     
@@ -217,6 +220,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
     elif hasattr(raw_source, '__len__') and (not isinstance(raw_source, six.string_types)):
         # it's an array
+        logger.debug('Making input from an array')
         return ArrayInput(raw_source)
 
     else:
@@ -226,34 +230,39 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         
         if hasattr(raw_source, 'read'):
             # it's an input stream
+            logger.debug('Making input from a stream')
             input = wrap_stream(raw_source)
         else:
             # assume a URL or filename
+            logger.debug('Opening source %s as a URL or file', raw_source)
             (input, mime_type, file_ext, encoding) = open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout, verify_ssl=verify_ssl)
             input = wrap_stream(input)
 
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            raise hxl.common.HXLException(
+            logger.exception(hxl.common.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {
                     'input': input,
                     'source': raw_source,
                     'munged': munge_url(raw_source) if str(raw_source).startswith('http') else None
                 }
-            )
+            ))
 
         elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
+            logger.debug('Making input from an Excel file')
             return ExcelInput(input, sheet_index=sheet_index)
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
+            logger.debug('Trying to make input as JSON')
             try:
                 return JSONInput(input, selector=selector)
             except:
-                pass
+                logger.exception('Failed to parse apparent JSON; reverting to CSV')
 
         # fall back to CSV if all else fails
+        logger.debug('Making input from CSV')
         return CSVInput(input)
 
 
@@ -276,8 +285,11 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
-        response = requests.get(munge_url(url_or_filename, verify_ssl), stream=True, verify=verify_ssl, timeout=timeout)
-        response.raise_for_status()
+        try:
+            response = requests.get(munge_url(url_or_filename, verify_ssl), stream=True, verify=verify_ssl, timeout=timeout)
+            response.raise_for_status()
+        except Exception as e:
+            logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
 
         content_type = response.headers['Content-type']
         if content_type:
@@ -292,10 +304,14 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
 
     elif allow_local:
         # Default to a local file, if allowed
-        return (io.open(url_or_filename, 'rb'), mime_type, file_ext, encoding)
+        try:
+            return (io.open(url_or_filename, 'rb'), mime_type, file_ext, encoding)
+        except Exception as e:
+            logger.exception("Cannot open local HXL file %s (%s)", url_or_filename, str(e))
 
     else:
-        # Forbidden to trye local (allow_local is False), so give up.
+        # Forbidden to try local (allow_local is False), so give up.
+        logger.critical('Tried to open local file %s with allow_local set to False', url_or_filename)
         raise IOError("Only http(s) and (s)ftp URLs allowed: {}".format(url_or_filename))
 
 
@@ -604,6 +620,7 @@ class ExcelInput(AbstractInput):
                 try:
                     return cell.value.encode('utf8')
                 except:
+                    logger.exception('Failed to encode string as UTF-8: {}'.format(value))
                     return cell.value
             else:
                 return cell.value
@@ -721,6 +738,7 @@ class HXLReader(hxl.model.Dataset):
         column_number = 0
 
         columns = []
+        failed_hashtags = []
 
         for source_column_number, raw_string in enumerate(raw_row):
             if previous_row and source_column_number < len(previous_row):
@@ -735,11 +753,15 @@ class HXLReader(hxl.model.Dataset):
                     columns.append(column)
                     column_number += 1
                     continue
+                else:
+                    failed_hashtags.append('"' + raw_string + '"')
 
             columns.append(hxl.model.Column(header=header))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
+            if len(failed_hashtags) > 0:
+                logger.error('Skipping column(s) with malformed hashtag specs: %s', ', '.join(failed_hashtags))
             return columns
         else:
             return None
