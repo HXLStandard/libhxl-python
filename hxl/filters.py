@@ -37,10 +37,13 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import sys, re, six, abc, copy, json
+import abc, copy, json, logging, re, six, sys
 import dateutil.parser
 
 import hxl
+
+
+logger = logging.getLogger(__name__)
 
 
 #

@@ -12,18 +12,13 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 from __future__ import print_function
 
-import sys
-import re
-import argparse
-import json
-import logging
-
+import argparse, json, logging, re, sys
 
 # Do not import hxl, to avoid circular imports
+import hxl.converters, hxl.filters, hxl.io
 
-import hxl.filters
-import hxl.io
-import hxl.converters
+logger = logging.getLogger(__name__)
+
 
 # In Python2, sys.stdin is a byte stream; in Python3, it's a text stream
 if sys.version_info < (3,):

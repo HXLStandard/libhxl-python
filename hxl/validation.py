@@ -7,12 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import sys
-import re
-import os
-from copy import copy
-from email.utils import parseaddr
-
+import copy, logging, os, re, sys
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse
@@ -263,7 +258,7 @@ class Schema(object):
     """
 
     def __init__(self, rules=[], callback=None):
-        self.rules = copy(rules)
+        self.rules = copy.copy(rules)
         self.callback = callback
         self.impossible_rules = {}
 

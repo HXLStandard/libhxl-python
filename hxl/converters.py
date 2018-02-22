@@ -13,7 +13,11 @@ converters soon, especially for formats like GeoJSON.
 
 """
 
-import hxl, re
+import logging, re
+
+import hxl
+
+logger = logging.getLogger(__name__)
 
 
 class Tagger(hxl.io.AbstractInput):

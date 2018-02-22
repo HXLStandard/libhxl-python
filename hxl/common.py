@@ -8,7 +8,10 @@
 
 """
 
-import re, unidecode, sys, dateutil, six, collections
+import collections, dateutil, logging, re, six, sys, unidecode
+
+logger = logging.getLogger(__name__)
+
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """Regular-expression pattern for a single token."""

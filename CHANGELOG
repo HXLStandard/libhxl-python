@@ -1,3 +1,8 @@
+2018-02-28 Release 4.6
+	- start implementing logging support
+	- all command-line utilities now have a --log option to set the
+  	  logging level
+
 2018-02-05 Release 4.5.1
 	- bug-fix release: do not let a misspelled date cause a fatal
 	  exception

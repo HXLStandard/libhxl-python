@@ -7,17 +7,12 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc
-import copy
-import dateutil
-import re
-import csv
-import json
-import six
-import operator
-
+import abc, copy, csv, dateutil, json, logging, operator, re, six
 
 import hxl
+
+logger = logging.getLogger(__name__)
+
 
 class TagPattern(object):
     """

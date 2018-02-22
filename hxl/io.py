@@ -7,23 +7,12 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-from __future__ import absolute_import
-
-import abc
-import io
-import collections
-import csv
-import json
-import logging
-import sys
-import re
-import xlrd
-import six
-import requests
+import abc, collections, csv, io, json, logging, re, requests, six, sys, xlrd
 
 import hxl
 
 logger = logging.getLogger(__name__)
+
 
 ########################################################################
 # Constants
@@ -290,6 +279,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
             response.raise_for_status()
         except Exception as e:
             logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
+            raise e
 
         content_type = response.headers['Content-type']
         if content_type:
@@ -308,6 +298,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
             return (io.open(url_or_filename, 'rb'), mime_type, file_ext, encoding)
         except Exception as e:
             logger.exception("Cannot open local HXL file %s (%s)", url_or_filename, str(e))
+            raise e
 
     else:
         # Forbidden to try local (allow_local is False), so give up.
