@@ -129,9 +129,10 @@ def parse_coord(s):
     """
     for delim in ('/', ',', ':', ';', ' ',):
         if s.find(delim) > 0:
-            lat_s, lon_s = s.split(delim)
-            lat = parse_lat(lat_s)
-            lon = parse_lon(lon_s)
-            if lat and lon:
-                return (lat, lon,)
+            parts = s.split(delim)
+            if len(parts) == 2:
+                lat = parse_lat(parts[0])
+                lon = parse_lon(parts[1])
+                if lat and lon:
+                    return (lat, lon,)
     return None
