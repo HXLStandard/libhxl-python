@@ -47,3 +47,27 @@ class TestLatLon(unittest.TestCase):
             coord = hxl.geo.parse_coord(s)
             self.assertAlmostEqual(c[0], coord[0], places=6)
             self.assertAlmostEqual(c[1], coord[1], places=6)
+
+    def test_lat_out_of_range(self):
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lat('91 00 00')
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lat('-91 00 00')
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lat('45 60 00')
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lat('45 00 60')
+
+    def test_lon_out_of_range(self):
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lon('181 00 00')
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lon('-181 00 00')
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lon('-75 60 00')
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_lon('-75 00 60')
+
+    def test_coord_out_of_range(self):
+        with self.assertRaises(ValueError):
+            hxl.geo.parse_coord('45.5,181.5')

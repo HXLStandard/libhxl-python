@@ -71,17 +71,17 @@ def _make_num(parts, max_deg):
     """
     num = float(parts['deg'])
     if num > max_deg or num < max_deg*-1:
-        raise Exception('degrees out of range {}/{}'.format(max_deg*-1, max_deg))
+        raise ValueError('degrees out of range {}/{}'.format(max_deg*-1, max_deg))
     if parts['min']:
         min = float(parts['min'])
         if min >= 60.0:
-            raise Exception('minutes must be less than 60')
+            raise ValueError('minutes must be less than 60')
         else:
             num += min/60.0
     if parts['sec']:
         sec = float(parts['sec'])
         if sec >= 60:
-            raise Exception('seconds must be less than 60')
+            raise ValueError('seconds must be less than 60')
         num += sec/3600.0
     if parts.get('sign') == '-' or (parts.get('hemi') and parts['hemi'].upper() in ('S', 'W')):
         num *= -1
@@ -91,7 +91,7 @@ def parse_lat(s):
     """Parse a latitude string
     @param s: an input string to parse
     @returns: decimal longitude, or None on failure
-    @exception: if part of the latitud is out of allowed range
+    @exception ValueError: if part of the latitud is out of allowed range
     """
     s = s.strip()
     for pattern in LAT_PATTERNS:
@@ -99,8 +99,8 @@ def parse_lat(s):
         if result:
             try:
                 lat = _make_num(result.groupdict(), max_deg=90)
-            except Exception as e:
-                raise Exception('failed to parse latitude {}: {}'.format(s, e.args[0]))
+            except ValueError as e:
+                raise ValueError('failed to parse latitude {}: {}'.format(s, e.args[0]))
             return lat
     return None
 
@@ -108,7 +108,7 @@ def parse_lon(s):
     """Parse a longitude string
     @param s: an input string to parse
     @returns: decimal longitude, or None on failure
-    @exception: if part of the longitude is out of allowed range
+    @exception ValueError: if part of the longitude is out of allowed range
     """
     s = s.strip()
     for pattern in LON_PATTERNS:
@@ -116,8 +116,8 @@ def parse_lon(s):
         if result:
             try:
                 lat = _make_num(result.groupdict(), max_deg=180)
-            except Exception as e:
-                raise Exception('failed to parse latitude {}: {}'.format(s, e.args[0]))
+            except ValueError as e:
+                raise ValueError('failed to parse latitude {}: {}'.format(s, e.args[0]))
             return lat
     return None
 
@@ -125,7 +125,7 @@ def parse_coord(s):
     """Parse lat/lon separated by a delimiter [/,:; ]
     @param s: an input string to parse
     @returns: a tuple with decimal latitude and longitude, or None on failure
-    @exception: if part of the latitude or longitude is out of allowed range
+    @exception ValueError: if part of the latitude or longitude is out of allowed range
     """
     for delim in ('/', ',', ':', ';', ' ',):
         if s.find(delim) > 0:
