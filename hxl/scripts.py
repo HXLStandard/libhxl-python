@@ -190,28 +190,28 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-w',
         '--whitespace',
-        help='Comma-separated list of tags for normalised whitespace.',
+        help='Comma-separated list of tag patterns for whitespace normalisation.',
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-u',
         '--upper',
-        help='Comma-separated list of tags to convert to uppercase.',
+        help='Comma-separated list of tag patterns for uppercase conversion.',
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-l',
         '--lower',
-        help='Comma-separated list of tags to convert to lowercase.',
+        help='Comma-separated list of tag patterns for lowercase conversion.',
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
     parser.add_argument(
         '-d',
         '--date',
-        help='Comma-separated list of tags for date normalisation.',
+        help='Comma-separated list of tag patterns for date normalisation.',
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
@@ -224,7 +224,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-n',
         '--number',
-        help='Comma-separated list of tags for number normalisation.',
+        help='Comma-separated list of tag patternss for number normalisation.',
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
@@ -234,6 +234,12 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default=None,
         metavar='format',
         )
+    parser.add_argument(
+        '--latlon',
+        help='Comma-separated list of tag patterns for lat/lon normalisation.',
+        metavar='tag,tag...',
+        type=hxl.model.TagPattern.parse_list
+        )
     add_queries_arg(parser, 'Clean only rows matching at least one query.')
 
     args = parser.parse_args(args)
@@ -242,7 +248,8 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
         filter = hxl.filters.CleanDataFilter(
             source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
-            date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,queries=args.query
+            date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,
+            latlon=args.latlon, queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 

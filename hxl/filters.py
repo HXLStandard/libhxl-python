@@ -41,6 +41,7 @@ import abc, copy, json, logging, re, six, sys
 import dateutil.parser
 
 import hxl
+from hxl import geo # not sure why I need this, but command-line script fails without it
 
 
 logger = logging.getLogger(__name__)
@@ -1035,6 +1036,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             date_format=opt_arg(spec, 'date_format', '%Y-%m-%d'),
             number=opt_arg(spec, 'number', []),
             number_format=opt_arg(spec, 'number_format', None),
+            latlon=opt_arg(spec, 'latlon', []),
             queries=opt_arg(spec, 'queries', [])
         )
 
