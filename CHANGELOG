@@ -2,6 +2,9 @@
 	- start implementing logging support
 	- all command-line utilities now have a --log option to set the
   	  logging level
+	- restore support for preserving original attribute order (except
+	  for JSON object flavoured export)
+	- add hxl.Column.get_display_tag method with optional attribute sorting
 
 2018-02-05 Release 4.5.1
 	- bug-fix release: do not let a misspelled date cause a fatal

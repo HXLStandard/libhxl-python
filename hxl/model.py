@@ -435,13 +435,20 @@ class Column(object):
 
     @property
     def display_tag(self):
+        """Default display version of a HXL hashtag.
+        Attributes are not sorted.
+        """
+        return self.get_display_tag(sort_attributes=False)
+    
+    def get_display_tag(self, sort_attributes=False):
         """
         Generate a display version of the column hashtag
+        @param sort_attributes: if True, sort attributes; otherwise, preserve the original order
         @return the reassembled HXL hashtag string, including language code
         """
         if self.tag:
             s = self.tag
-            for attribute in self.attribute_list:
+            for attribute in sorted(self.attribute_list) if sort_attributes else self.attribute_list:
                 s += '+' + attribute
             return s
         else:
@@ -628,7 +635,7 @@ class Row(object):
         """
         data = {}
         for i, col in enumerate(self.columns):
-            key = col.display_tag
+            key = col.get_display_tag(sort_attributes=True)
             if key and (not key in data) and (i < len(self.values)):
                 data[key] = self.values[i]
         return data
