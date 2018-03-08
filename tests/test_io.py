@@ -11,6 +11,7 @@ import unittest
 import os
 import sys
 import io
+import json
 if sys.version_info < (3,):
     from urllib2 import HTTPError
     from StringIO import StringIO
@@ -309,3 +310,19 @@ class TestFunctions(unittest.TestCase):
                     pass # can't test yet; python2 is too messy with encodings
                 else:
                     self.assertEqual(expected, buffer.getvalue())
+
+    def test_write_json_attribute_normalisation(self):
+        DATA_IN = [
+            ['#sector+es+cluster'],
+            ['Hygiene']
+        ]
+        DATA_OUT = [
+            {
+                '#sector+cluster+es': 'Hygiene'
+            }
+        ]
+        buffer = StringIO()
+        source = hxl.data(DATA_IN)
+        hxl.io.write_json(buffer, source, use_objects=True)
+        self.assertEqual(DATA_OUT, json.loads(buffer.getvalue()))
+            

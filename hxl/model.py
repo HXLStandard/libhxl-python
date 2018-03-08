@@ -441,7 +441,7 @@ class Column(object):
         """
         if self.tag:
             s = self.tag
-            for attribute in sorted(self.attribute_list):
+            for attribute in self.attribute_list:
                 s += '+' + attribute
             return s
         else:
