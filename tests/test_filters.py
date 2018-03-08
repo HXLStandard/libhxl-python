@@ -445,6 +445,16 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
         ]
         self.assertEqual(DATA_OUT, self.source.clean_data(lower='sector').values)
 
+    def test_latlon(self):
+        DATA_IN = [
+            ['#foo', '#geo+lat', '#geo+lon', '#geo+coord'],
+            ['75W 30 00', '45N 30 00', '75W 30 00', '45N 30 00,75W 30 00'],
+        ]
+        DATA_OUT = [
+            ['75W 30 00', '45.5', '-75.5', '45.5,-75.5'],
+        ]
+        self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(latlon='geo').values)
+
     def test_queries(self):
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],

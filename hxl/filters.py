@@ -887,16 +887,17 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None, number=[], number_format=None, queries=[]):
+    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None, number=[], number_format=None, latlon=[], queries=[]):
         """Construct a new data-cleaning filter.
 
-        The I{upper}, I{lower}, I{date}, and I{number} arguments all
-        accept either lists of tag patterns<hxl.model.TagPattern or
-        individual patterns, which can be strings (like
-        C{#org+impl-code}) or full L{hxl.model.TagPattern}
-        objects. The I{queries} argument accepts either lists of
-        queries or individual queries, which can be strings (like
-        C{org=Oxfam}) or full L{hxl.model.RowQuery} objects.
+        The I{upper}, I{lower}, I{date}, I{number}, and I{latlon}
+        arguments all accept either lists of tag
+        patterns<hxl.model.TagPattern or individual patterns, which
+        can be strings (like C{#org+impl-code}) or full
+        L{hxl.model.TagPattern} objects. The I{queries} argument
+        accepts either lists of queries or individual queries, which
+        can be strings (like C{org=Oxfam}) or full
+        L{hxl.model.RowQuery} objects.
 
         @param source: a L{hxl.model.Dataset} object to filter
         @param whitespace: a tag pattern or list of tag patterns for whitespace normalisation
@@ -906,6 +907,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param date_format: a date-format string for output, as used by strftime
         @param number: a tag pattern or list of tag patterns for number normalisation
         @param number_format: a number-format string for output, as used by format.
+        @param laton: a list of tag patterns for normalising latitude/longitude.
         @param queries: optional list of queries to select rows to be cleaned.
 
         """
@@ -920,6 +922,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             self.date_format = date_format
         self.number = hxl.model.TagPattern.parse_list(number)
         self.number_format = number_format
+        self.latlon = hxl.model.TagPattern.parse_list(latlon)
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
@@ -992,6 +995,22 @@ class CleanDataFilter(AbstractStreamingFilter):
                     n = try_number(value) # OK, try again
                 if n is not None:
                     value = n
+
+        # Latlon
+        if self._match_patterns(self.latlon, column):
+            if 'lat' in column.attributes:
+                lat = hxl.geo.parse_lat(value)
+                if lat is not None:
+                    value = str(lat)
+            if 'lon' in column.attributes:
+                lon = hxl.geo.parse_lon(value)
+                if lon is not None:
+                    value = str(lon)
+            if 'coord' in column. attributes:
+                coord = hxl.geo.parse_coord(value)
+                if coord is not None:
+                    value = '{},{}'.format(coord[0], coord[1])
+        
         return value
 
     def _match_patterns(self, patterns, column):
