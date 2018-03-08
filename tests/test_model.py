@@ -148,6 +148,10 @@ class TestColumn(unittest.TestCase):
         self.assertEqual('foo', column.tag)
         self.assertEqual(set(['x', 'y']), column.attributes)
 
+    def test_attribute_order(self):
+        TAGSPEC = '#foo+b+a+c+w+x'
+        self.assertEqual(TAGSPEC, Column.parse(TAGSPEC).display_tag)
+
     def test_eq(self):
         col1 = Column(tag='xxx', attributes={'b','c','a'}, header='foo')
         col2 = Column(tag='xxx', attributes={'a', 'b','c'}, header='bar')
