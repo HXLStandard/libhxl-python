@@ -11,8 +11,8 @@ import re
 
 # regular expression fragments
 DEG_RE = '(?P<deg>\d+(?:\.\d*)?)\s*\°?'
-MIN_RE = '(?P<min>\d+(?:\.\d*)?)\s*\'?'
-SEC_RE = '(?P<sec>\d+(?:\.\d*)?)\s*\"?'
+MIN_RE = '(?P<min>\d+(?:\.\d*)?)\s*[\'`′]?'
+SEC_RE = '(?P<sec>\d+(?:\.\d*)?)\s*(?:["“”″]|[\'`′][\'`′])?'
 
 LAT_PATTERNS = (
     re.compile(
