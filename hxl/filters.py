@@ -1062,6 +1062,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             number=opt_arg(spec, 'number', []),
             number_format=opt_arg(spec, 'number_format', None),
             latlon=opt_arg(spec, 'latlon', []),
+            purge=opt_arg(spec, 'purge', False),
             queries=opt_arg(spec, 'queries', [])
         )
 
