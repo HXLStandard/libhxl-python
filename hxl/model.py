@@ -317,7 +317,10 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.RenameFilter(self, specs)
 
-    def clean_data(self, whitespace=[], upper=[], lower=[], date=[], date_format=None, number=[], number_format=None, latlon=[], queries=[]):
+    def clean_data(
+            self, whitespace=[], upper=[], lower=[], date=[], date_format=None,
+            number=[], number_format=None, latlon=[], purge=False, queries=[]
+    ):
         """Clean data fields."""
         import hxl.filters
         return hxl.filters.CleanDataFilter(
@@ -328,6 +331,7 @@ class Dataset(object):
             date=date, date_format=date_format,
             number=number, number_format=number_format,
             latlon=latlon,
+            purge=purge,
             queries=queries
         )
     

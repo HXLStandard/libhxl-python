@@ -867,13 +867,17 @@ class CleanDataFilter(AbstractStreamingFilter):
       - B{number}: attempt to normalise numbers to standard computer
         format (remove commas or spaces between thousands, and use "."
         as the decimal separator).
-
+      - B{latlon}: attempt to normalise latitude and longitude values.
+      
     For each type of cleaning, you specify one or more L{tag
     patterns<hxl.model.TagPattern>} to which the cleaning applies (you
     may use string representations instead of creating the objects),
     or use C{True} to apply the cleaning to the whole row. You may
     also include L{hxl.model.RowQuery} objects to apply the cleaning
-    tasks only to specific rows.
+    tasks only to specific rows. You can also specify a format for
+    normalised dates or numbers, and choose to purge any dates,
+    numbers, or latlon that can't be parsed (to guarantee clean data,
+    at the cost of possible information loss).
 
     This example normalises all start dates from Oxfam::
 
@@ -888,7 +892,9 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     """
 
-    def __init__(self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None, number=[], number_format=None, latlon=[], queries=[]):
+    def __init__(
+            self, source, whitespace=False, upper=[], lower=[], date=[], date_format=None,
+            number=[], number_format=None, latlon=[], purge=False, queries=[]):
         """Construct a new data-cleaning filter.
 
         The I{upper}, I{lower}, I{date}, I{number}, and I{latlon}
@@ -909,6 +915,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param number: a tag pattern or list of tag patterns for number normalisation
         @param number_format: a number-format string for output, as used by format.
         @param laton: a list of tag patterns for normalising latitude/longitude.
+        @param purge: if True, remove any dates, numbers, or lat/lon that can't be parsed during cleaning.
         @param queries: optional list of queries to select rows to be cleaned.
 
         """
@@ -924,6 +931,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.number = hxl.model.TagPattern.parse_list(number)
         self.number_format = number_format
         self.latlon = hxl.model.TagPattern.parse_list(latlon)
+        self.purge = purge
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
