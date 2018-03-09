@@ -240,6 +240,14 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
+    parser.add_argument(
+        '-p',
+        '--purge',
+        help='Purge unparseable dates, numbers, and lat/lon during cleaning.',
+        action='store_const',
+        const=True,
+        default=False
+        )
     add_queries_arg(parser, 'Clean only rows matching at least one query.')
 
     args = parser.parse_args(args)
@@ -249,7 +257,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         filter = hxl.filters.CleanDataFilter(
             source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
             date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,
-            latlon=args.latlon, queries=args.query
+            latlon=args.latlon, purge=args.purge, queries=args.query
         )
         hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 
