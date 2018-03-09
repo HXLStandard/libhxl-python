@@ -451,7 +451,7 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
             ['75W 30 00', '45N 30 00', '75W 30 00', '45N 30 00,75W 30 00'],
         ]
         DATA_OUT = [
-            ['75W 30 00', '45.5', '-75.5', '45.5,-75.5'],
+            ['75W 30 00', '45.5000', '-75.5000', '45.5000,-75.5000'],
         ]
         self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(latlon='geo').values)
 

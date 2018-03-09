@@ -1002,15 +1002,15 @@ class CleanDataFilter(AbstractStreamingFilter):
             if 'lat' in column.attributes:
                 lat = hxl.geo.parse_lat(value)
                 if lat is not None:
-                    value = str(lat)
+                    value = format(lat, '0.4f')
             if 'lon' in column.attributes:
                 lon = hxl.geo.parse_lon(value)
                 if lon is not None:
-                    value = str(lon)
+                    value = format(lon, '0.4f')
             if 'coord' in column. attributes:
                 coord = hxl.geo.parse_coord(value)
                 if coord is not None:
-                    value = '{},{}'.format(coord[0], coord[1])
+                    value = '{:.4f},{:.4f}'.format(coord[0], coord[1])
         
         return value
 
