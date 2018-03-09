@@ -978,7 +978,9 @@ class CleanDataFilter(AbstractStreamingFilter):
                 try:
                     value = dateutil.parser.parse(value).strftime(self.date_format)
                 except:
-                    pass # TODO log warning
+                    logger.warning('Cannot parse %s as a date', str(value))
+                    if self.purge:
+                        value = ''
 
         # Number
         if self._match_patterns(self.number, column) and re.search('\d', value):
@@ -1011,14 +1013,26 @@ class CleanDataFilter(AbstractStreamingFilter):
                 lat = hxl.geo.parse_lat(value)
                 if lat is not None:
                     value = format(lat, '0.4f')
-            if 'lon' in column.attributes:
+                else:
+                    logger.warning('Cannot parse %s as a latitude', str(value))
+                    if self.purge:
+                        value = ''
+            elif 'lon' in column.attributes:
                 lon = hxl.geo.parse_lon(value)
                 if lon is not None:
                     value = format(lon, '0.4f')
-            if 'coord' in column. attributes:
+                else:
+                    logger.warning('Cannot parse %s as a longitude', str(value))
+                    if self.purge:
+                        value = ''
+            elif 'coord' in column. attributes:
                 coord = hxl.geo.parse_coord(value)
                 if coord is not None:
                     value = '{:.4f},{:.4f}'.format(coord[0], coord[1])
+                else:
+                    logger.warning('Cannot parse %s as geographical coordinates', str(value))
+                    if self.purge:
+                        value = ''
         
         return value
 
