@@ -455,6 +455,24 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
         ]
         self.assertEqual(DATA_OUT, hxl.data(DATA_IN).clean_data(latlon='geo').values)
 
+    def test_purge_malformed_data(self):
+        DATA_IN = [
+            ['#date', '#affected', '#geo+lat', '#geo+lon'],
+            ['1/Mar/2017', 'bad', '45N30', 'bad'],
+            ['bad', '2,000', 'bad', '75W30'],
+        ]
+        DATA_OUT_UNPURGED = [
+            ['2017-03-01', 'bad', '45.5000', 'bad'],
+            ['bad', '2000', 'bad', '-75.5000'],
+        ]
+        DATA_OUT_PURGED = [
+            ['2017-03-01', '', '45.5000', ''],
+            ['', '2000', '', '-75.5000'],
+        ]
+        source = hxl.data(DATA_IN)
+        self.assertEqual(DATA_OUT_UNPURGED, source.clean_data(date='date', number='affected', latlon='geo').values)
+            
+
     def test_queries(self):
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],
