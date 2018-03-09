@@ -469,10 +469,13 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
             ['2017-03-01', '', '45.5000', ''],
             ['', '2000', '', '-75.5000'],
         ]
-        source = hxl.data(DATA_IN)
         self.assertEqual(
             DATA_OUT_UNPURGED,
-            source.clean_data(date='date', number='affected', latlon='geo', purge=False).values
+            hxl.data(DATA_IN).clean_data(date='date', number='affected', latlon='geo', purge=False).values
+        )
+        self.assertEqual(
+            DATA_OUT_PURGED,
+            hxl.data(DATA_IN).clean_data(date='date', number='affected', latlon='geo', purge=True).values
         )
             
 

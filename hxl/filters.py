@@ -983,11 +983,11 @@ class CleanDataFilter(AbstractStreamingFilter):
                         value = ''
 
         # Number
-        if self._match_patterns(self.number, column) and re.search('\d', value):
+        if self._match_patterns(self.number, column):
 
-            def try_number(value):
+            def try_number(s):
                 try:
-                    n = float(value)
+                    n = float(s)
                     if self.number_format:
                         return format(n, self.number_format)
                     elif n.is_integer():
@@ -1001,11 +1001,14 @@ class CleanDataFilter(AbstractStreamingFilter):
             if value:
                 n = try_number(value)
                 if n is None:
-                    value = re.sub('[^\de.]+', '', value)
-                    value = re.sub('(\..*)0+$', '\g<1>', value)
-                    n = try_number(value) # OK, try again
+                    s = re.sub('[^\de.]+', '', value)
+                    n = try_number(s) # OK, try again
                 if n is not None:
                     value = n
+                else:
+                    logger.warning('Cannot parse {} as a number', str(value))
+                    if self.purge:
+                        value = ''
 
         # Latlon
         if self._match_patterns(self.latlon, column):
