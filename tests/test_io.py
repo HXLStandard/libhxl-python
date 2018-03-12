@@ -53,7 +53,8 @@ class TestInput(unittest.TestCase):
         self.assertTrue('#vocab' in source.tags)
 
     def test_ckan_dataset(self):
-        pass
+        source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list')
+        self.assertTrue('#vocab' in source.tags)
 
 class TestUntaggedInput(unittest.TestCase):
 

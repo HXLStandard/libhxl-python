@@ -129,9 +129,16 @@ def munge_url(url, verify_ssl=True):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
-        ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl).json()
-        url = ckan_api_result['result']['url']
+        if result.group(3):
+            # CKAN resource URL
+            ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
+            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl).json()
+            url = ckan_api_result['result']['url']
+        else:
+            # CKAN dataset (package) URL
+            ckan_api_query = '{}/api/3/action/package_show?id={}'.format(result.group(1), result.group(2))
+            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl).json()
+            url = ckan_api_result['result']['resources'][0]['url']
 
     # Is it a Google URL?
     result = re.match(GOOGLE_SHEETS_URL, url)
