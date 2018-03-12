@@ -9,6 +9,7 @@
 	- add support for lat/lon normalisation to clean-data filter
 	- add purge option to clean_data to allow removing numbers, dates,
 	  or lat/lon that can't be parsed during data cleaning
+	- fix bug opening a Google Sheet from an HDX resource URL
 
 2018-02-05 Release 4.5.1
 	- bug-fix release: do not let a misspelled date cause a fatal

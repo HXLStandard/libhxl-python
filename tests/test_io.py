@@ -46,6 +46,15 @@ URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/t
 URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 
+class TestInput(unittest.TestCase):
+
+    def test_ckan_resource(self):
+        source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
+        self.assertTrue('#vocab' in source.tags)
+
+    def test_ckan_dataset(self):
+        pass
+
 class TestUntaggedInput(unittest.TestCase):
 
     def test_untagged_json(self):
