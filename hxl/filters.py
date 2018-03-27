@@ -63,7 +63,7 @@ def req_arg(spec, property):
     """Get a required property, and raise an exception if missing."""
     value = spec.get(property)
     if value is None:
-        raise HXLFilterException("Missing required property {}".format(property))
+        raise HXLFilterException("Missing required property: \"{}\"".format(property))
     return value
 
 def opt_arg(spec, property, default_value=None):
@@ -1276,7 +1276,7 @@ class CountFilter(AbstractCachingFilter):
         """Create a new count filter from a dict spec."""
         return CountFilter(
             source = source,
-            patterns=req_arg(spec, 'patterns'),
+            patterns=opt_arg(spec, 'patterns'),
             aggregators=opt_arg(spec, 'aggregators', None),
             queries=opt_arg(spec, 'queries', [])
         )
