@@ -1,4 +1,6 @@
-2018-02-28 Release 4.6
+2018-02-29 Release 4.6
+	- end support for Python 2 (will die with a RuntimeError;
+	  next release will remove Python2 compatibility code relics)
 	- start implementing logging support
 	- all command-line utilities now have a --log option to set the
   	  logging level
@@ -10,7 +12,9 @@
 	- add purge option to clean_data to allow removing numbers, dates,
 	  or lat/lon that can't be parsed during data cleaning
 	- fix bug opening a Google Sheet from a CKAN resource URL
-	- allow opening a dataset from a CKAN dataset URL (uses first resource)
+	- allow opening a dataset from a CKAN dataset URL (uses first
+	  resource)
+	- make the 'patterns' parameter optional for the JSON count recipe
 
 2018-02-05 Release 4.5.1
 	- bug-fix release: do not let a misspelled date cause a fatal
