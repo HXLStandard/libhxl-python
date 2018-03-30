@@ -1,4 +1,7 @@
-2018-02-29 Release 4.6
+2018-04-30 Release 4.7
+	- remove obsolete Python2 compatibility code
+
+2018-03-29 Release 4.6
 	- end support for Python 2 (will die with a RuntimeError;
 	  next release will remove Python2 compatibility code relics)
 	- start implementing logging support

@@ -2,7 +2,8 @@ libhxl-python
 =============
 
 Python support library for the Humanitarian Exchange Language (HXL)
-data standard.  It supports both Python 2.7+ and Python 3.
+data standard.  The library requires Python 3 (versions prior to 4.6
+also supported Python 2.7).
 
 About HXL: http://hxlstandard.org
 
