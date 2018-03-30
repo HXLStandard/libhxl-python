@@ -367,10 +367,7 @@ def try_script(script_function, args, input_file, expected_output_file=None, exp
     with open(resolve_file(input_file), 'rb') as input:
         if expected_output_file is None:
             output = sys.stdout
-        if sys.version_info[0] > 2:
-            output = tempfile.NamedTemporaryFile(mode='w', newline='', delete=False)
-        else:
-            output = tempfile.NamedTemporaryFile(delete=False)
+        output = tempfile.NamedTemporaryFile(mode='w', newline='', delete=False)
         try:
             status = script_function(args, stdin=input, stdout=output)
             if status == expected_exit_status:

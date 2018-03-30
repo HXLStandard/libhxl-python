@@ -7,14 +7,9 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import copy, logging, os, re, sys
+import hxl
+import copy, logging, os, re, sys, urllib
 
-if sys.version_info[0] > 2:
-    from urllib.parse import urlparse
-else:
-    from urlparse import urlparse
-
-import hxl.common
 
 def schema(origin=None, callback=None):
     """
@@ -191,7 +186,7 @@ class SchemaRule(object):
             if not hxl.common.is_number(value):
                 return self._report_error("Expected a number", value, row, column)
         elif self.data_type == 'url':
-            pieces = urlparse(value)
+            pieces = urllib.parse.urlparse(value)
             if not (pieces.scheme and pieces.netloc):
                 return self._report_error("Expected a URL", value, row, column)
         elif self.data_type == 'email':

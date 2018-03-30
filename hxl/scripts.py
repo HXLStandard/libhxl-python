@@ -21,10 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 # In Python2, sys.stdin is a byte stream; in Python3, it's a text stream
-if sys.version_info < (3,):
-    STDIN = sys.stdin
-else:
-    STDIN = sys.stdin.buffer
+STDIN = sys.stdin.buffer
 
 # Posix exit codes
 

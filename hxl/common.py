@@ -84,10 +84,6 @@ def normalise_string(s):
         # basic whitespace cleanups
         s = str(s).strip().lower().replace("\n", " ")
 
-        # Python2 Unicode hack
-        if sys.version_info[0] < 3:
-            s = unicode(s, 'utf-8')
-
         # Normalise whitespace and return
         return re.sub(
             WHITESPACE_PATTERN,

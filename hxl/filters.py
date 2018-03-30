@@ -960,17 +960,11 @@ class CleanDataFilter(AbstractStreamingFilter):
 
         # Uppercase (-u)
         if self._match_patterns(self.upper, column):
-            if sys.version_info[0] > 2:
-                value = value.upper()
-            else:
-                value = value.decode('utf8').upper().encode('utf8')
+            value = value.upper()
 
         # Lowercase (-l)
         if self._match_patterns(self.lower, column):
-            if sys.version_info[0] > 2:
-                value = value.lower()
-            else:
-                value = value.decode('utf8').lower().encode('utf8')
+            value = value.lower()
 
         # Date
         if self._match_patterns(self.date, column):

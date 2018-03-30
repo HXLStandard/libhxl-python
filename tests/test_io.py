@@ -12,12 +12,8 @@ import os
 import sys
 import io
 import json
-if sys.version_info < (3,):
-    from urllib2 import HTTPError
-    from StringIO import StringIO
-else:
-    from urllib.error import HTTPError
-    from io import StringIO
+from urllib.error import HTTPError
+from io import StringIO
 
 import hxl
 from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
@@ -297,10 +293,7 @@ class TestFunctions(unittest.TestCase):
             with hxl.data(FILE_CSV, True) as source:
                 hxl.io.write_hxl(buffer, source)
                 # Need to work with bytes to handle CRLF
-                if sys.version_info < (3,):
-                    self.assertEqual(expected, buffer.getvalue())
-                else:
-                    self.assertEqual(expected, buffer.getvalue().encode('utf-8'))
+                self.assertEqual(expected, buffer.getvalue().encode('utf-8'))
 
     def test_write_json_lists(self):
         with open(FILE_JSON_OUT) as input:
@@ -316,10 +309,7 @@ class TestFunctions(unittest.TestCase):
             buffer = StringIO()
             with hxl.data(FILE_CSV, True) as source:
                 hxl.io.write_json(buffer, source, use_objects=True)
-                if sys.version_info < (3,):
-                    pass # can't test yet; python2 is too messy with encodings
-                else:
-                    self.assertEqual(expected, buffer.getvalue())
+                self.assertEqual(expected, buffer.getvalue())
 
     def test_write_json_attribute_normalisation(self):
         DATA_IN = [

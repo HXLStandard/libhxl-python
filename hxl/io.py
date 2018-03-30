@@ -157,25 +157,6 @@ def munge_url(url, verify_ssl=True):
     return url
 
 
-def _encode_py2(value):
-    """Encode a string into UTF-8 for Python2"""
-    try:
-        return value.encode('utf-8')
-    except:
-        logger.exception('Failed to encode string as UTF-8: {}'.format(value))
-        return value
-
-    
-def _encode_py3(value):
-    """Leave a Unicode string as-is for Python3"""
-    return value
-
-if sys.version_info < (3,):
-    encode = _encode_py2
-else:
-    encode = _encode_py3
-
-    
 def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, selector=None):
     """Figure out what kind of input to create.
 
@@ -193,11 +174,6 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     """
 
     def wrap_stream(stream):
-        if sys.version_info < (3,):
-            # Extra work for Python 2.x
-            if not hasattr(stream, 'readable'):
-                import hxl.py2compat
-                stream = hxl.py2compat.InputStreamWrapper(stream)
         if hasattr(stream, 'peek'):
             # already buffered
             return stream
@@ -438,10 +414,7 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input, encoding='utf-8'):
-        if sys.version_info < (3,):
-            self._input = input
-        else:
-            self._input = io.TextIOWrapper(input, encoding=encoding)
+        self._input = io.TextIOWrapper(input, encoding=encoding)
         self._reader = csv.reader(self._input)
 
     def __next__(self):
@@ -457,10 +430,7 @@ class JSONInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input, encoding='utf-8', selector='hxl'):
-        if sys.version_info < (3,):
-            self._input = input
-        else:
-            self._input = io.TextIOWrapper(input, encoding=encoding)
+        self._input = io.TextIOWrapper(input, encoding=encoding)
 
         self.type = None
         self.headers = []
@@ -546,9 +516,6 @@ class JSONInput(AbstractInput):
             # Simply dump a row in an array of JSON arrays
             row =  next(self._iterator)
             
-        if sys.version_info < (3,):
-            # Restore non-Unicode encoding (blech), because CSV parser doesn't Unicode encode
-            row = [cell.encode(self._encoding) if cell else cell for cell in row]
         return row
 
     next = __next__
@@ -614,14 +581,7 @@ class ExcelInput(AbstractInput):
             return int(cell.value)
 
         else: # XL_CELL_TEXT, or anything else
-            if sys.version_info < (3,): # kludge for Python 2.x
-                try:
-                    return cell.value.encode('utf8')
-                except:
-                    logger.exception('Failed to encode string as UTF-8: {}'.format(value))
-                    return cell.value
-            else:
-                return cell.value
+            return cell.value
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
