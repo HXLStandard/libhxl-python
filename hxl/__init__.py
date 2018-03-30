@@ -36,9 +36,8 @@ actions as above in a shell script like this::
 @organization: UNOCHA
 @license: Public Domain
 @date: Started August 2014
-@see: U{hxlstandard.org} for the HXL data standard
-@see: U{proxy.hxlstandard.org} for web-based deployment of this library
-
+@see: U{http://hxlstandard.org} for the HXL data standard
+@see: U{https://proxy.hxlstandard.org} for web-based deployment of this library
 """
 
 import sys
