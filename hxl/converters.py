@@ -9,13 +9,12 @@ converters soon, especially for formats like GeoJSON.
 @organization: UNOCHA
 @license: Public Domain
 @date: Started April 2015
-@see: U{hxlstandard.org}
-
+@see: U{http://hxlstandard.org}
 """
 
+import hxl
 import logging, re
 
-import hxl
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +44,10 @@ class Tagger(hxl.io.AbstractInput):
 
           [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
 
-        @param input: an input stream of some kind.
+        @param input: an input stream of some kind
         @param specs: the input specs, as described above (default: [])
-        @param match_all: if True, require that the full header string match; otherwise, match substrings (default: False).
-        @param default_tag: default tagspec to use for any column without a match.
+        @param match_all: if True, require that the full header string match; otherwise, match substrings (default: False)
+        @param default_tag: default tagspec to use for any column without a match
         """
         if isinstance(specs, dict):
             # convert to list of tuples if needed
@@ -75,10 +74,10 @@ class Tagger(hxl.io.AbstractInput):
         else:
             return next(self.input)
 
-    next = __next__
-
     def _add_tags(self):
-        """Look for headers in the first 25 rows."""
+        """Look for headers in the first 25 rows of data.
+        @return: True if headers were found matching the tagging specs; False otherwise.
+        """
         for n in range(0, 25):
             raw_row = next(self.input)
             if not raw_row:
@@ -91,7 +90,10 @@ class Tagger(hxl.io.AbstractInput):
         return False
 
     def _try_tag_row(self, raw_row):
-        """See if we can match a header row."""
+        """See if we can match a potential header row with the spec headers.
+        @param raw_row: the row to check
+        @return: the row of hashtag specs if successful, or None otherwise.
+        """
         tags = []
         tag_count = 0
         for index, value in enumerate(raw_row):
@@ -112,19 +114,35 @@ class Tagger(hxl.io.AbstractInput):
             return None
 
     def _check_header(self, spec, header):
+        """Check if an individual header matches a spec for tagging.
+        Assumes that both the spec and the header have already been
+        case- and whitespace-normalised. If self.match_all is True,
+        then the spec must match the header completely; otherwise, it
+        needs to match only a substring.
+        @param spec: the spec to match
+        @param header: the header to test
+        @return True if there's a match; False otherwise
+        """
         if self.match_all:
             return (spec == header)
         else:
             return (spec in header)
 
+    # this class is its own iterator
     def __iter__(self):
         return self
 
     _SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.common.TOKEN_PATTERN)
+    """Regular-expression pattern for matching a tagging specification as a string"""
 
     @staticmethod
     def parse_spec(s):
-        """Try parsing a tagger spec (used only by the command-line tools)"""
+        """Try parsing a tagger spec (used only by the command-line tools)
+        Uses Tagger._SPEC_PATTERN
+        @param s: the string representing a tagging specification
+        @return: the parsed specification
+        @exception HXLFilterException: if there is an error parsing the spec
+        """
         result = re.match(Tagger._SPEC_PATTERN, s)
         if result:
             return (result.group(1), hxl.model.Column.parse(result.group(2), use_exception=True).display_tag)
@@ -133,7 +151,20 @@ class Tagger(hxl.io.AbstractInput):
 
     @staticmethod
     def _load(input, spec):
-        """Create a tagger from a dict spec."""
+        """Create a tagger from a dict spec.
+        Example spec:
+        {
+          "match_all": False,
+          "default_tag": "#affected+label",
+          "specs": [
+            ('district', '#adm1+name',),
+            ('p-code', '#adm1+code+v_pcode',),
+            ('organi', '#org+name',),
+          ]
+        }
+        @param spec: the dictionary specification
+        @return: a Tagger object
+        """
         return Tagger(
             input=input,
             specs=spec.get('specs', []),
