@@ -134,12 +134,24 @@ class Dataset(object):
 
     __metaclass__ = abc.ABCMeta
 
+    def __init__(self):
+        """Constructor."""
+        super().__init__()
+
     @abc.abstractmethod
     def __iter__(self):
         """
         Get the iterator over the rows.
         """
         return
+
+    @property
+    def is_cached(self):
+        """Test whether the source data is cached (replayable).
+        By default, this is False, but some subclasses may override.
+        @return: C{True} if the input is cached (replayable); C{False} otherwise.
+        """
+        return False
 
     @property
     @abc.abstractmethod
