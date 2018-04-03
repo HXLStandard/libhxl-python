@@ -64,30 +64,33 @@
 </pre>
 
 <hr />
-<p>Composable filter class to add constant values to every row of a HXL 
-  dataset.</p>
-  <p>This is a <a href="hxl.filters.AbstractStreamingFilter-class.html" 
-  class="link">streaming filter</a> to add constant values, such as a 
-  country code, to every row of data.  It supports the <a 
-  href="hxl.model.Dataset-class.html#add_columns" 
-  class="link">hxl.model.Dataset.add_columns</a> method and the <a 
-  href="hxl.scripts-module.html#hxladd" class="link">hxladd</a> 
-  command-line utility.</p>
-  <p>This example will add a column with the label &quot;Country 
-  name&quot;, the HXL hashtag &quot;#country&quot;, and the value 
-  &quot;Malaysia&quot; to every row in the dataset:</p>
 <pre class="literalblock">
-   filter = AddColumnsFilter(source, &quot;Country name#country=Malaysia&quot;)      
+Composable filter class to add constant values to every row of a HXL dataset.
+
+This is a L{streaming filter&lt;AbstractStreamingFilter&gt;} to add
+constant values, such as a country code, to every row of data.  It
+supports the L{hxl.model.Dataset.add_columns} method and the
+L{hxladd&lt;hxl.scripts.hxladd&gt;} command-line utility.
+
+This example will add a column with the label &quot;Country name&quot;, the
+HXL hashtag &quot;#country&quot;, and the value &quot;Malaysia&quot; to every row in
+the dataset::
+
+    filter = AddColumnsFilter(source, &quot;Country name#country=Malaysia&quot;)
+
+This filter also supports substitution patterns in the fixed
+values, surrounded by double braces. For example, the pattern
+
+    X-{{#country+code}}
+
+will include the value &quot;X-&quot; followed by the value of the column
+#country+code in each new cell in the new column.
+
+@see: L{ColumnFilter}, L{RenameFilter}
+
 </pre>
 
-<hr />
-<div class="fields">      <p><strong>See Also:</strong>
-        <a href="hxl.filters.ColumnFilter-class.html" 
-        class="link">ColumnFilter</a>, <a 
-        href="hxl.filters.RenameFilter-class.html" 
-        class="link">RenameFilter</a>
-      </p>
-</div><!-- ==================== INSTANCE METHODS ==================== -->
+<!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -156,7 +159,8 @@
       <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__">__iter__</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>,
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#is_cached">is_cached</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
       <code><a href="hxl.model.Dataset-class.html#add_columns">add_columns</a></code>,
@@ -245,7 +249,8 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.AddColumnsFilter-class.html#SPEC_PATTERN" class="summary-name">SPEC_PATTERN</a> = <code title="r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token= \
-hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code class="variable-ellipsis">...</code></code>
+hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code class="variable-ellipsis">...</code></code><br />
+      Pattern for a string specification for a new column
     </td>
   </tr>
   <tr>
@@ -264,6 +269,22 @@ hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code 
   <td align="left" colspan="2" class="table-header">
     <span class="table-header">Instance Variables</span></td>
 </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="before"></a><span class="summary-name">before</span><br />
+      If True, add new columns before existing ones
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="const_values"></a><span class="summary-name">const_values</span><br />
+      Constant values to add to the new columns
+    </td>
+  </tr>
   <tr>
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
@@ -362,7 +383,8 @@ hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code 
   <p>Internal: return the new columns list</p>
   <dl class="fields">
     <dt>Returns:</dt>
-        <dd>a list of hxl.model.Column objects</dd>
+        <dd>a list of <a href="hxl.model.Column-class.html" 
+          class="link">hxl.model.Column</a> objects</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">AbstractBaseFilter.filter_columns</a>
     </dt>
@@ -384,7 +406,9 @@ hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code 
     </td>
   </tr></table>
   
-  <p>Internal: return each row with the new fixed value(s) attached.</p>
+  <p>Internal: return each row with the new fixed value(s) attached. Will 
+  execute pattern substitutions inside double braces for the fixed 
+  values.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -392,8 +416,7 @@ hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code 
           class="link">hxl.model.Row</a> object.</li>
     </ul></dd>
     <dt>Returns:</dt>
-        <dd>A list of string values (<i>not</i> a Row object) or 
-          <code>None</code> to skip the row.</dd>
+        <dd>a list of values, including the fixed values for new columns</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
     </dt>
@@ -448,7 +471,7 @@ hxl.common.TOKEN_PATTERN)">r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(<code 
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">SPEC_PATTERN</h3>
-  
+  <p>Pattern for a string specification for a new column</p>
   <dl class="fields">
   </dl>
   <dl class="fields">
@@ -489,7 +512,7 @@ hxl.common.TOKEN_PATTERN)
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Jan 30 16:06:55 2018
+    on Tue Apr  3 00:51:57 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

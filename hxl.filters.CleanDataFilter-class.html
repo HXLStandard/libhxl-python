@@ -100,6 +100,9 @@
       format (remove commas or spaces between thousands, and use 
       &quot;.&quot; as the decimal separator).
     </li>
+    <li>
+      <b>latlon</b>: attempt to normalise latitude and longitude values.
+    </li>
   </ul>
   <p>For each type of cleaning, you specify one or more <a 
   href="hxl.model.TagPattern-class.html" class="link">tag patterns</a> to 
@@ -107,7 +110,10 @@
   creating the objects), or use <code>True</code> to apply the cleaning to 
   the whole row. You may also include <a 
   href="hxl.model.RowQuery-class.html" class="link">hxl.model.RowQuery</a> 
-  objects to apply the cleaning tasks only to specific rows.</p>
+  objects to apply the cleaning tasks only to specific rows. You can also 
+  specify a format for normalised dates or numbers, and choose to purge any
+  dates, numbers, or latlon that can't be parsed (to guarantee clean data, 
+  at the cost of possible information loss).</p>
   <p>This example normalises all start dates from Oxfam:</p>
 <pre class="literalblock">
  filter = CleanFilter(hxl.data('data.csv'), dates='date+start', queries='org=Oxfam')
@@ -146,6 +152,8 @@
         <span class="summary-sig-arg">date_format</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">number</span>=<span class="summary-sig-default">[]</span>,
         <span class="summary-sig-arg">number_format</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">latlon</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">purge</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">queries</span>=<span class="summary-sig-default">[]</span>)</span><br />
       Construct a new data-cleaning filter.</td>
           <td align="right" valign="top">
@@ -165,7 +173,8 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.CleanDataFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Internal: clean up values and pass on the row data.</td>
+      Returns:
+      cleaned row data</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#CleanDataFilter.filter_row">source&nbsp;code</a></span>
             
@@ -182,7 +191,8 @@
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
       <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>,
-      <code><a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">filter_columns</a></code>
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">filter_columns</a></code>,
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#is_cached">is_cached</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
       <code><a href="hxl.model.Dataset-class.html#add_columns">add_columns</a></code>,
@@ -305,6 +315,8 @@
         <span class="sig-arg">date_format</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">number</span>=<span class="sig-default">[]</span>,
         <span class="sig-arg">number_format</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">latlon</span>=<span class="sig-default">[]</span>,
+        <span class="sig-arg">purge</span>=<span class="sig-default">False</span>,
         <span class="sig-arg">queries</span>=<span class="sig-default">[]</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
@@ -314,10 +326,10 @@
   </tr></table>
   
   <p>Construct a new data-cleaning filter.</p>
-  <p>The <i>upper</i>, <i>lower</i>, <i>date</i>, and <i>number</i> 
-  arguments all accept either lists of tag patterns&lt;hxl.model.TagPattern
-  or individual patterns, which can be strings (like 
-  <code>#org+impl-code</code>) or full <a 
+  <p>The <i>upper</i>, <i>lower</i>, <i>date</i>, <i>number</i>, and 
+  <i>latlon</i> arguments all accept either lists of tag 
+  patterns&lt;hxl.model.TagPattern or individual patterns, which can be 
+  strings (like <code>#org+impl-code</code>) or full <a 
   href="hxl.model.TagPattern-class.html" 
   class="link">hxl.model.TagPattern</a> objects. The <i>queries</i> 
   argument accepts either lists of queries or individual queries, which can
@@ -337,6 +349,9 @@
         <li><strong class="pname"><code>date_format</code></strong> - a date-format string for output, as used by strftime</li>
         <li><strong class="pname"><code>number</code></strong> - a tag pattern or list of tag patterns for number normalisation</li>
         <li><strong class="pname"><code>number_format</code></strong> - a number-format string for output, as used by format.</li>
+        <li><strong class="pname"><code>laton</code></strong> - a list of tag patterns for normalising latitude/longitude.</li>
+        <li><strong class="pname"><code>purge</code></strong> - if True, remove any dates, numbers, or lat/lon that can't be 
+          parsed during cleaning.</li>
         <li><strong class="pname"><code>queries</code></strong> - optional list of queries to select rows to be cleaned.</li>
     </ul></dd>
     <dt>Overrides:
@@ -360,7 +375,10 @@
     </td>
   </tr></table>
   
-  <p>Internal: clean up values and pass on the row data.</p>
+  <p>Filter a single row of data.</p>
+  <p>By default, this method returns the row's values, unchanged. 
+  Subclasses can use it to replace, add or suppress rows on the fly, 
+  without having to keep a copy of the entire dataset in memory.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -368,8 +386,7 @@
           class="link">hxl.model.Row</a> object.</li>
     </ul></dd>
     <dt>Returns:</dt>
-        <dd>A list of string values (<i>not</i> a Row object) or 
-          <code>None</code> to skip the row.</dd>
+        <dd>cleaned row data</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
     </dt>
@@ -404,7 +421,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Jan 30 16:06:55 2018
+    on Tue Apr  3 00:51:57 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

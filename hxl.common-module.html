@@ -66,7 +66,8 @@
         Started April 2015
       </p>
       <p><strong>See Also:</strong>
-        <a href="http://hxlstandard.org" target="_top">hxlstandard.org</a>
+        <a href="http://hxlstandard.org" 
+        target="_top">http://hxlstandard.org</a>
       </p>
 </div><!-- ==================== CLASSES ==================== -->
 <a name="section-Classes"></a>
@@ -99,7 +100,8 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="normalise_number"></a><span class="summary-sig-name">normalise_number</span>(<span class="summary-sig-arg">n</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.common-module.html#normalise_number" class="summary-sig-name">normalise_number</a>(<span class="summary-sig-arg">n</span>)</span><br />
+      Normalise a number to an integer type if it is defacto an integer.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.common-pysrc.html#normalise_number">source&nbsp;code</a></span>
             
@@ -133,7 +135,7 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="is_number"></a><span class="summary-sig-name">is_number</span>(<span class="summary-sig-arg">s</span>)</span><br />
+          <td><span class="summary-sig"><a href="hxl.common-module.html#is_number" class="summary-sig-name">is_number</a>(<span class="summary-sig-arg">s</span>)</span><br />
       Can we parse this as a number?</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.common-pysrc.html#is_number">source&nbsp;code</a></span>
@@ -151,7 +153,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.common-module.html#normalise_date" class="summary-sig-name">normalise_date</a>(<span class="summary-sig-arg">s</span>)</span><br />
-      Normalise a date.</td>
+      Normalise a string as a date.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.common-pysrc.html#normalise_date">source&nbsp;code</a></span>
             
@@ -184,8 +186,8 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="is_list"></a><span class="summary-sig-name">is_list</span>(<span class="summary-sig-arg">e</span>)</span><br />
-      Return True if e is a sequence that's not a string.</td>
+          <td><span class="summary-sig"><a href="hxl.common-module.html#is_list" class="summary-sig-name">is_list</a>(<span class="summary-sig-arg">e</span>)</span><br />
+      Test if a value is a Python sequence (other than a string)</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.common-pysrc.html#is_list">source&nbsp;code</a></span>
             
@@ -201,9 +203,11 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="list_product"></a><span class="summary-sig-name">list_product</span>(<span class="summary-sig-arg">lists</span>,
+          <td><span class="summary-sig"><a href="hxl.common-module.html#list_product" class="summary-sig-name">list_product</a>(<span class="summary-sig-arg">lists</span>,
         <span class="summary-sig-arg">head</span>=<span class="summary-sig-default">[]</span>)</span><br />
-      Given a list of lists, return their cartesian product.</td>
+      Generate the cartesian product of a list of lists The elements of the
+      result will be all possible combinations of the elements of the input
+      lists.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.common-pysrc.html#list_product">source&nbsp;code</a></span>
             
@@ -248,6 +252,32 @@
     <span class="table-header">Function Details</span></td>
 </tr>
 </table>
+<a name="normalise_number"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">normalise_number</span>(<span class="sig-arg">n</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.common-pysrc.html#normalise_number">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Normalise a number to an integer type if it is defacto an integer. If 
+  it is not a number, leave it alone.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>n</code></strong> - the number to normalise</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the number as an integer, if possible; also '' instead of None</dd>
+  </dl>
+</td></tr></table>
+</div>
 <a name="is_empty"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -267,10 +297,35 @@
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>s</code></strong> - value to test.</li>
+        <li><strong class="pname"><code>s</code></strong> - value to test</li>
     </ul></dd>
     <dt>Returns:</dt>
-        <dd>True if empty</dd>
+        <dd>True if the value is empty</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="is_number"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">is_number</span>(<span class="sig-arg">s</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.common-pysrc.html#is_number">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Can we parse this as a number?</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - the string to test as a number</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if we can force to a float, False otherwise</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -288,10 +343,15 @@
     </td>
   </tr></table>
   
-  <p>Normalise a date.</p>
-  <p>Return the normalised version, or False if this can't be parsed as a 
-  date.</p>
+  <p>Normalise a string as a date.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - the string to normalise as a date</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the date in ISO 8601 YYYY-mm-dd format, or False if we can't 
+          parse it as a date.</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -309,15 +369,69 @@
     </td>
   </tr></table>
   
-  <p>Normalise a string.</p>
-  <p>Remove all leading and trailing whitespace. Convert to lower case. 
-  Replace all internal whitespace (including lineends) with a single 
-  space.</p>
+  <p>Normalise a string. Remove all leading and trailing whitespace. 
+  Convert to lower case. Replace all internal whitespace (including 
+  lineends) with a single space. Replace None with ''.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>s</code></strong> - the string to normalise.</li>
+        <li><strong class="pname"><code>s</code></strong> - the string to normalise</li>
     </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the normalised string</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="is_list"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">is_list</span>(<span class="sig-arg">e</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.common-pysrc.html#is_list">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test if a value is a Python sequence (other than a string)</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>e</code></strong> - the value to test</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if the value is a sequence; False otherwise</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="list_product"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">list_product</span>(<span class="sig-arg">lists</span>,
+        <span class="sig-arg">head</span>=<span class="sig-default">[]</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.common-pysrc.html#list_product">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Generate the cartesian product of a list of lists The elements of the 
+  result will be all possible combinations of the elements of the input 
+  lists.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>lists</code></strong> - a list of lists</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the cross-product of the lists</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -349,7 +463,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Jan 30 16:06:55 2018
+    on Tue Apr  3 00:51:57 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

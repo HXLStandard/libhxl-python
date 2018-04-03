@@ -58,7 +58,14 @@ object --+
 </pre>
 
 <hr />
-<p>Class for aggregating a single value.</p>
+<pre class="literalblock">
+Class for aggregating a single value vertically through a dataset
+.
+    This is the class that accumulates a line count, sum, min, max, or average value
+    across all rows of a dataset. Add any new aggregator types here.
+    
+
+</pre>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -78,7 +85,11 @@ object --+
         <span class="summary-sig-arg">type</span>=<span class="summary-sig-default">'count'</span>,
         <span class="summary-sig-arg">pattern</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">column</span>=<span class="summary-sig-default">None</span>)</span><br />
-      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+      Constructor See the <a href="hxl.filters.Aggregator-class.html#parse"
+      class="link">parse</a> and <a 
+      href="hxl.filters.Aggregator-class.html#parse_list" 
+      class="link">parse_list</a> static methods for creating an aggregator
+      from a string spec.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.__init__">source&nbsp;code</a></span>
             
@@ -94,7 +105,7 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="evaluate_row"></a><span class="summary-sig-name">evaluate_row</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="hxl.filters.Aggregator-class.html#evaluate_row" class="summary-sig-name">evaluate_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
       Evaluate a single row of HXL data against this aggregator.</td>
           <td align="right" valign="top">
@@ -139,7 +150,8 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse"></a><span class="summary-sig-name">parse</span>(<span class="summary-sig-arg">spec</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.filters.Aggregator-class.html#parse" class="summary-sig-name">parse</a>(<span class="summary-sig-arg">spec</span>)</span><br />
+      Parse a string specification and create an aggregator.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.parse">source&nbsp;code</a></span>
             
@@ -155,7 +167,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse_list"></a><span class="summary-sig-name">parse_list</span>(<span class="summary-sig-arg">specs</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.filters.Aggregator-class.html#parse_list" class="summary-sig-name">parse_list</a>(<span class="summary-sig-arg">specs</span>)</span><br />
+      Parse a list of string specifications for aggregators Applies <a 
+      href="hxl.filters.Aggregator-class.html#parse" class="link">parse</a>
+      to each item in the list</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.parse_list">source&nbsp;code</a></span>
             
@@ -178,14 +193,16 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.filters.Aggregator-class.html#TAG_PATTERN" class="summary-name">TAG_PATTERN</a> = <code title="'#?{token}(?:\s*[+-]{token})*'.format(token= hxl.common.TOKEN_PATTERN)">'#?{token}(?:\s*[+-]{token})*'.format(token= hxl<code class="variable-ellipsis">...</code></code>
+        <a href="hxl.filters.Aggregator-class.html#TAG_PATTERN" class="summary-name">TAG_PATTERN</a> = <code title="'#?{token}(?:\s*[+-]{token})*'.format(token= hxl.common.TOKEN_PATTERN)">'#?{token}(?:\s*[+-]{token})*'.format(token= hxl<code class="variable-ellipsis">...</code></code><br />
+      Regular expression for a tag pattern
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.filters.Aggregator-class.html#COL_PATTERN" class="summary-name">COL_PATTERN</a> = <code title="'#{token}(?:\s*\+{token})*'.format(token= hxl.common.TOKEN_PATTERN)">'#{token}(?:\s*\+{token})*'.format(token= hxl.co<code class="variable-ellipsis">...</code></code>
+        <a href="hxl.filters.Aggregator-class.html#COL_PATTERN" class="summary-name">COL_PATTERN</a> = <code title="'#{token}(?:\s*\+{token})*'.format(token= hxl.common.TOKEN_PATTERN)">'#{token}(?:\s*\+{token})*'.format(token= hxl.co<code class="variable-ellipsis">...</code></code><br />
+      Regular expression for an output column pattern
     </td>
   </tr>
 <tr>
@@ -267,12 +284,120 @@ object --+
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <p>Constructor See the <a href="hxl.filters.Aggregator-class.html#parse" 
+  class="link">parse</a> and <a 
+  href="hxl.filters.Aggregator-class.html#parse_list" 
+  class="link">parse_list</a> static methods for creating an aggregator 
+  from a string spec.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>type</code></strong> - the aggregator type to create, as a string</li>
+        <li><strong class="pname"><code>pattern</code></strong> - the tag pattern for disaggregation (may be <code>None</code> for 
+          just counting lines)</li>
+        <li><strong class="pname"><code>column</code></strong> - the hashtag and attributes for the output column with aggregated 
+          values</li>
+    </ul></dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'><a href="hxl.filters.HXLFilterException-class.html">HXLFilterException</a></strong></code> - if <code>pattern</code> is <code>None</code> and <code>type</code> 
+        isn't <code>&quot;count&quot;</code></li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="evaluate_row"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">evaluate_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.evaluate_row">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Evaluate a single row of HXL data against this aggregator.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>row</code></strong> - the input row to read</li>
+    </ul></dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'><a href="hxl.filters.HXLFilterException-class.html">HXLFilterException</a></strong></code> - for an unrecognised aggregator type</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse</span>(<span class="sig-arg">spec</span>)</span>
+    <br /><em class="fname">Static Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.parse">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse a string specification and create an aggregator. Example: 
+  <code>sum(#affected) as #affected+total</code></p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>spec</code></strong> - the string specification</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>an aggregator</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'><a href="hxl.filters.HXLFilterException-class.html">HXLFilterException</a></strong></code> - if unable to parse, or an unrecognised aggregator type</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_list"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_list</span>(<span class="sig-arg">specs</span>)</span>
+    <br /><em class="fname">Static Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#Aggregator.parse_list">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse a list of string specifications for aggregators Applies <a 
+  href="hxl.filters.Aggregator-class.html#parse" class="link">parse</a> to 
+  each item in the list</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>specs</code></strong> - a list of string specifications for aggregators</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a list of <a href="hxl.filters.Aggregator-class.html" 
+          class="link">Aggregator</a> objects</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'><a href="hxl.filters.HXLFilterException-class.html">HXLFilterException</a></strong></code> - if unable to parse, or an unrecognised aggregator type</li>
+    </ul></dd>
   </dl>
 </td></tr></table>
 </div>
@@ -292,7 +417,7 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">TAG_PATTERN</h3>
-  
+  <p>Regular expression for a tag pattern</p>
   <dl class="fields">
   </dl>
   <dl class="fields">
@@ -310,7 +435,7 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">COL_PATTERN</h3>
-  
+  <p>Regular expression for an output column pattern</p>
   <dl class="fields">
   </dl>
   <dl class="fields">
@@ -370,7 +495,7 @@ r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(token=<span clas
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Jan 30 16:06:55 2018
+    on Tue Apr  3 00:51:57 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

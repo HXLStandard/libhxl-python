@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>hxl.geo</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="hxl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="hxl-module.html">Package&nbsp;hxl</a> ::
+        Module&nbsp;geo
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module geo</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.geo-pysrc.html">source&nbsp;code</a></span></p>
+<p>Geodata operations David Megginson Started February 2018</p>
+  <p>License: Public Domain Documentation: 
+  https://github.com/HXLStandard/libhxl-python/wiki</p>
+
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Functions</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.geo-module.html#parse_lat" class="summary-sig-name">parse_lat</a>(<span class="summary-sig-arg">s</span>)</span><br />
+      Parse a latitude string</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.geo-pysrc.html#parse_lat">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.geo-module.html#parse_lon" class="summary-sig-name">parse_lon</a>(<span class="summary-sig-arg">s</span>)</span><br />
+      Parse a longitude string</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.geo-pysrc.html#parse_lon">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.geo-module.html#parse_coord" class="summary-sig-name">parse_coord</a>(<span class="summary-sig-arg">s</span>)</span><br />
+      Parse lat/lon separated by a delimiter [/,:; ]</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.geo-pysrc.html#parse_coord">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="DEG_RE"></a><span class="summary-name">DEG_RE</span> = <code title="'(?P&lt;deg&gt;\d+(?:\.\d*)?)\s*\\xc2\xb0?'">'(?P&lt;deg&gt;\d+(?:\.\d*)?)\s*\\xc2\xb0?'</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="MIN_RE"></a><span class="summary-name">MIN_RE</span> = <code title="'(?P&lt;min&gt;\d+(?:\.\d*)?)\s*[\'`\xe2\x80\xb2]?'">'(?P&lt;min&gt;\d+(?:\.\d*)?)\s*[\'`\xe2\x80\xb2]?'</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.geo-module.html#SEC_RE" class="summary-name">SEC_RE</a> = <code title="'(?P&lt;sec&gt;\d+(?:\.\d*)?)\s*(?:[&quot;\xe2\x80\x9c\xe2\x80\x9d\xe2\x80\xb3]|[\
+\'`\xe2\x80\xb2][\'`\xe2\x80\xb2])?'">'(?P&lt;sec&gt;\d+(?:\.\d*)?)\s*(?:[&quot;\xe2\x80\x9c\xe2\x80\x<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.geo-module.html#LAT_PATTERNS" class="summary-name">LAT_PATTERNS</a> = <code title="re.compile('^(?P&lt;sign&gt;[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.fo\
+rmat(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.compile('^(?P&lt;hemi&gt;[NS]\
+)\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE\
+), flags= re.I), re.compile('^{}\s*(?P&lt;hemi&gt;[NS])\s*(?:[\s:;,-]*{}(?:[\
+\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.comp\
+ile('^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P&lt;hemi&gt;[NS])?$'.format(DEG\
+_RE, MIN_RE, SEC_RE), flags= re.I),">re.compile('^(?P&lt;sign&gt;[+-])?\s*{}(?:[\s:;,-]*{}<code class="variable-ellipsis">...</code></code><br />
+      Regular expressions for parsing latitude strings
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.geo-module.html#LON_PATTERNS" class="summary-name">LON_PATTERNS</a> = <code title="re.compile('^(?P&lt;sign&gt;[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.fo\
+rmat(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.compile('^(?P&lt;hemi&gt;[EW]\
+)\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE\
+), flags= re.I), re.compile('^{}\s*(?P&lt;hemi&gt;[EW])\s*(?:[\s:;,-]*{}(?:[\
+\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.comp\
+ile('^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P&lt;hemi&gt;[EW])?$'.format(DEG\
+_RE, MIN_RE, SEC_RE), flags= re.I),">re.compile('^(?P&lt;sign&gt;[+-])?\s*{}(?:[\s:;,-]*{}<code class="variable-ellipsis">...</code></code><br />
+      Regular expressions for parsing longitude strings
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Function Details</span></td>
+</tr>
+</table>
+<a name="parse_lat"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_lat</span>(<span class="sig-arg">s</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.geo-pysrc.html#parse_lat">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse a latitude string</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - an input string to parse</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>decimal longitude, or None on failure</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'>ValueError</strong></code> - if part of the latitud is out of allowed range</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_lon"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_lon</span>(<span class="sig-arg">s</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.geo-pysrc.html#parse_lon">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse a longitude string</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - an input string to parse</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>decimal longitude, or None on failure</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'>ValueError</strong></code> - if part of the longitude is out of allowed range</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_coord"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_coord</span>(<span class="sig-arg">s</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.geo-pysrc.html#parse_coord">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse lat/lon separated by a delimiter [/,:; ]</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - an input string to parse</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a tuple with decimal latitude and longitude, or None on failure</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'>ValueError</strong></code> - if part of the latitude or longitude is out of allowed range</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Variables Details</span></td>
+</tr>
+</table>
+<a name="SEC_RE"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">SEC_RE</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+'(?P&lt;sec&gt;\d+(?:\.\d*)?)\s*(?:[&quot;\xe2\x80\x9c\xe2\x80\x9d\xe2\x80\xb3]|[<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+\'`\xe2\x80\xb2][\'`\xe2\x80\xb2])?'
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="LAT_PATTERNS"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">LAT_PATTERNS</h3>
+  <p>Regular expressions for parsing latitude strings</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+re.compile('^(?P&lt;sign&gt;[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.fo<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+rmat(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.compile('^(?P&lt;hemi&gt;[NS]<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+)\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+), flags= re.I), re.compile('^{}\s*(?P&lt;hemi&gt;[NS])\s*(?:[\s:;,-]*{}(?:[<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.comp<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ile('^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P&lt;hemi&gt;[NS])?$'.format(DEG<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+_RE, MIN_RE, SEC_RE), flags= re.I),
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="LON_PATTERNS"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">LON_PATTERNS</h3>
+  <p>Regular expressions for parsing longitude strings</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+re.compile('^(?P&lt;sign&gt;[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.fo<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+rmat(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.compile('^(?P&lt;hemi&gt;[EW]<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+)\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+), flags= re.I), re.compile('^{}\s*(?P&lt;hemi&gt;[EW])\s*(?:[\s:;,-]*{}(?:[<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+\s:;,-]*{})?)?$'.format(DEG_RE, MIN_RE, SEC_RE), flags= re.I), re.comp<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ile('^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P&lt;hemi&gt;[EW])?$'.format(DEG<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+_RE, MIN_RE, SEC_RE), flags= re.I),
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="hxl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1
+    on Tue Apr  3 00:51:57 2018
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

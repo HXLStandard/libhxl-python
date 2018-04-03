@@ -87,7 +87,7 @@
           <td><span class="summary-sig"><a href="hxl.filters.RenameFilter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">source</span>,
         <span class="summary-sig-arg">rename</span>=<span class="summary-sig-default">[]</span>)</span><br />
-      Constructor @param source the Dataset for the data.</td>
+      Constructor</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.__init__">source&nbsp;code</a></span>
             
@@ -122,7 +122,8 @@
         <tr>
           <td><span class="summary-sig"><a href="hxl.filters.RenameFilter-class.html#filter_row" class="summary-sig-name">filter_row</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">row</span>)</span><br />
-      Row will be rebuilt with proper columns.</td>
+      Returns:
+      a deep copy of the row's values</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.filter_row">source&nbsp;code</a></span>
             
@@ -138,7 +139,8 @@
       <code><a href="hxl.filters.AbstractStreamingFilter-class.html#__iter__">__iter__</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>,
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#is_cached">is_cached</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
       <code><a href="hxl.model.Dataset-class.html#add_columns">add_columns</a></code>,
@@ -202,7 +204,7 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="parse_rename"></a><span class="summary-sig-name">parse_rename</span>(<span class="summary-sig-arg">s</span>)</span><br />
+          <td><span class="summary-sig"><a href="hxl.filters.RenameFilter-class.html#parse_rename" class="summary-sig-name">parse_rename</a>(<span class="summary-sig-arg">s</span>)</span><br />
       Parse a rename specification from the parameters.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.parse_rename">source&nbsp;code</a></span>
@@ -227,7 +229,8 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.RenameFilter-class.html#RENAME_PATTERN" class="summary-name">RENAME_PATTERN</a> = <code title="r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{to\
-ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]<code class="variable-ellipsis">...</code></code>
+ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]<code class="variable-ellipsis">...</code></code><br />
+      Regular expression for parsing a rename pattern
     </td>
   </tr>
   <tr>
@@ -296,12 +299,12 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
     </td>
   </tr></table>
   
-  <p>Constructor @param source the Dataset for the data. @param rename_map 
-  map of tags to rename</p>
+  <p>Constructor</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>source</code></strong> - the source dataset</li>
+        <li><strong class="pname"><code>source</code></strong> - the Dataset for the data.</li>
+        <li><strong class="pname"><code>rename_map</code></strong> - map of tags to rename</li>
     </ul></dd>
     <dt>Overrides:
         object.__init__
@@ -326,7 +329,8 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
   <p>Rename requested columns.</p>
   <dl class="fields">
     <dt>Returns:</dt>
-        <dd>a list of hxl.model.Column objects</dd>
+        <dd>a list of <a href="hxl.model.Column-class.html" 
+          class="link">hxl.model.Column</a> objects</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractBaseFilter-class.html#filter_columns">AbstractBaseFilter.filter_columns</a>
     </dt>
@@ -348,7 +352,10 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
     </td>
   </tr></table>
   
-  <p>Row will be rebuilt with proper columns.</p>
+  <p>Filter a single row of data.</p>
+  <p>By default, this method returns the row's values, unchanged. 
+  Subclasses can use it to replace, add or suppress rows on the fly, 
+  without having to keep a copy of the entire dataset in memory.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -356,11 +363,40 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
           class="link">hxl.model.Row</a> object.</li>
     </ul></dd>
     <dt>Returns:</dt>
-        <dd>A list of string values (<i>not</i> a Row object) or 
-          <code>None</code> to skip the row.</dd>
+        <dd>a deep copy of the row's values</dd>
     <dt>Overrides:
         <a href="hxl.filters.AbstractStreamingFilter-class.html#filter_row">AbstractStreamingFilter.filter_row</a>
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_rename"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_rename</span>(<span class="sig-arg">s</span>)</span>
+    <br /><em class="fname">Static Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#RenameFilter.parse_rename">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse a rename specification from the parameters.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - the specification to parse</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a tuple with the old pattern to match and new column spec</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'><a href="hxl.filters.HXLFilterException-class.html">HXLFilterException</a></strong></code> - if the spec is not parseable</li>
+    </ul></dd>
   </dl>
 </td></tr></table>
 </div>
@@ -380,7 +416,7 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)">r'^\s*#?({token}(?:\s*[+-]
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">RENAME_PATTERN</h3>
-  
+  <p>Regular expression for parsing a rename pattern</p>
   <dl class="fields">
   </dl>
   <dl class="fields">
@@ -421,7 +457,7 @@ ken})*)\s*$'.format(token= hxl.common.TOKEN_PATTERN)
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Jan 30 16:06:55 2018
+    on Tue Apr  3 00:51:57 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

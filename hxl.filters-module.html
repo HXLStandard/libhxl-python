@@ -149,7 +149,8 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.Aggregator-class.html" class="summary-name">Aggregator</a><br />
-      Class for aggregating a single value.
+      Class for aggregating a single value vertically through a dataset
+.
     </td>
   </tr>
 <tr>
@@ -157,8 +158,7 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.AddColumnsFilter-class.html" class="summary-name">AddColumnsFilter</a><br />
-      Composable filter class to add constant values to every row of a HXL 
-      dataset.
+      Composable filter class to add constant values to every row of a HXL dataset.
     </td>
   </tr>
 <tr>
@@ -254,7 +254,7 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="hxl.filters.RowCountFilter-class.html" class="summary-name">RowCountFilter</a><br />
-      Composable filter class to count lines.
+      Composable filter class to count lines (and nothing else)
     </td>
   </tr>
 <tr>
@@ -288,7 +288,7 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="req_arg"></a><span class="summary-sig-name">req_arg</span>(<span class="summary-sig-arg">spec</span>,
+          <td><span class="summary-sig"><a href="hxl.filters-module.html#req_arg" class="summary-sig-name">req_arg</a>(<span class="summary-sig-arg">spec</span>,
         <span class="summary-sig-arg">property</span>)</span><br />
       Get a required property, and raise an exception if missing.</td>
           <td align="right" valign="top">
@@ -306,7 +306,7 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="opt_arg"></a><span class="summary-sig-name">opt_arg</span>(<span class="summary-sig-arg">spec</span>,
+          <td><span class="summary-sig"><a href="hxl.filters-module.html#opt_arg" class="summary-sig-name">opt_arg</a>(<span class="summary-sig-arg">spec</span>,
         <span class="summary-sig-arg">property</span>,
         <span class="summary-sig-arg">default_value</span>=<span class="summary-sig-default">None</span>)</span><br />
       Get an optional property, possibly with a default value.</td>
@@ -368,6 +368,13 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="logger"></a><span class="summary-name">logger</span> = <code title="logging.getLogger(__name__)">logging.getLogger(__name__)</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="hxl.filters-module.html#LOAD_MAP" class="summary-name">LOAD_MAP</a> = <code title="{'add_columns': AddColumnsFilter._load, 'append': AppendFilter._load, \
 'cache': CacheFilter._load, 'clean_data': CleanDataFilter._load, 'coun\
 t': CountFilter._load, 'dedup': DeduplicationFilter._load, 'explode': \
@@ -391,6 +398,66 @@ with_rows': RowFilter._load, 'without_columns': ColumnFilter._load, 'w\
     <span class="table-header">Function Details</span></td>
 </tr>
 </table>
+<a name="req_arg"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">req_arg</span>(<span class="sig-arg">spec</span>,
+        <span class="sig-arg">property</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#req_arg">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get a required property, and raise an exception if missing.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>spec</code></strong> - the JSON-like filter spec (a dict)</li>
+        <li><strong class="pname"><code>property</code></strong> - the property name to retrieve</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the property value</dd>
+    <dt>Raises:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code><strong class='fraise'><a href="hxl.filters.HXLFilterException-class.html">HXLFilterException</a></strong></code> - if the property is not present</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="opt_arg"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">opt_arg</span>(<span class="sig-arg">spec</span>,
+        <span class="sig-arg">property</span>,
+        <span class="sig-arg">default_value</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#opt_arg">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get an optional property, possibly with a default value.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>spec</code></strong> - the JSON-like filter spec (a dict)(</li>
+        <li><strong class="pname"><code>property</code></strong> - the property name to retrieve</li>
+        <li><strong class="pname"><code>default_value</code></strong> - the default value to return if not found</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the value if found, otherwise default_value/None</dd>
+  </dl>
+</td></tr></table>
+</div>
 <a name="from_recipe"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -515,7 +582,7 @@ with_rows': RowFilter._load, 'without_columns': ColumnFilter._load, 'w<span clas
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Jan 30 16:06:55 2018
+    on Tue Apr  3 00:51:57 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
