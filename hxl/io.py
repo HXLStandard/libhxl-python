@@ -552,17 +552,9 @@ class ExcelInput(AbstractInput):
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)
-        self._row_index = 0
 
-    def __next__(self):
-        if self._row_index < self._sheet.nrows:
-            row = [self._fix_value(cell) for cell in self._sheet.row(self._row_index)]
-            self._row_index += 1
-            return row
-        else:
-            raise StopIteration()
-
-    next = __next__
+    def __iter__(self):
+        return ExcelInput.Iter(self)
 
     def __exit__(self, value, type, traceback):
         pass
@@ -603,19 +595,32 @@ class ExcelInput(AbstractInput):
         # if no sheet has tags, default to the first one for now
         return 0
 
+    class Iter:
+        """Internal iterator class for reading through an Excel sheet multiple times."""
+
+        def __init__(self, outer):
+            self.outer = outer
+            self._row_index = 0
+            
+        def __next__(self):
+            if self._row_index < self.outer._sheet.nrows:
+                row = [self.outer._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                self._row_index += 1
+                return row
+            else:
+                raise StopIteration()
+
 
 class ArrayInput(AbstractInput):
     """Read raw input from an array."""
 
     def __init__(self, data):
         super().__init__()
+        self.data = data
         self.is_cached = True
-        self._iter = iter(data)
 
-    def __next__(self):
-        return next(self._iter)
-
-    next = __next__
+    def __iter__(self):
+        return iter(self.data)
 
 
 class HXLReader(hxl.model.Dataset):
@@ -644,15 +649,29 @@ class HXLReader(hxl.model.Dataset):
 
         """
         self._input = input
+        self._setup()
+        
+    def _setup(self):
+        """(Re)initialise the data"""
+        self._iter = iter(self._input)
         self._columns = None
         self._source_row_number = -1
         self._row_number = -1
         self._raw_data = None
-        self._used_iter = False
 
     @property
     def is_cached(self):
         return self._input.is_cached
+
+    def reset(self):
+        """Reset the dataset to start reading again.
+        @exception HXLIOException: if the dataset is not cached
+        @see: is_cached
+        """
+        if self._input.is_cached:
+            self._setup()
+        else:
+            raise hxl.HXLException("Input source is does not support reset (is_cached=False)")
 
     @property
     def columns(self):
@@ -664,10 +683,7 @@ class HXLReader(hxl.model.Dataset):
         return self._columns
 
     def __iter__(self):
-        if self._used_iter:
-            raise hxl.common.HXLException("Cannot read a stream twice")
-        else:
-            return self
+        return self
 
     def __next__(self):
         """
@@ -741,7 +757,7 @@ class HXLReader(hxl.model.Dataset):
     def _get_row(self):
         """Parse a row of raw CSV data.  Returns an array of strings."""
         self._source_row_number += 1
-        return next(self._input)
+        return next(self._iter)
 
     def __enter__(self):
         """Context-start support."""

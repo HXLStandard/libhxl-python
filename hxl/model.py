@@ -145,6 +145,12 @@ class Dataset(object):
         """
         return
 
+    def reset(self):
+        """Attempt to reset the dataset for reading a second time.
+        @exception HXLException: if the dataset cannot be reread (is_cached is False)
+        """
+        raise HXLException("Dataset cannot be reread")
+
     @property
     def is_cached(self):
         """Test whether the source data is cached (replayable).

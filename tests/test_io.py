@@ -52,6 +52,31 @@ URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-
 
 class TestInput(unittest.TestCase):
 
+    def test_reset(self):
+        source = hxl.data(DATA)
+        for row in source:
+            pass
+        source.reset()
+        for row in source:
+            pass
+
+        source = hxl.data(FILE_EXCEL, allow_local=True)
+        for row in source:
+            pass
+        source.reset()
+        for row in source:
+            pass
+
+        source = hxl.data(FILE_CSV, allow_local=True)
+        for row in source:
+            pass
+        seen_exception = False
+        try:
+            source.reset()
+        except hxl.HXLException:
+            seen_exception = True
+        self.assertTrue(seen_exception)
+
     def test_array(self):
         self.assertTrue(make_input(DATA).is_cached)
         self.assertTrue(hxl.data(DATA).is_cached)
