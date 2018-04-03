@@ -396,6 +396,10 @@ class AbstractInput(object):
 
     __metaclass__ = abc.ABCMeta
 
+    def __init__(self):
+        super().__init__()
+        self.is_cached = False
+
     def __iter__(self):
         return self
 
@@ -414,6 +418,7 @@ class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input, encoding='utf-8'):
+        super().__init__()
         self._input = io.TextIOWrapper(input, encoding=encoding)
         self._reader = csv.reader(self._input)
 
@@ -430,6 +435,7 @@ class JSONInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
     def __init__(self, input, encoding='utf-8', selector='hxl'):
+        super().__init__()
         self._input = io.TextIOWrapper(input, encoding=encoding)
 
         self.type = None
@@ -537,6 +543,8 @@ class ExcelInput(AbstractInput):
         @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
         @param allow_local (optional) iff True, allow opening local files
         """
+        super().__init__()
+        self.is_cached = True
         try:
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
@@ -600,6 +608,8 @@ class ArrayInput(AbstractInput):
     """Read raw input from an array."""
 
     def __init__(self, data):
+        super().__init__()
+        self.is_cached = True
         self._iter = iter(data)
 
     def __next__(self):
@@ -639,6 +649,10 @@ class HXLReader(hxl.model.Dataset):
         self._row_number = -1
         self._raw_data = None
         self._used_iter = False
+
+    @property
+    def is_cached(self):
+        return self._input.is_cached
 
     @property
     def columns(self):

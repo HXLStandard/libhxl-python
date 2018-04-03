@@ -22,6 +22,13 @@ from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
 def _resolve_file(filename):
     return os.path.join(os.path.dirname(__file__), filename)
 
+DATA = [
+   ['Sector', 'Organisation', 'Province name'],
+   ['#sector', '#org', '#adm1'],
+   ['WASH', 'Org A', 'Coast'],
+   ['Health', 'Org B', 'Plains']
+]
+
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
@@ -42,15 +49,45 @@ URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/t
 URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 
+
 class TestInput(unittest.TestCase):
+
+    def test_array(self):
+        self.assertTrue(make_input(DATA).is_cached)
+        self.assertTrue(hxl.data(DATA).is_cached)
+        self.assertTrue('#sector' in hxl.data(DATA).tags)
+
+    def test_csv(self):
+        input = make_input(FILE_CSV, True)
+        self.assertFalse(input.is_cached)
+        self.assertFalse(hxl.data(input).is_cached)
+        self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_json_lists(self):
+        input = make_input(FILE_JSON, True)
+        self.assertFalse(input.is_cached)
+        self.assertFalse(hxl.data(input).is_cached)
+        self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_json_objects(self):
+        input = make_input(FILE_JSON_OBJECTS, True)
+        self.assertFalse(input.is_cached)
+        self.assertFalse(hxl.data(input).is_cached)
+        self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_excel(self):
+        input = make_input(FILE_EXCEL, True)
+        self.assertTrue(input.is_cached)
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
         self.assertTrue('#vocab' in source.tags)
+        self.assertFalse(source.is_cached)
 
     def test_ckan_dataset(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list')
         self.assertTrue('#vocab' in source.tags)
+        self.assertFalse(source.is_cached)
 
 class TestUntaggedInput(unittest.TestCase):
 
