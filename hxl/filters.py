@@ -37,46 +37,21 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import abc, copy, json, logging, re, six, sys
-import dateutil.parser
-
-import hxl
-from hxl import geo # not sure why I need this, but command-line script fails without it
+import hxl, hxl.geo
+import abc, copy, dateutil.parser, json, logging, re, six, sys
 
 
 logger = logging.getLogger(__name__)
 
 
-#
-# Filter-specific exception
-#
 class HXLFilterException(hxl.common.HXLException):
     """Base class for HXL filter exceptions.
 
     This subclass of L{hxl.common.HXLException} exists only to make it
     easier to distinguish filter-based exceptions in C{except:} clauses.
-
     """
-    pass
 
-def req_arg(spec, property):
-    """Get a required property, and raise an exception if missing."""
-    value = spec.get(property)
-    if value is None:
-        raise HXLFilterException("Missing required property: \"{}\"".format(property))
-    return value
 
-def opt_arg(spec, property, default_value=None):
-    """Get an optional property, possibly with a default value."""
-    value = spec.get(property)
-    if value is None:
-        return default_value
-    else:
-        return value
-
-#
-# Base class for filters
-#
 class AbstractBaseFilter(hxl.model.Dataset):
     """Abstract base class for composable filters.
 
@@ -113,6 +88,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
 
     @see: L{AbstractStreamingFilter}
     @see: L{AbstractCachingFilter}
+
     """
 
     __metaclass__ = abc.ABCMeta
@@ -122,21 +98,31 @@ class AbstractBaseFilter(hxl.model.Dataset):
         @param source: the source dataset
         """
 
+        super().__init__()
+
         self.source = source
         """HXL data source for the filter"""
 
         self._filtered_column_cache = None
+        """Cache of columns as filtered by the child class."""
+
+    @property
+    def is_cached(self):
+        """Test if the input is cached (can be replayed).
+        Subclasses that cache should override this.
+        @returns: C{True} only if the source is cached.
+        """
+        return self.source.is_cached
 
     @property
     def columns(self):
         """Return the filter's (possibly-modified) columns.
 
         By default, return the columns defined by the source HXL
-        data. Child classes override the filter_columns() method to
+        data. Child classes override the L{filter_columns} method to
         return something different.
 
-        @return: a list of L{hxl.model.Column} objects
-
+        @returns: a list of L{hxl.model.Column} objects
         """
         if self._filtered_column_cache is None:
             self._filtered_column_cache = self.filter_columns()
@@ -146,19 +132,22 @@ class AbstractBaseFilter(hxl.model.Dataset):
         """Return a new list of columns for the filtered dataset.
 
         By default, return the source HXL data's columns. Child
-        classes override the filter_columns() method to return a
-        different set of columns
+        classes override this method to return a different set of
+        columns
 
-        @return: a list of hxl.model.Column objects
+        @returns: a list of L{hxl.model.Column} objects
         @see: L{AbstractStreamingFilter.filter_row}
         @see: L{AbstractCachingFilter.filter_rows}
-
         """
         return self.source.columns
 
     @staticmethod
     def _load (source, spec):
-        """Create an instance of the filter from a dict."""
+        """Create an instance of the filter from a dict.
+        Child classes must override this method.
+        @param spec: the JSON-like spec to read
+        @returns: a new filter object
+        """
         raise NotImplementedError("No static _load method implemented.")
 
     
@@ -181,7 +170,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
     I{AbstractStreamingFilter} whenever possible. Child classes may
     implement the L{AbstractBaseFilter.filter_columns} method to
     change the columns and tags, and/or this class's L{filter_row}
-    method to change, add, or suppress individual rows, like this::
+    method to change, add, or suppress individual rows, like this:
 
       class MyFilter(hxl.filters.AbstractStreamingFilter):
 
@@ -207,7 +196,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
         """Construct a new streaming filter.
         @param source: the source dataset
         """
-        super(AbstractStreamingFilter, self).__init__(source)
+        super().__init__(source)
 
     @abc.abstractmethod
     def filter_row(self, row):
@@ -219,9 +208,10 @@ class AbstractStreamingFilter(AbstractBaseFilter):
         dataset in memory.
 
         @param row: the original L{hxl.model.Row} object.  
-        @return: A list of string values (I{not} a Row object) or
+        @returns: A list of string values (I{not} a Row object) or
         C{None} to skip the row.
         @see: L{AbstractBaseFilter.filter_columns}
+
         """
         return row.values
 
@@ -229,14 +219,16 @@ class AbstractStreamingFilter(AbstractBaseFilter):
         return AbstractStreamingFilter._Iterator(self)
 
     class _Iterator:
-        """Internal iterator class to return the filtered rows."""
+        """Internal iterator class to return the filtered rows.
+        Note that the filtering happens here, not in the main class.
+        """
 
         def __init__(self, outer):
             """Create an iterator for a streaming filter
             @param outer: a reference to the parent object (an L{AbstractStreamingFilter}).
             """
-            self.outer = outer
-            self.source_iter = iter(self.outer.source)
+            self.outer = outer # ref to outer object
+            self.source_iter = iter(self.outer.source) # iterator for the source data
             self.row_number = -1
 
         def __iter__(self):
@@ -250,7 +242,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
             changes it, it won't change the version visible upstream
             in the filter chain.
 
-            @return: a L{hxl.model.Row} object
+            @returns: a L{hxl.model.Row} object
 
             """
             # call this here, in case it caches any useful information
@@ -273,7 +265,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
     """Abstract base class for caching filters.
 
     A caching filter processes the entire dataset together in
-    memory. This approach is much less efficient than a L{streaming
+    memory. This approach is less efficient than a L{streaming
     filter<AbstractStreamingFilter>}, but it's necessary when a filter
     needs to reorder rows, or to change some rows that depend on
     others. Examples of caching filters include L{SortFilter},
@@ -314,9 +306,17 @@ class AbstractCachingFilter(AbstractBaseFilter):
         """Construct a new caching filter.
         @param source: the source dataset
         """
-        super(AbstractCachingFilter, self).__init__(source)
-        # save the rows here, for multiple iterations
+        super().__init__(source)
+
         self._saved_rows = None
+        """Cache of the output rows, for replaying."""
+
+    @property
+    def is_cached(self):
+        """Test if the input is cached.
+        @returns: always C{True} for caching filters
+        """
+        return True
 
     def filter_rows(self):
         """Filter all of the data together.
@@ -330,7 +330,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
         The I{AbstractCachingFilter} class will construct the
         appropriate objects around the data.
         
-        @return: a list of lists of strings, one list for each row.
+        @returns: a list of lists of strings, one list for each row.
         @see: L{AbstractBaseFilter.filter_columns}
         """
         return self.source.values
@@ -358,7 +358,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
             If we haven't called L{AbstractCachingFilter.filter_rows}
             yet, call it now, and save the result in the parent's I{_saved_rows} property.
 
-            @return: a L{hxl.model.Row} object
+            @returns: a L{hxl.model.Row} object
             """
 
             if self.values_iter is None:
@@ -375,16 +375,28 @@ class AbstractCachingFilter(AbstractBaseFilter):
 # Utility classes
 #
 class Aggregator(object):
-    """Class for aggregating a single value."""
+    """Class for aggregating a single value vertically through a dataset
+.
+    This is the class that accumulates a line count, sum, min, max, or average value
+    across all rows of a dataset. Add any new aggregator types here.
+    """
 
     def __init__(self, type='count', pattern=None, column=None):
+        """Constructor
+        See the L{parse} and L{parse_list} static methods for creating an aggregator from a string spec.
+        @param type: the aggregator type to create, as a string
+        @param pattern: the tag pattern for disaggregation (may be C{None} for just counting lines)
+        @param column: the hashtag and attributes for the output column with aggregated values
+        @exception HXLFilterException: if C{pattern} is C{None} and C{type} isn't C{"count"}
+        """
+        super().__init__()
         self.type = type.lower()
         if pattern:
             self.pattern = hxl.model.TagPattern.parse(pattern)
         elif type == 'count':
             self.pattern = None
         else:
-            raise HXLFilterException('Pattern missing for {} aggregator in count filter'.format(type))
+            raise HXLFilterException('Pattern missing for {} aggregator'.format(type))
         if not column:
             column = '{type}#meta+{type}'.format(type=self.type)
         self.column = hxl.model.Column.parse_spec(column)
@@ -395,7 +407,10 @@ class Aggregator(object):
         """Resulting aggregation value."""
 
     def evaluate_row(self, row):
-        """Evaluate a single row of HXL data against this aggregator."""
+        """Evaluate a single row of HXL data against this aggregator.
+        @param row: the input row to read
+        @exception HXLFilterException: for an unrecognised aggregator type
+        """
 
         if self.type == 'count':
             if self.value is None: self.value = 0
@@ -405,6 +420,7 @@ class Aggregator(object):
         value = row.get(self.pattern)
         if value is not '' and value is not None:
             try:
+                # try to force to a number for aggregation
                 n = float(value)
                 self.total += 1
                 if self.type == 'sum':
@@ -422,10 +438,13 @@ class Aggregator(object):
                 else:
                     raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
             except:
-                pass
+                logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
 
     TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    """Regular expression for a tag pattern"""
+    
     COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    """Regular expression for an output column pattern"""
 
     AGGREGATOR_PATTERN = r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(
         token = hxl.common.TOKEN_PATTERN,
@@ -438,7 +457,14 @@ class Aggregator(object):
 
     @staticmethod
     def parse(spec):
+        """Parse a string specification and create an aggregator.
+        Example: C{sum(#affected) as #affected+total}
+        @param spec: the string specification
+        @returns: an aggregator
+        @exception HXLFilterException: if unable to parse, or an unrecognised aggregator type
+        """
         if isinstance(spec, Aggregator):
+            # in case it's already parsed
             return spec
         match = re.match(Aggregator.AGGREGATOR_PATTERN, spec)
         if not match:
@@ -451,6 +477,12 @@ class Aggregator(object):
 
     @staticmethod
     def parse_list(specs):
+        """Parse a list of string specifications for aggregators
+        Applies L{parse} to each item in the list
+        @param specs: a list of string specifications for aggregators
+        @returns: a list of L{Aggregator} objects
+        @exception HXLFilterException: if unable to parse, or an unrecognised aggregator type
+        """
         result = []
         if isinstance(specs, six.string_types):
             specs = [specs]
@@ -475,7 +507,15 @@ class AddColumnsFilter(AbstractStreamingFilter):
     HXL hashtag "#country", and the value "Malaysia" to every row in
     the dataset::
 
-        filter = AddColumnsFilter(source, "Country name#country=Malaysia")      
+        filter = AddColumnsFilter(source, "Country name#country=Malaysia")
+
+    This filter also supports substitution patterns in the fixed
+    values, surrounded by double braces. For example, the pattern
+
+        X-{{#country+code}}
+
+    will include the value "X-" followed by the value of the column
+    #country+code in each new cell in the new column.
 
     @see: L{ColumnFilter}, L{RenameFilter}
 
@@ -499,19 +539,27 @@ class AddColumnsFilter(AbstractStreamingFilter):
         add them to the front.
 
         @param source: a HXL data source
-        @param specs: a string or list of strings containing new column specifications, as described above (or a list of tuples as described in L{parse_spec})
+
+        @param specs: a string or list of strings containing new
+        column specifications, as described above (or a list of tuples
+        as described in L{parse_spec})
         @param before: true to add new columns before existing ones (default C{False})
 
         """
-        super(AddColumnsFilter, self).__init__(source)
+        super().__init__(source)
         if isinstance(specs, six.string_types):
+            # make a one-item list if the param is a string
             specs = [specs]
         self.specs = [AddColumnsFilter.parse_spec(spec) for spec in specs]
         self.before = before
+        """If True, add new columns before existing ones"""
         self.const_values = None
+        """Constant values to add to the new columns"""
 
     def filter_columns(self):
-        """Internal: return the new columns list"""
+        """Internal: return the new columns list
+        @returns: a list of L{hxl.model.Column} objects
+        """
         new_columns = [spec[0] for spec in self.specs]
         if self.before:
             new_columns = new_columns + self.source.columns
@@ -521,14 +569,26 @@ class AddColumnsFilter(AbstractStreamingFilter):
         return new_columns
 
     def filter_row(self, row):
-        """Internal: return each row with the new fixed value(s) attached."""
+        """Internal: return each row with the new fixed value(s) attached.
+        Will execute pattern substitutions inside double braces for the fixed values.
+        @returns: a list of values, including the fixed values for new columns
+        """
         values = copy.copy(row.values)
         if self.before:
             return self._subst(row, self.const_values) + values
         else:
             return values + self._subst(row, self.const_values)
 
+    _SUBST_PATTERN = '{{(#' + hxl.common.TOKEN_PATTERN + '(?:[+-]' + hxl.common.TOKEN_PATTERN + ')*)}}';
+    """Regular expression to parse a substitution pattern in the fixed contents for the new cell"""
+
     def _subst(self, row, const_values):
+        """Execute pattern substitutions for fixed values for the new columns.
+        Substitutions are tag patterns inside double braces. Example: "X-{{#country+code}}"
+        @param row: the row to search for matches to any patterns.
+        @param const_values: the constant values to scan for patterns
+        @returns: the constant values (only) with substitutions executed
+        """
         def do_sub(match_object):
             return row.get(match_object.group(1))
         values = []
@@ -537,8 +597,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
         return values
 
     SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
-
-    _SUBST_PATTERN = '{{(#' + hxl.common.TOKEN_PATTERN + '(?:[+-]' + hxl.common.TOKEN_PATTERN + ')*)}}';
+    """Pattern for a string specification for a new column"""
 
     @staticmethod
     def parse_spec(spec):
@@ -550,7 +609,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
           Country name#country=Malaysia
 
         @param spec: the string spec to parse, in the format above.
-        @return: a tuple containing a L{hxl.model.Column} object and the fixed value.
+        @returns: a tuple containing a L{hxl.model.Column} object and the fixed value.
         """
 
         if not isinstance(spec, six.string_types):
@@ -566,7 +625,10 @@ class AddColumnsFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """New instance from a dict."""
+        """New instance from a JSON-style dictionary.
+        @param source: the upstream data source
+        @param spec: the JSON-style specification
+        """
         return AddColumnsFilter(
             source=source,
             specs=req_arg(spec, 'specs'),
@@ -646,23 +708,30 @@ class AppendFilter(AbstractBaseFilter):
         @param queries: optional list of L{hxl.model.RowQuery} objects
         (or a single strig) to select which rows to include from the
         second dataset
-
         """
         super(AppendFilter, self).__init__(source)
 
         # parameters
         if is_sourcey(append_sources):
             append_sources = [append_sources]
-        self.append_sources = [hxl.data(src) for src in append_sources] # so that we can take a plain UR
+        self.append_sources = [hxl.data(src) for src in append_sources] # so that we can take a plain URL
+        """The sources to append to this source"""
         self.add_columns = add_columns
+        """If true, always add new columns instead of replacing existing ones"""
         self.queries = hxl.model.RowQuery.parse_list(queries)
+        """The row queries to limit where we choose append candidates"""
 
         # internal properties
         self._column_positions = []
+        """Cache of column positions, to avoid rescanning on every pass"""
         self._template_row = []
+        """Empty template for appending to each row (will copy and fill in as needed"""
 
     def filter_columns(self):
-        """Internal: generate the columns for the combined dataset"""
+        """Internal: generate the columns for the combined dataset
+        We expect this method to run only once.
+        @returns: the output list of L{hxl.model.Column} objects
+        """
 
         columns_out = copy.deepcopy(self.source.columns)
 
@@ -753,7 +822,9 @@ class AppendFilter(AbstractBaseFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create an AppendFilter from a dict spec."""
+        """Create an AppendFilter from a dict spec.
+        @param spec: the string specification
+        """
         return AppendFilter(
             source=source,
             append_sources=req_arg(spec, 'append_sources'),
@@ -800,28 +871,25 @@ class CacheFilter(AbstractCachingFilter):
     never run the replacements more than once::
 
       filter = hxl.data(url).replace_data_map(map_url).cache().with_rows('org=UNICEF')
-
     """
 
     def __init__(self, source, max_rows=None):
-        """
-        Constructor
-        @param max_rows If >0, maximum number of rows to cache.
+        """Constructor
+        @param source: the upstream data source
+        @param max_rows: if >0, maximum number of rows to cache
         """
         super(CacheFilter, self).__init__(source)
-
         self.max_rows = max_rows
         """Maximum number of rows to keep in the cache (-1 means no limit)"""
-
         self.overflow = False
         """Flag for whether there were more rows than L{max_rows} available."""
 
     def filter_columns(self):
-        """Internal: deep copy of the source columns"""
+        """@returns: a deep copy of the source columns"""
         return copy.deepcopy(self.source.columns)
 
     def filter_rows(self):
-        """Internal: keep a local copy of the row data."""
+        """@returns: a local copy of the row data"""
         values = []
         max_rows = self.max_rows
         for row in self.source:
@@ -889,7 +957,6 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     @see: L{ReplaceDataFilter}, which allows for more-specific
     replacements using string and regular-expression patterns.
-
     """
 
     def __init__(
@@ -917,7 +984,6 @@ class CleanDataFilter(AbstractStreamingFilter):
         @param laton: a list of tag patterns for normalising latitude/longitude.
         @param purge: if True, remove any dates, numbers, or lat/lon that can't be parsed during cleaning.
         @param queries: optional list of queries to select rows to be cleaned.
-
         """
         super(CleanDataFilter, self).__init__(source)
         self.whitespace = hxl.model.TagPattern.parse_list(whitespace)
@@ -935,7 +1001,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
-        """Internal: clean up values and pass on the row data."""
+        """@returns: cleaned row data"""
         if hxl.model.RowQuery.match_list(row, self.queries):
             # if there are no queries, or row matches at least one
             columns = self.columns
@@ -948,8 +1014,9 @@ class CleanDataFilter(AbstractStreamingFilter):
             return row.values
 
     def _clean_value(self, value, column):
-        """Clean a single HXL value."""
-
+        """Clean a single value, using the column def for guidance.
+        @returns: a single cleaned value
+        """
         value = str(value)
 
         # Whitespace (-w)
@@ -1034,7 +1101,11 @@ class CleanDataFilter(AbstractStreamingFilter):
         return value
 
     def _match_patterns(self, patterns, column):
-        """Test if a column matches a list of patterns."""
+        """Test if a column matches a list of patterns.
+        @param patterns: a list of tag patterns to match
+        @param column: the column definition to test
+        @returns: C{True} if the column matches at least one pattern in the list
+        """
         if not patterns:
             return False
         else:
@@ -1045,7 +1116,9 @@ class CleanDataFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a new clean-data filter from a dict spec."""
+        """Create a new clean-data filter from a dict spec.
+        @returns: a L{CleanDataFilter} object
+        """
         return CleanDataFilter(
             source=source,
             whitespace=opt_arg(spec,'whitespace', []),
@@ -1105,7 +1178,7 @@ class ColumnFilter(AbstractStreamingFilter):
         self.indices = [] # saved indices for columns to include
 
     def filter_columns(self):
-        """Internal: remove column definitions"""
+        """@returns: filtered list of column definitions"""
         columns_in = self.source.columns
         columns_out = []
         for i in range(len(columns_in)):
@@ -1115,7 +1188,7 @@ class ColumnFilter(AbstractStreamingFilter):
         return columns_out
 
     def filter_row(self, row):
-        """Internal: remove values from a row for any column that's been removed."""
+        """@returns: filtered list of row values"""
         values = []
         for i in self.indices:
             try:
@@ -1127,6 +1200,8 @@ class ColumnFilter(AbstractStreamingFilter):
     def _test_column(self, column):
         """Test whether a  column should be included in the output.
         If there is a whitelist, it must be in the whitelist; if there is a blacklist, it must not be in the blacklist.
+        @param column: the L{hxl.model.Column} to test
+        @returns: True if the column should be included
         """
         if self.include_tags:
             # whitelist
@@ -1152,6 +1227,11 @@ class ColumnFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
+        """Create a filter object from a JSON-like spec.
+        Note that there are two JSON filter definitions for this class: "with_columns" and "without_columns".
+        @param spec: the specification
+        @returns: a L{ColumnFilter} object
+        """
         if spec.get('filter') == 'with_columns':
             return ColumnFilter(
                 source=source,
@@ -1196,7 +1276,6 @@ class CountFilter(AbstractCachingFilter):
     specific fields. This example will count only the rows where C{#adm1} is set to "Coast"::
 
       filter = hxl.data(url).count('org', queries='adm1=Coast')
-
     """
 
     def __init__(self, source, patterns, aggregators=None, queries=[]):
@@ -1207,7 +1286,7 @@ class CountFilter(AbstractCachingFilter):
         @param aggregators: one or more Aggregator objects or string representations to define the output.
         @param queries: an optional list of L{row queries<hxl.model.RowQuery>} to filter the rows being counted.
         """
-        super(CountFilter, self).__init__(source)
+        super().__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         if not aggregators:
             aggregators = 'count() as Count#meta+count'
@@ -1215,7 +1294,7 @@ class CountFilter(AbstractCachingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_columns(self):
-        """Internal: generate the columns for the report."""
+        """@returns: the filtered columns"""
         columns = []
 
         # Add columns being counted
@@ -1233,7 +1312,7 @@ class CountFilter(AbstractCachingFilter):
         return columns
 
     def filter_rows(self):
-        """Internal: generate the raw data rows for the report."""
+        """@returns: the filtered row values"""
 
         raw_data = []
 
@@ -1246,7 +1325,9 @@ class CountFilter(AbstractCachingFilter):
         return raw_data
 
     def _aggregate_data(self):
-        """Read the entire source dataset and produce saved aggregate data."""
+        """Read the entire source dataset and produce saved aggregate data.
+        @returns: the aggregated values as raw data
+        """
         aggregators = {}
 
         # read the whole source dataset at once
@@ -1267,7 +1348,10 @@ class CountFilter(AbstractCachingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a new count filter from a dict spec."""
+        """Create a new count filter from a dict spec.
+        @param spec: the JSON-like spec
+        @returns: a new L{CountFilter} object
+        """
         return CountFilter(
             source = source,
             patterns=opt_arg(spec, 'patterns'),
@@ -1288,23 +1372,22 @@ class DeduplicationFilter(AbstractStreamingFilter):
     Supports the hxldedup command-line script.
 
     TODO: add more-sophisticated matching, edit distance, etc.
-
     """
 
     def __init__(self, source, patterns=None, queries=[]):
         """
         Constructor
-        @param source the upstream source dataset
-        @param patterns if provided, a list of tag patterns for columns to use for uniqueness testing.
-        @param filters optional list of filter queries for columns to be considered for deduplication.
+        @param source: the upstream source dataset
+        @param patterns: if provided, a list of tag patterns for columns to use for uniqueness testing.
+        @param filters: optional list of filter queries for columns to be considered for deduplication.
         """
-        super(DeduplicationFilter, self).__init__(source)
+        super().__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.seen_map = set() # row signatures that we've seen so far
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
-        """Filter out any rows we've seen before."""
+        """@returns: the row's values, or C{None} if it's a duplicate"""
         if hxl.model.RowQuery.match_list(row, self.queries):
             if not row:
                 return None
@@ -1318,7 +1401,10 @@ class DeduplicationFilter(AbstractStreamingFilter):
             return row.values
 
     def _is_key(self, col):
-        """Check if a column is part of the key for deduplication."""
+        """Check if a column is part of the key for deduplication.
+        @param col: the column to check
+        @returns: True if the column belongs to the deduplication key
+        """
         if self.patterns:
             for pattern in self.patterns:
                 if pattern.match(col):
@@ -1328,7 +1414,11 @@ class DeduplicationFilter(AbstractStreamingFilter):
             return True
 
     def _make_key(self, row):
-        """Create a tuple key for a row."""
+        """Create a tuple deduplication key for a row.
+        We care only about certain columns for deduplication.
+        @param row: the row for which to create the key
+        @returns: the row's key as a tuple
+        """
         key = []
         for i, value in enumerate(row.values):
             if self._is_key(row.columns[i]):
@@ -1337,7 +1427,11 @@ class DeduplicationFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a dedup filter from a dict spec."""
+        """Create a dedup filter from a dict spec.
+        @param source: the upstream source
+        @param spec: the JSON-like spec
+        @returns: a L{DeduplicationFilter} object
+        """
         return DeduplicationFilter(
             source = source,
             patterns=opt_arg(spec, 'patterns', []),
@@ -1379,12 +1473,14 @@ class ExplodeFilter(AbstractBaseFilter):
         """
         super(ExplodeFilter, self).__init__(source)
         self.header_attribute = header_attribute
+        """Attribute to add to exploded values from the header"""
         self.value_attribute = value_attribute
+        """Attribute to add to the original value from the data cell"""
         self._generator = None
         self._plan = self._make_plan()
 
     def filter_columns(self):
-        """Produce the new column headers."""
+        """@returns: the new (exploded) column headers"""
         columns = []
         for spec in self._plan:
             if isinstance(spec, list):
@@ -1404,6 +1500,9 @@ class ExplodeFilter(AbstractBaseFilter):
     def _expand(self, row, plan, values_in=[]):
         """Recursive generator for the row data.
         https://wiki.python.org/moin/Generators
+        @param row: the row to expland
+        @param plan: the pre-generated expansion plan
+        @param values_in: the input values
         """
         if not plan: # terminal condition
             yield values_in
@@ -1424,6 +1523,7 @@ class ExplodeFilter(AbstractBaseFilter):
         """Create an expansion plan
         The plan is a list of integers, representing columns in the original source.
         Some items are lists of integers, representing variants to show for multiple rows.
+        @returns: an expansion plan for the row
         """
         plan = []
         groups = {}
@@ -1440,7 +1540,11 @@ class ExplodeFilter(AbstractBaseFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create an explode filter from a dict spec."""
+        """Create an explode filter from a dict spec.
+        @param source: the upstream source
+        @param spec: the JSON-like filter specification
+        @returns: an L{ExplodeFilter} object
+        """
         return ExplodeFilter(
             source=source,
             header_attribute=opt_arg(spec, 'header_attribute', 'header'),
@@ -1476,31 +1580,36 @@ class MergeDataFilter(AbstractStreamingFilter):
 
     @see hxl.model.Dataset.merge_data
     @see hxl.scripts.hxlmerge_main
-
     """
 
     def __init__(self, source, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
         """
         Constructor.
-        @param source the HXL data source.
-        @param merge_source a second HXL data source to merge into the first.
-        @param keys the shared key hashtags to use for the merge
-        @param tags the tags to include from the second dataset
-        @param filters optional list of filter queries for rows to be considered from the merge dataset.
+        @param source: the HXL data source.
+        @param merge_source: a second HXL data source to merge into the first.
+        @param keys: the shared key hashtags to use for the merge
+        @param tags: the tags to include from the second dataset
+        @param replace: if True, replace existing columns when possible
+        @param overwrite: if True, overwrite non-empty values in existing columns
+        @param queries: optional list of filter queries for rows to be considered from the merge dataset.
         """
-        super(MergeDataFilter, self).__init__(source)
+        super().__init__(source)
         self.merge_source = merge_source
+        """The source dataset for pulling merged values"""
         self.keys = hxl.model.TagPattern.parse_list(keys)
+        """The shared keys for merging"""
         self.merge_tags = hxl.model.TagPattern.parse_list(tags)
+        """The merged values to pull from the merge_source"""
         self.replace = replace
+        """If True, replace columns when possible"""
         self.overwrite = overwrite
+        """If true, overwrite non-empty values in existing columns"""
         self.queries = hxl.model.RowQuery.parse_list(queries)
-
+        """Query to filter rows to be merged"""
         self._merge_indices = []
         """Indices for mapping columns from merge source to output dataset
         [source_index, output_index, overwrite_ok]
         """
-        
         self._merge_values = None
         """Dictionary of values from merge source, indexed by key."""
 
@@ -1548,7 +1657,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         """Set up a merged data row, replacing existing values if requested.
         Uses the _merge_indices map created by filter_columns.
         @param row: the data row to filter.
-        @return: a list of filtered values for the row.
+        @returns: a list of filtered values for the row.
         @see hxl.filters.AbstractStreamingFilter.filter_row
         """
 
@@ -1571,7 +1680,9 @@ class MergeDataFilter(AbstractStreamingFilter):
         return values
 
     def _make_keys(self, row):
-        """Return all possible key-value combinations for the row as tuples."""
+        """Return all possible key-value combinations for the row as tuples.
+        @param row: the row from which to generate the key
+        """
         candidate_values = []
         for pattern in self.keys:
             candidate_values.append(hxl.common.normalise_string(value) for value in row.get_all(pattern, default=''))
@@ -1581,7 +1692,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         """Read the second (merging) dataset into memory.
         Stores only the values necessary for the merge.
         Uses *last* matching row for each key (top to bottom).
-        @return a map of merge values
+        @returns: a map of merge values
         """
         
         self.columns # make sure we've created the _merge_indices map
@@ -1608,7 +1719,11 @@ class MergeDataFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a merge filter from a dict spec."""
+        """Create a merge filter from a dict spec.
+        @param source: the upstream data source
+        @param spec: the JSON-like filter specification
+        @returns: a L{MergeDataFilter} object
+        """
         return MergeDataFilter(
             source=source,
             merge_source=req_arg(spec, 'merge_source'),
@@ -1636,10 +1751,10 @@ class RenameFilter(AbstractStreamingFilter):
     def __init__(self, source, rename=[]):
         """
         Constructor
-        @param source the Dataset for the data.
-        @param rename_map map of tags to rename
+        @param source: the Dataset for the data.
+        @param rename_map: map of tags to rename
         """
-        super(RenameFilter, self).__init__(source)
+        super().__init__(source)
         if isinstance(rename, six.string_types):
             rename = [rename]
         self.rename = [RenameFilter.parse_rename(spec) for spec in rename]
@@ -1649,11 +1764,11 @@ class RenameFilter(AbstractStreamingFilter):
         return [self._rename_column(column) for column in self.source.columns]
 
     def filter_row(self, row):
-        """Row will be rebuilt with proper columns."""
+        """@returns: a deep copy of the row's values"""
         return copy.copy(row.values)
 
     def _rename_column(self, column):
-        """Rename a column if requested."""
+        """@returns: a copy of the column object, with a new name if needed"""
         for spec in self.rename:
             if spec[0].match(column):
                 new_column = copy.deepcopy(spec[1])
@@ -1661,11 +1776,17 @@ class RenameFilter(AbstractStreamingFilter):
                     new_column.header = column.header
                 return new_column
         return copy.deepcopy(column)
+
     RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    """Regular expression for parsing a rename pattern"""
 
     @staticmethod
     def parse_rename(s):
-        """Parse a rename specification from the parameters."""
+        """Parse a rename specification from the parameters.
+        @param s: the specification to parse
+        @returns: a tuple with the old pattern to match and new column spec
+        @exception HXLFilterException: if the spec is not parseable
+        """
         if isinstance(s, six.string_types):
             result = re.match(RenameFilter.RENAME_PATTERN, s)
             if result:
@@ -1679,7 +1800,11 @@ class RenameFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a rename filter from a dict spec."""
+        """Create a rename filter from a dict spec.
+        @param source: the upstream data source
+        @param spec: the JSON-like filter specification
+        @returns: a L{RenameFilter} object
+        """
         return RenameFilter(
             source=source,
             rename=req_arg(spec, 'specs')
@@ -1688,7 +1813,7 @@ class RenameFilter(AbstractStreamingFilter):
     
 class FillDataFilter(AbstractStreamingFilter):
     """Fill empty cells in a dataset.
-    By default, fill all empty cells with the closest non-empty value in a preceeding row.
+    By default, fill all empty cells with the closest non-empty value in a previous row.
     Optionally restrict to specific columns and/or rows.
     """
 
@@ -1698,7 +1823,7 @@ class FillDataFilter(AbstractStreamingFilter):
         @param pattern: restrict filling to columns matching this tag pattern (default: fill all columns).
         @param queries: restrict filling to rows matching one of these queries (default: fill all rows).
         """
-        super(FillDataFilter, self).__init__(source)
+        super().__init__(source)
         if pattern:
             self.pattern = hxl.model.TagPattern.parse(pattern)
         else:
@@ -1708,7 +1833,7 @@ class FillDataFilter(AbstractStreamingFilter):
         self._indices = None
 
     def filter_row(self, row):
-        """Fill empty cells in the row."""
+        """@returns: row values with some empty values possibly filled in"""
         values = list(row.values)
 
         # Fill if there are no row queries, or this row matches one
@@ -1724,7 +1849,7 @@ class FillDataFilter(AbstractStreamingFilter):
     def _get_indices(self):
         """Get indices of columns to fill.
         If there's no column pattern, then fill all columns.
-        @return a set of indices for filling.
+        @returns: a set of indices for filling.
         """
         if not self._indices:
             self._indices = set()
@@ -1738,7 +1863,11 @@ class FillDataFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a fill-data filter from a dict spec."""
+        """Create a fill-data filter from a dict spec.
+        @param source: the upstream data source
+        @param spec: the JSON-like filter specification
+        @returns: a L{FillDataFilter} object
+        """
         return FillDataFilter(
             source=source,
             pattern=opt_arg(spec, 'pattern'),
@@ -1762,10 +1891,10 @@ class ReplaceDataFilter(AbstractStreamingFilter):
     def __init__(self, source, replacements, queries=[]):
         """
         Constructor
-        @param source the HXL data source
-        @param original a string or regular expression to replace (string must match the whole value, not just part)
-        @param replacements list of replacement objects
-        @param filters optional list of filter queries for rows where replacements should be applied.
+        @param source: the HXL data source
+        @param original: a string or regular expression to replace (string must match the whole value, not just part)
+        @param replacements: list of replacement objects
+        @param queries: optional list of filter queries for rows where replacements should be applied.
         """
         super(ReplaceDataFilter, self).__init__(source)
         self.replacements = replacements
@@ -1774,6 +1903,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         self.queries = hxl.model.RowQuery.parse_list(queries)
 
     def filter_row(self, row):
+        """@returns: the row values with replacements"""
         if hxl.model.RowQuery.match_list(row, self.queries):
             values = copy.copy(row.values)
             for index, value in enumerate(values):
@@ -1789,10 +1919,10 @@ class ReplaceDataFilter(AbstractStreamingFilter):
 
         def __init__(self, original, replacement, pattern=None, is_regex=False):
             """
-            @param original a string (case- and space-insensitive) or regular expression (sensitive) to replace
-            @param replacement the replacement string or regular expression substitution
-            @param pattern (optional) a tag pattern to limit the replacement to specific columns
-            @param is_regex (optional) True to use regular-expression processing (defaults to False)
+            @param original: a string (case- and space-insensitive) or regular expression (sensitive) to replace
+            @param replacement: the replacement string or regular expression substitution
+            @param pattern: (optional) a tag pattern to limit the replacement to specific columns
+            @param is_regex: (optional) True to use regular-expression processing (defaults to False)
             """
             self.original = original
             self.replacement = replacement
@@ -1807,9 +1937,9 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         def sub(self, column, value):
             """
             Substitute inside the value, if appropriate.
-            @param column the column definition
-            @param value the cell value
-            @return the value, possibly changed
+            @param column: the column definition
+            @param value: the cell value
+            @returns: the value, possibly changed
             """
             if self.pattern and not self.pattern.match(column):
                 return value
@@ -1835,7 +1965,11 @@ class ReplaceDataFilter(AbstractStreamingFilter):
 
     @staticmethod
     def _load(source, spec):
-        """Create a replace-data filter from a dict spec."""
+        """Create a replace-data filter from a dict spec.
+        @param source: the upstream data source
+        @param spec: a JSON-like filter specification
+        @returns: a L{ReplaceDataFilter} object
+        """
 
         replacements = []
 
@@ -1864,7 +1998,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         
 class RowCountFilter(AbstractStreamingFilter):
     """
-    Composable filter class to count lines.
+    Composable filter class to count lines (and nothing else)
 
     The output is identical to the input; the line count is
     stored in the filter itself.  As a result, there is no corresponding
@@ -1956,9 +2090,9 @@ class SortFilter(AbstractCachingFilter):
 
     def __init__(self, source, tags=[], reverse=False):
         """
-        @param source a HXL data source
-        @param tags list of TagPattern objects for sorting
-        @param reverse True to reverse the sort order
+        @param source: a HXL data source
+        @param tags: list of TagPattern objects for sorting
+        @param reverse: True to reverse the sort order
         """
         super(SortFilter, self).__init__(source)
         self.sort_tags = hxl.model.TagPattern.parse_list(tags)
@@ -1989,9 +2123,9 @@ class SortFilter(AbstractCachingFilter):
     def _make_key(self, indices, values):
         """
         Make a sort key from a an array of values.
-        @param indices - an array of indices for the sort key (if empty, use all values).
-        @param values - an array of values to sort
-        @return a sort key as a tuple
+        @param indices: an array of indices for the sort key (if empty, use all values).
+        @param values: an array of values to sort
+        @returns: a sort key as a tuple
         """
 
         key = []
@@ -2064,6 +2198,34 @@ LOAD_MAP = {
 }
 """Static functions for creating filters from dicts (from JSON, typically)."""
 
+
+def req_arg(spec, property):
+    """Get a required property, and raise an exception if missing.
+    @param spec: the JSON-like filter spec (a dict)
+    @param property: the property name to retrieve
+    @returns: the property value
+    @exception HXLFilterException: if the property is not present
+    """
+    value = spec.get(property)
+    if value is None:
+        raise HXLFilterException("Missing required property: \"{}\"".format(property))
+    return value
+
+
+def opt_arg(spec, property, default_value=None):
+    """Get an optional property, possibly with a default value.
+    @param spec: the JSON-like filter spec (a dict)(
+    @param property: the property name to retrieve
+    @param default_value: the default value to return if not found
+    @returns: the value if found, otherwise default_value/None
+    """
+    value = spec.get(property)
+    if value is None:
+        return default_value
+    else:
+        return value
+
+
 def from_recipe(source, recipe):
     """Build a filter chain from a JSON-like list of filter specs.
 
@@ -2074,9 +2236,8 @@ def from_recipe(source, recipe):
 
     @param source: a HXL data source, URL, etc.
     @param recipe: a list of dictionaries, each describing a filter.
-    @return: the filter at the end of the new chain.
+    @returns: the filter at the end of the new chain.
     """
-
     source = hxl.data(source)
 
     #
@@ -2108,7 +2269,7 @@ def is_sourcey(arg):
     """Convoluted method to try to distinguish a single HXL data source from a list of sources.
     Trying to recognise all the source types supported by hxl.io.make_input
     @param arg: the thing to test (we want to know if it's a single source or lists of sources)
-    @return: True if we think it's a single source; False otherwise.
+    @returns: True if we think it's a single source; False otherwise.
     """
 
     # Not a list
