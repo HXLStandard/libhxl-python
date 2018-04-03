@@ -6,7 +6,7 @@ October 2014
 License: Public Domain
 """
 
-import unittest
+import io, unittest
 import hxl
 from hxl.common import normalise_string
 from hxl.model import TagPattern, Column, Row, RowQuery
@@ -86,6 +86,10 @@ class TestDataset(unittest.TestCase):
 
     def setUp(self):
         self.source = hxl.data(DATA)
+
+    def test_cached(self):
+        dataset = hxl.model.Dataset()
+        self.assertFalse(dataset.is_cached)
 
     def test_headers(self):
         self.assertEqual(DATA[0], self.source.headers)
