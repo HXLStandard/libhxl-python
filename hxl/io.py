@@ -427,48 +427,61 @@ class CSVInput(AbstractInput):
 
 
 class JSONInput(AbstractInput):
-    """Read raw CSV input from a URL or filename."""
+    """Iterable: Read raw CSV input from an input stream.
+    The iterable values will be arrays usable as raw input for HXL.
+    """
 
     def __init__(self, input, encoding='utf-8', selector='hxl'):
+        """Constructor
+        The selector is used only if the top-level JSON is an object rather than an array.
+        @param input: an input stream
+        @param encoding: the default encoding to use (defaults to "utf-8")
+        @param selector: the default dictionary key for the HXL data (defaults to "hxl")
+        """
         super().__init__()
-        self._input = io.TextIOWrapper(input, encoding=encoding)
 
+        # values to be set by _scan_data_element
         self.type = None
         self.headers = []
         self.show_headers = False
-        self._encoding = encoding
 
-        # prepare data for iteration
-        last_exception = None
-        json_data = json.load(self._input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
+        # read the JSON data from the stream
+        with io.TextIOWrapper(input, encoding=encoding) as _input:
+            self.json_data = json.load(_input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
 
         if selector is not None and is_instance(data_element, dict):
-            if not self._scan_data_element(json_data):
+            # top level is a JSON object (dict); use the key provided to find HXL data
+            if not self._scan_data_element(self.json_data):
                 raise HXLParseException("Selected JSON data is not usable as HXL input (must be array of objects or array of arrays).")
         else:
-            if not self._scan_data_element(json_data):
-                json_data = self._search_data(json_data)
-            if json_data is None:
+            # top level is a JSON array; see if we can find HXL data in it
+            if not self._scan_data_element(self.json_data):
+                self.json_data = self._search_data(self.json_data)
+            if self.json_data is None:
                 raise HXLParseException("Could not usable JSON data (need array of objects or array of arrays)")
-                
-        self._scan_data_element(json_data)
-        self._iterator = iter(json_data)
 
-    def __exit__(self, value, type, traceback):
-        self._input.close()
+    def __iter__(self):
+        """@returns: an iterator over raw HXL data (arrays of scalar values)"""
+        return JSONInput.JSONIter(self)
 
     def _scan_data_element(self, data_element):
-        """Scan a data sequence to see if it's a list of lists or list of arrays."""
+        """Scan a data sequence to see if it's a list of lists or list of arrays.
+        @param data_element: JSON item to scan
+        @returns: True if this is usable as HXL input
+        """
 
         # JSON data must be an array at the top level
         if not hxl.common.is_list(data_element):
             return False
 
+        # scan the array to see if its elements are consistently arrays or objects
         for item in data_element:
             if isinstance(item, dict):
                 if self.type == 'array':
+                    # detect mixed values (array and object)
                     return False
                 else:
+                    # looking at objects
                     self.type = 'object'
                     self.show_headers = True
                     for key in item:
@@ -476,16 +489,21 @@ class JSONInput(AbstractInput):
                             self.headers.append(key)
             elif isinstance(item, collections.Sequence) and not isinstance(item, six.string_types):
                 if self.type == 'object':
+                    #detect mixed values (object and array)
                     return False
                 else:
+                    # looking at array
                     self.type = 'array'
             else:
+                # scalar value always fails (we need a JSON list of arrays or objects)
                 return False
-
-        return True
+        return True # if we haven't failed yet, then let's use this
 
     def _search_data(self, data):
-        """Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)"""
+        """Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)
+        @param data: top level of the JSON data to search
+        @returns: the 
+        """
 
         if hxl.common.is_list(data):
             data_in = data
@@ -494,39 +512,44 @@ class JSONInput(AbstractInput):
         else:
             return None
 
+        # search the current level
         for item in data_in:
             if self._scan_data_element(item):
                 return item
 
+        # recursively search the children
         for item in data_in:
             data_out = self._search_data(item)
             if data_out is not None:
                 return data_out
 
-        return None
-            
-    def __next__(self):
-        """Return the next row in a tabular view of the data."""
+        return None # didn't find anything
 
-        if self.show_headers:
-            # Add the header row first if reading an array of JSON objects
-            self.show_headers = False
-            row = self.headers
-        elif self.type == 'object':
-            # Construct a row in an array of JSON objects
-            obj = next(self._iterator)
-            row = [obj.get(header) for header in self.headers]
-        elif self.type == 'array':
-            # Simply dump a row in an array of JSON arrays
-            row =  next(self._iterator)
-            
-        return row
+    class JSONIter:
+        """Iterator over JSON data"""
 
+        def __init__(self, outer):
+            self.outer = outer
+            self._iterator = iter(self.outer.json_data)
+            
+        def __next__(self):
+            """Return the next row in a tabular view of the data."""
+            if self.outer.show_headers:
+                # Add the header row first if reading an array of JSON objects
+                self.outer.show_headers = False
+                row = self.outer.headers
+            elif self.outer.type == 'object':
+                # Construct a row in an array of JSON objects
+                obj = next(self._iterator)
+                row = [obj.get(header) for header in self.outer.headers]
+            elif self.outer.type == 'array':
+                # Simply dump a row in an array of JSON arrays
+                row =  next(self._iterator)
+            return row
 
 
 class ExcelInput(AbstractInput):
-    """
-    Iterable: Read raw XLS input from a URL or filename.
+    """Iterable: Read raw XLS input from a URL or filename.
     If sheet number is not specified, will scan for the first tab with a HXL tag row.
     """
 
