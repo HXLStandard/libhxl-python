@@ -398,7 +398,7 @@ class AbstractInput(object):
 
     def __init__(self):
         super().__init__()
-        self.is_cached = False
+        self.is_repeatable = False
 
     @abc.abstractmethod
     def __iter__(self):
@@ -561,7 +561,7 @@ class ExcelInput(AbstractInput):
         @param allow_local (optional) iff True, allow opening local files
         """
         super().__init__()
-        self.is_cached = True
+        self.is_repeatable = True
         try:
             self._workbook = xlrd.open_workbook(file_contents=input.read())
         finally:
@@ -632,7 +632,7 @@ class ArrayInput(AbstractInput):
     def __init__(self, data):
         super().__init__()
         self.data = data
-        self.is_cached = True
+        self.is_repeatable = True
 
     def __iter__(self):
         return iter(self.data)
@@ -664,19 +664,15 @@ class HXLReader(hxl.model.Dataset):
 
         """
         self._input = input
-        self._setup()
-        
-    def _setup(self):
-        """(Re)initialise the data"""
         self._iter = iter(self._input)
         self._columns = None
         self._source_row_number = -1
         self._row_number = -1
         self._raw_data = None
-
+        
     @property
     def is_cached(self):
-        return self._input.is_cached
+        return self._input.is_repeatable
 
     @property
     def columns(self):
