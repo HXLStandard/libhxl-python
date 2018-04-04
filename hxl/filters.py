@@ -258,8 +258,6 @@ class AbstractStreamingFilter(AbstractBaseFilter):
             # if we've finished the iteration, then we're out of rows, so stop
             raise StopIteration()
 
-        next = __next__
-
 
 class AbstractCachingFilter(AbstractBaseFilter):
     """Abstract base class for caching filters.
@@ -369,7 +367,6 @@ class AbstractCachingFilter(AbstractBaseFilter):
             self.row_number += 1
             return hxl.model.Row(self.outer.columns, next(self.values_iter), self.row_number)
         
-        next = __next__
 
 #
 # Utility classes
@@ -818,8 +815,6 @@ class AppendFilter(AbstractBaseFilter):
 
             raise StopIteration()
         
-        next = __next__
-
     @staticmethod
     def _load(source, spec):
         """Create an AppendFilter from a dict spec.

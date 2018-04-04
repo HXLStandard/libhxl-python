@@ -1,6 +1,7 @@
 2018-04-30 Release 4.7
 	- remove obsolete Python2 compatibility code
 	- add is_cached flag to hxl.model.Dataset and subclasses
+	- add reset() method to hxl.model.Dataset and subclasses
 	- update docstrings
 
 2018-03-29 Release 4.6

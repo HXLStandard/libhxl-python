@@ -400,12 +400,9 @@ class AbstractInput(object):
         super().__init__()
         self.is_cached = False
 
+    @abc.abstractmethod
     def __iter__(self):
         return self
-
-    @abc.abstractmethod
-    def __next__(self):
-        return
 
     def __enter__(self):
         return self
@@ -422,13 +419,11 @@ class CSVInput(AbstractInput):
         self._input = io.TextIOWrapper(input, encoding=encoding)
         self._reader = csv.reader(self._input)
 
-    def __next__(self):
-        return next(self._reader)
-
-    next = __next__
-
     def __exit__(self, value, type, traceback):
         self._input.close()
+
+    def __iter__(self):
+        return self._reader
 
 
 class JSONInput(AbstractInput):
@@ -458,6 +453,9 @@ class JSONInput(AbstractInput):
                 
         self._scan_data_element(json_data)
         self._iterator = iter(json_data)
+
+    def __exit__(self, value, type, traceback):
+        self._input.close()
 
     def _scan_data_element(self, data_element):
         """Scan a data sequence to see if it's a list of lists or list of arrays."""
@@ -524,15 +522,11 @@ class JSONInput(AbstractInput):
             
         return row
 
-    next = __next__
-
-    def __exit__(self, value, type, traceback):
-        self._input.close()
 
 
 class ExcelInput(AbstractInput):
     """
-    Read raw XLS input from a URL or filename.
+    Iterable: Read raw XLS input from a URL or filename.
     If sheet number is not specified, will scan for the first tab with a HXL tag row.
     """
 
@@ -554,12 +548,22 @@ class ExcelInput(AbstractInput):
         self._sheet = self._workbook.sheet_by_index(sheet_index)
 
     def __iter__(self):
-        return ExcelInput.Iter(self)
+        return ExcelInput.ExcelIter(self)
 
-    def __exit__(self, value, type, traceback):
-        pass
+    def _find_hxl_sheet_index(self):
+        """Scan for a tab containing a HXL dataset."""
+        for sheet_index in range(0, self._workbook.nsheets):
+            sheet = self._workbook.sheet_by_index(sheet_index)
+            for row_index in range(0, min(25, sheet.nrows)):
+                raw_row = [ExcelInput._fix_value(cell) for cell in sheet.row(row_index)]
+                # FIXME nasty violation of encapsulation
+                if HXLReader.parse_tags(raw_row):
+                    return sheet_index
+        # if no sheet has tags, default to the first one for now
+        return 0
 
-    def _fix_value(self, cell):
+    @staticmethod
+    def _fix_value(cell):
         """Clean up an Excel value for CSV-like representation."""
 
         if cell.value is None or cell.ctype == xlrd.XL_CELL_EMPTY:
@@ -583,19 +587,7 @@ class ExcelInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
-    def _find_hxl_sheet_index(self):
-        """Scan for a tab containing a HXL dataset."""
-        for sheet_index in range(0, self._workbook.nsheets):
-            sheet = self._workbook.sheet_by_index(sheet_index)
-            for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [self._fix_value(cell) for cell in sheet.row(row_index)]
-                # FIXME nasty violation of encapsulation
-                if HXLReader.parse_tags(raw_row):
-                    return sheet_index
-        # if no sheet has tags, default to the first one for now
-        return 0
-
-    class Iter:
+    class ExcelIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
         def __init__(self, outer):
@@ -604,7 +596,7 @@ class ExcelInput(AbstractInput):
             
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
-                row = [self.outer._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                row = [ExcelInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
                 self._row_index += 1
                 return row
             else:
@@ -612,7 +604,7 @@ class ExcelInput(AbstractInput):
 
 
 class ArrayInput(AbstractInput):
-    """Read raw input from an array."""
+    """Iterable: read raw input from an array."""
 
     def __init__(self, data):
         super().__init__()
@@ -663,16 +655,6 @@ class HXLReader(hxl.model.Dataset):
     def is_cached(self):
         return self._input.is_cached
 
-    def reset(self):
-        """Reset the dataset to start reading again.
-        @exception HXLIOException: if the dataset is not cached
-        @see: is_cached
-        """
-        if self._input.is_cached:
-            self._setup()
-        else:
-            raise hxl.HXLException("Input source is does not support reset (is_cached=False)")
-
     @property
     def columns(self):
         """
@@ -694,9 +676,6 @@ class HXLReader(hxl.model.Dataset):
         values = self._get_row()
         self._row_number += 1
         return hxl.model.Row(columns=columns, values=values, row_number=self._row_number)
-
-    # for compatibility
-    next = __next__
 
     def _find_tags(self):
         """
