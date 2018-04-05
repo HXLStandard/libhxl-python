@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class TagPattern(object):
-    """
-    Pattern for matching a tag.
-
+    """Pattern for matching a HXL hashtag and attributes
     #tag matches #tag with any attributes
     #tag+foo matches #tag with foo among its attributes
     #tag-foo matches #tag with foo *not* among its attributes
@@ -28,13 +26,20 @@ class TagPattern(object):
     PATTERN = r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
 
     def __init__(self, tag, include_attributes=[], exclude_attributes=[]):
-        """Like a column, but has a whitelist and a blacklist."""
+        """Like a column, but has a whitelist and a blacklist.
+        @param tag: the basic hashtag (without attributes)
+        @param include_attributes: a list of attributes that must be present
+        @param exclude_attributes: a list of attributes that must not be present
+        """
         self.tag = tag.lower()
         self.include_attributes = [a.lower() for a in include_attributes]
         self.exclude_attributes = [a.lower() for a in exclude_attributes]
 
     def match(self, column):
-        """Check whether a Column matches this pattern."""
+        """Check whether a Column matches this pattern.
+        @param column: the column to check
+        @returns: True if the column is a match
+        """
         if self.tag == column.tag:
             # all include_attributes must be present
             if self.include_attributes:
@@ -51,7 +56,10 @@ class TagPattern(object):
             return False
 
     def find_column_index(self, columns):
-        """Get the index of the first matching column."""
+        """Get the index of the first matching column.
+        @param columns: a list of columns to check
+        @returns: the 0-based index of the first matching column, or None for no match
+        """
         for i in range(len(columns)):
             if self.match(columns[i]):
                 return i
@@ -119,8 +127,7 @@ class TagPattern(object):
 
 
 class Dataset(object):
-    """
-    Abstract base class for a HXL data source.
+    """Abstract base class for a HXL data source.
 
     Any source of parsed HXL data inherits from this class: that
     includes Dataset, HXLReader, and the various filters in the
@@ -129,7 +136,7 @@ class Dataset(object):
     rows.
 
     The child class must implement the columns() method as a property
-    and the next() method to iterate through rows of data.
+    and the __iter__() method to make itself iterable.
     """
 
     __metaclass__ = abc.ABCMeta
@@ -140,53 +147,51 @@ class Dataset(object):
 
     @abc.abstractmethod
     def __iter__(self):
+        """Get the iterator over the rows.
+        @returns: an iterator that returns L{hxl.model.Row} objects
         """
-        Get the iterator over the rows.
-        """
-        return
+        raise RuntimeException("child class must implement __iter__() method")
 
     @property
     def is_cached(self):
         """Test whether the source data is cached (replayable).
         By default, this is False, but some subclasses may override.
-        @return: C{True} if the input is cached (replayable); C{False} otherwise.
+        @returns: C{True} if the input is cached (replayable); C{False} otherwise.
         """
         return False
 
     @property
     @abc.abstractmethod
     def columns(self):
+        """Get the column definitions for the dataset.
+        @returns: a list of Column objects.
         """
-        Get the column definitions for the dataset.
-        @return a list of Column objects.
-        """
-        return
+        raise RuntimeException("child class must implement columns property method")
 
     @property
     def headers(self):
-        """
-        Return a list of header strings (for a spreadsheet row).
+        """Return a list of header strings (for a spreadsheet row).
         """
         return [column.header if column else '' for column in self.columns]
 
     @property
     def tags(self):
-        """
-        Return a list of tags.
+        """Get all hashtags (without attributes) as a list
+        @returns: a list of base hashtags for the dataset columns
         """
         return [column.tag if column else '' for column in self.columns]
 
     @property
     def display_tags(self):
-        """
-        Return a list of display tags.
+        """Return a list of display tags.
+        @returns: a list of strings containing the hashtag and attributes for each column
         """
         return [column.display_tag if column else '' for column in self.columns]
 
     @property
     def has_headers(self):
-        """
-        Report whether any non-empty header strings exist.
+        """Report whether any non-empty header strings exist.
+        @returns: C{True} if there is at least one column with a non-empty header string
         """
         for column in self.columns:
             if column.header:
@@ -195,19 +200,18 @@ class Dataset(object):
 
     @property
     def values(self):
-        """
-        Get all values for the dataset at once, in an array of arrays.
+        """Get all values for the dataset at once, in an array of arrays.
         This method can be highly inefficient for large datasets.
+        @returns: an array of arrays of scalar values
         """
         return [row.values for row in self]
 
     def get_value_set(self, tag_pattern=None, normalise=False):
-        """
-        Return the set of all values in a dataset (optionally matching a tag pattern).
-        This method can be highly inefficient for large datasets.
-        @param tag_pattern (optional) return values only for columns matching this tag pattern.
-        @param normalise (optional) normalise the strings with hxl.common.normalise_string (default: False)
-        @return a Python set of values
+        """Return the set of all values in a dataset (optionally matching a tag pattern for a single column)
+        Warning: this method can be highly inefficient for large datasets.
+        @param tag_pattern: (optional) return values only for columns matching this tag pattern.
+        @param normalise: (optional) normalise the strings with hxl.common.normalise_string (default: False)
+        @returns: a Python set of values
         """
         value_set = set([])
         if tag_pattern:

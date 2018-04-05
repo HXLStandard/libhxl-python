@@ -639,67 +639,48 @@ class ArrayInput(AbstractInput):
 
 
 class HXLReader(hxl.model.Dataset):
-    """Read HXL data from a file
-
-    This class acts as both an iterator and a context manager. If
-    you're planning to pass a url or filename via the constructor's
-    url parameter, it's best to use it in a Python with statement to
-    make sure that the file gets closed again.
-
+    """Read HXL data from a raw input source
+    This class is an iterable.
+    @see: L{hxl.io.AbstractInput}
     """
 
     def __init__(self, input):
         """Constructor
-
-        The order of preference is to use raw_data if supplied; then
-        fall back to input (an already-open file object); then fall
-        back to opening the resource specified by url (URL or
-        filename) if all else fails. In the last case, the object can
-        serve as a context manager, and will close the opened file
-        resource in its __exit__ method.
-
-        @param input a Python file object.
-        @param raw_data an iterable over a series of string arrays.
-        @param url the URL or filename to open.
-
+        @param input: a child class of L{hxl.io.AbstractInput}
         """
         self._input = input
+        # TODO - for repeatable raw input, start a new iterator each time
+        # TODO - need to figure out how to handle columns in a repeatable situation
         self._iter = iter(self._input)
         self._columns = None
-        self._source_row_number = -1
-        self._row_number = -1
-        self._raw_data = None
+        self._source_row_number = -1 # TODO this belongs in the iterator
         
-    @property
-    def is_cached(self):
-        return self._input.is_repeatable
+    def __enter__(self):
+        """Context-start support."""
+        if self._input:
+            self._input.__enter__()
+        return self
 
-    @property
-    def columns(self):
-        """
-        Return a list of Column objects.
-        """
-        if self._columns is None:
-            self._columns = self._find_tags()
-        return self._columns
+    def __exit__(self, value, type, traceback):
+        """Context-end support."""
+        if self._input:
+            self._input.__exit__(value, type, traceback)
 
     def __iter__(self):
         return HXLReader.HXLIter(self)
 
-    class HXLIter:
+    @property
+    def is_cached(self):
+        """If the low-level input is repeatable, then the data is cached."""
+        return self._input.is_repeatable
 
-        def __init__(self, outer):
-            self.outer = outer
-
-        def __next__(self):
-            """
-            Iterable function to return the next row of HXL values.
-            Returns a Row, or raises StopIteration exception at end
-            """
-            columns = self.outer.columns
-            values = self.outer._get_row()
-            self.outer._row_number += 1
-            return hxl.model.Row(columns=columns, values=values, row_number=self.outer._row_number)
+    @property
+    def columns(self):
+        """Return a list of Column objects.
+        """
+        if self._columns is None:
+            self._columns = self._find_tags()
+        return self._columns
 
     def _find_tags(self):
         """
@@ -762,16 +743,22 @@ class HXLReader(hxl.model.Dataset):
         self._source_row_number += 1
         return next(self._iter)
 
-    def __enter__(self):
-        """Context-start support."""
-        if self._input:
-            self._input.__enter__()
-        return self
+    class HXLIter:
+        """Internal iterator class"""
+        
+        def __init__(self, outer):
+            self.outer = outer
+            self.row_number = -1
 
-    def __exit__(self, value, type, traceback):
-        """Context-end support."""
-        if self._input:
-            self._input.__exit__(value, type, traceback)
+        def __next__(self):
+            """ Iterable function to return the next row of HXL values.
+            @returns: a L{hxl.model.Row}
+            @exception StopIterationException: at the end of the dataset
+            """
+            columns = self.outer.columns
+            values = self.outer._get_row()
+            self.row_number += 1
+            return hxl.model.Row(columns=columns, values=values, row_number=self.row_number)
 
 
 def from_spec(spec):
