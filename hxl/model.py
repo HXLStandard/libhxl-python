@@ -230,23 +230,54 @@ class Dataset(object):
     # Aggregates
     #
 
+    def _get_minmax(self, pattern, op):
+        """Calculate the extreme min/max value for a tag pattern
+        Will iterate through the dataset, and use values from multiple matching columns.
+        Uses numbers, dates, or strings for comparison, based on the first non-empty value found.
+        @param pattern: the L{hxl.model.TagPattern} to match
+        @param op: operator_lt or operator_gt
+        @returns: the minimum value according to the '<' operator, or None if no values found
+        """
+        pattern = TagPattern.parse(pattern)
+        target_value = None
+        type = None
+        if pattern.tag == '#date':
+            type = 'date'
+        for row in self:
+            for value in row.get_all(pattern):
+                if hxl.common.is_empty(value):
+                    continue # don't care about empty cells
+                if type == 'date':
+                    try:
+                        value = dateutil.parser.parse(value)
+                    except ValueError:
+                        value = None
+                if type is None or type == 'number':
+                    try:
+                        value = float(value)
+                        type = 'number'
+                    except ValueError:
+                        if type == 'number': # not a number
+                            value = None
+                if type is None:
+                    type = 'string'
+                    value = str(value)
+                if value is not None:
+                    if target_value is None or op(value, target_value):
+                        target_value = value
+        if type == 'date' and target_value is not None:
+            target_value = str(target_value.date())
+        return target_value
+        
+
     def min(self, pattern):
         """Calculate the minimum value for a tag pattern
         Will iterate through the dataset, and use values from multiple matching columns.
-        Ignores non-numeric values.
+        Uses numbers, dates, or strings for comparison, based on the first non-empty value found.
         @param pattern: the L{hxl.model.TagPattern} to match
         @returns: the minimum value according to the '<' operator, or None if no values found
         """
-        min_value = None
-        for row in self:
-            for value in row.get_all(pattern):
-                try:
-                    value = float(value)
-                    if min_value is None or value < min_value:
-                        min_value = value
-                except ValueError:
-                    pass # not a number
-        return min_value
+        return self._get_minmax(pattern, operator.lt)
 
     def max(self, pattern):
         """Calculate the maximum value for a tag pattern
@@ -254,16 +285,7 @@ class Dataset(object):
         @param pattern: the L{hxl.model.TagPattern} to match
         @returns: the minimum value according to the '<' operator, or None if no values found
         """
-        max_value = None
-        for row in self:
-            for value in row.get_all(pattern):
-                try:
-                    value = float(value)
-                    if max_value is None or value > max_value:
-                        max_value = value
-                except ValueError:
-                    pass # not a number
-        return max_value
+        return self._get_minmax(pattern, operator.gt)
 
     #
     # Utility
@@ -873,10 +895,15 @@ class RowQuery(object):
         elif condition == 'not date':
             return (hxl.common.normalise_date(s) is False)
         elif condition in ('min', 'max',):
-            try:
-                return float(s) == aggregate_value
-            except ValueError:
+            if s is None:
                 return False
+            date_s = hxl.common.normalise_date(s)
+            if date_s:
+                return date_s == aggregate_value
+            elif hxl.common.is_number(s):
+                return float(s) == aggregate_value
+            else:
+                return str(s) == str(aggregate_value)
         else:
             raise hxl.common.HXLException('Unknown is condition: {}'.format(condition))
     

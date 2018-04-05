@@ -90,6 +90,14 @@ class TestDataset(unittest.TestCase):
     def test_min(self):
         self.assertEquals(100, self.source.min('#affected'))
 
+    def test_min_date(self):
+        DATA = [
+            ['#date'],
+            ['2018-01-01'],
+            ['1/1/2019']
+        ]
+        self.assertEquals('2018-01-01', hxl.data(DATA).min('#date'))
+
     def test_max(self):
         self.assertEquals(300, self.source.max('#affected'))
 
