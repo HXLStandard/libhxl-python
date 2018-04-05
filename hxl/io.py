@@ -684,17 +684,22 @@ class HXLReader(hxl.model.Dataset):
         return self._columns
 
     def __iter__(self):
-        return self
+        return HXLReader.HXLIter(self)
 
-    def __next__(self):
-        """
-        Iterable function to return the next row of HXL values.
-        Returns a Row, or raises StopIteration exception at end
-        """
-        columns = self.columns
-        values = self._get_row()
-        self._row_number += 1
-        return hxl.model.Row(columns=columns, values=values, row_number=self._row_number)
+    class HXLIter:
+
+        def __init__(self, outer):
+            self.outer = outer
+
+        def __next__(self):
+            """
+            Iterable function to return the next row of HXL values.
+            Returns a Row, or raises StopIteration exception at end
+            """
+            columns = self.outer.columns
+            values = self.outer._get_row()
+            self.outer._row_number += 1
+            return hxl.model.Row(columns=columns, values=values, row_number=self.outer._row_number)
 
     def _find_tags(self):
         """

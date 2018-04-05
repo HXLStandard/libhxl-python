@@ -247,7 +247,9 @@ class AbstractStreamingFilter(AbstractBaseFilter):
             """
             # call this here, in case it caches any useful information
             columns = self.outer.columns
-            for row in self.source_iter:
+            while True:
+                # a StopIterationException will terminate the loop
+                row = next(self.source_iter)
                 # get a new list of filtered values
                 values = self.outer.filter_row(row)
                 if values is not None:
@@ -255,8 +257,6 @@ class AbstractStreamingFilter(AbstractBaseFilter):
                     self.row_number += 1
                     # create a new Row object
                     return hxl.model.Row(columns, values, self.row_number)
-            # if we've finished the iteration, then we're out of rows, so stop
-            raise StopIteration()
 
 
 class AbstractCachingFilter(AbstractBaseFilter):
