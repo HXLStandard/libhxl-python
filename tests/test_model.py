@@ -371,4 +371,35 @@ class TestRowQuery(unittest.TestCase):
         self.assertTrue(RowQuery.parse("inneed>400").match_row(self.row))
         self.assertTrue(RowQuery.parse("inneed<600").match_row(self.row))
 
+    AGGREGATE_DATA = [
+        ['#adm1', '#affected'],
+        ['Coast', '100'],
+        ['Plains', '300'],
+        ['Mountains', '200']
+    ]
+
+    def test_is_min(self):
+        source = hxl.data(self.AGGREGATE_DATA).cache()
+        query = RowQuery.parse('#affected is min')
+        self.assertTrue(query.needs_aggregate)
+        query.calc_aggregate(source)
+        self.assertEquals(100, query.aggregate_value)
+        for row in source:
+            if query.match_row(row):
+                self.assertEqual(100, float(row.get('#affected')))
+            else:
+                self.assertNotEqual(100, float(row.get('#affected')))
+
+    def test_is_max(self):
+        source = hxl.data(self.AGGREGATE_DATA).cache()
+        query = RowQuery.parse('#affected is max')
+        self.assertTrue(query.needs_aggregate)
+        query.calc_aggregate(source)
+        self.assertEquals(300, query.aggregate_value)
+        for row in source:
+            if query.match_row(row):
+                self.assertEqual(300, float(row.get('#affected')))
+            else:
+                self.assertNotEqual(300, float(row.get('#affected')))
+
 # end

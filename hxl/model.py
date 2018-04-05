@@ -728,6 +728,7 @@ class RowQuery(object):
         self.value = value
         self.is_quantitative = is_quantitative
         self.aggregate_value = None
+        self.aggregate_is_calculated = False
         self._saved_indices = None
         self._date = None
         self._number = None
@@ -745,22 +746,29 @@ class RowQuery(object):
         """Test if the dataset needs a calculated aggregate value from a dataset.
         FIXME! this is ugly and breaks encapsulation
         """
-        return self.op == 'is' and self.value in ('min', 'max')
+        return (self.op == RowQuery.operator_is) and (self.value in ('min', 'max',))
 
-    def calc_aggregate(self, dataset, pattern):
+    def calc_aggregate(self, dataset):
         """Calculate the aggregate value that we need for the row query
         FIXME! this is ugly and breaks encapsulation
         This is currently needed only for "is min" and "is max"
         @param dataset: the HXL dataset to use (must be cached)
-        @param pattern: the tag pattern to use
         """
+        if not self.needs_aggregate:
+            logger.warning("no aggregate calculation needed")
+            return # no need to calculate
         if not dataset.is_cached:
             raise HXLException("need a cached dataset for calculating an aggregate value")
-        
-        
+        if self.value == 'min':
+            self.aggregate_value = dataset.min(self.pattern)
+        elif self.value == 'max':
+            self.aggregate_value = dataset.max(self.pattern)
+        self.aggregate_is_calculated = True
 
     def match_row(self, row):
         """Check if a key-value pair appears in a HXL row"""
+        if self.needs_aggregate and not self.aggregate_is_calculated:
+            raise HXLException("must call calc_aggregate before matching an 'is min' or 'is max' condition")
         indices = self._get_saved_indices(row.columns)
         length = len(row.values)
         for i in indices:
@@ -772,6 +780,11 @@ class RowQuery(object):
         """Try an operator as numeric first, then string"""
         # TODO add dates
         # TODO use knowledge about HXL tags
+        if self.aggregate_value is not None:
+            try:
+                return self.op(float(value), self.value, self.aggregate_value)
+            except ValueError:
+                pass
         if self._date is not None:
             try:
                 date_value = dateutil.parser.parse(str(value))
@@ -806,7 +819,7 @@ class RowQuery(object):
         parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.common.normalise_string(query), maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op = RowQuery.OPERATOR_MAP[parts[1]][0]
-        value = parts[2]
+        value = hxl.common.normalise_string(parts[2])
         is_quantitative = RowQuery.OPERATOR_MAP[parts[1]][1]
         return RowQuery(pattern, op, value, is_quantitative)
 
@@ -845,7 +858,7 @@ class RowQuery(object):
         return not re.search(pattern, s)
 
     @staticmethod
-    def operator_is(s, condition):
+    def operator_is(s, condition, aggregate_value=None):
         """Advanced tests"""
         if condition == 'empty':
             return hxl.common.is_empty(s)
@@ -859,6 +872,11 @@ class RowQuery(object):
             return (hxl.common.normalise_date(s) is not False)
         elif condition == 'not date':
             return (hxl.common.normalise_date(s) is False)
+        elif condition in ('min', 'max',):
+            try:
+                return float(s) == aggregate_value
+            except ValueError:
+                return False
         else:
             raise hxl.common.HXLException('Unknown is condition: {}'.format(condition))
     
