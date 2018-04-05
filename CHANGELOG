@@ -1,6 +1,6 @@
 2018-04-30 Release 4.7
 	- remove obsolete Python2 compatibility code
-	- add hxl.Dataset.min and hxl.Dataset.max aggregate methods
+	- add min and max methods to hxl.model.Dataset
 	- add is_cached flag to hxl.model.Dataset and subclasses
 	- updated all AbstractInput to be iterables rather than iterators
 	  (for repeatability)
