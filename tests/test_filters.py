@@ -871,6 +871,10 @@ class TestRowFilter(AbstractBaseFilterTest):
         self.assertEqual(DATA[3:], self.source.without_rows(['#sector=wash']).values)
         self.assertEqual(DATA[3:], self.source.without_rows('#sector=wash').values)
 
+    def test_aggregates(self):
+        self.assertEqual([DATA[4]], self.source.with_rows('#affected is max').values)
+        self.assertEqual([DATA[3]], self.source.with_rows('#affected is min').values)
+
     def test_masked(self):
         self.assertEqual(DATA[2:], self.source.with_rows('sector=education', mask='org=ngo b').values)
 

@@ -2047,6 +2047,15 @@ class RowFilter(AbstractStreamingFilter):
         self.mask = hxl.model.RowQuery.parse_list(mask)
         self.reverse = reverse
 
+        # Some queries need to run through the dataset first to calculate an aggregate value
+        cache_added = False
+        for query in self.queries:
+            if query.needs_aggregate:
+                if not cache_added:
+                    source = source.cache()
+                    cache_added = True
+                query.calc_aggregate(source)
+
     def filter_row(self, row):
         """Filter data row-wise."""
         if hxl.model.RowQuery.match_list(row, self.mask):
