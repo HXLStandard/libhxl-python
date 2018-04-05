@@ -87,6 +87,12 @@ class TestDataset(unittest.TestCase):
     def setUp(self):
         self.source = hxl.data(DATA)
 
+    def test_min(self):
+        self.assertEquals(100, self.source.min('#affected'))
+
+    def test_max(self):
+        self.assertEquals(300, self.source.max('#affected'))
+
     def test_cached(self):
         dataset = hxl.model.Dataset()
         self.assertFalse(dataset.is_cached)

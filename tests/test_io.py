@@ -54,25 +54,21 @@ class TestInput(unittest.TestCase):
 
     def test_array(self):
         self.assertTrue(make_input(DATA).is_repeatable)
-        self.assertTrue(hxl.data(DATA).is_cached)
         self.assertTrue('#sector' in hxl.data(DATA).tags)
 
     def test_csv(self):
         input = make_input(FILE_CSV, True)
         self.assertFalse(input.is_repeatable)
-        self.assertFalse(hxl.data(input).is_cached)
         self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_lists(self):
         input = make_input(FILE_JSON, True)
         self.assertFalse(input.is_repeatable)
-        self.assertFalse(hxl.data(input).is_cached)
         self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_objects(self):
         input = make_input(FILE_JSON_OBJECTS, True)
         self.assertFalse(input.is_repeatable)
-        self.assertFalse(hxl.data(input).is_cached)
         self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_excel(self):
@@ -82,12 +78,10 @@ class TestInput(unittest.TestCase):
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
         self.assertTrue('#vocab' in source.tags)
-        self.assertFalse(source.is_cached)
 
     def test_ckan_dataset(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list')
         self.assertTrue('#vocab' in source.tags)
-        self.assertFalse(source.is_cached)
 
 class TestUntaggedInput(unittest.TestCase):
 

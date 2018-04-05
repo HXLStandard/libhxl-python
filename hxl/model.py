@@ -226,6 +226,44 @@ class Dataset(object):
             value_set.update(new_values)
         return value_set
 
+    #
+    # Aggregates
+    #
+
+    def min(self, pattern):
+        """Calculate the minimum value for a tag pattern
+        Will iterate through the dataset, and use values from multiple matching columns.
+        Ignores non-numeric values.
+        @param pattern: the L{hxl.model.TagPattern} to match
+        @returns: the minimum value according to the '<' operator, or None if no values found
+        """
+        min_value = None
+        for row in self:
+            for value in row.get_all(pattern):
+                try:
+                    value = float(value)
+                    if min_value is None or value < min_value:
+                        min_value = value
+                except ValueError:
+                    pass # not a number
+        return min_value
+
+    def max(self, pattern):
+        """Calculate the maximum value for a tag pattern
+        Will iterate through the dataset, and use values from multiple matching columns.
+        @param pattern: the L{hxl.model.TagPattern} to match
+        @returns: the minimum value according to the '<' operator, or None if no values found
+        """
+        max_value = None
+        for row in self:
+            for value in row.get_all(pattern):
+                try:
+                    value = float(value)
+                    if max_value is None or value > max_value:
+                        max_value = value
+                except ValueError:
+                    pass # not a number
+        return max_value
 
     #
     # Utility
@@ -689,6 +727,7 @@ class RowQuery(object):
         self.op = op
         self.value = value
         self.is_quantitative = is_quantitative
+        self.aggregate_value = None
         self._saved_indices = None
         self._date = None
         self._number = None
@@ -700,6 +739,25 @@ class RowQuery(object):
                     self._number = float(value)
                 except ValueError:
                     pass
+
+    @property
+    def needs_aggregate(self):
+        """Test if the dataset needs a calculated aggregate value from a dataset.
+        FIXME! this is ugly and breaks encapsulation
+        """
+        return self.op == 'is' and self.value in ('min', 'max')
+
+    def calc_aggregate(self, dataset, pattern):
+        """Calculate the aggregate value that we need for the row query
+        FIXME! this is ugly and breaks encapsulation
+        This is currently needed only for "is min" and "is max"
+        @param dataset: the HXL dataset to use (must be cached)
+        @param pattern: the tag pattern to use
+        """
+        if not dataset.is_cached:
+            raise HXLException("need a cached dataset for calculating an aggregate value")
+        
+        
 
     def match_row(self, row):
         """Check if a key-value pair appears in a HXL row"""

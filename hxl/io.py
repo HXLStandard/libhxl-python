@@ -672,7 +672,8 @@ class HXLReader(hxl.model.Dataset):
     @property
     def is_cached(self):
         """If the low-level input is repeatable, then the data is cached."""
-        return self._input.is_repeatable
+        #return self._input.is_repeatable
+        return False # FIXME until we know that HXLReader is repeatable
 
     @property
     def columns(self):
