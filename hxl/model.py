@@ -251,9 +251,8 @@ class Dataset(object):
                         # special case for year
                         type = 'date'
                     else:
-                        value2 = hxl.datatypes.normalise_date(value)
-                        if value2:
-                            value = value2
+                        if hxl.datatypes.is_date(value):
+                            value = hxl.datatypes.normalise_date(value)
                             type = 'date'
                 if type is None or type == 'number':
                     try:
@@ -895,16 +894,15 @@ class RowQuery(object):
         elif condition == 'not number':
             return not hxl.datatypes.is_number(s)
         elif condition == 'date':
-            return (hxl.datatypes.normalise_date(s) is not False)
+            return (hxl.datatypes.is_date(s))
         elif condition == 'not date':
-            return (hxl.datatypes.normalise_date(s) is False)
+            return (hxl.datatypes.is_date(s) is False)
         elif condition in ('min', 'max',):
             if s is None:
                 return False
             elif use_date:
-                date_s = hxl.datatypes.normalise_date(s)
-                if date_s:
-                    return date_s == aggregate_value
+                if hxl.datatypes.is_date(s):
+                    return hxl.datatypes.normalise_date(s) == aggregate_value
             elif hxl.datatypes.is_number(s):
                 return float(s) == aggregate_value
             else:

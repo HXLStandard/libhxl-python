@@ -2156,9 +2156,8 @@ class SortFilter(AbstractCachingFilter):
         """
         norm = hxl.datatypes.normalise_string(value)
         if tag == '#date':
-            s = hxl.datatypes.normalise_date(norm)
-            if s is not False:
-                return (float('inf'), s)
+            if hxl.datatypes.is_date(norm):
+                return (float('inf'), hxl.datatypes.normalise_date(norm))
             else:
                 return (float('inf'), norm)
         else:

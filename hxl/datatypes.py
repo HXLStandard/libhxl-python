@@ -1,5 +1,5 @@
 """
-Utility functions for scalar data types
+Utility functions for testing and normalising scalar-ish data types
 
 @author: David Megginson
 @organization: UNOCHA
@@ -94,15 +94,43 @@ def is_date(v):
     except:
         return False
 
-def normalise_date(s):
+def normalise_date(v):
     """Normalise a string as a date.
     @param s: the string to normalise as a date
-    @returns: the date in ISO 8601 YYYY-mm-dd format, or False if we can't parse it as a date.
+    @returns: the date in ISO 8601 format or quarters (extension)
+    @exception ValueError: if value cannot be parsed as a date
+    @see: L{is_date}
     """
-    try:
-        return dateutil.parser.parse(s).strftime('%Y-%m-%d')
-    except:
-        return False
+
+    # First, try our quick ISO date pattern, extended to support quarter notation
+    result = ISO_DATE_PATTERN.match(v)
+    if result:
+        if result.group('quarter'):
+            # *not* real ISO 8601
+            return '{:04d}Q{:02d}'.format(
+                int(result.group('year')),
+                int(result.group('quarter'))
+            )
+        elif result.group('week'):
+            return '{:04d}W{:02d}'.format(
+                int(result.group('year')),
+                int(result.group('week'))
+            )
+        elif result.group('month'):
+            if result.group('day'):
+                return '{:04d}-{:02d}-{:02d}'.format(
+                    int(result.group('year')),
+                    int(result.group('month')),
+                    int(result.group('day')))
+            else:
+                return '{:04d}-{:02d}'.format(
+                    int(result.group('year')),
+                    int(result.group('day')))
+        else:
+            return '{:04d}'.format(int(result.group('year')))
+
+    # revert to full date parsing
+    return dateutil.parser.parse(v).strftime('%Y-%m-%d')
     
 
 def is_list(e):
