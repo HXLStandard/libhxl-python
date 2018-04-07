@@ -141,6 +141,23 @@ class AbstractBaseFilter(hxl.model.Dataset):
         """
         return self.source.columns
 
+    def _setup_queries(self, query_specs):
+        """Parse a list of query specs, and calculate aggregates when needed.
+        Side-effect: may replace self.source with a caching filter.
+        @param query_specs: a list of row-query string specs
+        @returns: a list of hxl.model.RowQuery objects, ready for use
+        """
+        queries = hxl.model.RowQuery.parse_list(query_specs)
+
+        # Some queries need to run through the dataset first to calculate an aggregate value
+        for query in queries:
+            if query.needs_aggregate:
+                if not self.source.is_cached:
+                    self.source = self.source.cache()
+                query.calc_aggregate(self.source)
+
+        return queries
+
     @staticmethod
     def _load (source, spec):
         """Create an instance of the filter from a dict.
@@ -715,7 +732,7 @@ class AppendFilter(AbstractBaseFilter):
         """The sources to append to this source"""
         self.add_columns = add_columns
         """If true, always add new columns instead of replacing existing ones"""
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
         """The row queries to limit where we choose append candidates"""
 
         # internal properties
@@ -990,7 +1007,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.number_format = number_format
         self.latlon = hxl.model.TagPattern.parse_list(latlon)
         self.purge = purge
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
 
     def filter_row(self, row):
         """@returns: cleaned row data"""
@@ -1286,7 +1303,7 @@ class CountFilter(AbstractCachingFilter):
         if not aggregators:
             aggregators = 'count() as Count#meta+count'
         self.aggregators = Aggregator.parse_list(aggregators)
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
 
     def filter_columns(self):
         """@returns: the filtered columns"""
@@ -1379,7 +1396,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
         super().__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.seen_map = set() # row signatures that we've seen so far
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
 
     def filter_row(self, row):
         """@returns: the row's values, or C{None} if it's a duplicate"""
@@ -1599,7 +1616,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         """If True, replace columns when possible"""
         self.overwrite = overwrite
         """If true, overwrite non-empty values in existing columns"""
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
         """Query to filter rows to be merged"""
         self._merge_indices = []
         """Indices for mapping columns from merge source to output dataset
@@ -1823,7 +1840,7 @@ class FillDataFilter(AbstractStreamingFilter):
             self.pattern = hxl.model.TagPattern.parse(pattern)
         else:
             self.pattern = None
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
         self._saved = {}
         self._indices = None
 
@@ -1895,7 +1912,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         self.replacements = replacements
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
 
     def filter_row(self, row):
         """@returns: the row values with replacements"""
@@ -2011,7 +2028,7 @@ class RowCountFilter(AbstractStreamingFilter):
     def __init__(self, source, queries=[]):
         super(RowCountFilter, self).__init__(source)
         self.row_count = 0
-        self.queries = hxl.model.RowQuery.parse_list(queries)
+        self.queries = self._setup_queries(queries)
 
     def filter_row(self, row):
         if hxl.model.RowQuery.match_list(row, self.queries):
@@ -2043,11 +2060,10 @@ class RowFilter(AbstractStreamingFilter):
         @param mask: a series of predicates to limit the rows to test (default: [] to test all)
         """
         super(RowFilter, self).__init__(source)
-        self.queries = hxl.model.RowQuery.parse_list(queries)
-        self.mask = hxl.model.RowQuery.parse_list(mask)
+        self.queries = self._setup_queries(queries)
+        self.mask = self._setup_queries(mask)
         self.reverse = reverse
 
-        # Some queries need to run through the dataset first to calculate an aggregate value
         for query in self.queries:
             if query.needs_aggregate:
                 if not self.source.is_cached:
