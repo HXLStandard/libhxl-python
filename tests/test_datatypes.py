@@ -78,3 +78,16 @@ class TestDates(unittest.TestCase):
         self.assertFalse(hxl.datatypes.is_date('Feb Feb 2017'))
         self.assertFalse(hxl.datatypes.is_date('13.13.2017'))
 
+    def test_normalise_iso_date(self):
+        self.assertEqual('2008', hxl.datatypes.normalise_date('2008'))
+        self.assertEqual('2008-01', hxl.datatypes.normalise_date('2008-01'))
+        self.assertEqual('2008-01', hxl.datatypes.normalise_date('2008-1'))
+        self.assertEqual('2008-01-01', hxl.datatypes.normalise_date('2008-01-01'))
+        self.assertEqual('2008-01-01', hxl.datatypes.normalise_date('2008-1-1'))
+        self.assertEqual('2008W01', hxl.datatypes.normalise_date('2008w1'))
+        self.assertEqual('2008Q1', hxl.datatypes.normalise_date('2008q1'))
+
+    def test_normalise_other_date(self):
+        self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('Jan 20, 2008'))
+        self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('01-20-2008'))
+        self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('20-01-2008'))

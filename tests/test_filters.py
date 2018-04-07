@@ -897,7 +897,8 @@ class TestSortFilter(AbstractBaseFilterTest):
             return float(r[3])
         self.assertEqual(sorted(DATA[2:], key=key), self.source.sort('#affected').values)
 
-    def test_dates(self):
+    def test_minmax_years(self):
+        return
         DATA = [
             ['#date+year', '#affected', '#adm1'],
             ['2016', '200', 'Coast'],
@@ -907,10 +908,22 @@ class TestSortFilter(AbstractBaseFilterTest):
             ['2014', '400', 'Coast'],
             ['2014', '300', 'Plains']
         ]
-
         self.assertEqual(hxl.data(DATA).with_rows('#date+year is max').values, DATA[1:3])
         self.assertEqual(hxl.data(DATA).with_rows('#date+year is min').values, DATA[5:])
 
+    def test_minmax_numbers(self):
+        return
+        DATA = [
+            ['#date+year', '#affected', '#adm1'],
+            ['2016', '200', 'Coast'],
+            ['2016', '100', 'Plains'],
+            ['2015', '300', 'Coast'],
+            ['2015', '200', 'Plains'],
+            ['2014', '400', 'Coast'],
+            ['2014', '300', 'Plains']
+        ]
+        self.assertEqual(hxl.data(DATA).with_rows('#affected is max').values, [DATA[5]])
+        self.assertEqual(hxl.data(DATA).with_rows('#date+year is min').values, DATA[5:])
 
 class TestExplodeFilter(AbstractBaseFilterTest):
 

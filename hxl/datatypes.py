@@ -8,7 +8,7 @@ Utility functions for testing and normalising scalar-ish data types
 @see: U{http://hxlstandard.org}
 """
 
-import collections, dateutil, re, six, unidecode
+import collections, datetime, dateutil, re, six, unidecode
 
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
@@ -21,6 +21,9 @@ WHITESPACE_PATTERN = re.compile('\s+', re.MULTILINE)
 ISO_DATE_PATTERN = re.compile('^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$', re.IGNORECASE)
 """Regular expression for basic ISO 8601 dates, plus extension to recognise quarters."""
 
+DEFAULT_DATE_1 = datetime.date(2015, 1, 1)
+
+DEFAULT_DATE_2 = datetime.date(2016, 2, 2)
 
 def is_empty(s):
     """Is this an empty value?
@@ -102,35 +105,41 @@ def normalise_date(v):
     @see: L{is_date}
     """
 
+    def make_date(year, quarter=None, month=None, week=None, day=None):
+        if quarter:
+            # *not* real ISO 8601
+            return '{:04d}Q{:01d}'.format(int(year), int(quarter))
+        elif week:
+            return '{:04d}W{:02d}'.format(int(year), int(week))
+        elif month:
+            if day:
+                return '{:04d}-{:02d}-{:02d}'.format(int(year), int(month), int(day))
+            else:
+                return '{:04d}-{:02d}'.format(int(year), int(month))
+        else:
+            return '{:04d}'.format(int(year))
+        
+
     # First, try our quick ISO date pattern, extended to support quarter notation
     result = ISO_DATE_PATTERN.match(v)
     if result:
-        if result.group('quarter'):
-            # *not* real ISO 8601
-            return '{:04d}Q{:02d}'.format(
-                int(result.group('year')),
-                int(result.group('quarter'))
-            )
-        elif result.group('week'):
-            return '{:04d}W{:02d}'.format(
-                int(result.group('year')),
-                int(result.group('week'))
-            )
-        elif result.group('month'):
-            if result.group('day'):
-                return '{:04d}-{:02d}-{:02d}'.format(
-                    int(result.group('year')),
-                    int(result.group('month')),
-                    int(result.group('day')))
-            else:
-                return '{:04d}-{:02d}'.format(
-                    int(result.group('year')),
-                    int(result.group('day')))
-        else:
-            return '{:04d}'.format(int(result.group('year')))
+        return make_date(
+            result.group('year'),
+            quarter=result.group('quarter'),
+            month=result.group('month'),
+            week=result.group('week'),
+            day=result.group('day')
+        )
 
     # revert to full date parsing
-    return dateutil.parser.parse(v).strftime('%Y-%m-%d')
+    # we parse the date twice, to detect any default values Python might have filled in
+    date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1)
+    date2 = dateutil.parser.parse(v, default=DEFAULT_DATE_2)
+    return make_date(
+        date1.year,
+        month=(date1.month if date1.month==date2.month else None),
+        day=(date1.day if date1.day==date2.day else None)
+    )
     
 
 def is_list(e):
