@@ -985,10 +985,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.upper = hxl.model.TagPattern.parse_list(upper)
         self.lower = hxl.model.TagPattern.parse_list(lower)
         self.date = hxl.model.TagPattern.parse_list(date)
-        if date_format is None:
-            self.date_format = '%Y-%m-%d'
-        else:
-            self.date_format = date_format
+        self.date_format = date_format
         self.number = hxl.model.TagPattern.parse_list(number)
         self.number_format = number_format
         self.latlon = hxl.model.TagPattern.parse_list(latlon)
@@ -1031,9 +1028,12 @@ class CleanDataFilter(AbstractStreamingFilter):
         # Date
         if self._match_patterns(self.date, column):
             if value:
-                try:
-                    value = dateutil.parser.parse(value).strftime(self.date_format)
-                except:
+                if hxl.datatypes.is_date(value):
+                    if self.date_format is not None:
+                        value = dateutil.parser.parse(value).strftime(self.date_format)
+                    else:
+                        value = hxl.datatypes.normalise_date(value)
+                else:
                     logger.warning('Cannot parse %s as a date', str(value))
                     if self.purge:
                         value = ''
