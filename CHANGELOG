@@ -1,10 +1,14 @@
 2018-04-30 Release 4.7
 	- remove obsolete Python2 compatibility code
+	- revamped date handling to support partial dates like "2018-01"
+	  or "2018", and also special notation like "2018W05" or "2018Q1"
 	- add min and max methods to hxl.model.Dataset
-	- add "is min" and "is max" support to hxl.model.RowQuery
+	- add "is (not) min" and "is (not) max" support to hxl.model.RowQuery
 	- add is_cached flag to hxl.model.Dataset and subclasses
 	- updated all AbstractInput to be iterables rather than iterators
 	  (for repeatability)
+	- removed hxl.common module and added hxl.datatypes, with
+	  more-consistent data checking/conversion
 	- update docstrings
 
 2018-03-29 Release 4.6
