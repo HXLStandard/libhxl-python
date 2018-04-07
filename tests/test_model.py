@@ -8,7 +8,7 @@ License: Public Domain
 
 import io, unittest
 import hxl
-from hxl.common import normalise_string
+from hxl.datatypes import normalise_string
 from hxl.model import TagPattern, Column, Row, RowQuery
 
 DATA = [
@@ -97,6 +97,14 @@ class TestDataset(unittest.TestCase):
             ['1/1/2019']
         ]
         self.assertEquals('2018-01-01', hxl.data(DATA).min('#date'))
+
+    def test_min_year(self):
+        DATA = [
+            ['#date'],
+            ['2018'],
+            ['2017']
+        ]
+        self.assertEquals('2017', hxl.data(DATA).min('#date'))
 
     def test_max(self):
         self.assertEquals(300, self.source.max('#affected'))

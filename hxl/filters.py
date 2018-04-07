@@ -37,17 +37,17 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import hxl, hxl.geo
+import hxl
 import abc, copy, dateutil.parser, json, logging, re, six, sys
 
 
 logger = logging.getLogger(__name__)
 
 
-class HXLFilterException(hxl.common.HXLException):
+class HXLFilterException(hxl.HXLException):
     """Base class for HXL filter exceptions.
 
-    This subclass of L{hxl.common.HXLException} exists only to make it
+    This subclass of L{hxl.HXLException} exists only to make it
     easier to distinguish filter-based exceptions in C{except:} clauses.
     """
 
@@ -437,14 +437,14 @@ class Aggregator(object):
             except:
                 logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
 
-    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for a tag pattern"""
     
-    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.common.TOKEN_PATTERN)
+    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for an output column pattern"""
 
     AGGREGATOR_PATTERN = r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(
-        token = hxl.common.TOKEN_PATTERN,
+        token = hxl.datatypes.TOKEN_PATTERN,
         tag = TAG_PATTERN,
         col = COL_PATTERN
     )
@@ -576,7 +576,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
         else:
             return values + self._subst(row, self.const_values)
 
-    _SUBST_PATTERN = '{{(#' + hxl.common.TOKEN_PATTERN + '(?:[+-]' + hxl.common.TOKEN_PATTERN + ')*)}}';
+    _SUBST_PATTERN = '{{(#' + hxl.datatypes.TOKEN_PATTERN + '(?:[+-]' + hxl.datatypes.TOKEN_PATTERN + ')*)}}';
     """Regular expression to parse a substitution pattern in the fixed contents for the new cell"""
 
     def _subst(self, row, const_values):
@@ -593,7 +593,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
             values.append(re.sub(AddColumnsFilter._SUBST_PATTERN, do_sub, value))
         return values
 
-    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Pattern for a string specification for a new column"""
 
     @staticmethod
@@ -1314,7 +1314,7 @@ class CountFilter(AbstractCachingFilter):
         # each item is a sequence containing a tuple of key values and an _Aggregator object
         for aggregate in self._aggregate_data():
             raw_data.append(
-                list(aggregate[0]) + [hxl.common.normalise_number(aggregator.value) if aggregator.value is not None else '' for aggregator in aggregate[1]]
+                list(aggregate[0]) + [hxl.datatypes.normalise_number(aggregator.value) if aggregator.value is not None else '' for aggregator in aggregate[1]]
             )
             
         return raw_data
@@ -1417,7 +1417,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
         key = []
         for i, value in enumerate(row.values):
             if self._is_key(row.columns[i]):
-                key.append(hxl.common.normalise_string(value))
+                key.append(hxl.datatypes.normalise_string(value))
         return tuple(key)
 
     @staticmethod
@@ -1669,7 +1669,7 @@ class MergeDataFilter(AbstractStreamingFilter):
             merge_values = self._merge_values.get(key)
             if merge_values:
                 for i, spec in enumerate(self._merge_indices):
-                    if spec[2] or hxl.common.is_empty(values[spec[1]]):
+                    if spec[2] or hxl.datatypes.is_empty(values[spec[1]]):
                         values[spec[1]] = merge_values[i]
 
         return values
@@ -1680,8 +1680,8 @@ class MergeDataFilter(AbstractStreamingFilter):
         """
         candidate_values = []
         for pattern in self.keys:
-            candidate_values.append(hxl.common.normalise_string(value) for value in row.get_all(pattern, default=''))
-        return [tuple(value) for value in hxl.common.list_product(candidate_values)]
+            candidate_values.append(hxl.datatypes.normalise_string(value) for value in row.get_all(pattern, default=''))
+        return [tuple(value) for value in list_product(candidate_values)]
 
     def _read_merge(self):
         """Read the second (merging) dataset into memory.
@@ -1772,7 +1772,7 @@ class RenameFilter(AbstractStreamingFilter):
                 return new_column
         return copy.deepcopy(column)
 
-    RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for parsing a rename pattern"""
 
     @staticmethod
@@ -1927,7 +1927,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
                 self.pattern = None
             self.is_regex = is_regex
             if not self.is_regex:
-                self.original = hxl.common.normalise_string(self.original)
+                self.original = hxl.datatypes.normalise_string(self.original)
 
         def sub(self, column, value):
             """
@@ -1940,7 +1940,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
                 return value
             elif self.is_regex:
                 return re.sub(self.original, self.replacement, str(value))
-            elif self.original == hxl.common.normalise_string(value):
+            elif self.original == hxl.datatypes.normalise_string(value):
                 return self.replacement
             else:
                 return value
@@ -2154,9 +2154,9 @@ class SortFilter(AbstractCachingFilter):
         and the original string value. This will ensure that numeric
         values sort properly, and string values sort after them.
         """
-        norm = hxl.common.normalise_string(value)
+        norm = hxl.datatypes.normalise_string(value)
         if tag == '#date':
-            s = hxl.common.normalise_date(norm)
+            s = hxl.datatypes.normalise_date(norm)
             if s is not False:
                 return (float('inf'), s)
             else:
@@ -2267,6 +2267,23 @@ def from_recipe(source, recipe):
         source = loader(source, spec)
         
     return source
+
+
+def list_product(lists, head=[]):
+    """Generate the cartesian product of a list of lists 
+    The elements of the result will be all possible combinations of the elements of
+    the input lists.
+    @param lists: a list of lists
+    @return: the cross-product of the lists
+    """
+    if lists:
+        result = []
+        for item in lists[0]:
+            tail = list_product(lists[1:], head + [item])
+            result = result + tail
+        return result
+    else:
+        return [head]
 
 
 def is_sourcey(arg):

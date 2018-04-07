@@ -6,7 +6,7 @@ February 2018
 License: Public Domain
 """
 
-import hxl.geo, unittest
+import hxl, unittest
 
 class TestLatLon(unittest.TestCase):
 

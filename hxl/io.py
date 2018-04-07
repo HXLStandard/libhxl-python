@@ -213,7 +213,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            logger.exception(hxl.common.HXLException(
+            logger.exception(hxl.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {
                     'input': input,
@@ -293,7 +293,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
 # Exported classes
 ########################################################################
 
-class HXLParseException(hxl.common.HXLException):
+class HXLParseException(hxl.HXLException):
     """
     A parsing error in a HXL dataset.
     """
@@ -471,7 +471,7 @@ class JSONInput(AbstractInput):
         """
 
         # JSON data must be an array at the top level
-        if not hxl.common.is_list(data_element):
+        if not hxl.datatypes.is_list(data_element):
             return False
 
         # scan the array to see if its elements are consistently arrays or objects
@@ -505,7 +505,7 @@ class JSONInput(AbstractInput):
         @returns: the 
         """
 
-        if hxl.common.is_list(data):
+        if hxl.datatypes.is_list(data):
             data_in = data
         elif isinstance(data, dict):
             data_in = data.values()
@@ -781,7 +781,7 @@ def from_spec(spec):
     recipe_spec = spec.get('recipe', [])
 
     if not input_spec:
-        raise hxl.common.HXLException("No input property specified.")
+        raise hxl.HXLException("No input property specified.")
 
     # set up the input
     input = make_input(

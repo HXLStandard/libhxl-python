@@ -23,7 +23,7 @@ class TagPattern(object):
     """
 
     # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
-    PATTERN = r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    PATTERN = r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
 
     def __init__(self, tag, include_attributes=[], exclude_attributes=[]):
         """Like a column, but has a whitelist and a blacklist.
@@ -90,7 +90,7 @@ class TagPattern(object):
 
         if not s:
             # edge case: null value
-            raise hxl.common.HXLException('Attempt to parse empty tag pattern')
+            raise hxl.HXLException('Attempt to parse empty tag pattern')
         elif isinstance(s, TagPattern):
             # edge case: already parsed
             return s
@@ -108,7 +108,7 @@ class TagPattern(object):
                     exclude_attributes.append(attribute_specs[i + 1])
             return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
         else:
-            raise hxl.common.HXLException('Malformed tag: ' + s)
+            raise hxl.HXLException('Malformed tag: ' + s)
 
     @staticmethod
     def parse_list(specs):
@@ -210,7 +210,7 @@ class Dataset(object):
         """Return the set of all values in a dataset (optionally matching a tag pattern for a single column)
         Warning: this method can be highly inefficient for large datasets.
         @param tag_pattern: (optional) return values only for columns matching this tag pattern.
-        @param normalise: (optional) normalise the strings with hxl.common.normalise_string (default: False)
+        @param normalise: (optional) normalise the strings with hxl.datatypes.normalise_string (default: False)
         @returns: a Python set of values
         """
         value_set = set([])
@@ -222,7 +222,7 @@ class Dataset(object):
             else:
                 new_values = row.values
             if normalise:
-                new_values = [hxl.common.normalise_string(s) for s in new_values]
+                new_values = [hxl.datatypes.normalise_string(s) for s in new_values]
             value_set.update(new_values)
         return value_set
 
@@ -241,17 +241,20 @@ class Dataset(object):
         pattern = TagPattern.parse(pattern)
         target_value = None
         type = None
-        if pattern.tag == '#date':
-            type = 'date'
         for row in self:
             for value in row.get_all(pattern):
-                if hxl.common.is_empty(value):
+                value = hxl.datatypes.normalise_string(value)
+                if hxl.datatypes.is_empty(value):
                     continue # don't care about empty cells
-                if type == 'date':
-                    try:
-                        value = dateutil.parser.parse(value)
-                    except ValueError:
-                        value = None
+                if pattern.tag == '#date' or type == 'date':
+                    if re.match(r'^\d\d\d\d$', value):
+                        # special case for year
+                        type = 'date'
+                    else:
+                        value2 = hxl.datatypes.normalise_date(value)
+                        if value2:
+                            value = value2
+                            type = 'date'
                 if type is None or type == 'number':
                     try:
                         value = float(value)
@@ -265,8 +268,6 @@ class Dataset(object):
                 if value is not None:
                     if target_value is None or op(value, target_value):
                         target_value = value
-        if type == 'date' and target_value is not None:
-            target_value = str(target_value.date())
         return target_value
         
 
@@ -495,7 +496,7 @@ class Column(object):
     """ 
 
     # Regular expression to match a HXL tag
-    PATTERN = r'^\s*(#{token})((?:\s*\+{token})*)\s*$'.format(token=hxl.common.TOKEN_PATTERN)
+    PATTERN = r'^\s*(#{token})((?:\s*\+{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
     __slots__ = ['tag', 'attributes', 'attribute_list', 'header']
@@ -596,7 +597,7 @@ class Column(object):
             return Column(tag=tag, attributes=attributes, header=header)
         else:
             if use_exception:
-                raise hxl.common.HXLException("Malformed tag expression: " + raw_string)
+                raise hxl.HXLException("Malformed tag expression: " + raw_string)
             else:
                 return None
 
@@ -750,6 +751,7 @@ class RowQuery(object):
         self.value = value
         self.is_quantitative = is_quantitative
         self.aggregate_value = None
+        self.aggregate_is_date = False
         self.aggregate_is_calculated = False
         self._saved_indices = None
         self._date = None
@@ -785,6 +787,8 @@ class RowQuery(object):
             self.aggregate_value = dataset.min(self.pattern)
         elif self.value == 'max':
             self.aggregate_value = dataset.max(self.pattern)
+        if self.pattern.tag == '#date':
+            self.aggregate_is_date = True
         self.aggregate_is_calculated = True
 
     def match_row(self, row):
@@ -804,7 +808,7 @@ class RowQuery(object):
         # TODO use knowledge about HXL tags
         if self.aggregate_value is not None:
             try:
-                return self.op(float(value), self.value, self.aggregate_value)
+                return self.op(float(value), self.value, self.aggregate_value, self.aggregate_is_date)
             except ValueError:
                 pass
         if self._date is not None:
@@ -819,8 +823,8 @@ class RowQuery(object):
                 return self.op(float(value), self._number)
             except ValueError:
                 pass
-        #raise Exception(hxl.common.normalise_string(value), hxl.common.normalise_string(self.value))
-        return self.op(hxl.common.normalise_string(value), hxl.common.normalise_string(self.value))
+        #raise Exception(hxl.datatypes.normalise_string(value), hxl.datatypes.normalise_string(self.value))
+        return self.op(hxl.datatypes.normalise_string(value), hxl.datatypes.normalise_string(self.value))
 
     def _get_saved_indices(self, columns):
         """Cache the column tests, so that we run them only once."""
@@ -838,10 +842,10 @@ class RowQuery(object):
         if isinstance(query, RowQuery):
             # already parsed
             return query
-        parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.common.normalise_string(query), maxsplit=1)
+        parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.datatypes.normalise_string(query), maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op = RowQuery.OPERATOR_MAP[parts[1]][0]
-        value = hxl.common.normalise_string(parts[2])
+        value = hxl.datatypes.normalise_string(parts[2])
         is_quantitative = RowQuery.OPERATOR_MAP[parts[1]][1]
         return RowQuery(pattern, op, value, is_quantitative)
 
@@ -880,32 +884,33 @@ class RowQuery(object):
         return not re.search(pattern, s)
 
     @staticmethod
-    def operator_is(s, condition, aggregate_value=None):
+    def operator_is(s, condition, aggregate_value=None, use_date=None):
         """Advanced tests"""
         if condition == 'empty':
-            return hxl.common.is_empty(s)
+            return hxl.datatypes.is_empty(s)
         elif condition == 'not empty':
-            return not hxl.common.is_empty(s)
+            return not hxl.datatypes.is_empty(s)
         elif condition == 'number':
-            return hxl.common.is_number(s)
+            return hxl.datatypes.is_number(s)
         elif condition == 'not number':
-            return not hxl.common.is_number(s)
+            return not hxl.datatypes.is_number(s)
         elif condition == 'date':
-            return (hxl.common.normalise_date(s) is not False)
+            return (hxl.datatypes.normalise_date(s) is not False)
         elif condition == 'not date':
-            return (hxl.common.normalise_date(s) is False)
+            return (hxl.datatypes.normalise_date(s) is False)
         elif condition in ('min', 'max',):
             if s is None:
                 return False
-            date_s = hxl.common.normalise_date(s)
-            if date_s:
-                return date_s == aggregate_value
-            elif hxl.common.is_number(s):
+            elif use_date:
+                date_s = hxl.datatypes.normalise_date(s)
+                if date_s:
+                    return date_s == aggregate_value
+            elif hxl.datatypes.is_number(s):
                 return float(s) == aggregate_value
             else:
                 return str(s) == str(aggregate_value)
         else:
-            raise hxl.common.HXLException('Unknown is condition: {}'.format(condition))
+            raise hxl.HXLException('Unknown is condition: {}'.format(condition))
     
 
     # Constant map of comparison operators

@@ -52,7 +52,7 @@ class Tagger(hxl.io.AbstractInput):
         if isinstance(specs, dict):
             # convert to list of tuples if needed
             specs = [(key, specs[key]) for key in specs]
-        self.specs = [(hxl.common.normalise_string(spec[0]), spec[1]) for spec in specs]
+        self.specs = [(hxl.datatypes.normalise_string(spec[0]), spec[1]) for spec in specs]
         self.default_tag = default_tag
         self.match_all = match_all
         self.input = iter(input)
@@ -67,7 +67,7 @@ class Tagger(hxl.io.AbstractInput):
                 self._found_tags = True
             else:
                 # if no match, through an exception
-                raise hxl.common.HXLException("Tagging failed")
+                raise hxl.HXLException("Tagging failed")
         if len(self._cache) > 0:
             # read from the cache, first
             return self._cache.pop(0)
@@ -97,7 +97,7 @@ class Tagger(hxl.io.AbstractInput):
         tags = []
         tag_count = 0
         for index, value in enumerate(raw_row):
-            value = hxl.common.normalise_string(value)
+            value = hxl.datatypes.normalise_string(value)
             for spec in self.specs:
                 if self._check_header(spec[0], value):
                     tags.append(spec[1])
@@ -132,7 +132,7 @@ class Tagger(hxl.io.AbstractInput):
     def __iter__(self):
         return self
 
-    _SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.common.TOKEN_PATTERN)
+    _SPEC_PATTERN = r'^(.+)(#{token}([+]{token})*)$'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular-expression pattern for matching a tagging specification as a string"""
 
     @staticmethod

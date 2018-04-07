@@ -32,7 +32,7 @@ def schema(origin=None, callback=None):
         return parse_schema(hxl.data(origin), callback)
 
 
-class HXLValidationException(hxl.common.HXLException):
+class HXLValidationException(hxl.HXLException):
     """Data structure to hold a HXL validation error."""
 
     def __init__(self, message, rule=None, value=None, row=None, column=None):
@@ -183,7 +183,7 @@ class SchemaRule(object):
     def _test_type(self, value, row, column):
         """Check the datatype."""
         if self.data_type == 'number':
-            if not hxl.common.is_number(value):
+            if not hxl.datatypes.is_number(value):
                 return self._report_error("Expected a number", value, row, column)
         elif self.data_type == 'url':
             pieces = urllib.parse.urlparse(value)

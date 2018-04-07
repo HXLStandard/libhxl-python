@@ -47,7 +47,28 @@ if sys.version_info < (3,):
 
 # Flatten out common items for easier access
 
-from hxl.common import HXLException
+class HXLException(Exception):
+    """Base class for all HXL-related exceptions."""
+
+    def __init__(self, message, data={}):
+        """Create a new HXL exception.
+
+        @param message: error message for the exception
+        @param data: dict of properties associated with the exception (default {})
+        """
+        super(Exception, self).__init__(message)
+
+        self.message = message
+        """The human-readable error message."""
+
+        self.data = data
+        """Additional properties related to the error."""
+
+    def __str__(self):
+        return "<HXLException: " + str(self.message) + ">"
+
+import hxl.geo
+import hxl.datatypes
 from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
 from hxl.io import data, tagger, HXLParseException, write_hxl, make_input, from_spec
 from hxl.validation import schema, HXLValidationException
