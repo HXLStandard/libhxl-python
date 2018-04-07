@@ -744,37 +744,32 @@ class Row(object):
 class RowQuery(object):
     """Query to execute against a row of HXL data."""
 
-    def __init__(self, pattern, op, value, is_quantitative=True):
+    def __init__(self, pattern, op, value, is_aggregate=False):
+        """Constructor
+        @param pattern: the L{TagPattern} to match in the row
+        @param op: the operator function to use for comparison
+        @param value: the value to compare against
+        @param is_aggregate: if True, the value is a special placeholder like "min" or "max" that needs to be calculated
+        """
         self.pattern = TagPattern.parse(pattern)
         self.op = op
         self.value = value
-        self.is_quantitative = is_quantitative
-        self.aggregate_value = None
-        self.aggregate_is_date = False
-        self.aggregate_is_calculated = False
-        self._saved_indices = None
-        self._date = None
-        self._number = None
-        if self.is_quantitative:
-            if pattern.tag == '#date':
-                self._date = dateutil.parser.parse(value)
-            else:
-                try:
-                    self._number = float(value)
-                except ValueError:
-                    pass
 
-    @property
-    def needs_aggregate(self):
-        """Test if the dataset needs a calculated aggregate value from a dataset.
-        FIXME! this is ugly and breaks encapsulation
-        """
-        return (self.op == RowQuery.operator_is) and (self.value in ('min', 'max',))
+        self.is_aggregate=is_aggregate
+        self.needs_aggregate = False
+        """Need to calculate an aggregate value"""
+        
+        if is_aggregate:
+            self.needs_aggregate = True
+
+        # calculate later
+        self.date_value = None
+        self.number_value = None
+        self._saved_indices = None
 
     def calc_aggregate(self, dataset):
         """Calculate the aggregate value that we need for the row query
-        FIXME! this is ugly and breaks encapsulation
-        This is currently needed only for "is min" and "is max"
+        Substitute the special values "min" and "max" with aggregates.
         @param dataset: the HXL dataset to use (must be cached)
         """
         if not self.needs_aggregate:
@@ -783,56 +778,58 @@ class RowQuery(object):
         if not dataset.is_cached:
             raise HXLException("need a cached dataset for calculating an aggregate value")
         if self.value == 'min':
-            self.aggregate_value = dataset.min(self.pattern)
+            self.value = dataset.min(self.pattern)
+            self.op = operator.eq
         elif self.value == 'max':
-            self.aggregate_value = dataset.max(self.pattern)
-        if self.pattern.tag == '#date':
-            self.aggregate_is_date = True
-        self.aggregate_is_calculated = True
-
+            self.value = dataset.max(self.pattern)
+            self.op = operator.eq
+        elif self.value == 'not min':
+            self.value = dataset.min(self.pattern)
+            self.op = operator.ne
+        elif self.value == 'not max':
+            self.value = dataset.max(self.pattern)
+            self.op = operator.ne
+        else:
+            raise HXLException("Unrecognised aggregate: {}".format(value))
+        self.needs_aggregate = False
+                               
     def match_row(self, row):
         """Check if a key-value pair appears in a HXL row"""
+
+        # fail if we need an aggregate and haven't calculated it
         if self.needs_aggregate and not self.aggregate_is_calculated:
             raise HXLException("must call calc_aggregate before matching an 'is min' or 'is max' condition")
+
+        # initialise is this is the first time matching for the row query
+        if self._saved_indices is None:
+            if self.pattern.tag == '#date' and hxl.datatypes.is_date(self.value):
+                self.date_value = hxl.datatypes.normalise_date(self.value)
+            elif hxl.datatypes.is_number(self.value):
+                self.number_value = hxl.datatypes.normalise_number(self.value)
+
+        # try all the matching column values
         indices = self._get_saved_indices(row.columns)
-        length = len(row.values)
         for i in indices:
-            if i < length and row.values[i] and self.match_value(row.values[i]):
-                    return True
+            if i < len(row.values) and row.values[i] and self.match_value(row.values[i], self.op):
+                return True
         return False
 
-    def match_value(self, value):
-        """Try an operator as numeric first, then string"""
-        # TODO add dates
-        # TODO use knowledge about HXL tags
-        if self.aggregate_value is not None:
-            try:
-                return self.op(float(value), self.value, self.aggregate_value, self.aggregate_is_date)
-            except ValueError:
-                pass
-        if self._date is not None:
-            try:
-                date_value = dateutil.parser.parse(str(value))
-                if date_value:
-                    return self.op(date_value, self._date)
-            except ValueError:
-                pass
-        if self._number is not None:
-            try:
-                return self.op(float(value), self._number)
-            except ValueError:
-                pass
-        #raise Exception(hxl.datatypes.normalise_string(value), hxl.datatypes.normalise_string(self.value))
-        return self.op(hxl.datatypes.normalise_string(value), hxl.datatypes.normalise_string(self.value))
+    def match_value(self, value, op):
+        """Try matching as dates, then as numbers, then as simple strings"""
+        if self.date_value is not None and hxl.datatypes.is_date(value):
+            return op(hxl.datatypes.normalise_date(value), self.date_value)
+        elif self.number_value is not None and hxl.datatypes.is_number(value):
+            return op(hxl.datatypes.normalise_number(value), self.number_value)
+        else:
+            return self.op(hxl.datatypes.normalise_string(value), hxl.datatypes.normalise_string(self.value))
 
     def _get_saved_indices(self, columns):
         """Cache the column tests, so that we run them only once."""
         # FIXME - assuming that the columns never change
-        if self._saved_indices is None:
-            self._saved_indices = []
-            for i in range(len(columns)):
-                if self.pattern.match(columns[i]):
-                    self._saved_indices.append(i)
+        self._saved_indices = []
+        for i in range(len(columns)):
+            if self.pattern.match(columns[i]):
+                self._saved_indices.append(i)
         return self._saved_indices
 
     @staticmethod
@@ -843,10 +840,14 @@ class RowQuery(object):
             return query
         parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.datatypes.normalise_string(query), maxsplit=1)
         pattern = TagPattern.parse(parts[0])
-        op = RowQuery.OPERATOR_MAP[parts[1]][0]
+        op_name = hxl.datatypes.normalise_string(parts[1])
+        op = RowQuery.OPERATOR_MAP.get(op_name)
         value = hxl.datatypes.normalise_string(parts[2])
-        is_quantitative = RowQuery.OPERATOR_MAP[parts[1]][1]
-        return RowQuery(pattern, op, value, is_quantitative)
+        is_aggregate = False
+        # special handling for aggregates (FIXME)
+        if op_name == 'is' and value in ('min', 'max', 'not min', 'not max'):
+            is_aggregate = True
+        return RowQuery(pattern, op, value, is_aggregate)
 
     @staticmethod
     def parse_list(queries):
@@ -883,8 +884,12 @@ class RowQuery(object):
         return not re.search(pattern, s)
 
     @staticmethod
-    def operator_is(s, condition, aggregate_value=None, use_date=None):
-        """Advanced tests"""
+    def operator_is(s, condition):
+        """Advanced tests
+        Note: this won't be called for aggregate values like "is min" or "is not max";
+        for these, the aggregate will already be calculated, and a simple comparison
+        operator substituted by L{calc_aggregate}.
+        """
         if condition == 'empty':
             return hxl.datatypes.is_empty(s)
         elif condition == 'not empty':
@@ -897,36 +902,25 @@ class RowQuery(object):
             return (hxl.datatypes.is_date(s))
         elif condition == 'not date':
             return (hxl.datatypes.is_date(s) is False)
-        elif condition in ('min', 'max',):
-            if s is None:
-                return False
-            elif use_date:
-                if hxl.datatypes.is_date(s):
-                    return hxl.datatypes.normalise_date(s) == aggregate_value
-            elif hxl.datatypes.is_number(s):
-                return float(s) == aggregate_value
-            else:
-                return str(s) == str(aggregate_value)
         else:
             raise hxl.HXLException('Unknown is condition: {}'.format(condition))
     
 
     # Constant map of comparison operators
-    # Second value is true for a quantitative operator like <, false for a non-quantitative one like ~
     OPERATOR_MAP = {
-        '=': (operator.eq, True),
-        '!=': (operator.ne, True),
-        '<': (operator.lt, True),
-        '<=': (operator.le, True),
-        '>': (operator.gt, True),
-        '>=': (operator.ge, True),
+        '=': operator.eq,
+        '!=': operator.ne,
+        '<': operator.lt,
+        '<=': operator.le,
+        '>': operator.gt,
+        '>=': operator.ge,
     }
 
 
 # Extra static initialisation
-RowQuery.OPERATOR_MAP['~'] = (RowQuery.operator_re, False)
-RowQuery.OPERATOR_MAP['!~'] = (RowQuery.operator_nre, False)
-RowQuery.OPERATOR_MAP['is'] = (RowQuery.operator_is, False)
+RowQuery.OPERATOR_MAP['~'] = RowQuery.operator_re
+RowQuery.OPERATOR_MAP['!~'] = RowQuery.operator_nre
+RowQuery.OPERATOR_MAP['is'] = RowQuery.operator_is
 
 
 # end

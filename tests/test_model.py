@@ -399,7 +399,7 @@ class TestRowQuery(unittest.TestCase):
         query = RowQuery.parse('#affected is min')
         self.assertTrue(query.needs_aggregate)
         query.calc_aggregate(source)
-        self.assertEquals(100, query.aggregate_value)
+        self.assertEquals(100, query.value)
         for row in source:
             if query.match_row(row):
                 self.assertEqual(100, float(row.get('#affected')))
@@ -411,7 +411,7 @@ class TestRowQuery(unittest.TestCase):
         query = RowQuery.parse('#affected is max')
         self.assertTrue(query.needs_aggregate)
         query.calc_aggregate(source)
-        self.assertEquals(300, query.aggregate_value)
+        self.assertEquals(300, query.value)
         for row in source:
             if query.match_row(row):
                 self.assertEqual(300, float(row.get('#affected')))

@@ -2048,16 +2048,17 @@ class RowFilter(AbstractStreamingFilter):
         self.reverse = reverse
 
         # Some queries need to run through the dataset first to calculate an aggregate value
-        cache_added = False
         for query in self.queries:
             if query.needs_aggregate:
-                if not cache_added:
-                    source = source.cache()
-                    cache_added = True
-                query.calc_aggregate(source)
+                if not self.source.is_cached:
+                    self.source = self.source.cache()
+                query.calc_aggregate(self.source)
 
     def filter_row(self, row):
-        """Filter data row-wise."""
+        """Filter data row-wise.
+        @param row: the row to filter
+        @returns: the row's values as an array, or None if it fails the filters
+        """
         if hxl.model.RowQuery.match_list(row, self.mask):
             if not hxl.model.RowQuery.match_list(row, self.queries, self.reverse):
                 return None
