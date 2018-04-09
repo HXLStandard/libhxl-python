@@ -125,19 +125,38 @@ class SchemaRule(object):
                 if value:
                     number_seen += 1
         if self.required and number_seen < 1:
+            empty_column = None
+            for column in row.columns:
+                if self.tag_pattern.match(column):
+                    # we want the first one
+                    empty_column = column
+                    break
             result = self._report_error(
                 'A value for {} was required.'.format(self.tag_pattern),
-                row = row
+                row=row,
+                column=empty_column
                 )
         if self.min_occur is not None and number_seen < self.min_occur:
+            empty_column = None
+            for column in row.columns:
+                if self.tag_pattern.match(column):
+                    # we want the last one
+                    empty_column = column
             result = self._report_error(
                 "Expected at least " + str(self.min_occur) + " instance(s) but found " + str(number_seen),
-                row = row
+                row=row,
+                column=empty_column
                 )
         if self.max_occur is not None and number_seen > self.max_occur:
+            non_empty_column = None
+            for column in row.columns:
+                if self.tag_pattern.match(column):
+                    # any one will do
+                    non_empty_column = column
             result = self._report_error(
                 "Expected at most " + str(self.max_occur) + " instance(s) but found " + str(number_seen),
-                row = row
+                row=row,
+                column=non_empty_column
                 )
         return result
 
