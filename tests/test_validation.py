@@ -226,7 +226,7 @@ class TestValidateDataset(unittest.TestCase):
         self.assertDatasetErrors(DATASET[:3], 0)
         self.assertDatasetErrors(DATASET, 1)
 
-    def test_unique_combo(self):
+    def test_unique_compound(self):
         SCHEMA = [
             ['#valid_tag', '#valid_unique+key'],
             ['#org', 'org,sector,adm1']
