@@ -70,6 +70,7 @@ class SchemaRule(object):
         self.unique = unique
         if unique_key:
             self.unique_key = hxl.model.TagPattern.parse_list(unique_key)
+            self.unique_key.append(self.tag_pattern) # just in case
         else:
             self.unique_key = None
 
