@@ -15,43 +15,8 @@ import hxl
 from hxl.model import Column, Row
 from hxl.validation import Schema, SchemaRule
 
-class TestSchema(unittest.TestCase):
-    """Test the hxl.validation.Schema class."""
 
-    def setUp(self):
-        self.errors = []
-        self.schema = Schema(
-            rules=[
-                SchemaRule('#sector', min_occur=1),
-                SchemaRule('#affected', data_type='number')
-                ],
-            callback = lambda error: self.errors.append(error)
-            )
-        self.row = Row(
-            columns = [
-                Column(tag='#affected'),
-                Column(tag='#sector'),
-                Column(tag='#sector')
-            ]
-        )
-
-    def test_row(self):
-        self.try_schema(['35', 'WASH', ''])
-        self.try_schema(['35', 'WASH', 'Health'])
-
-        self.try_schema(['35', '', ''], 1)
-        self.try_schema(['abc', 'WASH', ''], 2)
-
-    def try_schema(self, row_values, errors_expected = 0):
-        self.row.values = row_values
-        if errors_expected == 0:
-            self.assertTrue(self.schema.validate_row(self.row))
-        else:
-            self.assertFalse(self.schema.validate_row(self.row))
-        self.assertEqual(len(self.errors), errors_expected)
-        
-
-class TestSchemaRule(unittest.TestCase):
+class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class."""
 
     def setUp(self):
@@ -170,7 +135,43 @@ class TestSchemaRule(unittest.TestCase):
         self.assertEqual(len(self.errors), errors_expected)
 
 
-class TestSchemaLoad(unittest.TestCase):
+class TestValidate(unittest.TestCase):
+    """Test the hxl.validation.Schema class."""
+
+    def setUp(self):
+        self.errors = []
+        self.schema = Schema(
+            rules=[
+                SchemaRule('#sector', min_occur=1),
+                SchemaRule('#affected', data_type='number')
+                ],
+            callback = lambda error: self.errors.append(error)
+            )
+        self.row = Row(
+            columns = [
+                Column(tag='#affected'),
+                Column(tag='#sector'),
+                Column(tag='#sector')
+            ]
+        )
+
+    def test_row(self):
+        self.try_schema(['35', 'WASH', ''])
+        self.try_schema(['35', 'WASH', 'Health'])
+
+        self.try_schema(['35', '', ''], 1)
+        self.try_schema(['abc', 'WASH', ''], 2)
+
+    def try_schema(self, row_values, errors_expected = 0):
+        self.row.values = row_values
+        if errors_expected == 0:
+            self.assertTrue(self.schema.validate_row(self.row))
+        else:
+            self.assertFalse(self.schema.validate_row(self.row))
+        self.assertEqual(len(self.errors), errors_expected)
+        
+
+class TestLoad(unittest.TestCase):
     """Test schema I/O support."""
 
     def test_load_default(self):
