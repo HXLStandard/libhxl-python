@@ -3,6 +3,8 @@
 	- revamped date handling to support partial dates like "2018-01"
 	  or "2018", and also special notation like "2018W05" or "2018Q1"
 	- add min and max methods to hxl.model.Dataset
+	- HXL validation now accepts all parseable date formats
+	- HXL validation now has a unique constraint (single value)
 	- add "is (not) min" and "is (not) max" support to hxl.model.RowQuery
 	- add is_cached flag to hxl.model.Dataset and subclasses
 	- updated all AbstractInput to be iterables rather than iterators

@@ -47,7 +47,7 @@ class SchemaRule(object):
                  data_type=None, min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=True,
                  callback=None, severity="error", description=None,
-                 required=False):
+                 required=False, unique=False):
         if type(tag) is hxl.TagPattern:
             self.tag_pattern = tag
         else:
@@ -67,6 +67,8 @@ class SchemaRule(object):
         self.severity = severity
         self.description = description
         self.required = required
+        self.unique = unique
+        self._unique_value_map = {}
 
     def validate_columns(self, columns):
         """Test whether the columns are present to satisfy this rule."""
@@ -163,6 +165,8 @@ class SchemaRule(object):
             result = False
         if not self._test_enumeration(value, row, column):
             result = False
+        if not self._test_unique(value, row, column):
+            result = False
 
         return result
 
@@ -196,8 +200,8 @@ class SchemaRule(object):
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
                 return self._report_error("Expected a phone number", value, row, column)
         elif self.data_type == 'date':
-            if not re.match(r'^\d\d\d\d(?:-[01]\d(?:-[0-3]\d)?)?$', value):
-                return self._report_error("Expected an ISO date (YYYY, YYYY-MM, or YYYY-MM-DD)", value, row, column)
+            if not hxl.datatypes.is_date(value):
+                return self._report_error("Expected a date of some sort", value, row, column)
         
         return True
 
@@ -241,6 +245,25 @@ class SchemaRule(object):
                         return self._report_error("Must be one of " + str(self.enum) + " (case-insensitive)", value, row, column)
                     else:
                         return self._report_error("Not in allowed values", value, row, column)
+        return True
+
+    def _test_unique(self, value, row, column):
+        """Report if a value is not unique for a specific hashtag"""
+        if self.unique:
+            if self.tag_pattern.tag == '#date' and hxl.datatypes.is_date(value):
+                normalised_value = hxl.datatypes.to_date(value)
+            elif hxl.datatypes.is_number(value):
+                normalised_value = hxl.datatypes.to_number(value)
+            else:
+                normalised_value = hxl.datatypes.normalise_string(value)
+            if self._unique_value_map.get(normalised_value):
+                return self._report_error(
+                    "Found duplicate value " + str(value),
+                    row=row,
+                    column=column
+                )
+            else:
+                    self._unique_value_map[normalised_value] = True
         return True
 
     def __str__(self):
@@ -380,6 +403,7 @@ class Schema(object):
                 rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
                 rule.required = to_boolean(row.get('#valid_required-min-max'))
+                rule.unique = to_boolean(row.get('#valid_unique'))
                 rule.severity = row.get('#valid_severity') or 'error'
                 rule.description = row.get('#description')
 
@@ -401,6 +425,7 @@ class Schema(object):
 #
 def schema(source=None, callback=None):
     """Convenience method for making a schema
+    Imported into __init__, and usually called as hxl.schema(source, callback).
     The callback, if provided, will receive a HXLValidationException object for each error
     @param source: something that can be used as a HXL data source
     @param callback: the validation callback function to use

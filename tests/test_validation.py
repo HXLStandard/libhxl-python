@@ -135,41 +135,109 @@ class TestRule(unittest.TestCase):
         self.assertEqual(len(self.errors), errors_expected)
 
 
-class TestValidate(unittest.TestCase):
+class TestValidateRow(unittest.TestCase):
     """Test the hxl.validation.Schema class."""
 
-    def setUp(self):
-        self.errors = []
-        self.schema = Schema(
-            rules=[
-                SchemaRule('#sector', min_occur=1),
-                SchemaRule('#affected', data_type='number')
-                ],
-            callback = lambda error: self.errors.append(error)
-            )
-        self.row = Row(
-            columns = [
-                Column(tag='#affected'),
-                Column(tag='#sector'),
-                Column(tag='#sector')
-            ]
+    DEFAULT_COLUMNS = ['#affected', '#sector', '#sector', '#sector']
+
+    DEFAULT_SCHEMA = [
+        ['#valid_tag', '#valid_datatype', '#valid_required+min', '#valid_required+max'],
+        ['#sector', '', '1', '2'],
+        ['#affected', 'number', '', '']
+    ]
+
+    def test_minmax(self):
+        # sector is allowed 1 or 2 times
+        self.assertRowErrors(['35', '', '', ''], 1)
+        self.assertRowErrors(['35', 'WASH', '', ''], 0)
+        self.assertRowErrors(['35', 'WASH', 'Health', ''], 0)
+        self.assertRowErrors(['35', 'WASH', 'Health', 'Education'], 1)
+
+    def test_number(self):
+        self.assertRowErrors(['35', 'WASH', ''], 0)
+        self.assertRowErrors(['abc', 'WASH', ''], 1)
+
+    def test_date(self):
+        COLUMNS = ['#date']
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype'],
+            ['#date', 'date'],
+        ]
+        self.assertRowErrors(['2017-01-01'], 0, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['1/1/17'], 0, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['13/13/17'], 1, columns=COLUMNS, schema=SCHEMA)
+
+    def test_url(self):
+        COLUMNS = ['#meta+url']
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype'],
+            ['#meta+url', 'url'],
+        ]
+        self.assertRowErrors(['http://example.org'], 0, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['example.org'], 1, columns=COLUMNS, schema=SCHEMA)
+
+    def test_email(self):
+        COLUMNS = ['#contact+email']
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype'],
+            ['#contact+email', 'email'],
+        ]
+        self.assertRowErrors(['nobody@example.org'], 0, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['nobody@@example.org'], 1, columns=COLUMNS, schema=SCHEMA)
+
+    def assertRowErrors(self, row_values, errors_expected, schema=None, columns=None):
+        """Set up a HXL row and count the errors in it"""
+        errors = []
+
+        if schema is None:
+            schema = self.DEFAULT_SCHEMA
+        schema = hxl.schema(schema, lambda error: errors.append(error))
+
+        if columns is None:
+            columns = self.DEFAULT_COLUMNS
+
+        row = Row(
+            values=row_values,
+            columns=[Column.parse(tag) for tag in columns]
         )
 
-    def test_row(self):
-        self.try_schema(['35', 'WASH', ''])
-        self.try_schema(['35', 'WASH', 'Health'])
-
-        self.try_schema(['35', '', ''], 1)
-        self.try_schema(['abc', 'WASH', ''], 2)
-
-    def try_schema(self, row_values, errors_expected = 0):
-        self.row.values = row_values
         if errors_expected == 0:
-            self.assertTrue(self.schema.validate_row(self.row))
+            self.assertTrue(schema.validate_row(row))
         else:
-            self.assertFalse(self.schema.validate_row(self.row))
-        self.assertEqual(len(self.errors), errors_expected)
-        
+            self.assertFalse(schema.validate_row(row))
+        self.assertEqual(len(errors), errors_expected)
+
+
+class TestValidateDataset(unittest.TestCase):
+    """Test dataset-wide validation"""
+
+    DEFAULT_SCHEMA = [
+        ['#valid_tag', '#valid_unique'],
+        ['#meta+id', 'true'],
+    ]
+
+    def test_unique(self):
+        DATASET = [
+            ['#meta+id'],
+            ['foo'],
+            ['bar']
+        ]
+        self.assertDatasetErrors(DATASET, 0)
+        self.assertDatasetErrors(DATASET + [['foo']], 1)
+
+    def assertDatasetErrors(self, dataset, errors_expected, schema=None):
+        errors = []
+
+        if schema is None:
+            schema = self.DEFAULT_SCHEMA
+        schema = hxl.schema(schema, lambda error: errors.append(error))
+
+        if errors_expected == 0:
+            self.assertTrue(schema.validate(hxl.data(dataset)))
+        else:
+            self.assertFalse(schema.validate(hxl.data(dataset)))
+        self.assertEqual(len(errors), errors_expected)
+
 
 class TestLoad(unittest.TestCase):
     """Test schema I/O support."""
