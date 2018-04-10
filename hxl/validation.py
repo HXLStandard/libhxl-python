@@ -47,7 +47,7 @@ class SchemaRule(object):
                  data_type=None, min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=True,
                  callback=None, severity="error", description=None,
-                 required=False, unique=False):
+                 required=False, unique=False, unique_key = None):
         if type(tag) is hxl.TagPattern:
             self.tag_pattern = tag
         else:
@@ -68,7 +68,13 @@ class SchemaRule(object):
         self.description = description
         self.required = required
         self.unique = unique
+        if unique_key:
+            self.unique_key = hxl.model.TagPattern.parse_list(unique_key)
+        else:
+            self.unique_key = None
+
         self._unique_value_map = {}
+        self._unique_key_map = {}
 
     def validate_columns(self, columns):
         """Test whether the columns are present to satisfy this rule."""
@@ -101,6 +107,14 @@ class SchemaRule(object):
 
         # Look up only the values that apply to this rule
         values = row.get_all(self.tag_pattern)
+
+        # get a default column to show in error messages
+        column = None
+        for col in row.columns:
+            if self.tag_pattern.match(col):
+                column = col
+                break
+        
         if values:
             for column_number, value in enumerate(values):
                 if not self.validate(value, row, row.columns[column_number]):
@@ -141,6 +155,16 @@ class SchemaRule(object):
                 row=row,
                 column=non_empty_column
                 )
+        if self.unique_key is not None:
+            key = row.key(self.unique_key)
+            if self._unique_key_map.get(key):
+                result = self._report_error(
+                    "Duplicate row according to tag patterns " + str(self.unique_key),
+                    row=row,
+                    column=column
+                )
+            else:
+                self._unique_key_map[key] = True
         return result
 
 
@@ -250,12 +274,7 @@ class SchemaRule(object):
     def _test_unique(self, value, row, column):
         """Report if a value is not unique for a specific hashtag"""
         if self.unique:
-            if self.tag_pattern.tag == '#date' and hxl.datatypes.is_date(value):
-                normalised_value = hxl.datatypes.to_date(value)
-            elif hxl.datatypes.is_number(value):
-                normalised_value = hxl.datatypes.to_number(value)
-            else:
-                normalised_value = hxl.datatypes.normalise_string(value)
+            normalised_value = hxl.datatypes.normalise(value, column)
             if self._unique_value_map.get(normalised_value):
                 return self._report_error(
                     "Found duplicate value " + str(value),
@@ -263,7 +282,7 @@ class SchemaRule(object):
                     column=column
                 )
             else:
-                    self._unique_value_map[normalised_value] = True
+                self._unique_value_map[normalised_value] = True
         return True
 
     def __str__(self):
@@ -403,7 +422,8 @@ class Schema(object):
                 rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
                 rule.required = to_boolean(row.get('#valid_required-min-max'))
-                rule.unique = to_boolean(row.get('#valid_unique'))
+                rule.unique = to_boolean(row.get('#valid_unique-key'))
+                rule.unique_key = row.get('#valid_unique+key')
                 rule.severity = row.get('#valid_severity') or 'error'
                 rule.description = row.get('#description')
 

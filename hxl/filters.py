@@ -1403,7 +1403,7 @@ class DeduplicationFilter(AbstractStreamingFilter):
         if hxl.model.RowQuery.match_list(row, self.queries):
             if not row:
                 return None
-            key = self._make_key(row)
+            key = row.key(self.patterns)
             if key in self.seen_map:
                 return None
             # if we get to here, we haven't seen the row before
@@ -1411,31 +1411,6 @@ class DeduplicationFilter(AbstractStreamingFilter):
             return copy.copy(row.values)
         else:
             return row.values
-
-    def _is_key(self, col):
-        """Check if a column is part of the key for deduplication.
-        @param col: the column to check
-        @returns: True if the column belongs to the deduplication key
-        """
-        if self.patterns:
-            for pattern in self.patterns:
-                if pattern.match(col):
-                    return True
-            return False
-        else:
-            return True
-
-    def _make_key(self, row):
-        """Create a tuple deduplication key for a row.
-        We care only about certain columns for deduplication.
-        @param row: the row for which to create the key
-        @returns: the row's key as a tuple
-        """
-        key = []
-        for i, value in enumerate(row.values):
-            if self._is_key(row.columns[i]):
-                key.append(hxl.datatypes.normalise_string(value))
-        return tuple(key)
 
     @staticmethod
     def _load(source, spec):

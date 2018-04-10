@@ -216,14 +216,30 @@ class TestValidateDataset(unittest.TestCase):
         ['#meta+id', 'true'],
     ]
 
-    def test_unique(self):
+    def test_unique_single(self):
         DATASET = [
             ['#meta+id'],
             ['foo'],
-            ['bar']
+            ['bar'],
+            ['foo']
         ]
-        self.assertDatasetErrors(DATASET, 0)
-        self.assertDatasetErrors(DATASET + [['foo']], 1)
+        self.assertDatasetErrors(DATASET[:3], 0)
+        self.assertDatasetErrors(DATASET, 1)
+
+    def test_unique_combo(self):
+        SCHEMA = [
+            ['#valid_tag', '#valid_unique+key'],
+            ['#org', 'org,sector,adm1']
+            ]
+        DATASET = [
+            ['#org', '#sector', '#adm1', '#output'],
+            ['OrgA', 'Shelter', 'Coast', 'sheets'],
+            ['OrgA', 'Shelter', 'Plains', 'sheets'],
+            ['OrgA', 'Shelter', 'Coast', 'tents'],
+        ]
+        self.assertDatasetErrors(DATASET[:3], 0, schema=SCHEMA)
+        self.assertDatasetErrors(DATASET, 1, schema=SCHEMA)
+
 
     def assertDatasetErrors(self, dataset, errors_expected, schema=None):
         errors = []
@@ -236,6 +252,7 @@ class TestValidateDataset(unittest.TestCase):
             self.assertTrue(schema.validate(hxl.data(dataset)))
         else:
             self.assertFalse(schema.validate(hxl.data(dataset)))
+
         self.assertEqual(len(errors), errors_expected)
 
 

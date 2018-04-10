@@ -707,6 +707,28 @@ class Row(object):
                 result.append(value)
         return result
 
+    def key(self, patterns=None):
+        """Generate a unique key tuple for the row, based on a list of tag patterns
+        @param patterns: a list of L{TagPattern} objects, or a parseable string
+        @returns: the key as a tuple (might be empty)
+        """
+        if patterns:
+            patterns = TagPattern.parse_list(patterns)
+
+        def in_key(col):
+            if not patterns:
+                return True
+            for pattern in patterns:
+                if pattern.match(col):
+                    return True
+            return False
+
+        key = []
+        for i, value in enumerate(self.values):
+            if i < len(self.columns) and in_key(self.columns[i]):
+                key.append(hxl.datatypes.normalise(value, self.columns[i]))
+        return tuple(key)
+
     @property
     def dictionary(self):
         """Return the row as a Python dict.

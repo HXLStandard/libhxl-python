@@ -25,6 +25,16 @@ DEFAULT_DATE_1 = datetime.date(2015, 1, 1)
 
 DEFAULT_DATE_2 = datetime.date(2016, 2, 2)
 
+def normalise(s, col=None):
+    """Intelligently normalise a value, optionally using the HXL hashtag for hints"""
+    # TODO add lat/lon
+    if col and col.tag == '#date' and is_date(s):
+        return normalise_date(s)
+    elif is_number(s):
+        return normalise_number(s)
+    else:
+        return normalise_string(s)
+
 def is_empty(s):
     """Is this an empty value?
     None or whitespace only counts as empty; anything else doesn't.
