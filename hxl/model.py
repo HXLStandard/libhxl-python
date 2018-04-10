@@ -297,7 +297,7 @@ class Dataset(object):
         @param schema (optional) the pre-compiled schema, schema filename, URL, file object, etc. Defaults to a built-in schema.
         @param callback (optional) a function to call with each error or warning. Defaults to collecting errors in an array and returning them.
         """
-        return hxl.validation.schema(schema, callback).validate(self)
+        return hxl.schema(schema, callback).validate(self)
 
     def recipe(self, recipe):
         """Parse a recipe (JSON or a list of dicts) and create the appropriate filters.

@@ -721,9 +721,9 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         source = hxl.io.data(input)
         if args.schema:
             with hxl.io.make_input(args.schema, True) as schema_input:
-                schema = hxl.validation.schema(schema_input, callback=callback)
+                schema = hxl.schema(schema_input, callback=callback)
         else:
-            schema = hxl.validation.schema(callback=callback)
+            schema = hxl.schema(callback=callback)
 
         schema.validate(source)
 

@@ -10,26 +10,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import hxl
 import copy, logging, os, re, sys, urllib
 
-
-def schema(origin=None, callback=None):
-    """
-    Convenience method for reading a HXL schema.
-    If passed an existing Schema, simply returns it.
-    @param origin a HXL data provider, file object, array, or string (representing a URL or file name).
-    """
-
-    if not origin:
-        path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
-        with hxl.data(path, True) as source:
-            return parse_schema(source, callback)
-
-    if isinstance(origin, Schema):
-        # it's already a HXL schema
-        return origin
-
-    else:
-        # create a schema
-        return parse_schema(hxl.data(origin), callback)
+logger = logging.getLogger(__name__)
 
 
 class HXLValidationException(hxl.HXLException):
@@ -266,9 +247,10 @@ class SchemaRule(object):
         """String representation of a rule (for debugging)"""
         return "<HXL schema rule: " + str(self.tag_pattern) + ">"
                 
+
 class Schema(object):
-    """
-    Schema against which to validate a HXL document.
+    """Schema against which to validate a HXL document.
+    Consists of a sequence of L{SchemaRule} objects to apply.
     """
 
     def __init__(self, rules=[], callback=None):
@@ -321,76 +303,108 @@ class Schema(object):
         s += ">"
         return s
 
-def parse_schema(source, callback):
+
+    @staticmethod
+    def parse(source=None, callback=None):
+        """ Load a HXL schema from the provided input stream, or load default schema.
+        @param source: HXL data source for the scheme (e.g. a HXLReader or filter); defaults to the built-in schema
+        @param callback: a callback function for reporting errors (receives a HXLValidationException)
+        """
+
+        # Catch special cases
+
+        if source is None:
+            # Use the built-in default schema and recurse
+            path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
+            with hxl.data(path, True) as source:
+                return Schema.parse(source, callback)
+
+        if isinstance(source, Schema):
+            # Already a schema; set the callback and return it
+            source.callback = callback
+            return source
+
+        if not isinstance(source, hxl.model.Dataset):
+            # Not already a dataset, so wrap it and recurse
+            with hxl.data(source) as source:
+                return Schema.parse(source, callback)
+
+        # Main parsing
+
+        schema = Schema(callback=callback)
+
+        def parse_type(type):
+            if type:
+                type = type.lower()
+                type = re.sub(r'[^a-z_-]', '', type) # normalise
+            if type in SchemaRule.DATATYPES:
+                return type
+            else:
+                return None
+
+        def to_int(s):
+            if s:
+                return int(s)
+            else:
+                return None
+
+        def to_float(s):
+            if s:
+                return float(s)
+            else:
+                return None
+
+        def to_boolean(s):
+            if not s or s.lower() in ['0', 'n', 'no', 'f', 'false']:
+                return False
+            elif s.lower() in ['y', 'yes', 't', 'true']:
+                return True
+            else:
+                raise hxl.HXLException('Unrecognised true/false value: {}'.format(s))
+
+
+        def to_regex(s):
+            if s:
+                return re.compile(s)
+            else:
+                return None
+
+        for row in source:
+            tag = row.get('#valid_tag')
+            if tag:
+                rule = SchemaRule(tag)
+                rule.min_occur = to_int(row.get('#valid_required+min'))
+                rule.max_occur = to_int(row.get('#valid_required+max'))
+                rule.data_type = parse_type(row.get('#valid_datatype'))
+                rule.min_value = to_float(row.get('#valid_value+min'))
+                rule.max_value = to_float(row.get('#valid_value+max'))
+                rule.regex = to_regex(row.get('#valid_value+regex'))
+                rule.required = to_boolean(row.get('#valid_required-min-max'))
+                rule.severity = row.get('#valid_severity') or 'error'
+                rule.description = row.get('#description')
+
+                rule.case_sensitive = to_boolean(row.get('#valid_value+case'))
+
+                # Determine allowed values
+                if row.get('#valid_value+list'):
+                    rule.enum = set(re.split(r'\s*\|\s*', row.get('#valid_value+list')))
+                elif row.get('#valid_value+url'):
+                    value_source = hxl.data(row.get('#valid_value+url'), True)
+                    rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
+
+                schema.rules.append(rule)
+
+        return schema
+
+#
+# Exported functions
+#
+def schema(source=None, callback=None):
+    """Convenience method for making a schema
+    The callback, if provided, will receive a HXLValidationException object for each error
+    @param source: something that can be used as a HXL data source
+    @param callback: the validation callback function to use
     """
-    Load a HXL schema from the provided input stream, or load default schema.
-    @param source HXL data source for the scheme (e.g. a HXLReader or filter)
-    @param callback a callback function for reporting errors (receives a HXLValidationException)
-    """
-
-    schema = Schema(callback=callback)
-
-    def parse_type(type):
-        if type:
-            type = type.lower()
-            type = re.sub(r'[^a-z_-]', '', type) # normalise
-        if type in SchemaRule.DATATYPES:
-            return type
-        else:
-            return None
-
-    def to_int(s):
-        if s:
-            return int(s)
-        else:
-            return None
-        
-    def to_float(s):
-        if s:
-            return float(s)
-        else:
-            return None
-
-    def to_boolean(s):
-        if not s or s.lower() in ['0', 'n', 'no', 'f', 'false']:
-            return False
-        elif s.lower() in ['y', 'yes', 't', 'true']:
-            return True
-        else:
-            raise hxl.HXLException('Unrecognised true/false value: {}'.format(s))
-
-
-    def to_regex(s):
-        if s:
-            return re.compile(s)
-        else:
-            return None
-
-    for row in source:
-        tag = row.get('#valid_tag')
-        if tag:
-            rule = SchemaRule(tag)
-            rule.min_occur = to_int(row.get('#valid_required+min'))
-            rule.max_occur = to_int(row.get('#valid_required+max'))
-            rule.data_type = parse_type(row.get('#valid_datatype'))
-            rule.min_value = to_float(row.get('#valid_value+min'))
-            rule.max_value = to_float(row.get('#valid_value+max'))
-            rule.regex = to_regex(row.get('#valid_value+regex'))
-            rule.required = to_boolean(row.get('#valid_required-min-max'))
-            rule.severity = row.get('#valid_severity') or 'error'
-            rule.description = row.get('#description')
-            
-            rule.case_sensitive = to_boolean(row.get('#valid_value+case'))
-
-            # Determine allowed values
-            if row.get('#valid_value+list'):
-                rule.enum = set(re.split(r'\s*\|\s*', row.get('#valid_value+list')))
-            elif row.get('#valid_value+url'):
-                value_source = hxl.data(row.get('#valid_value+url'), True)
-                rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
-
-            schema.rules.append(rule)
-
-    return schema
+    return Schema.parse(source, callback)
 
 # end
