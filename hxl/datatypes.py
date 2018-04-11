@@ -35,6 +35,27 @@ def normalise(s, col=None):
     else:
         return normalise_string(s)
 
+    
+def flatten(value, is_subitem=False):
+    """Flatten potential lists and dictionaries"""
+
+    if not hasattr(value, '__len__') or isinstance(value, six.string_types):
+        return str(value).replace('\\', '\\\\').replace('{', '\\{').replace('=', '\\=').replace(',', '\\,') # already scalar
+
+    elements = []
+
+    if isinstance(value, dict):
+        for key in value:
+            elements.append(flatten(key, True) + '=' + flatten(value[key], True))
+    else:
+        for item in value:
+            elements.append(flatten(item, True))
+
+    if is_subitem:
+        return '{' + ','.join(elements) + '}'
+    else:
+        return ','.join(elements)
+    
 def is_empty(s):
     """Is this an empty value?
     None or whitespace only counts as empty; anything else doesn't.
