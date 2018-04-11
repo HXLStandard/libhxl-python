@@ -11,6 +11,8 @@
 	  (for repeatability)
 	- removed hxl.common module and added hxl.datatypes, with
 	  more-consistent data checking/conversion
+	- when importing JSON arrays and objects, flatten them to a usable
+	  text representation
 	- update docstrings
 
 2018-03-29 Release 4.6

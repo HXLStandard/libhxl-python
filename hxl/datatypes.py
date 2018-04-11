@@ -14,7 +14,6 @@ import collections, datetime, dateutil, re, six, unidecode
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """Regular-expression pattern for a single token."""
 
-
 WHITESPACE_PATTERN = re.compile('\s+', re.MULTILINE)
 """Regular-expression pattern for multi-line whitespace."""
 
@@ -39,18 +38,21 @@ def normalise(s, col=None):
 def flatten(value, is_subitem=False):
     """Flatten potential lists and dictionaries"""
 
+    # handle scalar values, escaping special list characters
     if not hasattr(value, '__len__') or isinstance(value, six.string_types):
-        return str(value).replace('\\', '\\\\').replace('{', '\\{').replace('=', '\\=').replace(',', '\\,') # already scalar
+        if value is None:
+            return ''
+        else:
+            return str(value).replace('\\', '\\\\').replace('{', '\\{').replace('=', '\\=').replace(',', '\\,') # already scalar
 
+    # handle JSON arrays and objects
     elements = []
-
     if isinstance(value, dict):
         for key in value:
             elements.append(flatten(key, True) + '=' + flatten(value[key], True))
     else:
         for item in value:
             elements.append(flatten(item, True))
-
     if is_subitem:
         return '{' + ','.join(elements) + '}'
     else:

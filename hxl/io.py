@@ -541,10 +541,10 @@ class JSONInput(AbstractInput):
             elif self.outer.type == 'object':
                 # Construct a row in an array of JSON objects
                 obj = next(self._iterator)
-                row = [obj.get(header) for header in self.outer.headers]
+                row = [hxl.datatypes.flatten(obj.get(header)) for header in self.outer.headers]
             elif self.outer.type == 'array':
                 # Simply dump a row in an array of JSON arrays
-                row =  next(self._iterator)
+                row =  [hxl.datatypes.flatten(value) for value in next(self._iterator)]
             return row
 
 
