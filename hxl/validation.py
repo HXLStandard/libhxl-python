@@ -47,7 +47,7 @@ class SchemaRule(object):
                  data_type=None, min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=True,
                  callback=None, severity="error", description=None,
-                 required=False, unique=False, unique_key = None):
+                 required=False, unique=False, unique_key = None, correlation_key = None):
         if type(tag) is hxl.TagPattern:
             self.tag_pattern = tag
         else:
@@ -68,14 +68,69 @@ class SchemaRule(object):
         self.description = description
         self.required = required
         self.unique = unique
-        if unique_key:
-            self.unique_key = hxl.model.TagPattern.parse_list(unique_key)
-            self.unique_key.append(self.tag_pattern) # just in case
-        else:
-            self.unique_key = None
+        self.unique_key = unique_key
+        self.correlation_key = correlation_key
 
         self._unique_value_map = {}
         self._unique_key_map = {}
+        self._correlation_map = {}
+
+        self.init() # will need to call again if values change
+
+    def init(self):
+        """Initialisation method
+        Call after all values have been set, but before use
+        """
+        if self.unique_key:
+            self.unique_key = hxl.model.TagPattern.parse_list(self.unique_key)
+            self.unique_key.append(self.tag_pattern) # just in case
+        if self.correlation_key:
+            self.correlation_key = hxl.model.TagPattern.parse_list(self.correlation_key)
+
+    def finish(self):
+        """Call at end of parse to get post-parse errors"""
+        result = True
+        if not self._finish_correlations():
+            result = False
+        return result
+
+    def _finish_correlations(self):
+        """Check for correlation errors"""
+
+        def clean_entries(d):
+            entries = list(d.items())
+            # reverse sort by number of occurrences
+            entries.sort(key=lambda e: len(e[1]), reverse=True)
+            # if the first entry has more occurrences than the second, assume it's correct and pop it
+            if len(entries[0][1]) > len(entries[1][1]):
+                entries.pop()
+            return entries
+
+        def report_errors(hashtag, value, locations):
+            for row, column in locations:
+                self._report_error(
+                    'misaligned with related values',
+                    value=value,
+                    row=row,
+                    column=column
+                )
+        
+        result = True
+        m = self._correlation_map
+        if m:
+            for hashtag in m:
+                for key, values in m[hashtag]['keys'].items():
+                    if len(values) > 1:
+                        result = False
+                        for value, locations in clean_entries(values):
+                            report_errors(hashtag, value, locations)
+                for value, keys in m[hashtag]['values'].items():
+                    if len(keys) > 1:
+                        result = False
+                        for key, locations in clean_entries(keys):
+                            report_errors(hashtag, value, locations)
+
+        return result
 
     def validate_columns(self, columns):
         """Test whether the columns are present to satisfy this rule."""
@@ -166,6 +221,36 @@ class SchemaRule(object):
                 )
             else:
                 self._unique_key_map[key] = True
+
+        # track correlations here, then report at end of parse
+        if self.correlation_key is not None:
+            key_tuple = row.key(self.correlation_key) # make a tuple of other values involved
+            m = self._correlation_map
+            for column_number, value in enumerate(row.values):
+                if self.tag_pattern.match(row.columns[column_number]):
+                    hashtag = row.columns[column_number].display_tag
+                    value = hxl.datatypes.normalise(value)
+                    if not m.get(hashtag):
+                        m[hashtag] = {'values': {}, 'keys': {}}
+
+                    # Record key->value correspondence
+                    key_map = m[hashtag]['keys']
+                    if not key_map.get(key_tuple):
+                        key_map[key_tuple] = {}
+                    if not key_map[key_tuple].get(value):
+                        key_map[key_tuple][value] = []
+                    key_map[key_tuple][value].append((row, row.columns[column_number],))
+
+                    # Record value->key correspondence
+                    value_map = m[hashtag]['values']
+                    if not value_map.get(value):
+                        value_map[value] = {}
+                    if not value_map[value].get(key_tuple):
+                        value_map[value][key_tuple] = []
+                    value_map[value][key_tuple].append((row, row.columns[column_number],))
+                    
+                    break
+
         return result
 
 
@@ -312,6 +397,8 @@ class Schema(object):
         for row in source:
             if not self.validate_row(row):
                 result = False
+        if not self.validate_dataset():
+            result = False
         return result
 
     def validate_columns(self, columns):
@@ -337,6 +424,18 @@ class Schema(object):
                     result = False
                 rule.callback = old_callback
         return result
+
+    def validate_dataset(self):
+        result = True
+        for rule in self.rules:
+            old_callback = rule.callback
+            if self.callback:
+                rule.callback = self.callback
+            if not rule.finish():
+                result = False
+            rule.callback = old_callback
+        return result
+
 
     def __str__(self):
         """String representation of a schema (for debugging)"""
@@ -425,6 +524,7 @@ class Schema(object):
                 rule.required = to_boolean(row.get('#valid_required-min-max'))
                 rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')
+                rule.correlation_key = row.get('#valid_correlation')
                 rule.severity = row.get('#valid_severity') or 'error'
                 rule.description = row.get('#description')
 
@@ -436,6 +536,8 @@ class Schema(object):
                 elif row.get('#valid_value+url'):
                     value_source = hxl.data(row.get('#valid_value+url'), True)
                     rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
+
+                rule.init()
 
                 schema.rules.append(rule)
 
