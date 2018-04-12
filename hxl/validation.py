@@ -16,13 +16,14 @@ logger = logging.getLogger(__name__)
 class HXLValidationException(hxl.HXLException):
     """Data structure to hold a HXL validation error."""
 
-    def __init__(self, message, rule=None, value=None, row=None, column=None):
+    def __init__(self, message, rule=None, value=None, row=None, column=None, expected_value=None):
         """Construct a new exception."""
         super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row
         self.column = column
+        self.expected_value = expected_value
 
     def __str__(self):
         """Get a string rendition of this error."""
@@ -103,8 +104,6 @@ class SchemaRule(object):
             entries = list(d.items())
             # reverse sort by number of occurrences
             entries.sort(key=lambda e: len(e[1]), reverse=True)
-            # assume the first entry is the correct one
-            entries.pop(0)
             return entries
 
         result = True
@@ -115,13 +114,17 @@ class SchemaRule(object):
                 for key, values in m[hashtag]['keys'].items():
                     if len(values) > 1:
                         result = False
-                        for value, locations in clean_entries(values):
+                        entries = clean_entries(values)
+                        expected_value = entries[0][0]
+                        for value, locations in entries[1:]:
                             for row, column in locations:
                                 reports.add((value, row, column,))
                 for value, keys in m[hashtag]['values'].items():
                     if len(keys) > 1:
                         result = False
-                        for key, locations in clean_entries(keys):
+                        entries = clean_entries(keys)
+                        expected_value = entries[0][0]
+                        for key, locations in entries[1:]:
                             for row, column in locations:
                                 reports.add((value, row, column,))
                 for value, row, column in reports:
@@ -282,7 +285,7 @@ class SchemaRule(object):
 
         return result
 
-    def _report_error(self, message, value=None, row=None, column=None):
+    def _report_error(self, message, value=None, row=None, column=None, expected_value=None):
         """Report an error to the callback."""
         if self.callback != None:
             self.callback(
@@ -291,7 +294,8 @@ class SchemaRule(object):
                     rule=self,
                     value = value,
                     row = row,
-                    column = column
+                    column = column,
+                    expected_value = expected_value
                     )
                 )
         return False
