@@ -249,19 +249,20 @@ class TestValidateDataset(unittest.TestCase):
             ['#adm1+name', '#adm1+code', '#sector'],
             ['Coast', 'X001', 'WASH'],
             ['Plains', 'X002', 'Education'],
+            ['Plains', 'X002', 'Education'],
+            ['Plains', 'X002', 'Education'],
             ['Plains', 'X002', 'Health'],
             ['Coast', 'X002', 'WASH'],
-            ['Plans', 'X001', 'Education']
+            ['Plains', 'X001', 'Education']
         ]
-        self.assertDatasetErrors(DATASET[:4], 0, schema=SCHEMA)
-        self.assertDatasetErrors(DATASET[:5], 1, schema=SCHEMA)
+        self.assertDatasetErrors(DATASET[:6], 0, schema=SCHEMA)
+        self.assertDatasetErrors(DATASET[:7], 1, schema=SCHEMA)
         self.assertDatasetErrors(DATASET, 2, schema=SCHEMA)
 
     def assertDatasetErrors(self, dataset, errors_expected, schema=None):
         errors = []
 
         def callback(error):
-            print('***', error, error.value, error.expected_value, error.row.row_number)
             errors.append(error)
 
         if schema is None:

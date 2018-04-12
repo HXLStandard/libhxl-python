@@ -98,24 +98,49 @@ class SchemaRule(object):
     def _finish_correlations(self):
         """Check for correlation errors"""
 
-        expected = None
+        m = self._correlation_map # shortcut
+
+        def sort_entries(e):
+            """Sort entries by the number of locations in the second element"""
+            return (len(e[1]), e[0],)
 
         result = True
-        m = self._correlation_map
         if m:
-            # for each matching hashtag/column found ...
+            #
+            # Calculate expected values for each hashtag+key combo
+            #
+            expected_values = {}
+            for hashtag in m:
+                # collect hashtag+key+value+locations info into a map
+                for value, keys in m[hashtag].items():
+                    for key, locations in keys.items():
+                        expected_values.setdefault(hashtag, {}).setdefault(key, {}).setdefault(value, 0)
+                        expected_values[hashtag][key][value] += len(locations)
+                # reduce the expected values to top value for each hashtag+key combo
+                for key, values in expected_values[hashtag].items():
+                    entries = sorted(values.items(), key=lambda e: e[1], reverse=True)
+                    expected_values[hashtag][key] = entries[0][0] # this is the most-common value for the hashtag+key
+
+            #
+            # Process each matching hashtag/column found ...
+            #
             for hashtag in m:
                 # for each correlation key found ...
-                for key, values in m[hashtag].items():
-                    # if there's more than one value found matching the correlation key ...
-                    if len(values) > 1:
+                for value, keys in m[hashtag].items():
+                    # if there's more than one value found matching the correlation key, assume an error
+                    if len(keys) > 1:
                         result = False
-                        entries = list(values.items())
-                        # reverse sort by number of occurrences: most-common is assumed correct
-                        entries.sort(key=lambda e: len(e[1]), reverse=True)
-                        expected_value = entries[0][0]
-                        # iterate through the rest
-                        for value, locations in entries[1:]:
+
+                        # get all the correlation key/location combinations, sorted with most-common first
+                        key_locations = sorted(keys.items(), key=sort_entries, reverse=True)
+
+                        # what value did we expect to find?
+                        expected_value = expected_values[hashtag][key]
+                        if value == expected_value:
+                            expected_value = None
+
+                        # iterate through all but the most-common value for the key
+                        for key, locations in key_locations[1:]:
                             for row, column in locations:
                                 self._report_error(
                                     'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
@@ -219,26 +244,15 @@ class SchemaRule(object):
 
         # track correlations here, then report at end of parse
         if self.correlation_key is not None:
-            key_tuple = row.key(self.correlation_key) # make a tuple of other values involved
-            m = self._correlation_map
+            key = row.key(self.correlation_key) # make a tuple of other values involved
             for column_number, value in enumerate(row.values):
                 if self.tag_pattern.match(row.columns[column_number]):
                     if hxl.datatypes.is_empty(value):
                         continue
-                    value = hxl.datatypes.normalise(value)
                     hashtag = row.columns[column_number].display_tag
-                    if not m.get(hashtag):
-                        m[hashtag] = {}
-
-                    # Record key->value correspondence
-                    if not m[hashtag].get(key_tuple):
-                        m[hashtag][key_tuple] = {}
-                    if not m[hashtag][key_tuple].get(value):
-                        m[hashtag][key_tuple][value] = []
-                    m[hashtag][key_tuple][value].append((row, row.columns[column_number],))
-
-                    # Don't record value->key, because we're not assuming reciprocal relationships
-
+                    value = hxl.datatypes.normalise(value)
+                    location = (row, row.columns[column_number],)
+                    self._correlation_map.setdefault(hashtag, {}).setdefault(value, {}).setdefault(key, []).append(location)
                     break
 
         return result
