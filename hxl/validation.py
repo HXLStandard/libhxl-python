@@ -231,8 +231,10 @@ class SchemaRule(object):
             m = self._correlation_map
             for column_number, value in enumerate(row.values):
                 if self.tag_pattern.match(row.columns[column_number]):
-                    hashtag = row.columns[column_number].display_tag
+                    if hxl.datatypes.is_empty(value):
+                        continue
                     value = hxl.datatypes.normalise(value)
+                    hashtag = row.columns[column_number].display_tag
                     if not m.get(hashtag):
                         m[hashtag] = {'values': {}, 'keys': {}}
 
