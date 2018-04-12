@@ -109,25 +109,23 @@ class SchemaRule(object):
         result = True
         m = self._correlation_map
         if m:
-            reports = set()
+            location_set = set()
             for hashtag in m:
                 for key, values in m[hashtag]['keys'].items():
                     if len(values) > 1:
                         result = False
                         entries = clean_entries(values)
-                        expected_value = entries[0][0]
                         for value, locations in entries[1:]:
                             for row, column in locations:
-                                reports.add((value, row, column,))
+                                location_set.add((value, row, column,))
                 for value, keys in m[hashtag]['values'].items():
                     if len(keys) > 1:
                         result = False
                         entries = clean_entries(keys)
-                        expected_value = entries[0][0]
                         for key, locations in entries[1:]:
                             for row, column in locations:
-                                reports.add((value, row, column,))
-                for value, row, column in reports:
+                                location_set.add((value, row, column,))
+                for value, row, column in location_set:
                     self._report_error(
                         'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
                         value=value,

@@ -260,9 +260,13 @@ class TestValidateDataset(unittest.TestCase):
     def assertDatasetErrors(self, dataset, errors_expected, schema=None):
         errors = []
 
+        def callback(error):
+            print('***', error, error.value, error.expected_value, error.row.row_number)
+            errors.append(error)
+
         if schema is None:
             schema = self.DEFAULT_SCHEMA
-        schema = hxl.schema(schema, lambda error: errors.append(error))
+        schema = hxl.schema(schema, callback)
 
         if errors_expected == 0:
             self.assertTrue(schema.validate(hxl.data(dataset)))
