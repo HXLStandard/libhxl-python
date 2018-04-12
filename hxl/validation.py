@@ -100,38 +100,30 @@ class SchemaRule(object):
 
         expected = None
 
-        def clean_entries(d):
-            entries = list(d.items())
-            # reverse sort by number of occurrences
-            entries.sort(key=lambda e: len(e[1]), reverse=True)
-            return entries
-
         result = True
         m = self._correlation_map
         if m:
-            location_set = set()
+            # for each matching hashtag/column found ...
             for hashtag in m:
-                for key, values in m[hashtag]['keys'].items():
+                # for each correlation key found ...
+                for key, values in m[hashtag].items():
+                    # if there's more than one value found matching the correlation key ...
                     if len(values) > 1:
                         result = False
-                        entries = clean_entries(values)
+                        entries = list(values.items())
+                        # reverse sort by number of occurrences: most-common is assumed correct
+                        entries.sort(key=lambda e: len(e[1]), reverse=True)
+                        expected_value = entries[0][0]
+                        # iterate through the rest
                         for value, locations in entries[1:]:
                             for row, column in locations:
-                                location_set.add((value, row, column,))
-                for value, keys in m[hashtag]['values'].items():
-                    if len(keys) > 1:
-                        result = False
-                        entries = clean_entries(keys)
-                        for key, locations in entries[1:]:
-                            for row, column in locations:
-                                location_set.add((value, row, column,))
-                for value, row, column in location_set:
-                    self._report_error(
-                        'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
-                        value=value,
-                        row=row,
-                        column=column
-                    )
+                                self._report_error(
+                                    'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
+                                    value=value,
+                                    row=row,
+                                    column=column,
+                                    expected_value=expected_value
+                                )
                     
         return result
 
@@ -236,24 +228,17 @@ class SchemaRule(object):
                     value = hxl.datatypes.normalise(value)
                     hashtag = row.columns[column_number].display_tag
                     if not m.get(hashtag):
-                        m[hashtag] = {'values': {}, 'keys': {}}
+                        m[hashtag] = {}
 
                     # Record key->value correspondence
-                    key_map = m[hashtag]['keys']
-                    if not key_map.get(key_tuple):
-                        key_map[key_tuple] = {}
-                    if not key_map[key_tuple].get(value):
-                        key_map[key_tuple][value] = []
-                    key_map[key_tuple][value].append((row, row.columns[column_number],))
+                    if not m[hashtag].get(key_tuple):
+                        m[hashtag][key_tuple] = {}
+                    if not m[hashtag][key_tuple].get(value):
+                        m[hashtag][key_tuple][value] = []
+                    m[hashtag][key_tuple][value].append((row, row.columns[column_number],))
 
-                    # Record value->key correspondence
-                    value_map = m[hashtag]['values']
-                    if not value_map.get(value):
-                        value_map[value] = {}
-                    if not value_map[value].get(key_tuple):
-                        value_map[value][key_tuple] = []
-                    value_map[value][key_tuple].append((row, row.columns[column_number],))
-                    
+                    # Don't record value->key, because we're not assuming reciprocal relationships
+
                     break
 
         return result
