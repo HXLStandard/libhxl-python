@@ -97,39 +97,41 @@ class SchemaRule(object):
     def _finish_correlations(self):
         """Check for correlation errors"""
 
+        expected = None
+
         def clean_entries(d):
             entries = list(d.items())
             # reverse sort by number of occurrences
             entries.sort(key=lambda e: len(e[1]), reverse=True)
-            # if the first entry has more occurrences than the second, assume it's correct and pop it
-            if len(entries[0][1]) > len(entries[1][1]):
-                entries.pop()
+            # assume the first entry is the correct one
+            entries.pop(0)
             return entries
 
-        def report_errors(hashtag, value, locations):
-            for row, column in locations:
-                self._report_error(
-                    'misaligned with related values',
-                    value=value,
-                    row=row,
-                    column=column
-                )
-        
         result = True
         m = self._correlation_map
         if m:
+            reports = set()
             for hashtag in m:
                 for key, values in m[hashtag]['keys'].items():
                     if len(values) > 1:
                         result = False
                         for value, locations in clean_entries(values):
-                            report_errors(hashtag, value, locations)
+                            for row, column in locations:
+                                reports.add((value, row, column,))
                 for value, keys in m[hashtag]['values'].items():
                     if len(keys) > 1:
                         result = False
                         for key, locations in clean_entries(keys):
-                            report_errors(hashtag, value, locations)
-
+                            for row, column in locations:
+                                reports.add((value, row, column,))
+                for value, row, column in reports:
+                    self._report_error(
+                        'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
+                        value=value,
+                        row=row,
+                        column=column
+                    )
+                    
         return result
 
     def validate_columns(self, columns):
