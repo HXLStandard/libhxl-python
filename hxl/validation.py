@@ -73,7 +73,8 @@ class SchemaRule(object):
         self.correlation_key = correlation_key
 
         self._initialised = False
-        self._enum_norm = None
+        self._enum_map = None
+        
         self._unique_value_map = {}
         self._unique_key_map = {}
         self._correlation_map = {}
@@ -84,15 +85,19 @@ class SchemaRule(object):
         Call after all values have been set, but before use
         """
         if self.enum:
-            if self.case_sensitive:
-                self._enum_norm = self.enum
-            else:
-                self._enum_norm = [hxl.datatypes.normalise_string(s) for s in self.enum]
+            self._enum_map = {}
+            for value in self.enum:
+                if self.case_sensitive:
+                    self._enum_map[value] = value
+                else:
+                    self._enum_map[hxl.datatypes.normalise_string(value)] = value
+
         if self.unique_key:
             self.unique_key = hxl.model.TagPattern.parse_list(self.unique_key)
             self.unique_key.append(self.tag_pattern) # just in case
         if self.correlation_key:
             self.correlation_key = hxl.model.TagPattern.parse_list(self.correlation_key)
+
         self._initialised = True
 
     def _check_init(self):
@@ -364,25 +369,23 @@ class SchemaRule(object):
 
     def _test_enumeration(self, value, row, column):
         """Test against an enumerated set of values (if specified)."""
-        if self._enum_norm is not None:
-            if value not in self._enum_norm:
-                suggested_value = self._suggestion_map.get(value, find_closest_match(value, self._enum_norm))
+        if self._enum_map is not None:
+            if value not in self._enum_map:
+                suggested_value = self._suggestion_map.get(value, find_closest_match(value, self._enum_map))
+                if suggested_value:
+                    suggested_value = self._enum_map[suggested_value] # get the original, unnormalised value
                 if len(self.enum) <= 7:
-                    return self._report_error(
-                        "Must be one of " + str(self.enum),
-                        value=value,
-                        row=row,
-                        column=column,
-                        suggested_value=suggested_value
-                    )
+                    message = "Must be one of " + str(self.enum)
                 else:
-                    return self._report_error(
-                        "Not in allowed values",
-                        value=value,
-                        row=row,
-                        column=column,
-                        suggested_value=suggested_value
-                    )
+                    message = "Not in allowed values"
+                return self._report_error(
+                    message,
+                    value=value,
+                    row=row,
+                    column=column,
+                    suggested_value=suggested_value
+                )
+
         return True
 
     def _test_unique(self, value, row, column):
