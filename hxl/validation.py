@@ -72,24 +72,32 @@ class SchemaRule(object):
         self.unique_key = unique_key
         self.correlation_key = correlation_key
 
+        self._initialised = False
+        self._enum_norm = None
         self._unique_value_map = {}
         self._unique_key_map = {}
         self._correlation_map = {}
         self._suggestion_map = {}
 
-        self.init() # will need to call again if values change
-
     def init(self):
         """Initialisation method
         Call after all values have been set, but before use
         """
-        if not self.case_sensitive and self.enum:
-            self.enum = [hxl.datatypes.normalise_string(s) for s in self.enum]
+        if self.enum:
+            if self.case_sensitive:
+                self._enum_norm = self.enum
+            else:
+                self._enum_norm = [hxl.datatypes.normalise_string(s) for s in self.enum]
         if self.unique_key:
             self.unique_key = hxl.model.TagPattern.parse_list(self.unique_key)
             self.unique_key.append(self.tag_pattern) # just in case
         if self.correlation_key:
             self.correlation_key = hxl.model.TagPattern.parse_list(self.correlation_key)
+        self._initialised = True
+
+    def _check_init(self):
+        if not self._initialised:
+            self.init()
 
     def finish(self):
         """Call at end of parse to get post-parse errors"""
@@ -157,7 +165,8 @@ class SchemaRule(object):
 
     def validate_columns(self, columns):
         """Test whether the columns are present to satisfy this rule."""
-
+        self._check_init()
+        
         result = True
         
         if self.required or (self.min_occur is not None and int(self.min_occur) > 0):
@@ -180,7 +189,8 @@ class SchemaRule(object):
         @param row the Row to validate
         @return True if all matching values in the row are valid
         """
-
+        self._check_init()
+        
         number_seen = 0
         result = True
 
@@ -269,7 +279,8 @@ class SchemaRule(object):
         @param column (optional) the Column being validated
         @return True if valid; false otherwise
         """
-
+        self._check_init()
+        
         if value is None or value == '':
             return True
 
@@ -353,9 +364,9 @@ class SchemaRule(object):
 
     def _test_enumeration(self, value, row, column):
         """Test against an enumerated set of values (if specified)."""
-        if self.enum is not None:
-            if value not in self.enum:
-                suggested_value = self._suggestion_map.get(value, find_closest_match(value, self.enum))
+        if self._enum_norm is not None:
+            if value not in self._enum_norm:
+                suggested_value = self._suggestion_map.get(value, find_closest_match(value, self._enum_norm))
                 if len(self.enum) <= 7:
                     return self._report_error(
                         "Must be one of " + str(self.enum),
