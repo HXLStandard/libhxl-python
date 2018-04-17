@@ -88,7 +88,7 @@ class SchemaRule(object):
             self._enum_map = {}
             for value in self.enum:
                 if self.case_sensitive:
-                    self._enum_map[value] = value
+                    self._enum_map[hxl.datatypes.normalise_space(value)] = value
                 else:
                     self._enum_map[hxl.datatypes.normalise_string(value)] = value
 
@@ -290,7 +290,7 @@ class SchemaRule(object):
             return True
 
         if self.case_sensitive:
-            value = raw_value
+            value = hxl.datatypes.normalise_space(raw_value)
         else:
             value = hxl.datatypes.normalise_string(raw_value)
 
