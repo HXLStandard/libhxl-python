@@ -276,7 +276,7 @@ class SchemaRule(object):
         return result
 
 
-    def validate(self, value, row = None, column = None):
+    def validate(self, raw_value, row = None, column = None):
         """
         Apply the rule to a single value.
         @param value the value to validate
@@ -285,23 +285,25 @@ class SchemaRule(object):
         @return True if valid; false otherwise
         """
         self._check_init()
-        
-        if value is None or value == '':
+
+        if hxl.datatypes.is_empty(raw_value):
             return True
 
-        if not self.case_sensitive:
-            value = hxl.datatypes.normalise_string(value)
+        if self.case_sensitive:
+            value = raw_value
+        else:
+            value = hxl.datatypes.normalise_string(raw_value)
 
         result = True
-        if not self._test_type(value, row, column):
+        if not self._test_type(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_range(value, row, column):
+        if not self._test_range(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_pattern(value, row, column):
+        if not self._test_pattern(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_enumeration(value, row, column):
+        if not self._test_enumeration(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_unique(value, row, column):
+        if not self._test_unique(value, row, column, raw_value=raw_value):
             result = False
 
         return result
@@ -321,53 +323,53 @@ class SchemaRule(object):
                 )
         return False
 
-    def _test_type(self, value, row, column):
+    def _test_type(self, value, row, column, raw_value):
         """Check the datatype."""
         if self.data_type == 'number':
             if not hxl.datatypes.is_number(value):
-                return self._report_error("Expected a number", value, row, column)
+                return self._report_error("Expected a number", value, row, column, raw_value)
         elif self.data_type == 'url':
             pieces = urllib.parse.urlparse(value)
             if not (pieces.scheme and pieces.netloc):
-                return self._report_error("Expected a URL", value, row, column)
+                return self._report_error("Expected a URL", value, row, column, raw_value)
         elif self.data_type == 'email':
             if not re.match(r'^[^@]+@[^@]+$', value):
-                return self._report_error("Expected an email address", value, row, column)
+                return self._report_error("Expected an email address", value, row, column, raw_value)
         elif self.data_type == 'phone':
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
-                return self._report_error("Expected a phone number", value, row, column)
+                return self._report_error("Expected a phone number", value, row, column, raw_value)
         elif self.data_type == 'date':
             if not hxl.datatypes.is_date(value):
-                return self._report_error("Expected a date of some sort", value, row, column)
+                return self._report_error("Expected a date of some sort", value, row, column, raw_value)
         
         return True
 
-    def _test_range(self, value, row, column):
+    def _test_range(self, value, row, column, raw_value):
         """Test against a numeric range (if specified)."""
         result = True
         try:
             if self.min_value is not None:
                 if float(value) < float(self.min_value):
-                    result = self._report_error("Value is less than " + str(self.min_value), value, row, column)
+                    result = self._report_error("Value is less than " + str(self.min_value), raw_value, row, column, raw_value)
             if self.max_value is not None:
                 if float(value) > float(self.max_value):
-                    result = self._report_error("Value is great than " + str(self.max_value), value, row, column)
+                    result = self._report_error("Value is great than " + str(self.max_value), raw_value, row, column, raw_value)
         except ValueError:
             result = False
         return result
 
-    def _test_pattern(self, value, row, column):
+    def _test_pattern(self, value, row, column, raw_value):
         """Test against a regular expression pattern (if specified)."""
         if self.regex:
             flags = 0
             if self.case_sensitive:
                 flags = re.IGNORECASE
             if not re.match(self.regex, value, flags):
-                self._report_error("Failed to match pattern " + str(self.regex), value, row, column)
+                self._report_error("Failed to match pattern " + str(self.regex), value, row, column, raw_value)
                 return False
         return True
 
-    def _test_enumeration(self, value, row, column):
+    def _test_enumeration(self, value, row, column, raw_value):
         """Test against an enumerated set of values (if specified)."""
         if self._enum_map is not None:
             if value not in self._enum_map:
@@ -380,7 +382,7 @@ class SchemaRule(object):
                     message = "Not in allowed values"
                 return self._report_error(
                     message,
-                    value=value,
+                    value=raw_value,
                     row=row,
                     column=column,
                     suggested_value=suggested_value
@@ -388,13 +390,14 @@ class SchemaRule(object):
 
         return True
 
-    def _test_unique(self, value, row, column):
+    def _test_unique(self, value, row, column, raw_value):
         """Report if a value is not unique for a specific hashtag"""
         if self.unique:
             normalised_value = hxl.datatypes.normalise(value, column)
             if self._unique_value_map.get(normalised_value):
                 return self._report_error(
-                    "Found duplicate value " + str(value),
+                    "Found duplicate value",
+                    value=raw_value,
                     row=row,
                     column=column
                 )

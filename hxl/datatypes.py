@@ -66,6 +66,21 @@ def is_empty(s):
     """
     return (s is None or s == '' or str(s).isspace())
 
+def normalise_space(s):
+    """Normalise whitespace only
+    @param v: value to normalise
+    @returns: string value with whitespace normalised
+    """
+    if is_empty(s):
+        return ''
+    else:
+        s = str(s).strip().replace("\n", " ")
+        return re.sub(
+            WHITESPACE_PATTERN,
+            ' ',
+            unidecode.unidecode(s)
+        )
+
 
 def normalise_string(s):
     """Normalise a string.
@@ -74,18 +89,7 @@ def normalise_string(s):
     @param s: the string to normalise
     @returns: the normalised string
     """
-    if s is not None:
-        # basic whitespace cleanups
-        s = str(s).strip().lower().replace("\n", " ")
-
-        # Normalise whitespace and return
-        return re.sub(
-            WHITESPACE_PATTERN,
-            ' ',
-            unidecode.unidecode(s)
-        )
-    else:
-        return ''
+    return normalise_space(s).lower()
 
     
 def is_number(v):
