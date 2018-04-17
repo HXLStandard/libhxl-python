@@ -7,7 +7,10 @@
 	- HXL validation now has a #valid_unique constraint (single value or
 	  compound key)
 	- HXL validation now has a #valid_correlation constraint (e.g. make sure
-	  that #adm1 and #adm2 are always consistent for any given value of #adm3)
+	  that #adm1 and #adm2 are always consistent for any given value
+	  of #adm3)
+	- HXL validation now calculates edit distance and suggests the
+	  closest match when failing validation against a list
 	- add "is (not) min" and "is (not) max" support to hxl.model.RowQuery
 	- add is_cached flag to hxl.model.Dataset and subclasses
 	- updated all AbstractInput to be iterables rather than iterators
@@ -17,6 +20,7 @@
 	- when importing JSON arrays and objects, flatten them to a usable
 	  text representation
 	- update docstrings
+	- default to case insensitive for validation
 
 2018-03-29 Release 4.6
 	- end support for Python 2 (will die with a RuntimeError;

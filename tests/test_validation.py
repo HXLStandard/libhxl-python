@@ -96,6 +96,15 @@ class TestRule(unittest.TestCase):
         self._try_rule('BB')
         self._try_rule('dd', 1)
 
+    def test_suggested_value_enumeration(self):
+        def callback(error):
+            self.assertEqual('cc', error.suggested_value)
+        self.rule.callback = callback
+        self.rule.enum = ['aa', 'bb', 'cc']
+        self.rule.validate('ccc')
+        self.rule.validate('dcc')
+        self.rule.validate('cdc')
+
     def test_row_restrictions(self):
         row = Row(
             columns = [

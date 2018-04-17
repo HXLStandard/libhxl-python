@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 class HXLValidationException(hxl.HXLException):
     """Data structure to hold a HXL validation error."""
 
-    def __init__(self, message, rule=None, value=None, row=None, column=None, expected_value=None):
+    def __init__(self, message, rule=None, value=None, row=None, column=None, suggested_value=None):
         """Construct a new exception."""
         super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row
         self.column = column
-        self.expected_value = expected_value
+        self.suggested_value = suggested_value
 
     def __str__(self):
         """Get a string rendition of this error."""
@@ -46,7 +46,7 @@ class SchemaRule(object):
 
     def __init__(self, tag, min_occur=None, max_occur=None,
                  data_type=None, min_value=None, max_value=None,
-                 regex=None, enum=None, case_sensitive=True,
+                 regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  required=False, unique=False, unique_key = None, correlation_key = None):
         if type(tag) is hxl.TagPattern:
@@ -75,6 +75,7 @@ class SchemaRule(object):
         self._unique_value_map = {}
         self._unique_key_map = {}
         self._correlation_map = {}
+        self._suggestion_map = {}
 
         self.init() # will need to call again if values change
 
@@ -82,6 +83,8 @@ class SchemaRule(object):
         """Initialisation method
         Call after all values have been set, but before use
         """
+        if not self.case_sensitive and self.enum:
+            self.enum = [hxl.datatypes.normalise_string(s) for s in self.enum]
         if self.unique_key:
             self.unique_key = hxl.model.TagPattern.parse_list(self.unique_key)
             self.unique_key.append(self.tag_pattern) # just in case
@@ -135,9 +138,9 @@ class SchemaRule(object):
                         key_locations = sorted(keys.items(), key=sort_entries, reverse=True)
 
                         # what value did we expect to find?
-                        expected_value = expected_values[hashtag][key]
-                        if value == expected_value:
-                            expected_value = None
+                        suggested_value = expected_values[hashtag][key]
+                        if value == suggested_value:
+                            suggested_value = None
 
                         # iterate through all but the most-common value for the key
                         for key, locations in key_locations[1:]:
@@ -147,7 +150,7 @@ class SchemaRule(object):
                                     value=value,
                                     row=row,
                                     column=column,
-                                    expected_value=expected_value
+                                    suggested_value=suggested_value
                                 )
                     
         return result
@@ -270,6 +273,9 @@ class SchemaRule(object):
         if value is None or value == '':
             return True
 
+        if not self.case_sensitive:
+            value = hxl.datatypes.normalise_string(value)
+
         result = True
         if not self._test_type(value, row, column):
             result = False
@@ -284,7 +290,7 @@ class SchemaRule(object):
 
         return result
 
-    def _report_error(self, message, value=None, row=None, column=None, expected_value=None):
+    def _report_error(self, message, value=None, row=None, column=None, suggested_value=None):
         """Report an error to the callback."""
         if self.callback != None:
             self.callback(
@@ -294,7 +300,7 @@ class SchemaRule(object):
                     value = value,
                     row = row,
                     column = column,
-                    expected_value = expected_value
+                    suggested_value = suggested_value
                     )
                 )
         return False
@@ -348,18 +354,24 @@ class SchemaRule(object):
     def _test_enumeration(self, value, row, column):
         """Test against an enumerated set of values (if specified)."""
         if self.enum is not None:
-            if self.case_sensitive:
-                if value not in self.enum:
-                    if len(self.enum) <= 7:
-                        return self._report_error("Must be one of " + str(self.enum), value, row, column)
-                    else:
-                        return self._report_error("Not in allowed values", value, row, column)
-            else:
-                if value.upper() not in [item.upper() for item in self.enum]:
-                    if len(self.enum) <= 7:
-                        return self._report_error("Must be one of " + str(self.enum) + " (case-insensitive)", value, row, column)
-                    else:
-                        return self._report_error("Not in allowed values", value, row, column)
+            if value not in self.enum:
+                suggested_value = self._suggestion_map.get(value, find_closest_match(value, self.enum))
+                if len(self.enum) <= 7:
+                    return self._report_error(
+                        "Must be one of " + str(self.enum),
+                        value=value,
+                        row=row,
+                        column=column,
+                        suggested_value=suggested_value
+                    )
+                else:
+                    return self._report_error(
+                        "Not in allowed values",
+                        value=value,
+                        row=row,
+                        column=column,
+                        suggested_value=suggested_value
+                    )
         return True
 
     def _test_unique(self, value, row, column):
@@ -547,6 +559,69 @@ class Schema(object):
                 schema.rules.append(rule)
 
         return schema
+
+#
+# Internal helper functions
+#
+
+def find_closest_match(s, allowed_values):
+    """Find the closest match for a value from a list.
+    This is not super efficient right now; look at
+    https://en.wikipedia.org/wiki/Edit_distance for better algorithms.
+    Uses a cutoff of len(s)/2 for candidate matches, and if two matches have the same 
+    edit distance, prefers the one with the longer common prefix.
+    @param s: the misspelled string to check
+    @param allowed_values: a list of allowed values
+    @return: the best match, or None if there was no candidate
+    """
+    best_match = None
+    max_distance = len(s) / 2
+    for value in allowed_values:
+        distance = get_edit_distance(s, value)
+        if (best_match is not None and distance > best_match[1]) or (distance > max_distance):
+            continue
+        prefix_len = get_common_prefix_len(s, value)
+        if (best_match is None) or (distance < best_match[1]) or (distance == best_match[1] and prefix_len > best_match[2]):
+            best_match = (value, distance, prefix_len,)
+    if best_match is None:
+        return None
+    else:
+        return best_match[0]
+
+def get_common_prefix_len(s1, s2):
+    """Return the longest common prefix of two strings
+    Adopted from example in https://stackoverflow.com/questions/9114402/regexp-finding-longest-common-prefix-of-two-strings
+    @param s1: the first string to compare
+    @param s2: the second string to compare
+    @returns: the length of the longest common prefix of the two strings
+    """
+    i = 0
+    for i, (x, y) in enumerate(zip(s1, s2)):
+        if x != y:
+            break
+    return i
+
+def get_edit_distance(s1, s2):
+    """Calculate the Levenshtein distance between two normalised strings
+    Adopted from example in https://stackoverflow.com/questions/2460177/edit-distance-in-python
+    See https://en.wikipedia.org/wiki/Edit_distance
+    @param s1: the first string to compare
+    @param s2: the second string to compare
+    @returns: an integer giving the edit distance
+    """
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
+    distances = range(len(s1) + 1)
+    for i2, c2 in enumerate(s2):
+        distances_ = [i2+1]
+        for i1, c1 in enumerate(s1):
+            if c1 == c2:
+                distances_.append(distances[i1])
+            else:
+                distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
+        distances = distances_
+    return distances[-1]
+
 
 #
 # Exported functions
