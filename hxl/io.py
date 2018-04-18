@@ -721,7 +721,7 @@ class HXLReader(hxl.model.Dataset):
             if raw_string:
                 raw_string = str(raw_string).strip()
                 nonEmptyCount += 1
-                column = hxl.model.Column.parse(raw_string, header=header)
+                column = hxl.model.Column.parse(raw_string, header=header, column_number=column_number)
                 if column:
                     columns.append(column)
                     column_number += 1
