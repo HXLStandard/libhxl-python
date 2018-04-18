@@ -125,6 +125,18 @@ class TagPattern(object):
             specs = specs.split(',')
         return [TagPattern.parse(spec) for spec in specs]
 
+    @staticmethod
+    def match_list(column, patterns):
+        """Test if a column matches any of the patterns in a list.
+        @param column: the column to test
+        @param patterns: a list of zero or more patterns.
+        @returns: True if there is a match
+        """
+        for pattern in patterns:
+            if pattern.match(column):
+                return True
+        return False
+
 
 class Dataset(object):
     """Abstract base class for a HXL data source.

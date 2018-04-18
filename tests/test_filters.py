@@ -801,6 +801,10 @@ class TestReplaceFilter(AbstractBaseFilterTest):
         # should be replaced
         self.assertEqual('Plains District', self.source.replace_data('Plains', 'Plains District', '#adm1').values[1][2])
 
+    def test_multiple_columns(self):
+        # shouldn't throw an except for a list of tag patterns
+        self.assertEqual('Plains District', self.source.replace_data('Plains', 'Plains District', '#adm1,#adm2').values[1][2])
+
     def test_column_ignored(self):
         # shouldn't be replaced
         self.assertEqual('Plains', self.source.replace_data('Plains', 'Plains District', '#org').values[1][2])

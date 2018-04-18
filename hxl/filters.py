@@ -1904,19 +1904,19 @@ class ReplaceDataFilter(AbstractStreamingFilter):
     class Replacement:
         """Replacement specification."""
 
-        def __init__(self, original, replacement, pattern=None, is_regex=False):
+        def __init__(self, original, replacement, patterns=None, is_regex=False):
             """
             @param original: a string (case- and space-insensitive) or regular expression (sensitive) to replace
             @param replacement: the replacement string or regular expression substitution
-            @param pattern: (optional) a tag pattern to limit the replacement to specific columns
+            @param patterns: (optional) a list of tag patterns to limit the replacement to specific columns
             @param is_regex: (optional) True to use regular-expression processing (defaults to False)
             """
             self.original = original
             self.replacement = replacement
-            if pattern:
-                self.pattern = hxl.model.TagPattern.parse(pattern)
+            if patterns:
+                self.patterns = hxl.model.TagPattern.parse_list(patterns)
             else:
-                self.pattern = None
+                self.patterns = None
             self.is_regex = is_regex
             if not self.is_regex:
                 self.original = hxl.datatypes.normalise_string(self.original)
@@ -1928,7 +1928,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             @param value: the cell value
             @returns: the value, possibly changed
             """
-            if self.pattern and not self.pattern.match(column):
+            if self.patterns and not hxl.model.TagPattern.match_list(column, self.patterns):
                 return value
             elif self.is_regex:
                 return re.sub(self.original, self.replacement, str(value))
@@ -1971,7 +1971,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
                 ReplaceDataFilter.Replacement(
                     original=req_arg(spec, 'original'),
                     replacement=req_arg(spec, 'replacement'),
-                    pattern=opt_arg(spec, 'pattern', None),
+                    patterns=opt_arg(spec, 'pattern', None),
                     is_regex=opt_arg(spec, 'use_regex', False)
                 )
             ]

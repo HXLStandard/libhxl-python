@@ -21,6 +21,8 @@
 	  text representation
 	- update docstrings
 	- default to case insensitive for validation
+	- added static hxl.model.TagPattern.match_list method
+	- fixed hxl.filters.ReplaceDataFilter to allow multiple tag patterns
 
 2018-03-29 Release 4.6
 	- end support for Python 2 (will die with a RuntimeError;
