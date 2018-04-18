@@ -566,7 +566,7 @@ class Schema(object):
 
                 # Determine allowed values
                 if row.get('#valid_value+list'):
-                    rule.enum = set(re.split(r'\s*\|\s*', row.get('#valid_value+list')))
+                    rule.enum = re.split(r'\s*\|\s*', row.get('#valid_value+list'))
                 elif row.get('#valid_value+url'):
                     value_source = hxl.data(row.get('#valid_value+url'), True)
                     rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
