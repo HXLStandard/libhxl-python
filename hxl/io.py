@@ -228,10 +228,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
-            try:
-                return JSONInput(input, selector=selector)
-            except:
-                logger.exception('Failed to parse apparent JSON; reverting to CSV')
+            return JSONInput(input, selector=selector)
 
         # fall back to CSV if all else fails
         logger.debug('Making input from CSV')
@@ -431,7 +428,7 @@ class JSONInput(AbstractInput):
     The iterable values will be arrays usable as raw input for HXL.
     """
 
-    def __init__(self, input, encoding='utf-8', selector='hxl'):
+    def __init__(self, input, encoding='utf-8', selector=None):
         """Constructor
         The selector is used only if the top-level JSON is an object rather than an array.
         @param input: an input stream
@@ -449,9 +446,11 @@ class JSONInput(AbstractInput):
         with io.TextIOWrapper(input, encoding=encoding) as _input:
             self.json_data = json.load(_input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
 
-        if selector is not None and is_instance(data_element, dict):
+        if selector is not None and isinstance(self.json_data, dict):
+            if not selector in self.json_data:
+                raise HXLParseException("Selector {} not found at top level of JSON data")
             # top level is a JSON object (dict); use the key provided to find HXL data
-            if not self._scan_data_element(self.json_data):
+            if not self._scan_data_element(self.json_data[selector]):
                 raise HXLParseException("Selected JSON data is not usable as HXL input (must be array of objects or array of arrays).")
         else:
             # top level is a JSON array; see if we can find HXL data in it

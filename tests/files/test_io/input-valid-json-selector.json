@@ -1,0 +1,10 @@
+{
+    "sel1": [
+        ["#adm1", "#affected"],
+        ["Coast", "100"]
+    ],
+    "sel2": [
+        ["#adm1", "#affected"],
+        ["Plains", "200"]
+    ]
+}

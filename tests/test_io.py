@@ -40,6 +40,7 @@ FILE_JSON_OBJECTS = _resolve_file('./files/test_io/input-valid-objects.json')
 FILE_JSON_OBJECTS_UNTAGGED = _resolve_file('./files/test_io/input-untagged-objects.json')
 FILE_JSON_OBJECTS_OUT = _resolve_file('./files/test_io/output-valid-objects.json')
 FILE_JSON_NESTED = _resolve_file('./files/test_io/input-valid-nested.json')
+FILE_JSON_SELECTOR = _resolve_file('./files/test_io/input-valid-json-selector.json')
 FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
@@ -70,6 +71,10 @@ class TestInput(unittest.TestCase):
         input = make_input(FILE_JSON_OBJECTS, True)
         self.assertFalse(input.is_repeatable)
         self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_json_selector(self):
+        input = make_input(FILE_JSON_SELECTOR, True, selector="sel1")
+        pass
 
     def test_excel(self):
         input = make_input(FILE_EXCEL, True)
