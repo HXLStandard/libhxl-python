@@ -251,7 +251,7 @@ class TestValidateDataset(unittest.TestCase):
         self.assertDatasetErrors(DATASET[:3], 0, schema=SCHEMA)
         self.assertDatasetErrors(DATASET, 1, schema=SCHEMA)
 
-    def test_consistency(self):
+    def test_correlation(self):
         SCHEMA = [
             ['#valid_tag', '#valid_correlation'],
             ['#adm1+name', '#adm1+code']
@@ -269,6 +269,24 @@ class TestValidateDataset(unittest.TestCase):
         self.assertDatasetErrors(DATASET[:6], 0, schema=SCHEMA)
         self.assertDatasetErrors(DATASET[:7], 1, schema=SCHEMA)
         self.assertDatasetErrors(DATASET, 2, schema=SCHEMA)
+
+    def test_suggested_value_correlation_key(self):
+        """Complex test: can we suggest a value based on the correlation key?"""
+        def callback(e):
+            self.assertEqual('yy', e.suggested_value)
+        schema = hxl.schema([
+            ['#valid_tag', '#valid_correlation'],
+            ['#foo', '#bar']
+        ], callback)
+        data = hxl.data([
+            ['#foo', '#bar'],
+            ['yy', 'yyy'],
+            ['yy', 'yyy'],
+            ['xx', 'xxx'],
+            ['xx', 'xxx'],
+            ['xx', 'yyy'],
+        ])
+        self.assertFalse(schema.validate(data))
 
     def assertDatasetErrors(self, dataset, errors_expected, schema=None):
         errors = []

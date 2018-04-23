@@ -123,7 +123,7 @@ class SchemaRule(object):
         result = True
         if m:
             #
-            # Calculate expected values for each hashtag+key combo
+            # Calculate the most-common value for each hashtag+key combo
             #
             expected_values = {}
             for hashtag in m:
@@ -150,13 +150,12 @@ class SchemaRule(object):
                         # get all the correlation key/location combinations, sorted with most-common first
                         key_locations = sorted(keys.items(), key=sort_entries, reverse=True)
 
-                        # what value did we expect to find?
-                        suggested_value = expected_values[hashtag][key]
-                        if value == suggested_value:
-                            suggested_value = None
-
                         # iterate through all but the most-common value for the key
                         for key, locations in key_locations[1:]:
+                            # what value did we expect to find?
+                            suggested_value = expected_values[hashtag][key]
+                            if value == suggested_value:
+                                suggested_value = None
                             for row, column in locations:
                                 self._report_error(
                                     'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
