@@ -16,13 +16,14 @@ logger = logging.getLogger(__name__)
 class HXLValidationException(hxl.HXLException):
     """Data structure to hold a HXL validation error."""
 
-    def __init__(self, message, rule=None, value=None, row=None, column=None, suggested_value=None):
+    def __init__(self, message, rule=None, value=None, row=None, column=None, raw_value=None, suggested_value=None):
         """Construct a new exception."""
         super(HXLValidationException, self).__init__(message)
         self.rule = rule
         self.value = value
         self.row = row
         self.column = column
+        self.raw_value = raw_value
         self.suggested_value = suggested_value
 
     def __str__(self):
@@ -49,7 +50,7 @@ class SchemaRule(object):
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  required=False, unique=False, unique_key=None, correlation_key=None,
-                 consistent_datatypes = False):
+                 consistent_datatypes = False, check_whitespace=False):
         if type(tag) is hxl.TagPattern:
             self.tag_pattern = tag
         else:
@@ -65,6 +66,7 @@ class SchemaRule(object):
         self.regex = regex
         self.enum = enum
         self.case_sensitive = case_sensitive
+        self.check_whitespace = check_whitespace
         self.consistent_datatypes = consistent_datatypes
         self.callback = callback
         self.severity = severity
@@ -333,6 +335,8 @@ class SchemaRule(object):
             value = hxl.datatypes.normalise_string(raw_value)
 
         result = True
+        if not self._test_whitespace(value, row, column, raw_value=raw_value):
+            result = False
         if not self._test_type(value, row, column, raw_value=raw_value):
             result = False
         if not self._test_range(value, row, column, raw_value=raw_value):
@@ -346,39 +350,58 @@ class SchemaRule(object):
 
         return result
 
-    def _report_error(self, message, value=None, row=None, column=None, suggested_value=None):
+    def _report_error(self, message, value=None, row=None, column=None, raw_value=None, suggested_value=None):
         """Report an error to the callback."""
         if self.callback != None:
-            self.callback(
-                HXLValidationException(
-                    message=message,
-                    rule=self,
-                    value = value,
-                    row = row,
-                    column = column,
-                    suggested_value = suggested_value
-                    )
-                )
+            e = HXLValidationException(
+                message=message,
+                rule=self,
+                value = value,
+                row = row,
+                column = column,
+                raw_value = None,
+                suggested_value = suggested_value
+            )
+            self.callback(e)
         return False
+
+    WHITESPACE_PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
+    """Pattern for irregular whitespace"""
+
+    def _test_whitespace(self, value, row, column, raw_value):
+        """Check for irregular whitespace
+        Expect no leading or trailing whitespace, and only single spaces internally.
+        Triggered by the check_whitespace flag
+        """
+        if self.check_whitespace and re.match(self.WHITESPACE_PATTERN, str(raw_value)):
+            return self._report_error(
+                message="Found extra whitespace",
+                value=raw_value,
+                row=row,
+                column=column,
+                suggested_value=hxl.datatypes.normalise_space(raw_value)
+            )
+        else:
+            return True
 
     def _test_type(self, value, row, column, raw_value):
         """Check the datatype."""
         if self.data_type == 'number':
             if not hxl.datatypes.is_number(value):
-                return self._report_error("Expected a number", value, row, column, raw_value)
+                return self._report_error("Expected a number", raw_value, row, column)
         elif self.data_type == 'url':
             pieces = urllib.parse.urlparse(value)
             if not (pieces.scheme and pieces.netloc):
-                return self._report_error("Expected a URL", value, row, column, raw_value)
+                return self._report_error("Expected a URL", raw_value, row, column)
         elif self.data_type == 'email':
             if not re.match(r'^[^@]+@[^@]+$', value):
-                return self._report_error("Expected an email address", value, row, column, raw_value)
+                return self._report_error("Expected an email address", raw_value, row, column)
         elif self.data_type == 'phone':
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
-                return self._report_error("Expected a phone number", value, row, column, raw_value)
+                return self._report_error("Expected a phone number", raw_value, row, column)
         elif self.data_type == 'date':
             if not hxl.datatypes.is_date(value):
-                return self._report_error("Expected a date of some sort", value, row, column, raw_value)
+                return self._report_error("Expected a date of some sort", raw_value, row, column)
         
         return True
 
@@ -388,10 +411,10 @@ class SchemaRule(object):
         try:
             if self.min_value is not None:
                 if float(value) < float(self.min_value):
-                    result = self._report_error("Value is less than " + str(self.min_value), raw_value, row, column, raw_value)
+                    result = self._report_error("Value is less than " + str(self.min_value), raw_value, row, column)
             if self.max_value is not None:
                 if float(value) > float(self.max_value):
-                    result = self._report_error("Value is great than " + str(self.max_value), raw_value, row, column, raw_value)
+                    result = self._report_error("Value is great than " + str(self.max_value), raw_value, row, column)
         except ValueError:
             result = False
         return result
@@ -403,7 +426,7 @@ class SchemaRule(object):
             if self.case_sensitive:
                 flags = re.IGNORECASE
             if not re.match(self.regex, value, flags):
-                self._report_error("Failed to match pattern " + str(self.regex), value, row, column, raw_value)
+                self._report_error("Failed to match pattern " + str(self.regex), value, row, column)
                 return False
         return True
 
@@ -590,6 +613,7 @@ class Schema(object):
                 rule.min_occur = to_int(row.get('#valid_required+min'))
                 rule.max_occur = to_int(row.get('#valid_required+max'))
                 rule.data_type = parse_type(row.get('#valid_datatype-consistent'))
+                rule.check_whitespace = to_boolean(row.get('#valid_value+whitespace'))
                 rule.min_value = to_float(row.get('#valid_value+min'))
                 rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))

@@ -14,6 +14,8 @@
 	- HXL validation can now try to infer datatypes without explicit rules
 	- HXL validation now calculates edit distance and suggests the
 	  closest match when failing validation against a list
+	- HXL validation can now test for irregular whitespace using
+  	  #valid_value+whitespace
 	- add "is (not) min" and "is (not) max" support to hxl.model.RowQuery
 	- add is_cached flag to hxl.model.Dataset and subclasses
 	- updated all AbstractInput to be iterables rather than iterators

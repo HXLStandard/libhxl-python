@@ -71,6 +71,15 @@ class TestRule(unittest.TestCase):
         self._try_rule('2015')
         self._try_rule('xxx', 1)
 
+    def test_value_whitespace(self):
+        self.rule.check_whitespace = True
+        self._try_rule('xxx', 0)
+        self._try_rule('xxx yyy', 0)
+        self._try_rule(' xxx', 1) # leading space not allowed
+        self._try_rule('xxx  ', 1) # trailing space not allowed
+        self._try_rule('xxx  yyy', 1) # multiple internal spaces not allowed
+        self._try_rule("xxx\tyyy", 1) # tabs not allowed
+
     def test_value_range(self):
         self.rule.min_value = 3.5
         self.rule.max_value = 4.5
