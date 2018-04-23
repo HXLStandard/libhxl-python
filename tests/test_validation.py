@@ -251,6 +251,26 @@ class TestValidateDataset(unittest.TestCase):
         self.assertDatasetErrors(DATASET[:3], 0, schema=SCHEMA)
         self.assertDatasetErrors(DATASET, 1, schema=SCHEMA)
 
+    def test_consistent_datatype(self):
+        def callback(e):
+            # expect that 'xxx' will be the bad value
+            self.assertEqual('xxx', e.value)
+
+        schema = hxl.schema([
+            ['#valid_tag', '#valid_datatype+consistent'],
+            ['#affected', 'true']
+        ], callback=callback)
+
+        data = hxl.data([
+            ['#affected'],
+            ['100'],
+            ['xxx'],
+            ['200'],
+            ['800']
+        ])
+
+        self.assertFalse(schema.validate(data))
+
     def test_correlation(self):
         SCHEMA = [
             ['#valid_tag', '#valid_correlation'],

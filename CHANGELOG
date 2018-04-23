@@ -11,6 +11,7 @@
 	- HXL validation now has a #valid_correlation constraint (e.g. make sure
 	  that #adm1 and #adm2 are always consistent for any given value
 	  of #adm3)
+	- HXL validation can now try to infer datatypes without explicit rules
 	- HXL validation now calculates edit distance and suggests the
 	  closest match when failing validation against a list
 	- add "is (not) min" and "is (not) max" support to hxl.model.RowQuery

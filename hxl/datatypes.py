@@ -34,6 +34,16 @@ def normalise(s, col=None):
     else:
         return normalise_string(s)
 
+def typeof(s, col=None):
+    """Determine the type of a column value"""
+    if col and col.tag == '#date' and is_date(s):
+        return 'date'
+    elif is_number(s):
+        return 'number'
+    elif is_empty(s):
+        return 'empty'
+    else:
+        return 'string'
     
 def flatten(value, is_subitem=False):
     """Flatten potential lists and dictionaries"""

@@ -48,7 +48,8 @@ class SchemaRule(object):
                  data_type=None, min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
-                 required=False, unique=False, unique_key = None, correlation_key = None):
+                 required=False, unique=False, unique_key=None, correlation_key=None,
+                 consistent_datatypes = False):
         if type(tag) is hxl.TagPattern:
             self.tag_pattern = tag
         else:
@@ -64,6 +65,7 @@ class SchemaRule(object):
         self.regex = regex
         self.enum = enum
         self.case_sensitive = case_sensitive
+        self.consistent_datatypes = consistent_datatypes
         self.callback = callback
         self.severity = severity
         self.description = description
@@ -79,6 +81,7 @@ class SchemaRule(object):
         self._unique_key_map = {}
         self._correlation_map = {}
         self._suggestion_map = {}
+        self._consistency_map = {}
 
     def init(self):
         """Initialisation method
@@ -109,11 +112,12 @@ class SchemaRule(object):
         result = True
         if not self._finish_correlations():
             result = False
+        if self.consistent_datatypes and (not self._finish_consistency()):
+            result = False
         return result
 
     def _finish_correlations(self):
         """Check for correlation errors"""
-
         m = self._correlation_map # shortcut
 
         def sort_entries(e):
@@ -166,6 +170,29 @@ class SchemaRule(object):
                                 )
                     
         return result
+
+    def _finish_consistency(self):
+        result = True
+        m = self._consistency_map
+        if not m:
+            return
+        for hashtag in m:
+            # each hashtag should be consistent
+            types_found = sorted(m[hashtag].items(), key=lambda e: len(e[1]), reverse=True)
+            if len(types_found) > 1:
+                # We found more than one data type for the column
+                result = False
+                for type_data in types_found[1:]:
+                    for entry in type_data[1]:
+                        self._report_error(
+                            'inconsistent datatype {} (expected {})'.format(type_data[0], types_found[0][0]),
+                            row=entry[0],
+                            column=entry[1],
+                            value=entry[2]
+                        )
+
+        return result
+                
 
     def validate_columns(self, columns):
         """Test whether the columns are present to satisfy this rule."""
@@ -271,6 +298,18 @@ class SchemaRule(object):
                     location = (row, row.columns[column_number],)
                     self._correlation_map.setdefault(hashtag, {}).setdefault(value, {}).setdefault(key, []).append(location)
                     break
+
+        # track datatypes here, then report at end of parse
+        if self.consistent_datatypes:
+            for column_number, value in enumerate(row.values):
+                column = row.columns[column_number]
+                if self.tag_pattern.match(column):
+                    if hxl.datatypes.is_empty(value):
+                        continue
+                    hashtag = row.columns[column_number].display_tag
+                    type = hxl.datatypes.typeof(value, column)
+                    entry = (row, column, value)
+                    self._consistency_map.setdefault(hashtag, {}).setdefault(type, []).append(entry)
 
         return result
 
@@ -550,7 +589,7 @@ class Schema(object):
                 rule = SchemaRule(tag)
                 rule.min_occur = to_int(row.get('#valid_required+min'))
                 rule.max_occur = to_int(row.get('#valid_required+max'))
-                rule.data_type = parse_type(row.get('#valid_datatype'))
+                rule.data_type = parse_type(row.get('#valid_datatype-consistent'))
                 rule.min_value = to_float(row.get('#valid_value+min'))
                 rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
@@ -562,6 +601,7 @@ class Schema(object):
                 rule.description = row.get('#description')
 
                 rule.case_sensitive = to_boolean(row.get('#valid_value+case'))
+                rule.consistent_datatypes = to_boolean(row.get('#valid_datatype+consistent'))
 
                 # Determine allowed values
                 if row.get('#valid_value+list'):
