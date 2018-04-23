@@ -1,4 +1,4 @@
-import logging
+import logging, os
 
 # Default to turning off all but critical logging messages
 logging.basicConfig(level=logging.CRITICAL)

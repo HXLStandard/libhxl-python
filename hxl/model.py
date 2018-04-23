@@ -23,7 +23,7 @@ class TagPattern(object):
     """
 
     # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
-    PATTERN = r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    PATTERN = r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
 
     def __init__(self, tag, include_attributes=[], exclude_attributes=[]):
         """Like a column, but has a whitelist and a blacklist.
@@ -35,12 +35,15 @@ class TagPattern(object):
         self.include_attributes = [a.lower() for a in include_attributes]
         self.exclude_attributes = [a.lower() for a in exclude_attributes]
 
+    def is_wildcard(self):
+        return self.tag == '#*'
+
     def match(self, column):
         """Check whether a Column matches this pattern.
         @param column: the column to check
         @returns: True if the column is a match
         """
-        if self.tag == column.tag:
+        if self.is_wildcard() or self.tag == column.tag:
             # all include_attributes must be present
             if self.include_attributes:
                 for attribute in self.include_attributes:

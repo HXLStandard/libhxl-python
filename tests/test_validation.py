@@ -15,6 +15,8 @@ import hxl
 from hxl.model import Column, Row
 from hxl.validation import Schema, SchemaRule
 
+from . import resolve_path
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class."""
@@ -314,6 +316,21 @@ class TestLoad(unittest.TestCase):
     #     schema = hxl.schema(SCHEMA_TAXONOMY_ALL)
     #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
 
+
+class TestJSON(unittest.TestCase):
+
+    def test_truthy(self):
+        schema = hxl.schema(hxl.data(resolve_path('files/test_validation/truthy-schema.json'), allow_local=True))
+        BAD_DATA = [
+            ['#sector'],
+            ['Health']
+        ]
+        self.assertFalse(schema.validate(hxl.data(BAD_DATA)))
+        GOOD_DATA = [
+            ['#adm2+code'],
+            ['xxx']
+        ]
+        self.assertTrue(schema.validate(hxl.data(GOOD_DATA)))
 
 #
 # Test data

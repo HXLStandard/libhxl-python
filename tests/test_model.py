@@ -60,6 +60,11 @@ class TestPattern(unittest.TestCase):
         pattern = TagPattern('#tag', include_attributes=['fOO'])
         self.assertTrue(pattern.match(self.column))
 
+    def test_simple_wildcard(self):
+        pattern = TagPattern.parse('*')
+        self.assertTrue(pattern.is_wildcard())
+        self.assertTrue(pattern.match(self.column))
+
     def test_parse(self):
         pattern = TagPattern.parse('#tag+foo-xxx')
         self.assertEqual(pattern.tag, '#tag')
