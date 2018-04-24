@@ -513,20 +513,23 @@ class Column(object):
     PATTERN = r'^\s*(#{token})((?:\s*\+{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
 
     # To tighten debugging (may reconsider later -- not really a question of memory efficiency here)
-    __slots__ = ['tag', 'attributes', 'attribute_list', 'header', 'column_number']
+    __slots__ = ['tag', 'attributes', 'attribute_list', 'header', 'column_number', 'source_column_number']
 
-    def __init__(self, tag=None, attributes=(), header=None, column_number=None):
+    def __init__(self, tag=None, attributes=(), header=None, column_number=None, source_column_number=None):
         """
         Initialise a column definition.
-        @param tag the HXL hashtag for the column (default: None)
-        @param attributes a sequence of attributes (default: ())
-        @param header the original plaintext header for the column (default: None)
+        @param tag: the HXL hashtag for the column (default: None)
+        @param attributes: (optional) a sequence of attributes (default: ())
+        @param header: (optional) the original plaintext header for the column (default: None)
+        @param column_number: (optional) the zero-based logical column number
+        @param source_column_number: (optional) the zero-based raw column number (including untagged columns)
         """
         if tag:
             tag = tag.lower()
         self.tag = tag
         self.header = header
         self.column_number = column_number
+        self.source_column_number = source_column_number
         self.attributes = set([a.lower() for a in attributes])
         self.attribute_list = [a.lower() for a in attributes] # to preserve order
 
@@ -592,7 +595,7 @@ class Column(object):
     __str__ = __repr__
 
     @staticmethod
-    def parse(raw_string, header=None, use_exception=False, column_number=None):
+    def parse(raw_string, header=None, use_exception=False, column_number=None, source_column_number=None):
         """
         Attempt to parse a full hashtag specification.
         """
@@ -609,7 +612,7 @@ class Column(object):
                 attributes = re.split(r'\s*\+', attribute_string.strip().strip('+'))
             else:
                 attributes = []
-            return Column(tag=tag, attributes=attributes, header=header, column_number=column_number)
+            return Column(tag=tag, attributes=attributes, header=header, column_number=column_number, source_column_number=source_column_number)
         else:
             if use_exception:
                 raise hxl.HXLException("Malformed tag expression: " + raw_string)
@@ -636,18 +639,20 @@ class Row(object):
     """
 
     # Predefine the slots for efficiency (may reconsider later)
-    __slots__ = ['columns', 'values', 'row_number']
+    __slots__ = ['columns', 'values', 'row_number', 'source_row_number']
 
-    def __init__(self, columns, values=[], row_number=None):
+    def __init__(self, columns, values=[], row_number=None, source_row_number=None):
         """
         Set up a new row.
-        @param columns The column definitions (array of Column objects).
-        @param values (optional) The string values for the row (default: [])
-        @param row_number (optional) The logical row number in the input dataset (default: None)
+        @param columns: The column definitions (array of Column objects).
+        @param values: (optional) The string values for the row (default: [])
+        @param row_number: (optional) The zero-based logical row number in the input dataset, if available (default: None)
+        @param source_row_number: (optional) The zero-based source row number in the input dataset, if available (default: None)
         """
         self.columns = columns
         self.values = copy.copy(values)
         self.row_number = row_number
+        self.source_row_number = source_row_number
 
     def append(self, value):
         """

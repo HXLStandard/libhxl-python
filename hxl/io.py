@@ -720,7 +720,7 @@ class HXLReader(hxl.model.Dataset):
             if raw_string:
                 raw_string = str(raw_string).strip()
                 nonEmptyCount += 1
-                column = hxl.model.Column.parse(raw_string, header=header, column_number=column_number)
+                column = hxl.model.Column.parse(raw_string, header=header, column_number=column_number, source_column_number=source_column_number)
                 if column:
                     columns.append(column)
                     column_number += 1
@@ -728,7 +728,7 @@ class HXLReader(hxl.model.Dataset):
                 else:
                     failed_hashtags.append('"' + raw_string + '"')
 
-            columns.append(hxl.model.Column(header=header))
+            columns.append(hxl.model.Column(header=header, source_column_number=source_column_number))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
@@ -758,7 +758,7 @@ class HXLReader(hxl.model.Dataset):
             columns = self.outer.columns
             values = self.outer._get_row()
             self.row_number += 1
-            return hxl.model.Row(columns=columns, values=values, row_number=self.row_number)
+            return hxl.model.Row(columns=columns, values=values, row_number=self.row_number, source_row_number=self.outer._source_row_number)
 
 
 def from_spec(spec):

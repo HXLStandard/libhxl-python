@@ -298,6 +298,20 @@ class TestParser(unittest.TestCase):
                 except:
                     self.assertEqual(TestParser.EXPECTED_CONTENT[i][j], value)
 
+
+class TestLocationInformation(unittest.TestCase):
+    """Test location information for rows and columns"""
+
+    def setUp(self):
+        self.source = hxl.data(_resolve_file('files/test_io/input-multiple-headers.csv'), allow_local=True)
+
+    def test_row_number(self):
+        for row in self.source:
+            self.assertEqual(row.source_row_number, row.row_number+3) # there are two header rows and the hashtags
+            for i, column in enumerate(row.columns):
+                self.assertEqual(i, column.source_column_number)
+
+
 class TestFunctions(unittest.TestCase):
     """Test module-level convenience functions."""
 

@@ -1,5 +1,6 @@
 2018-04-30 Release 4.7
 	- remove obsolete Python2 compatibility code
+	- added source_row_number and source_column_number to support validation
 	- add wildcard support to tag patterns, so that we can use
 	  patterns like "*" or "*+f-children"
 	- revamped date handling to support partial dates like "2018-01"
