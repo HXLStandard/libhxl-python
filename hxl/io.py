@@ -707,7 +707,7 @@ class HXLReader(hxl.model.Dataset):
         nonEmptyCount = 0
 
         # the logical column number
-        column_number = 0
+        hashtags_found = 0
 
         columns = []
         failed_hashtags = []
@@ -717,21 +717,21 @@ class HXLReader(hxl.model.Dataset):
                 header = previous_row[source_column_number]
             else:
                 header = None
-            if raw_string:
-                raw_string = str(raw_string).strip()
+            if not hxl.datatypes.is_empty(raw_string):
+                raw_string = hxl.datatypes.normalise_string(raw_string)
                 nonEmptyCount += 1
-                column = hxl.model.Column.parse(raw_string, header=header, column_number=column_number, source_column_number=source_column_number)
+                column = hxl.model.Column.parse(raw_string, header=header, column_number=source_column_number)
                 if column:
                     columns.append(column)
-                    column_number += 1
+                    hashtags_found += 1
                     continue
                 else:
                     failed_hashtags.append('"' + raw_string + '"')
 
-            columns.append(hxl.model.Column(header=header, source_column_number=source_column_number))
+            columns.append(hxl.model.Column(header=header, column_number=source_column_number))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
-        if (column_number/float(max(nonEmptyCount, 1))) >= FUZZY_HASHTAG_PERCENTAGE:
+        if (hashtags_found/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE:
             if len(failed_hashtags) > 0:
                 logger.error('Skipping column(s) with malformed hashtag specs: %s', ', '.join(failed_hashtags))
             return columns

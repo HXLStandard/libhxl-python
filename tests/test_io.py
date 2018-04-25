@@ -307,14 +307,15 @@ class TestLocationInformation(unittest.TestCase):
         for row in source:
             self.assertEqual(row.source_row_number, row.row_number+3) # there are two header rows and the hashtags
             for i, column in enumerate(row.columns):
-                self.assertEqual(i, column.source_column_number)
+                self.assertEqual(i, column.column_number)
 
     def test_google_row_number(self):
         source = hxl.data('https://docs.google.com/spreadsheets/d/1rOO0-xYa3kIOfI-6KR-mLgMTdgIEijNxM52Nfhs8uvg/edit#gid=0')
         for row in source:
+            self.assertTrue(row.source_row_number is not None)
             self.assertEqual(row.source_row_number, row.row_number+1) # there are two header rows and the hashtags
             for i, column in enumerate(row.columns):
-                self.assertEqual(i, column.source_column_number)
+                self.assertEqual(i, column.column_number)
 
 class TestFunctions(unittest.TestCase):
     """Test module-level convenience functions."""
