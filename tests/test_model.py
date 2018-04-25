@@ -65,6 +65,11 @@ class TestPattern(unittest.TestCase):
         self.assertTrue(pattern.is_wildcard())
         self.assertTrue(pattern.match(self.column))
 
+    def test_wildcard_empty_column(self):
+        pattern = TagPattern.parse('*')
+        untagged_column = hxl.model.Column(header="Foo", column_number=1)
+        self.assertFalse(pattern.match(untagged_column))
+
     def test_attributes_wildcard(self):
         pattern = TagPattern.parse('*+foo')
         self.assertTrue(pattern.is_wildcard())

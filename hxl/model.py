@@ -43,7 +43,7 @@ class TagPattern(object):
         @param column: the column to check
         @returns: True if the column is a match
         """
-        if self.is_wildcard() or self.tag == column.tag:
+        if column.tag and (self.is_wildcard() or self.tag == column.tag):
             # all include_attributes must be present
             if self.include_attributes:
                 for attribute in self.include_attributes:
