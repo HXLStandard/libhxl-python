@@ -209,9 +209,13 @@ class TestValidateRow(unittest.TestCase):
         """Set up a HXL row and count the errors in it"""
         errors = []
 
+        def callback(error):
+            print('***error', str(error))
+            errors.append(error)
+
         if schema is None:
             schema = self.DEFAULT_SCHEMA
-        schema = hxl.schema(schema, lambda error: errors.append(error))
+        schema = hxl.schema(schema, callback=callback)
 
         if columns is None:
             columns = self.DEFAULT_COLUMNS

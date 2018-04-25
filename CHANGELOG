@@ -6,6 +6,7 @@
 	- revamped date handling to support partial dates like "2018-01"
 	  or "2018", and also special notation like "2018W05" or "2018Q1"
 	- add min and max methods to hxl.model.Dataset
+	- HXL validation now reports proper column
 	- HXL validation now accepts all parseable date formats
 	- HXL validation now has a #valid_unique constraint (single value or
 	  compound key)

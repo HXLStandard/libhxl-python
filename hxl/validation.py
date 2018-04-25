@@ -223,67 +223,71 @@ class SchemaRule(object):
         @return True if all matching values in the row are valid
         """
         self._check_init()
-        
-        number_seen = 0
+
+        # individual rules may change to False
         result = True
 
-        # Look up only the values that apply to this rule
-        values = row.get_all(self.tag_pattern)
+        #
+        # Run cell-scope validations
+        #
 
-        # get a default column to show in error messages
-        column = None
-        for col in row.columns:
-            if self.tag_pattern.match(col):
-                column = col
-                break
-        
-        if values:
-            for column_number, value in enumerate(values):
-                if not self.validate(value, row, row.columns[column_number]):
+        for i, column in enumerate(row.columns):
+            value = None
+            if self.tag_pattern.match(column) and i < len(row.values):
+                value = row.values[i]
+                if not self.validate(value, row, column):
                     result = False
-                if value:
-                    number_seen += 1
-        if self.required and number_seen < 1:
-            empty_column = None
-            for column in row.columns:
+
+        #
+        # Run row-scope validations if needed
+        # #valid_required, #valid_required+min, #valid_required+max
+        #
+        if self.required or self.min_occur is not None or self.max_occur is not None:
+
+            non_empty_value_count = 0
+            first_empty_column = None
+            last_non_empty_column = None
+
+            for i, column in enumerate(row.columns):
                 if self.tag_pattern.match(column):
-                    # we want the first one
-                    empty_column = column
-                    break
-            result = self._report_error(
-                'A value for {} was required.'.format(self.tag_pattern),
-                row=row,
-                column=empty_column
+                    if i >= len(row.values) or hxl.datatypes.is_empty(row.values[i]):
+                        if first_empty_column is None:
+                            first_empty_column = column
+                    else:
+                        non_empty_value_count += 1
+                        last_non_empty_column = column
+
+            if self.required and (non_empty_value_count < 1):
+                result = self._report_error(
+                    "A value is required",
+                    row=row,
+                    column=first_empty_column
                 )
-        if self.min_occur is not None and number_seen < self.min_occur:
-            empty_column = None
-            for column in row.columns:
-                if self.tag_pattern.match(column):
-                    # we want the last one
-                    empty_column = column
-            result = self._report_error(
-                "Expected at least " + str(self.min_occur) + " instance(s) but found " + str(number_seen),
-                row=row,
-                column=empty_column
+
+            if (self.min_occur is not None) and (non_empty_value_count < self.min_occur):
+                result = self._report_error(
+                    "Minimum of {} non-empty values required in the row".format(self.min_occur),
+                    row=row,
+                    column=first_empty_column
                 )
-        if self.max_occur is not None and number_seen > self.max_occur:
-            non_empty_column = None
-            for column in row.columns:
-                if self.tag_pattern.match(column):
-                    # any one will do
-                    non_empty_column = column
-            result = self._report_error(
-                "Expected at most " + str(self.max_occur) + " instance(s) but found " + str(number_seen),
-                row=row,
-                column=non_empty_column
+
+            if (self.max_occur is not None) and (non_empty_value_count > self.max_occur):
+                result = self._report_error(
+                    "Maximum of {} non-empty values allowed in the row".format(self.max_occur),
+                    row=row,
+                    column=last_non_empty_column
                 )
+
+        #
+        # Run dataset-scope validations
+        #
+
         if self.unique_key is not None:
             key = row.key(self.unique_key)
             if self._unique_key_map.get(key):
                 result = self._report_error(
                     "Duplicate row according to tag patterns " + str(self.unique_key),
-                    row=row,
-                    column=column
+                    row=row
                 )
             else:
                 self._unique_key_map[key] = True
@@ -718,5 +722,6 @@ def schema(source=None, callback=None):
     @param callback: the validation callback function to use
     """
     return Schema.parse(source, callback)
+
 
 # end
