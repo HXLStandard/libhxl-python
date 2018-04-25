@@ -88,7 +88,7 @@ def normalise_space(s):
         return re.sub(
             WHITESPACE_PATTERN,
             ' ',
-            unidecode.unidecode(s)
+            s
         )
 
 
@@ -99,7 +99,11 @@ def normalise_string(s):
     @param s: the string to normalise
     @returns: the normalised string
     """
-    return normalise_space(s).lower()
+    if s is None:
+        s = ''
+    else:
+        s = str(s)
+    return normalise_space(unidecode.unidecode(s)).lower()
 
     
 def is_number(v):
