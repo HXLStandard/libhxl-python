@@ -212,7 +212,7 @@ class SchemaRule(object):
         # Did we fail to load an external URL?
         if self.value_url_error is not None:
             result = self._report_error(
-                str(self.value_url_error)
+                str("Error reading allowed values from {} ({})".format(self.value_url, str(self.value_url_error)))
             )
 
         # Are required columns present?
