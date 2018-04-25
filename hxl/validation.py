@@ -76,6 +76,12 @@ class SchemaRule(object):
         self.unique_key = unique_key
         self.correlation_key = correlation_key
 
+        self.value_url = None # set later, if needed
+        """(Failed) URL for reading an external taxonomy"""
+        
+        self.value_url_error = None # set later, if needed
+        """Error from trying to load an external taxonomy"""
+
         self._initialised = False
         self._enum_map = None
         
@@ -89,6 +95,7 @@ class SchemaRule(object):
         """Initialisation method
         Call after all values have been set, but before use
         """
+
         if self.enum:
             self._enum_map = {}
             for value in self.enum:
@@ -201,7 +208,14 @@ class SchemaRule(object):
         self._check_init()
         
         result = True
-        
+
+        # Did we fail to load an external URL?
+        if self.value_url_error is not None:
+            result = self._report_error(
+                str(self.value_url_error)
+            )
+
+        # Are required columns present?
         if self.required or (self.min_occur is not None and int(self.min_occur) > 0):
             number_seen = 0
             for column in columns:
@@ -635,12 +649,17 @@ class Schema(object):
                 if row.get('#valid_value+list'):
                     rule.enum = re.split(r'\s*\|\s*', row.get('#valid_value+list'))
                 elif row.get('#valid_value+url'):
-                    value_source = hxl.data(row.get('#valid_value+url'), True)
-                    target_tag = row.get(
-                        '#valid_value+target_tag',
-                        default=row.get('#valid_tag')
-                    )
-                    rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
+                    try:
+                        value_url = row.get('#valid_value+url')
+                        value_source = hxl.data(value_url)
+                        target_tag = row.get(
+                            '#valid_value+target_tag',
+                            default=row.get('#valid_tag')
+                        )
+                        rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
+                    except Exception as value_url_error:
+                        rule.value_url = value_url
+                        rule.value_url_error = value_url_error
 
                 rule.init()
 

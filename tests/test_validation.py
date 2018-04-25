@@ -154,6 +154,53 @@ class TestRule(unittest.TestCase):
             self.assertFalse(result)
         self.assertEqual(len(self.errors), errors_expected)
 
+        
+class TestValidateColumns(unittest.TestCase):
+    """Test validation at the dataset level"""
+
+    def test_required(self):
+        """Test if a column is present to potentially satisfy #valid_required"""
+        SCHEMA = [
+            ['#valid_tag', '#valid_required'],
+            ['#adm1+code', 'true']
+        ]
+        self.assertColumnErrors(['#org', '#adm1+code'], 0, SCHEMA)
+        self.assertColumnErrors(['#org', '#adm2+code'], 1, SCHEMA)
+        self.assertColumnErrors(['#org', '#adm1+name'], 1, SCHEMA)
+
+    def test_min_occurs(self):
+        """Test if enough columns are present to potentially satisfy #valid_required+min"""
+        SCHEMA = [
+            ['#valid_tag', '#valid_required+min'],
+            ['#org', '2']
+        ]
+        self.assertColumnErrors(['#org', '#adm1', '#org'], 0, SCHEMA)
+        self.assertColumnErrors(['#org', '#adm1', '#org', '#org'], 0, SCHEMA)
+        self.assertColumnErrors(['#org', '#adm1'], 1, SCHEMA)
+
+    def test_bad_value_url(self):
+        """Test for an error with an unresolvable #valid_value+url"""
+        SCHEMA = [
+            ["#valid_tag", "#valid_value+url"],
+            ["#adm1+code", "http://example.org/non-existant-link.csv"]
+        ]
+        self.assertColumnErrors(['#adm1+code'], 1, SCHEMA)
+
+    def assertColumnErrors(self, column_values, errors_expected, schema_values):
+        """Set up a list of HXL columns and count the errors"""
+        errors = []
+
+        def callback(error):
+            errors.append(error)
+
+        schema = hxl.schema(schema_values, callback=callback)
+        columns = [hxl.model.Column.parse(s) for s in column_values]
+        if errors_expected == 0:
+            self.assertTrue(schema.validate_columns(columns))
+        else:
+            self.assertFalse(schema.validate_columns(columns))
+        self.assertEqual(len(errors), errors_expected)
+
 
 class TestValidateRow(unittest.TestCase):
     """Test the hxl.validation.Schema class."""
