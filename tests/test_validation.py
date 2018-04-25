@@ -210,9 +210,6 @@ class TestValidateRow(unittest.TestCase):
         errors = []
 
         def callback(error):
-            if error.row is not None:
-                #self.assertTrue(error.row.source_row_number is not None)
-                pass
             errors.append(error)
 
         if schema is None:
