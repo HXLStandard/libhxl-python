@@ -452,13 +452,24 @@ class SchemaRule(object):
         """Test against an enumerated set of values (if specified)."""
         if self._enum_map is not None:
             if value not in self._enum_map:
-                suggested_value = self._suggestion_map.get(value, find_closest_match(value, self._enum_map))
-                if suggested_value:
-                    suggested_value = self._enum_map[suggested_value] # get the original, unnormalised value
+
+                # do we already have a cached suggested value?
+                suggested_value = self._suggestion_map.get(value)
+                if suggested_value is None:
+                    suggested_value = find_closest_match(value, self._enum_map)
+                    self._suggestion_map[value] = suggested_value
+
+                # do we have a raw version of the value?
+                if suggested_value and suggested_value in self._enum_map:
+                    suggested_value = self._enum_map[suggested_value]
+
+                # if it's a short list, include it in the error message
                 if len(self.enum) <= 7:
                     message = "Must be one of " + str(self.enum)
                 else:
                     message = "Not in allowed values"
+
+                # generate the error report
                 return self._report_error(
                     message,
                     value=raw_value,

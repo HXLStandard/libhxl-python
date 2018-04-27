@@ -225,7 +225,7 @@ class Dataset(object):
         """Return the set of all values in a dataset (optionally matching a tag pattern for a single column)
         Warning: this method can be highly inefficient for large datasets.
         @param tag_pattern: (optional) return values only for columns matching this tag pattern.
-        @param normalise: (optional) normalise the strings with hxl.datatypes.normalise_string (default: False)
+        @param normalise: (optional) normalise the strings with hxl.datatypes.normalise (default: False)
         @returns: a Python set of values
         """
         value_set = set([])
@@ -237,7 +237,9 @@ class Dataset(object):
             else:
                 new_values = row.values
             if normalise:
-                new_values = [hxl.datatypes.normalise_string(s) for s in new_values]
+                new_values = [hxl.datatypes.normalise(s) for s in new_values]
+            else:
+                new_values = [hxl.datatypes.normalise_space(s) for s in new_values]
             value_set.update(new_values)
         return value_set
 
