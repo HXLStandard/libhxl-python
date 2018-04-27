@@ -731,7 +731,7 @@ class HXLReader(hxl.model.Dataset):
             columns.append(hxl.model.Column(header=header, column_number=source_column_number))
 
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
-        if (hashtags_found/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE:
+        if (nonEmptyCount > 0) and ((hashtags_found/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE):
             if len(failed_hashtags) > 0:
                 logger.error('Skipping column(s) with malformed hashtag specs: %s', ', '.join(failed_hashtags))
             return columns

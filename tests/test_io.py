@@ -197,6 +197,16 @@ class TestParser(unittest.TestCase):
             tags = source.tags
         self.assertEqual(TestParser.EXPECTED_TAGS, tags)
 
+    def test_empty_header_row(self):
+        """Test for exception parsing an empty header row"""
+        DATA = [
+            [],
+            ['X', 'Y'],
+            ['#adm1', '#affected'],
+            ['Coast', '100']
+        ]
+        hxl.data(DATA).columns
+
     def test_attributes(self):
         with hxl.data(FILE_CSV, True) as source:
             for row in source:
