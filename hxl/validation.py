@@ -167,11 +167,11 @@ class SchemaRule(object):
     # allow datatypes (others ignored)
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
 
-    def __init__(self, tag_pattern, min_occur=None, max_occur=None,
+    def __init__(self, tag_pattern,
                  data_type=None, min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
-                 required=False, unique=False, unique_key=None, correlation_key=None,
+                 unique=False, unique_key=None, correlation_key=None,
                  consistent_datatypes = False, check_whitespace=False):
         self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
         """Tag pattern to match for the rule"""
@@ -182,8 +182,6 @@ class SchemaRule(object):
         self._saved_indices = None
         """List of saved column indices matching tag_pattern"""
         
-        self.min_occur = min_occur
-        self.max_occur = max_occur
         if data_type is None or data_type in self.DATATYPES:
             self.data_type = data_type
         else:
@@ -198,7 +196,6 @@ class SchemaRule(object):
         self.callback = callback
         self.severity = severity
         self.description = description
-        self.required = required
         self.unique = unique
         self.unique_key = unique_key
         self.correlation_key = correlation_key
@@ -373,19 +370,6 @@ class SchemaRule(object):
                 str("Error reading allowed values from {} ({})".format(self.value_url, str(self.value_url_error)))
             )
 
-        # Are required columns present?
-        if self.required or (self.min_occur is not None and int(self.min_occur) > 0):
-            number_seen = 0
-            for column in dataset.columns:
-                if self.tag_pattern.match(column):
-                    number_seen += 1
-            if (self.required and (number_seen < 1)) or (self.min_occur is not None and number_seen < int(self.min_occur)):
-                if number_seen == 0:
-                    self._report_error('column with this hashtag required but not found')
-                else:
-                    self._report_error('not enough columns with this hashtag (expected {} but found {})'.format(self.min_occur, number_seen))
-                result = False
-        
         return result
 
     def validate_row(self, row):
@@ -424,46 +408,6 @@ class SchemaRule(object):
                 value = row.values[i]
                 if not self.validate(value, row, column):
                     result = False
-
-        #
-        # Run row-scope validations if needed
-        # #valid_required, #valid_required+min, #valid_required+max
-        #
-        if self.required or self.min_occur is not None or self.max_occur is not None:
-
-            non_empty_value_count = 0
-            first_empty_column = None
-            last_non_empty_column = None
-
-            for i, column in enumerate(row.columns):
-                if self.tag_pattern.match(column):
-                    if i >= len(row.values) or hxl.datatypes.is_empty(row.values[i]):
-                        if first_empty_column is None:
-                            first_empty_column = column
-                    else:
-                        non_empty_value_count += 1
-                        last_non_empty_column = column
-
-            if self.required and (non_empty_value_count < 1):
-                result = self._report_error(
-                    "A value is required",
-                    row=row,
-                    column=first_empty_column
-                )
-
-            if (self.min_occur is not None) and (non_empty_value_count < self.min_occur):
-                result = self._report_error(
-                    "Minimum of {} non-empty values required in the row".format(self.min_occur),
-                    row=row,
-                    column=first_empty_column
-                )
-
-            if (self.max_occur is not None) and (non_empty_value_count > self.max_occur):
-                result = self._report_error(
-                    "Maximum of {} non-empty values allowed in the row".format(self.max_occur),
-                    row=row,
-                    column=last_non_empty_column
-                )
 
         #
         # Run dataset-scope validations
@@ -821,15 +765,17 @@ class Schema(object):
 
                 if to_boolean(row.get('#valid_required-min-max')):
                     rule.tests.append(RequiredTest(tag_pattern, min_occurs=1, max_occurs=None))
+
+                v1 = to_int(row.get('#valid_required+min'))
+                v2 = to_int(row.get('#valid_required+max'))
+                if v1 is not None or v2 is not None:
+                    rule.tests.append(RequiredTest(tag_pattern, min_occurs=v1, max_occurs=v2))
                 
-                rule.min_occur = to_int(row.get('#valid_required+min'))
-                rule.max_occur = to_int(row.get('#valid_required+max'))
                 rule.data_type = parse_type(row.get('#valid_datatype-consistent'))
                 rule.check_whitespace = to_boolean(row.get('#valid_value+whitespace'))
                 rule.min_value = to_float(row.get('#valid_value+min'))
                 rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
-                #rule.required = to_boolean(row.get('#valid_required-min-max'))
                 rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')
                 rule.correlation_key = row.get('#valid_correlation')

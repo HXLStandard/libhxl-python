@@ -143,27 +143,24 @@ class TestRule(unittest.TestCase):
         self.rule.validate('cdc')
 
     def test_row_restrictions(self):
-        row = Row(
-            columns = [
-                Column(tag='#x_test'),
-                Column(tag='#subsector'),
-                Column(tag='#x_test')
-            ],
-            values=['WASH', '', '']
-            );
+        """Check tests at the rule level"""
 
-        self.rule.min_occur = 1
+        test = hxl.validation.RequiredTest(self.rule.tag_pattern)
+        self.rule.tests.append(test)
+        
+        row = make_row(['WASH', '', ''], ['#x_test', '#subsector', '#x_test'])
+
+        test.min_occurs = 1
         self._try_rule(row)
 
-        self.rule.min_occur = 2
+        test.min_occurs = 2
         self._try_rule(row, 1)
 
-        self.rule.min_occur = None
-
-        self.rule.max_occur = 1
+        test.min_occurs = None
+        test.max_occurs = 1
         self._try_rule(row)
 
-        self.rule.max_occur = 0
+        test.max_occurs = 0
         self._try_rule(row, 1)
 
 
@@ -459,8 +456,8 @@ class TestJSON(unittest.TestCase):
 # Functions
 #
 
-def make_dataset(hashtags):
-    return hxl.data([hashtags])
+def make_dataset(hashtags, values=[]):
+    return hxl.data([hashtags] + values)
     
 
 def make_row(values, hashtags):
