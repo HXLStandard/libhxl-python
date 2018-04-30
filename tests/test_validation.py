@@ -13,10 +13,36 @@ import os
 
 import hxl
 from hxl.model import Column, Row
-from hxl.validation import Schema, SchemaRule
+from hxl.validation import HXLValidationException, Schema, SchemaRule
 
 from . import resolve_path
 
+
+class TestTests(unittest.TestCase):
+    """Test individual tests for a rule."""
+
+    def test_occurrence_test(self):
+        def t():
+            return hxl.validation.OccurrenceTest('#sector', min_occurs=1, max_occurs=2)
+
+        # successful dataset tests
+        t().validate_dataset(make_dataset(['#org', '#sector']))
+        t().validate_dataset(make_dataset(['#org', '#sector', '#sector']))
+
+        # failed dataset tests
+        with self.assertRaises(HXLValidationException):
+            t().validate_dataset(make_dataset(['#org']))
+
+        # successful row tests
+        t().validate_row(make_row(['aaa', 'xxx'], ['#org', '#sector']))
+        t().validate_row(make_row(['aaa', 'xxx', 'yyy'], ['#org', '#sector', '#sector']))
+
+        # failed row tests
+        with self.assertRaises(HXLValidationException):
+            t().validate_row(make_row(['xxx', ''], ['#org', '#sector']))
+        with self.assertRaises(HXLValidationException):
+            t().validate_row(make_row(['xxx', 'yyy', 'zzz'], ['#sector', '#sector', '#sector']))
+                       
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class."""
@@ -428,6 +454,18 @@ class TestJSON(unittest.TestCase):
             ['xxx']
         ]
         self.assertTrue(schema.validate(hxl.data(GOOD_DATA)))
+
+#
+# Functions
+#
+
+def make_dataset(hashtags):
+    return hxl.data([hashtags])
+    
+
+def make_row(values, hashtags):
+    columns = [hxl.model.Column.parse(hashtag) for hashtag in hashtags]
+    return hxl.model.Row(columns, values=values)
 
 #
 # Test data

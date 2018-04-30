@@ -58,6 +58,17 @@ class TagPattern(object):
         else:
             return False
 
+    def get_matching_columns(self, columns):
+        """Return a list of columns that match the pattern.
+        @param columns: a list of L{hxl.model.Column} objects
+        @returns: a list (possibly empty)
+        """
+        result = []
+        for column in columns:
+            if self.match(column):
+                result.append(column)
+        return result
+
     def find_column_index(self, columns):
         """Get the index of the first matching column.
         @param columns: a list of columns to check

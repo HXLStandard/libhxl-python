@@ -39,6 +39,81 @@ class HXLValidationException(hxl.HXLException):
         return s
 
 
+class AbstractSchemaTest(object):
+    """Base class for a single test inside a validation rule."""
+
+    def __init__(self, tag_pattern):
+        """Set up a test.
+        @param tag_pattern: the rule's tag pattern (#valid_tag)
+        """
+        self.tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
+
+    def validate_dataset(self, dataset):
+        return
+
+    def validate_row(self, row):
+        return
+
+
+class OccurrenceTest(AbstractSchemaTest):
+    """Test min/max occurrence.
+    If the columns don't exist at all, report only a single error.
+    Otherwise, report an error for each row where the test fails.
+    """
+
+    def __init__(self, tag_pattern, min_occurs=None, max_occurs=None):
+        """Set up an occurrence test.
+        @param min: minimum occurrence required (or None)
+        @param max: maximum occurrence allowed (or None)
+        """
+        super().__init__(tag_pattern)
+        self.min_occurs = min_occurs
+        self.max_occurs = max_occurs
+        self.test_rows = True # change to False in validate_dataset if necessary
+
+    def validate_dataset(self, dataset):
+        """Verify that we have enough matching columns to satisfy the test"""
+        count = len(self.tag_pattern.get_matching_columns(dataset.columns))
+        if self.min_occurs is not None and count < self.min_occurs:
+            self.test_rows = False # no point testing individual rows
+            raise HXLValidationException(
+                "Expected at least {} column(s) matching {}".format(self.min_occurs, self.tag_pattern)
+            )
+
+    def validate_row(self, row):
+        """Check the number of occurrences in a row."""
+
+        if not self.test_rows: # skip if there aren't enough columns
+            return
+        non_empty_count = 0
+        first_empty_column = None
+        last_nonempty_column = None
+
+        for i, value in enumerate(row.values):
+            column = row.columns[i]
+            if self.tag_pattern.match(column):
+                if hxl.datatypes.is_empty(value):
+                    if first_empty_column is None:
+                        first_empty_column = column
+                else:
+                    non_empty_count += 1
+                    last_nonempty_column = column
+
+        if self.min_occurs is not None and non_empty_count < self.min_occurs:
+            raise HXLValidationException(
+                "Expected at least {} value(s) for {}".format(self.min_occurs, self.tag_pattern),
+                row=row,
+                column=first_empty_column
+            )
+
+        if self.max_occurs is not None and non_empty_count > self.max_occurs:
+            raise HXLValidationException(
+                "Expected at most {} value(s) for {}".format(self.max_occurs, self.tag_pattern),
+                row=row,
+                column=last_nonempty_column
+            )
+
+
 class SchemaRule(object):
     """Validation rule for a single HXL hashtag."""
 
