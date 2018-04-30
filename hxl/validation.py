@@ -115,9 +115,10 @@ class OccurrenceTest(AbstractSchemaTest):
 
     def validate_dataset(self, dataset, indices=None):
         """Verify that we have enough matching columns to satisfy the test"""
-        self.test_rows = True
-        if indices is None:
-            indices = self._get_column_indices(dataset.columns)
+
+        if indices is None: # no pre-compiled indices
+            indices = get_column_indices(self.tag_pattern, dataset.columns)
+
         if self.min_occurs is not None and len(indices) < self.min_occurs:
             self.test_rows = False # no point testing individual rows
             raise HXLValidationException(
@@ -130,8 +131,8 @@ class OccurrenceTest(AbstractSchemaTest):
         if not self.test_rows: # skip if there aren't enough columns
             return
 
-        if indices is None:
-            indices = self._get_column_indices(row.columns)
+        if indices is None: # no pre-compiled indices
+            indices = get_column_indices(self.tag_pattern, row.columns)
 
         non_empty_count = 0
         first_empty_column = None
@@ -159,13 +160,6 @@ class OccurrenceTest(AbstractSchemaTest):
                 row=row,
                 column=last_nonempty_column
             )
-
-    def _get_column_indices(self, columns):
-        indices = []
-        for i, column in enumerate(columns):
-            if self.tag_pattern.match(column):
-                indices.append(i)
-        return indices
 
 
 class SchemaRule(object):
@@ -810,6 +804,19 @@ class Schema(object):
 #
 # Internal helper functions
 #
+
+def get_column_indices(tag_pattern, columns):
+    """Return a list of column indices matching tag_pattern
+    @param tag_pattern: the hxl.model.TagPattern to test
+    @param columns: a sequence of hxl.model.Column objects to test
+    @returns: a possibly-empty sequence of integer indices into columns
+    """
+    indices = []
+    for i, column in enumerate(columns):
+        if tag_pattern.match(column):
+            indices.append(i)
+    return indices
+
 
 def find_closest_match(s, allowed_values):
     """Find the closest match for a value from a list.
