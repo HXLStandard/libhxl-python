@@ -115,7 +115,6 @@ class RequiredTest(AbstractSchemaTest):
 
     def validate_dataset(self, dataset, indices=None):
         """Verify that we have enough matching columns to satisfy the test"""
-
         if indices is None: # no pre-compiled indices
             indices = get_column_indices(self.tag_pattern, dataset.columns)
 
@@ -168,16 +167,21 @@ class SchemaRule(object):
     # allow datatypes (others ignored)
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
 
-    def __init__(self, tag, min_occur=None, max_occur=None,
+    def __init__(self, tag_pattern, min_occur=None, max_occur=None,
                  data_type=None, min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  required=False, unique=False, unique_key=None, correlation_key=None,
                  consistent_datatypes = False, check_whitespace=False):
-        if type(tag) is hxl.TagPattern:
-            self.tag_pattern = tag
-        else:
-            self.tag_pattern = hxl.TagPattern.parse(tag)
+        self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
+        """Tag pattern to match for the rule"""
+
+        self.tests = []
+        """List of \L{AbstractSchemaTest} objects to apply as part of this rule"""
+
+        self._saved_indices = None
+        """List of saved column indices matching tag_pattern"""
+        
         self.min_occur = min_occur
         self.max_occur = max_occur
         if data_type is None or data_type in self.DATATYPES:
@@ -219,6 +223,12 @@ class SchemaRule(object):
         Call after all values have been set, but before use
         """
 
+        self._saved_indices = None
+
+        # (re)initialise all the tests
+        for test in self.tests:
+            test.init()
+
         if self.enum:
             self._enum_map = {}
             for value in self.enum:
@@ -242,11 +252,27 @@ class SchemaRule(object):
     def finish(self):
         """Call at end of parse to get post-parse errors"""
         result = True
+
+        # finish all the tests
+        for test in self.tests:
+            try:
+                test.finish()
+            except HXLValidationException as e:
+                result = self.do_callback(e)
+
         if not self._finish_correlations():
             result = False
         if self.consistent_datatypes and (not self._finish_consistency()):
             result = False
+
+        self._saved_indices = None
         return result
+
+    def do_callback(self, e):
+        if self.callback:
+            e.rule = self
+            self.callback(e)
+        return False
 
     def _finish_correlations(self):
         """Check for correlation errors"""
@@ -331,6 +357,15 @@ class SchemaRule(object):
         self._check_init()
         
         result = True
+        if self._saved_indices is None:
+            self._saved_indices = get_column_indices(self.tag_pattern, dataset.columns)
+
+        # run each of the tests
+        for test in self.tests:
+            try:
+                test.validate_dataset(dataset, self._saved_indices)
+            except HXLValidationException as e:
+                result = self.do_callback(e)
 
         # Did we fail to load an external URL?
         if self.value_url_error is not None:
@@ -363,6 +398,21 @@ class SchemaRule(object):
 
         # individual rules may change to False
         result = True
+        if self._saved_indices is None:
+            self._saved_indices = get_column_indices(self.tag_pattern, row.columns)
+
+        # run each test on the complete row, then on individual cells
+        for test in self.tests:
+            try:
+                test.validate_row(row, self._saved_indices)
+            except HXLValidationException as e:
+                result = self.do_callback(e)
+            for i in self._saved_indices:
+                if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
+                    try:
+                        test.validate_cell(row.values[i], row, row.columns[i])
+                    except HXLValidationException as e:
+                        result = self.do_callback(e)
 
         #
         # Run cell-scope validations
@@ -638,6 +688,8 @@ class Schema(object):
     # without rules
 
     def validate(self, source):
+        self.init()
+        
         result = True
         if not self.validate_dataset(source):
             result = False
@@ -646,6 +698,21 @@ class Schema(object):
                 result = False
         if not self.finish():
             result = False
+        return result
+
+    def init(self):
+        for rule in self.rules:
+            rule.init()
+
+    def finish(self):
+        result = True
+        for rule in self.rules:
+            old_callback = rule.callback
+            if self.callback:
+                rule.callback = self.callback
+            if not rule.finish():
+                result = False
+            rule.callback = old_callback
         return result
 
     def validate_dataset(self, dataset):
@@ -671,18 +738,6 @@ class Schema(object):
                     result = False
                 rule.callback = old_callback
         return result
-
-    def finish(self):
-        result = True
-        for rule in self.rules:
-            old_callback = rule.callback
-            if self.callback:
-                rule.callback = self.callback
-            if not rule.finish():
-                result = False
-            rule.callback = old_callback
-        return result
-
 
     def __str__(self):
         """String representation of a schema (for debugging)"""
@@ -759,9 +814,14 @@ class Schema(object):
                 return None
 
         for row in source:
-            tag = row.get('#valid_tag')
-            if tag:
-                rule = SchemaRule(tag)
+            tag_pattern = row.get('#valid_tag')
+            if tag_pattern:
+                tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
+                rule = SchemaRule(tag_pattern)
+
+                if to_boolean(row.get('#valid_required-min-max')):
+                    rule.tests.append(RequiredTest(tag_pattern, min_occurs=1, max_occurs=None))
+                
                 rule.min_occur = to_int(row.get('#valid_required+min'))
                 rule.max_occur = to_int(row.get('#valid_required+max'))
                 rule.data_type = parse_type(row.get('#valid_datatype-consistent'))
@@ -769,7 +829,7 @@ class Schema(object):
                 rule.min_value = to_float(row.get('#valid_value+min'))
                 rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
-                rule.required = to_boolean(row.get('#valid_required-min-max'))
+                #rule.required = to_boolean(row.get('#valid_required-min-max'))
                 rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')
                 rule.correlation_key = row.get('#valid_correlation')
