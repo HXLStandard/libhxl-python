@@ -21,9 +21,9 @@ from . import resolve_path
 class TestTests(unittest.TestCase):
     """Test individual tests for a rule."""
 
-    def test_occurrence_test(self):
+    def test_required(self):
         def t():
-            return hxl.validation.OccurrenceTest('#sector', min_occurs=1, max_occurs=2)
+            return hxl.validation.RequiredTest('#sector', min_occurs=1, max_occurs=2)
 
         # successful dataset tests
         t().validate_dataset(make_dataset(['#org', '#sector']))
@@ -220,11 +220,11 @@ class TestValidateColumns(unittest.TestCase):
             errors.append(error)
 
         schema = hxl.schema(schema_values, callback=callback)
-        columns = [hxl.model.Column.parse(s) for s in column_values]
+        dataset = make_dataset(column_values)
         if errors_expected == 0:
-            self.assertTrue(schema.validate_columns(columns))
+            self.assertTrue(schema.validate_dataset(dataset))
         else:
-            self.assertFalse(schema.validate_columns(columns))
+            self.assertFalse(schema.validate_dataset(dataset))
         self.assertEqual(len(errors), errors_expected)
 
 

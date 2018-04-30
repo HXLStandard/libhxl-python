@@ -94,7 +94,7 @@ class AbstractSchemaTest(object):
         return
 
 
-class OccurrenceTest(AbstractSchemaTest):
+class RequiredTest(AbstractSchemaTest):
     """Test min/max occurrence.
     If the columns don't exist at all, report only a single error.
     Otherwise, report an error for each row where the test fails.
@@ -326,7 +326,7 @@ class SchemaRule(object):
         return result
                 
 
-    def validate_columns(self, columns):
+    def validate_dataset(self, dataset):
         """Test whether the columns are present to satisfy this rule."""
         self._check_init()
         
@@ -341,7 +341,7 @@ class SchemaRule(object):
         # Are required columns present?
         if self.required or (self.min_occur is not None and int(self.min_occur) > 0):
             number_seen = 0
-            for column in columns:
+            for column in dataset.columns:
                 if self.tag_pattern.match(column):
                     number_seen += 1
             if (self.required and (number_seen < 1)) or (self.min_occur is not None and number_seen < int(self.min_occur)):
@@ -639,22 +639,22 @@ class Schema(object):
 
     def validate(self, source):
         result = True
-        if not self.validate_columns(source.columns):
+        if not self.validate_dataset(source):
             result = False
         for row in source:
             if not self.validate_row(row):
                 result = False
-        if not self.validate_dataset():
+        if not self.finish():
             result = False
         return result
 
-    def validate_columns(self, columns):
+    def validate_dataset(self, dataset):
         result = True
         for rule in self.rules:
             old_callback = rule.callback
             if self.callback:
                 rule.callback = self.callback
-            if not rule.validate_columns(columns):
+            if not rule.validate_dataset(dataset):
                 result = False
                 self.impossible_rules[rule] = True
             rule.callback = old_callback
@@ -672,7 +672,7 @@ class Schema(object):
                 rule.callback = old_callback
         return result
 
-    def validate_dataset(self):
+    def finish(self):
         result = True
         for rule in self.rules:
             old_callback = rule.callback
