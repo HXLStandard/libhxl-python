@@ -40,7 +40,14 @@ class HXLValidationException(hxl.HXLException):
 
 
 class AbstractSchemaTest(object):
-    """Base class for a single test inside a validation rule."""
+    """Base class for a single test inside a validation rule.
+    Safe assumptions for subclasses:
+    - init gets called before parsing starts
+    - finish gets called after parsing ends
+    - validate_dataset gets called before validate_row
+    - validate_row gets called for every row, before validate_cell for every matching value
+    - the columns for validate_row will always be the same between calls to init
+    """
 
     def __init__(self, tag_pattern):
         """Set up a test.
@@ -48,10 +55,42 @@ class AbstractSchemaTest(object):
         """
         self.tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
 
-    def validate_dataset(self, dataset):
+    @property
+    def needs_cache(self):
+        return False
+
+    def init(self):
         return
 
-    def validate_row(self, row):
+    def finish(self):
+        return
+
+    def validate_dataset(self, dataset, indices=None):
+        """Apply test at the dataset level
+        Called before validate_row() or validate_value()
+        @param dataset: a hxl.model.Dataset object to validate
+        @param indices: optional pre-compiled indices for columns matching tag_pattern
+        @raises HXLValidationException: if the test fails
+        """
+        return
+
+    def validate_row(self, row, indices=None):
+        """Apply test at the row level
+        Called for each row before validate_cell() calls
+        @param row: a hxl.model.Row object to validate
+        @param indices: optional pre-compiled indices for columns matching tag_pattern
+        @raises HXLValidationException: if the test fails
+        """
+        return
+
+    def validate_cell(self, value, row, column):
+        """Apply test at the cell level
+        Called for each matching non-empty value
+        @param value: the non-empty value to validate
+        @param row: a hxl.model.Row object for location
+        @param column: a hxl.model.Column object for location
+        @raises HXLValidationException: if the test fails
+        """
         return
 
 
@@ -69,35 +108,43 @@ class OccurrenceTest(AbstractSchemaTest):
         super().__init__(tag_pattern)
         self.min_occurs = min_occurs
         self.max_occurs = max_occurs
-        self.test_rows = True # change to False in validate_dataset if necessary
+        self.init()
 
-    def validate_dataset(self, dataset):
+    def init(self):
+        self.test_rows = True
+
+    def validate_dataset(self, dataset, indices=None):
         """Verify that we have enough matching columns to satisfy the test"""
-        count = len(self.tag_pattern.get_matching_columns(dataset.columns))
-        if self.min_occurs is not None and count < self.min_occurs:
+        self.test_rows = True
+        if indices is None:
+            indices = self._get_column_indices(dataset.columns)
+        if self.min_occurs is not None and len(indices) < self.min_occurs:
             self.test_rows = False # no point testing individual rows
             raise HXLValidationException(
                 "Expected at least {} column(s) matching {}".format(self.min_occurs, self.tag_pattern)
             )
 
-    def validate_row(self, row):
+    def validate_row(self, row, indices=None):
         """Check the number of occurrences in a row."""
 
         if not self.test_rows: # skip if there aren't enough columns
             return
+
+        if indices is None:
+            indices = self._get_column_indices(row.columns)
+
         non_empty_count = 0
         first_empty_column = None
         last_nonempty_column = None
 
-        for i, value in enumerate(row.values):
-            column = row.columns[i]
-            if self.tag_pattern.match(column):
-                if hxl.datatypes.is_empty(value):
-                    if first_empty_column is None:
-                        first_empty_column = column
-                else:
-                    non_empty_count += 1
-                    last_nonempty_column = column
+        # iterate through all values in matching columns
+        for i in indices:
+            if i >= len(row.values) or hxl.datatypes.is_empty(row.values[i]):
+                if first_empty_column is None:
+                    first_empty_column = row.columns[i]
+            else:
+                non_empty_count += 1
+                last_nonempty_column = row.columns[i]
 
         if self.min_occurs is not None and non_empty_count < self.min_occurs:
             raise HXLValidationException(
@@ -112,6 +159,13 @@ class OccurrenceTest(AbstractSchemaTest):
                 row=row,
                 column=last_nonempty_column
             )
+
+    def _get_column_indices(self, columns):
+        indices = []
+        for i, column in enumerate(columns):
+            if self.tag_pattern.match(column):
+                indices.append(i)
+        return indices
 
 
 class SchemaRule(object):
