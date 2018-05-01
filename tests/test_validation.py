@@ -123,6 +123,19 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t().validate_cell('xxx  yyy', None, None)) # multiple internal spaces not allowed
         self.assertFalse(t().validate_cell("xxx\tyyy", None, None)) # tabs not allowed
 
+    def test_regex(self):
+        def t(pattern):
+            return hxl.validation.RegexTest(pattern)
+
+        self.assertTrue(t('.').validate_cell('xxx', None, None))
+        self.assertTrue(t('c').validate_cell('abcd', None, None))
+        self.assertTrue(t('^a').validate_cell('abcd', None, None))
+        self.assertTrue(t('d$').validate_cell('abcd', None, None))
+
+        self.assertFalse(t('e').validate_cell('abcd', None, None))
+        self.assertFalse(t('^b').validate_cell('abcd', None, None))
+        self.assertFalse(t('c$').validate_cell('abcd', None, None))
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.

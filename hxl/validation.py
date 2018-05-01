@@ -248,26 +248,6 @@ class DatatypeTest(AbstractRuleTest):
         return result
 
 
-class WhitespaceTest(AbstractRuleTest):
-    """Test for irregular whitespace in a cell"""
-
-    PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
-    """Regular expression to detect irregular whitespace"""
-
-    def validate_cell(self, value, row, column):
-        """Is there irregular whitespace?"""
-        if re.match(WhitespaceTest.PATTERN, value):
-            return self.report_error(
-                'Found extra whitespace',
-                value=value,
-                row=row,
-                column=column,
-                suggested_value=hxl.datatypes.normalise_space(value)
-            )
-        else:
-            return True
-        
-
 class RangeTest(AbstractRuleTest):
     """Test for #valid_value+min and #valid_value+max"""
 
@@ -344,6 +324,45 @@ class RangeTest(AbstractRuleTest):
             return report('Value must not come after {}'.format(self.max_value))
         else:
             return True
+
+
+class WhitespaceTest(AbstractRuleTest):
+    """Test for irregular whitespace in a cell"""
+
+    PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
+    """Regular expression to detect irregular whitespace"""
+
+    def validate_cell(self, value, row, column):
+        """Is there irregular whitespace?"""
+        if re.match(WhitespaceTest.PATTERN, value):
+            return self.report_error(
+                'Found extra whitespace',
+                value=value,
+                row=row,
+                column=column,
+                suggested_value=hxl.datatypes.normalise_space(value)
+            )
+        else:
+            return True
+        
+
+class RegexTest(AbstractRuleTest):
+    """Test that non-empty values match a regular expression"""
+
+    def __init__(self, regex):
+        super().__init__()
+        self.regex = re.compile(regex)
+
+    def validate_cell(self, value, row, column):
+        if self.regex.search(value):
+            return True
+        else:
+            return self.report_error(
+                'Should match regular expression /{}/'.format(str(self.regex)),
+                value=value,
+                row=row,
+                column=column
+            )
 
 
 #
