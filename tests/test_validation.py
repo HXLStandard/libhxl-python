@@ -62,7 +62,55 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t('email').validate_cell('nobody@@example.org', None, None))
         self.assertFalse(t('phone').validate_cell('123-456-A890', None, None))
         self.assertFalse(t('date').validate_cell('2018-05-32', None, None))
-                       
+
+    def test_range(self):
+        def t(min_value=None, max_value=None):
+            return hxl.validation.RangeTest(min_value, max_value)
+
+        column = hxl.model.Column.parse('#x_test')
+        date_column = hxl.model.Column.parse('#date')
+
+        # dates
+        self.assertTrue(t(min_value='2018-01-01').validate_cell('2018-01-01', None, date_column))
+        self.assertTrue(t(min_value='2018-01-01').validate_cell('Jan-2/18', None, date_column))
+        self.assertTrue(t(max_value='2018-01-01').validate_cell('2017-01-01', None, date_column))
+        self.assertTrue(t(max_value='2018-01-01').validate_cell('Jan-2/17', None, date_column))
+        self.assertTrue(t(min_value='2018-01-01', max_value='2018-02-01').validate_cell('3 January 2018', None, date_column))
+
+        self.assertFalse(t(min_value='2018-01-01').validate_cell('2017-01-01', None, date_column))
+        self.assertFalse(t(min_value='2018-01-01').validate_cell('Jan-2/17', None, date_column))
+        self.assertFalse(t(max_value='2018-01-01').validate_cell('2019-01-01', None, date_column))
+        self.assertFalse(t(max_value='2018-01-01').validate_cell('Jan-2/18', None, date_column))
+        self.assertFalse(t(min_value='2018-01-01', max_value='2018-02-01').validate_cell('3 January 2019', None, date_column))
+
+        # numbers
+        self.assertTrue(t(min_value=200).validate_cell('200', None, column))
+        self.assertTrue(t(min_value=200).validate_cell('1000', None, column))
+        self.assertTrue(t(max_value=300).validate_cell('300', None, column))
+        self.assertTrue(t(max_value=300).validate_cell('40', None, column))
+        self.assertTrue(t(min_value=200, max_value=300).validate_cell('250', None, column))
+
+        self.assertFalse(t(min_value=200).validate_cell('30', None, column))
+        self.assertFalse(t(max_value=300).validate_cell('2000', None, column))
+        self.assertFalse(t(min_value=200, max_value=300).validate_cell('301', None, column))
+
+        # lexical comparison
+        self.assertTrue(t(min_value='c').validate_cell('c', None, column))
+        self.assertTrue(t(min_value='c').validate_cell('Ddd', None, column))
+        self.assertTrue(t(min_value='c').validate_cell(' Ccc', None, column))
+        self.assertTrue(t(max_value='e').validate_cell('e', None, column))
+        self.assertTrue(t(max_value='e').validate_cell('DaD', None, column))
+        self.assertTrue(t(max_value='e').validate_cell(' BaB', None, column))
+        self.assertTrue(t(min_value='c', max_value='e').validate_cell('d', None, column))
+
+        self.assertFalse(t(min_value='c').validate_cell('b', None, column))
+        self.assertFalse(t(min_value='c').validate_cell('Bbb', None, column))
+        self.assertFalse(t(min_value='c').validate_cell(' Aaa', None, column))
+        self.assertFalse(t(max_value='e').validate_cell('ee', None, column))
+        self.assertFalse(t(max_value='e').validate_cell('F', None, column))
+        self.assertFalse(t(max_value='e').validate_cell(' EaE', None, column))
+        self.assertFalse(t(min_value='c', max_value='e').validate_cell('ee', None, column))
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class."""

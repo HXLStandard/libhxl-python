@@ -200,6 +200,7 @@ def normalise_date(v):
         
 
     # First, try our quick ISO date pattern, extended to support quarter notation
+    v = normalise_string(v)
     result = ISO_DATE_PATTERN.match(v)
     if result:
         return make_date(

@@ -206,6 +206,7 @@ class RequiredTest(AbstractRuleTest):
 
     
 class DatatypeTest(AbstractRuleTest):
+    """Test for #valid_datatype (excluding +consistent)"""
 
     # allowed datatypes
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
@@ -245,6 +246,85 @@ class DatatypeTest(AbstractRuleTest):
             if not hxl.datatypes.is_date(value):
                 result = report("Expected a date")
         return result
+
+
+class RangeTest(AbstractRuleTest):
+    """Test for #valid_value+min and #valid_value+max"""
+
+    def __init__(self, min_value=None, max_value=None):
+        super().__init__()
+
+        # normalise strings
+        if min_value is not None:
+            self.min_value = hxl.datatypes.normalise_string(min_value)
+        else:
+            self.min_value = None
+        if max_value is not None:
+            self.max_value = hxl.datatypes.normalise_string(max_value)
+        else:
+            self.max_value = None
+
+        # precompile numbers and dates for efficiency
+        self.min_num = None
+        self.max_num = None
+        self.min_date = None
+        self.max_date = None
+        if hxl.datatypes.is_number(min_value):
+            self.min_num = hxl.datatypes.normalise_number(min_value)
+        if hxl.datatypes.is_number(max_value):
+            self.max_num = hxl.datatypes.normalise_number(max_value)
+        if hxl.datatypes.is_date(min_value):
+            self.min_date = hxl.datatypes.normalise_date(min_value)
+        if hxl.datatypes.is_date(max_value):
+            self.max_date = hxl.datatypes.normalise_date(max_value)
+
+    def validate_cell(self, value, row, column):
+        """Test that a value is >= min_value and/or <= max_value
+        Includes special handling for numbers and dates.
+        """
+        def report(message):
+            return self.report_error(
+                message,
+                value=value,
+                row=row,
+                column=column
+            )
+
+        # try as a date
+        if column.tag == '#date' and (self.min_date is not None or self.max_date is not None):
+            try:
+                date_value = hxl.datatypes.normalise_date(value)
+                if self.min_date is not None and date_value < self.min_date:
+                    return report('Date must not be before {}'.format(self.min_date))
+                elif self.max_date is not None and date_value > self.max_date:
+                    return report('Date must not be after {}'.format(self.max_date))
+                else:
+                    return True
+            except ValueError:
+                pass # OK
+
+        # try as a number
+        if self.min_num is not None or self.max_num is not None:
+            try:
+                num_value = hxl.datatypes.normalise_number(value)
+                if self.min_num is not None and num_value < self.min_num:
+                    return report('Value must not be less than {}'.format(self.min_num))
+                elif self.max_num is not None and num_value > self.max_num:
+                    return report('Value must not be more than {}'.format(self.max_num))
+                else:
+                    return True
+            except ValueError:
+                pass # OK
+
+        # try as a case-/whitespace-normalised string
+        norm_value = hxl.datatypes.normalise_string(value)
+        if self.min_value is not None and norm_value < self.min_value:
+            return report('Value must not come before {}'.format(self.min_value))
+        elif self.max_value is not None and norm_value > self.max_value:
+            return report('Value must not come after {}'.format(self.max_value))
+        else:
+            return True
+
 
 #
 # A single rule (containing one or more tests) within a schema
