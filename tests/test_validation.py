@@ -67,12 +67,14 @@ class TestTests(unittest.TestCase):
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class."""
 
+    COLUMNS = ['#x_test']
+
     def setUp(self):
         self.errors = []
         self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), severity="warning")
 
     def test_severity(self):
-        self.rule.data_type = 'number'
+        self.rule.tests = [hxl.validation.DatatypeTest('number')]
         self._try_rule('xxx', 1)
         self.assertEqual('warning', self.errors[0].rule.severity)
 
@@ -82,36 +84,36 @@ class TestRule(unittest.TestCase):
         self._try_rule('hello, world')
 
     def test_type_text(self):
-        self.rule.data_type = 'text'
+        self.rule.tests = [hxl.validation.DatatypeTest('text')]
         self._try_rule('')
         self._try_rule(10)
         self._try_rule('hello, world')
 
     def test_type_num(self):
-        self.rule.data_type = 'number'
+        self.rule.tests = [hxl.validation.DatatypeTest('number')]
         self._try_rule(10)
         self._try_rule(' -10.1 ');
         self._try_rule('ten', 1)
 
     def test_type_url(self):
-        self.rule.data_type = 'url'
+        self.rule.tests = [hxl.validation.DatatypeTest('url')]
         self._try_rule('http://www.example.org')
         self._try_rule('hello, world', 1)
 
     def test_type_email(self):
-        self.rule.data_type = 'email'
+        self.rule.tests = [hxl.validation.DatatypeTest('email')]
         self._try_rule('somebody@example.org')
         self._try_rule('hello, world', 1)
 
     def test_type_phone(self):
-        self.rule.data_type = 'phone'
+        self.rule.tests = [hxl.validation.DatatypeTest('phone')]
         self._try_rule('+1-613-555-1111 x1234')
         self._try_rule('(613) 555-1111')
         self._try_rule('123', 1)
         self._try_rule('123456789abc', 1)
         
     def test_type_date(self):
-        self.rule.data_type = 'date'
+        self.rule.tests = [hxl.validation.DatatypeTest('date')]
         self._try_rule('2015-03-15')
         self._try_rule('2015-03')
         self._try_rule('2015')
@@ -187,10 +189,9 @@ class TestRule(unittest.TestCase):
     def _try_rule(self, value, errors_expected = 0):
         """Helper: Validate a single value with a SchemaRule"""
         self.errors = [] # clear errors for the next run
-        if isinstance(value, Row):
-            result = self.rule.validate_row(value)
-        else:
-            result = self.rule.validate(value)
+        if not isinstance(value, Row):
+            value = make_row([value], ['#x_test'])
+        result = self.rule.validate_row(value)
         if errors_expected == 0:
             self.assertTrue(result)
         else:

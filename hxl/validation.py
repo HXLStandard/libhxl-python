@@ -220,22 +220,30 @@ class DatatypeTest(AbstractRuleTest):
 
     def validate_cell(self, value, row, column):
         result = True
+        def report(message):
+            return self.report_error(
+                message,
+                value=value,
+                row=row,
+                column=column
+            )
+        
         if self.datatype == 'number':
             if not hxl.datatypes.is_number(value):
-                result = self.report_error("Expected a number", value, row, column)
+                result = report("Expected a number")
         elif self.datatype == 'url':
             pieces = urllib.parse.urlparse(value)
             if not (pieces.scheme and pieces.netloc):
-                result = self.report_error("Expected a URL", value, row, column)
+                result = report("Expected a URL")
         elif self.datatype == 'email':
             if not re.match(r'^[^@]+@[^@]+$', value):
-                result = self.report_error("Expected an email address", value, row, column)
+                result = report("Expected an email address")
         elif self.datatype == 'phone':
             if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
-                result= self.report_error("Expected a phone number", value, row, column)
+                result= report("Expected a phone number")
         elif self.datatype == 'date':
             if not hxl.datatypes.is_date(value):
-                result = self.report_error("Expected a date of some sort", value, row, column)
+                result = report("Expected a date")
         return result
 
 #
@@ -247,11 +255,8 @@ class SchemaRule(object):
     A rule contains one or more tests.
     """
 
-    # allow datatypes (others ignored)
-    DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
-
     def __init__(self, tag_pattern,
-                 data_type=None, min_value=None, max_value=None,
+                 min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  unique=False, unique_key=None, correlation_key=None,
@@ -265,10 +270,6 @@ class SchemaRule(object):
         self._saved_indices = None
         """List of saved column indices matching tag_pattern"""
         
-        if data_type is None or data_type in self.DATATYPES:
-            self.data_type = data_type
-        else:
-            raise hxl.HXLException('Unknown data type: {}'.format(data_type))
         self.min_value = min_value
         self.max_value = max_value
         self.regex = regex
@@ -471,10 +472,8 @@ class SchemaRule(object):
                 result = False
             for i in self._saved_indices: # validate individual cells
                 if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
-                    try:
-                        test.validate_cell(row.values[i], row, row.columns[i])
-                    except HXLValidationException as e:
-                        result = self.do_callback(e)
+                    if not test.validate_cell(row.values[i], row, row.columns[i]):
+                        result = False
 
         #
         # Run cell-scope validations
@@ -551,8 +550,6 @@ class SchemaRule(object):
         result = True
         if not self._test_whitespace(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_type(value, row, column, raw_value=raw_value):
-            result = False
         if not self._test_range(value, row, column, raw_value=raw_value):
             result = False
         if not self._test_pattern(value, row, column, raw_value=raw_value):
@@ -597,27 +594,6 @@ class SchemaRule(object):
             )
         else:
             return True
-
-    def _test_type(self, value, row, column, raw_value):
-        """Check the datatype."""
-        if self.data_type == 'number':
-            if not hxl.datatypes.is_number(value):
-                return self._report_error("Expected a number", raw_value, row, column)
-        elif self.data_type == 'url':
-            pieces = urllib.parse.urlparse(value)
-            if not (pieces.scheme and pieces.netloc):
-                return self._report_error("Expected a URL", raw_value, row, column)
-        elif self.data_type == 'email':
-            if not re.match(r'^[^@]+@[^@]+$', value):
-                return self._report_error("Expected an email address", raw_value, row, column)
-        elif self.data_type == 'phone':
-            if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
-                return self._report_error("Expected a phone number", raw_value, row, column)
-        elif self.data_type == 'date':
-            if not hxl.datatypes.is_date(value):
-                return self._report_error("Expected a date of some sort", raw_value, row, column)
-        
-        return True
 
     def _test_range(self, value, row, column, raw_value):
         """Test against a numeric range (if specified)."""
@@ -847,12 +823,15 @@ class Schema(object):
                 if to_boolean(row.get('#valid_required-min-max')):
                     rule.tests.append(RequiredTest(min_occurs=1, max_occurs=None))
 
-                v1 = to_int(row.get('#valid_required+min'))
-                v2 = to_int(row.get('#valid_required+max'))
-                if v1 is not None or v2 is not None:
-                    rule.tests.append(RequiredTest(min_occurs=v1, max_occurs=v2))
+                min = to_int(row.get('#valid_required+min'))
+                max = to_int(row.get('#valid_required+max'))
+                if min is not None or max is not None:
+                    rule.tests.append(RequiredTest(min_occurs=min, max_occurs=max))
+
+                datatype = row.get('#valid_datatype-consistent')
+                if datatype is not None:
+                    rule.tests.append(DatatypeTest(datatype))
                 
-                rule.data_type = parse_type(row.get('#valid_datatype-consistent'))
                 rule.check_whitespace = to_boolean(row.get('#valid_value+whitespace'))
                 rule.min_value = to_float(row.get('#valid_value+min'))
                 rule.max_value = to_float(row.get('#valid_value+max'))
