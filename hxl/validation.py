@@ -336,7 +336,6 @@ class SchemaRule(object):
     """
 
     def __init__(self, tag_pattern,
-                 min_value=None, max_value=None,
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  unique=False, unique_key=None, correlation_key=None,
@@ -350,8 +349,6 @@ class SchemaRule(object):
         self._saved_indices = None
         """List of saved column indices matching tag_pattern"""
         
-        self.min_value = min_value
-        self.max_value = max_value
         self.regex = regex
         self.enum = enum
         self.case_sensitive = case_sensitive
@@ -630,8 +627,6 @@ class SchemaRule(object):
         result = True
         if not self._test_whitespace(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_range(value, row, column, raw_value=raw_value):
-            result = False
         if not self._test_pattern(value, row, column, raw_value=raw_value):
             result = False
         if not self._test_enumeration(value, row, column, raw_value=raw_value):
@@ -674,20 +669,6 @@ class SchemaRule(object):
             )
         else:
             return True
-
-    def _test_range(self, value, row, column, raw_value):
-        """Test against a numeric range (if specified)."""
-        result = True
-        try:
-            if self.min_value is not None:
-                if float(value) < float(self.min_value):
-                    result = self._report_error("Value is less than " + str(self.min_value), raw_value, row, column)
-            if self.max_value is not None:
-                if float(value) > float(self.max_value):
-                    result = self._report_error("Value is great than " + str(self.max_value), raw_value, row, column)
-        except ValueError:
-            result = False
-        return result
 
     def _test_pattern(self, value, row, column, raw_value):
         """Test against a regular expression pattern (if specified)."""
@@ -903,18 +884,21 @@ class Schema(object):
                 if to_boolean(row.get('#valid_required-min-max')):
                     rule.tests.append(RequiredTest(min_occurs=1, max_occurs=None))
 
-                min = to_int(row.get('#valid_required+min'))
-                max = to_int(row.get('#valid_required+max'))
-                if min is not None or max is not None:
-                    rule.tests.append(RequiredTest(min_occurs=min, max_occurs=max))
+                min_occurs = to_int(row.get('#valid_required+min'))
+                max_occurs = to_int(row.get('#valid_required+max'))
+                if min_occurs is not None or max_occurs is not None:
+                    rule.tests.append(RequiredTest(min_occurs=min_occurs, max_occurs=max_occurs))
 
                 datatype = row.get('#valid_datatype-consistent')
                 if datatype is not None:
                     rule.tests.append(DatatypeTest(datatype))
+
+                min_value = row.get('#valid_value+min')
+                max_value = row.get('#valid_value+max')
+                if min_value is not None or max_value is not None:
+                    rule.tests.append(RangeTest(min_value=min_value, max_value=max_value))
                 
                 rule.check_whitespace = to_boolean(row.get('#valid_value+whitespace'))
-                rule.min_value = to_float(row.get('#valid_value+min'))
-                rule.max_value = to_float(row.get('#valid_value+max'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
                 rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')

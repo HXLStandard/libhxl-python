@@ -177,8 +177,7 @@ class TestRule(unittest.TestCase):
         self._try_rule("xxx\tyyy", 1) # tabs not allowed
 
     def test_value_range(self):
-        self.rule.min_value = 3.5
-        self.rule.max_value = 4.5
+        self.rule.tests = [hxl.validation.RangeTest(3.5, 4.5)]
         self._try_rule(4.0)
         self._try_rule('4')
         self._try_rule('3.49', 1)
