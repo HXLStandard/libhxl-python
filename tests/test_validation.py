@@ -171,7 +171,7 @@ class TestRule(unittest.TestCase):
         self._try_rule('3.49', 1)
 
     def test_value_pattern(self):
-        self.rule.regex = '^a+b$'
+        self.rule.tests = [hxl.validation.RegexTest('^a+b$')]
         self._try_rule('ab', 0)
         self._try_rule('aab', 0)
         self._try_rule('bb', 1)

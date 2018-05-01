@@ -347,7 +347,9 @@ class WhitespaceTest(AbstractRuleTest):
         
 
 class RegexTest(AbstractRuleTest):
-    """Test that non-empty values match a regular expression"""
+    """Test that non-empty values match a regular expression
+    TODO: case-(in)sensitive
+    """
 
     def __init__(self, regex):
         super().__init__()
@@ -375,7 +377,7 @@ class SchemaRule(object):
     """
 
     def __init__(self, tag_pattern,
-                 regex=None, enum=None, case_sensitive=False,
+                 enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  unique=False, unique_key=None, correlation_key=None,
                  consistent_datatypes = False):
@@ -388,7 +390,6 @@ class SchemaRule(object):
         self._saved_indices = None
         """List of saved column indices matching tag_pattern"""
         
-        self.regex = regex
         self.enum = enum
         self.case_sensitive = case_sensitive
         self.consistent_datatypes = consistent_datatypes
@@ -663,8 +664,6 @@ class SchemaRule(object):
             value = hxl.datatypes.normalise_string(raw_value)
 
         result = True
-        if not self._test_pattern(value, row, column, raw_value=raw_value):
-            result = False
         if not self._test_enumeration(value, row, column, raw_value=raw_value):
             result = False
         if not self._test_unique(value, row, column, raw_value=raw_value):
@@ -686,17 +685,6 @@ class SchemaRule(object):
             )
             self.callback(e)
         return False
-
-    def _test_pattern(self, value, row, column, raw_value):
-        """Test against a regular expression pattern (if specified)."""
-        if self.regex:
-            flags = 0
-            if self.case_sensitive:
-                flags = re.IGNORECASE
-            if not re.match(self.regex, value, flags):
-                self._report_error("Failed to match pattern " + str(self.regex), value, row, column)
-                return False
-        return True
 
     def _test_enumeration(self, value, row, column, raw_value):
         """Test against an enumerated set of values (if specified)."""
@@ -886,12 +874,6 @@ class Schema(object):
                 raise hxl.HXLException('Unrecognised true/false value: {}'.format(s))
 
 
-        def to_regex(s):
-            if s:
-                return re.compile(s)
-            else:
-                return None
-
         for row in source:
             tag_pattern = row.get('#valid_tag')
             if tag_pattern:
@@ -917,8 +899,11 @@ class Schema(object):
 
                 if to_boolean(row.get('#valid_value+whitespace')):
                     rule.tests.append(WhitespaceTest())
+
+                regex = row.get('#valid_value+regex')
+                if regex is not None:
+                    rule.tests.append(RegexTest(regex))
                 
-                rule.regex = to_regex(row.get('#valid_value+regex'))
                 rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')
                 rule.correlation_key = row.get('#valid_correlation')
