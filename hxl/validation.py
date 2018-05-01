@@ -38,100 +38,141 @@ class HXLValidationException(hxl.HXLException):
             s += '- {}'.format(self.message)
         return s
 
+#
+# Individual tests within a Schema Rule
+#
 
 class AbstractSchemaTest(object):
     """Base class for a single test inside a validation rule.
     Safe assumptions for subclasses:
-    - init gets called before parsing starts
-    - finish gets called after parsing ends
-    - validate_dataset gets called before validate_row
-    - validate_row gets called for every row, before validate_cell for every matching value
-    - the columns for validate_row will always be the same between calls to init
+    - \I{start} gets called before parsing starts
+    - \I{end} gets called after parsing ends
+    - \I{validate_dataset} gets called once, before any calls to \I{validate_row}
+    - \I{validate_row} gets called once for every row, before any calls to \I{validate_cell}
+    - \I{validate_cell} gets called once for every non-empty maching column in the row
+    - the columns for \I{validate_row} will always be the same between calls to init
     """
 
-    def __init__(self, tag_pattern):
-        """Set up a test.
-        @param tag_pattern: the rule's tag pattern (#valid_tag)
+    def __init__(self, callback=None):
+        """Set up a schema test.
+        @param callback: a callback function to receive error reports
         """
-        self.tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
+        self.callback = callback
 
     @property
     def needs_cache(self):
+        """Report whether this test requires a cached dataset.
+        A cached dataset is one that can be processed more than
+        once. It requires more memory and processing time, so return
+        True only if absolutely necessary.
+        @returns: True if the test requires a cached dataset.
+        """
         return False
 
-    def init(self):
-        return
+    def start(self):
+        """Setup code to run before validating each dataset.
+        This code should not report errors, since it hasn't seen the data yet.
+        """
+        return True
 
-    def finish(self):
-        return
+    def end(self):
+        """Code to run after validating each dataset.
+        Will report errors via the test's \I{callback}, if available.
+        @raises HXLValidationException: for a validation
+        @returns: True if there are no new validation errors
+        """
+        return True
 
-    def validate_dataset(self, dataset, indices=None):
+    def validate_dataset(self, dataset, indices=None, tag_pattern=None):
         """Apply test at the dataset level
         Called before validate_row() or validate_value()
+        Will report errors via the test's \I{callback}, if available.
         @param dataset: a hxl.model.Dataset object to validate
         @param indices: optional pre-compiled indices for columns matching tag_pattern
-        @raises HXLValidationException: if the test fails
+        @returns: True if there are no new validation errors.
         """
-        return
+        return True
 
-    def validate_row(self, row, indices=None):
+    def validate_row(self, row, indices=None, tag_pattern=None):
         """Apply test at the row level
-        Called for each row before validate_cell() calls
+        Called for each row before validate_cell() calls.
+        Will report errors via the test's \I{callback}, if available.
         @param row: a hxl.model.Row object to validate
         @param indices: optional pre-compiled indices for columns matching tag_pattern
-        @raises HXLValidationException: if the test fails
+        @returns: True if there are no new validation errors.
         """
-        return
+        return True
 
     def validate_cell(self, value, row, column):
         """Apply test at the cell level
-        Called for each matching non-empty value
+        Called for each matching non-empty value.
+        Will also report errors via the test's \I{callback}, if available.
         @param value: the non-empty value to validate
         @param row: a hxl.model.Row object for location
         @param column: a hxl.model.Column object for location
-        @raises HXLValidationException: if the test fails
+        @returns: True if there are no new validation errors.
         """
-        return
+        return True
+
+    def get_indices(self, indices, tag_pattern, columns):
+        """Get a set of column indices by hook or by crook, based on what we have"""
+        if indices is not None:
+            return indices
+        elif tag_pattern is not None:
+            return get_column_indices(tag_pattern, columns)
+        else:
+            raise HXLException("Internal error: rule test requires a tag pattern or a list of indices")
+
+    def report_error(self, message, row=None, column=None, value=None, raw_value=None, suggested_value=None):
+        """Report an error from this test, if there is a callback function available."""
+        if self.callback:
+            self.callback(HXLValidationException(
+                message,
+                value=value,
+                row=row,
+                column=column,
+                raw_value=raw_value,
+                suggested_value=suggested_value
+            ))
+        return False # for convenience
 
 
 class RequiredTest(AbstractSchemaTest):
-    """Test min/max occurrence.
+    """Test min/max occurrence for #valid_required
     If the columns don't exist at all, report only a single error.
     Otherwise, report an error for each row where the test fails.
     """
 
-    def __init__(self, tag_pattern, min_occurs=None, max_occurs=None):
-        """Set up an occurrence test.
+    def __init__(self, min_occurs=None, max_occurs=None):
+        """Constructor
         @param min: minimum occurrence required (or None)
         @param max: maximum occurrence allowed (or None)
         """
-        super().__init__(tag_pattern)
+        super().__init__()
         self.min_occurs = min_occurs
         self.max_occurs = max_occurs
-        self.init()
-
-    def init(self):
         self.test_rows = True
 
-    def validate_dataset(self, dataset, indices=None):
-        """Verify that we have enough matching columns to satisfy the test"""
-        if indices is None: # no pre-compiled indices
-            indices = get_column_indices(self.tag_pattern, dataset.columns)
+    def start(self):
+        self.test_rows = True
 
+    def validate_dataset(self, dataset, indices=None, tag_pattern=None):
+        """Verify that we have enough matching columns to satisfy the test"""
+        result = True
+        indices = self.get_indices(indices, tag_pattern, dataset.columns)
         if self.min_occurs is not None and len(indices) < self.min_occurs:
             self.test_rows = False # no point testing individual rows
-            raise HXLValidationException(
-                "Expected at least {} column(s) matching {}".format(self.min_occurs, self.tag_pattern)
+            result = self.report_error(
+                "Expected at least {} matching column(s)".format(self.min_occurs)
             )
+        return result
 
-    def validate_row(self, row, indices=None):
-        """Check the number of occurrences in a row."""
-
+    def validate_row(self, row, indices=None, tag_pattern=None):
+        """Check the number of non-empty occurrences in a row."""
         if not self.test_rows: # skip if there aren't enough columns
             return
-
-        if indices is None: # no pre-compiled indices
-            indices = get_column_indices(self.tag_pattern, row.columns)
+        result = True
+        indices = self.get_indices(indices, tag_pattern, row.columns)
 
         non_empty_count = 0
         first_empty_column = None
@@ -147,22 +188,29 @@ class RequiredTest(AbstractSchemaTest):
                 last_nonempty_column = row.columns[i]
 
         if self.min_occurs is not None and non_empty_count < self.min_occurs:
-            raise HXLValidationException(
-                "Expected at least {} value(s) for {}".format(self.min_occurs, self.tag_pattern),
+            result = self.report_error(
+                "Expected at least {} matching non-empty value(s)".format(self.min_occurs),
                 row=row,
                 column=first_empty_column
             )
 
         if self.max_occurs is not None and non_empty_count > self.max_occurs:
-            raise HXLValidationException(
-                "Expected at most {} value(s) for {}".format(self.max_occurs, self.tag_pattern),
+            result = self.report_error(
+                "Expected at most {} matching non-empty value(s)".format(self.max_occurs),
                 row=row,
                 column=last_nonempty_column
             )
 
+        return result
+
+#
+# A single rule (containing one or more tests) within a schema
+#
 
 class SchemaRule(object):
-    """Validation rule for a single HXL hashtag."""
+    """A single rule within a schema.
+    A rule contains one or more tests.
+    """
 
     # allow datatypes (others ignored)
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
@@ -215,16 +263,23 @@ class SchemaRule(object):
         self._suggestion_map = {}
         self._consistency_map = {}
 
-    def init(self):
+    def start(self):
         """Initialisation method
         Call after all values have been set, but before use
         """
 
         self._saved_indices = None
 
+        def test_callback(e):
+            """Relay error reports from tests, with rule-level context added"""
+            e.rule = self
+            if self.callback:
+                self.callback(e)
+
         # (re)initialise all the tests
         for test in self.tests:
-            test.init()
+            test.callback = test_callback # call back to here
+            test.start()
 
         if self.enum:
             self._enum_map = {}
@@ -244,18 +299,16 @@ class SchemaRule(object):
 
     def _check_init(self):
         if not self._initialised:
-            self.init()
+            self.start()
 
-    def finish(self):
+    def end(self):
         """Call at end of parse to get post-parse errors"""
         result = True
 
         # finish all the tests
         for test in self.tests:
-            try:
-                test.finish()
-            except HXLValidationException as e:
-                result = self.do_callback(e)
+            if not test.end():
+                result = False
 
         if not self._finish_correlations():
             result = False
@@ -264,12 +317,6 @@ class SchemaRule(object):
 
         self._saved_indices = None
         return result
-
-    def do_callback(self, e):
-        if self.callback:
-            e.rule = self
-            self.callback(e)
-        return False
 
     def _finish_correlations(self):
         """Check for correlation errors"""
@@ -357,18 +404,16 @@ class SchemaRule(object):
         if self._saved_indices is None:
             self._saved_indices = get_column_indices(self.tag_pattern, dataset.columns)
 
-        # run each of the tests
-        for test in self.tests:
-            try:
-                test.validate_dataset(dataset, self._saved_indices)
-            except HXLValidationException as e:
-                result = self.do_callback(e)
-
         # Did we fail to load an external URL?
         if self.value_url_error is not None:
             result = self._report_error(
                 str("Error reading allowed values from {} ({})".format(self.value_url, str(self.value_url_error)))
             )
+
+        # run each of the tests
+        for test in self.tests:
+            if not test.validate_dataset(dataset, self._saved_indices):
+                result = False
 
         return result
 
@@ -387,11 +432,9 @@ class SchemaRule(object):
 
         # run each test on the complete row, then on individual cells
         for test in self.tests:
-            try:
-                test.validate_row(row, self._saved_indices)
-            except HXLValidationException as e:
-                result = self.do_callback(e)
-            for i in self._saved_indices:
+            if not test.validate_row(row, self._saved_indices):
+                result = False
+            for i in self._saved_indices: # validate individual cells
                 if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
                     try:
                         test.validate_cell(row.values[i], row, row.columns[i])
@@ -400,6 +443,7 @@ class SchemaRule(object):
 
         #
         # Run cell-scope validations
+        # TODO this should all be removed until the final return
         #
 
         for i, column in enumerate(row.columns):
@@ -453,7 +497,7 @@ class SchemaRule(object):
 
     def validate(self, raw_value, row = None, column = None):
         """
-        Apply the rule to a single value.
+        Apply the rule to a single value. TODO: this will be removed when tests are complete
         @param value the value to validate
         @param row (optional) the Row being validated
         @param column (optional) the Column being validated
@@ -632,55 +676,58 @@ class Schema(object):
     # without rules
 
     def validate(self, source):
-        self.init()
-        
         result = True
+        self.start()
         if not self.validate_dataset(source):
             result = False
         for row in source:
             if not self.validate_row(row):
                 result = False
-        if not self.finish():
+        if not self.end():
             result = False
         return result
 
-    def init(self):
-        for rule in self.rules:
-            rule.init()
+    def start(self):
+        """Initialise the validation run"""
 
-    def finish(self):
+        def rule_callback(e):
+            """Relay rule callbacks"""
+            if self.callback:
+                self.callback(e)
+                
+        for rule in self.rules:
+            rule.callback = rule_callback
+            rule.start()
+
+    def end(self):
+        """Terminate the validation run"""
         result = True
         for rule in self.rules:
-            old_callback = rule.callback
-            if self.callback:
-                rule.callback = self.callback
-            if not rule.finish():
+            if not rule.end():
                 result = False
-            rule.callback = old_callback
         return result
 
     def validate_dataset(self, dataset):
+        """Validate just at the dataset level
+        e.g. are required columns present
+        @param dataset: the \L{hxl.model.Dataset} object to validate
+        """
         result = True
         for rule in self.rules:
-            old_callback = rule.callback
-            if self.callback:
-                rule.callback = self.callback
             if not rule.validate_dataset(dataset):
                 result = False
-                self.impossible_rules[rule] = True
-            rule.callback = old_callback
         return result
 
     def validate_row(self, row):
+        """Validate at the row and cell levels.
+        Each rule will handle cell-level validation on its own,
+        because it knows what columns to look at.
+        @param row: the row to validate
+        """
         result = True
         for rule in self.rules:
-            if not rule in self.impossible_rules:
-                old_callback = rule.callback
-                if self.callback:
-                    rule.callback = self.callback
-                if not rule.validate_row(row):
-                    result = False
-                rule.callback = old_callback
+            if not rule.validate_row(row):
+                result = False
         return result
 
     def __str__(self):
@@ -690,7 +737,6 @@ class Schema(object):
             s += "  " + str(rule) + "\n"
         s += ">"
         return s
-
 
     @staticmethod
     def parse(source=None, callback=None):
@@ -764,12 +810,12 @@ class Schema(object):
                 rule = SchemaRule(tag_pattern)
 
                 if to_boolean(row.get('#valid_required-min-max')):
-                    rule.tests.append(RequiredTest(tag_pattern, min_occurs=1, max_occurs=None))
+                    rule.tests.append(RequiredTest(min_occurs=1, max_occurs=None))
 
                 v1 = to_int(row.get('#valid_required+min'))
                 v2 = to_int(row.get('#valid_required+max'))
                 if v1 is not None or v2 is not None:
-                    rule.tests.append(RequiredTest(tag_pattern, min_occurs=v1, max_occurs=v2))
+                    rule.tests.append(RequiredTest(min_occurs=v1, max_occurs=v2))
                 
                 rule.data_type = parse_type(row.get('#valid_datatype-consistent'))
                 rule.check_whitespace = to_boolean(row.get('#valid_value+whitespace'))
@@ -800,8 +846,6 @@ class Schema(object):
                     except Exception as value_url_error:
                         rule.value_url = value_url
                         rule.value_url_error = value_url_error
-
-                rule.init()
 
                 schema.rules.append(rule)
 
