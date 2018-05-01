@@ -136,6 +136,15 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t('^b').validate_cell('abcd', None, None))
         self.assertFalse(t('c$').validate_cell('abcd', None, None))
 
+    def test_unique_value(self):
+        t = hxl.validation.UniqueValueTest()
+        t.start() # to set up context
+        self.assertTrue(t.validate_cell('a', None, None))
+        self.assertFalse(t.validate_cell('a', None, None))
+        self.assertFalse(t.validate_cell('  A  ', None, None))
+        self.assertTrue(t.validate_cell('b', None, None))
+        self.assertTrue(t.end())
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.

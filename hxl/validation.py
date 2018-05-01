@@ -367,6 +367,30 @@ class RegexTest(AbstractRuleTest):
             )
 
 
+class UniqueValueTest(AbstractRuleTest):
+    """Test that individual values are unique"""
+
+    def start(self):
+        self.values_seen = set() # create the empty value set
+
+    def end(self):
+        self.values_seen = None # free some memory
+        return True
+
+    def validate_cell(self, value, row, column):
+        """Report an error if we see the same (normalised) value twice"""
+        norm_value = hxl.datatypes.normalise_string(value)
+        if norm_value in self.values_seen:
+            return self.report_error(
+                "Duplicate value",
+                value=value,
+                row=row,
+                column=column
+            )
+        else:
+            self.values_seen.add(norm_value)
+            return True
+
 #
 # A single rule (containing one or more tests) within a schema
 #
