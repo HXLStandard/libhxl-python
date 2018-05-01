@@ -403,7 +403,7 @@ class SchemaRule(object):
     def __init__(self, tag_pattern,
                  enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
-                 unique=False, unique_key=None, correlation_key=None,
+                 unique_key=None, correlation_key=None,
                  consistent_datatypes = False):
         self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
         """Tag pattern to match for the rule"""
@@ -420,7 +420,6 @@ class SchemaRule(object):
         self.callback = callback
         self.severity = severity
         self.description = description
-        self.unique = unique
         self.unique_key = unique_key
         self.correlation_key = correlation_key
 
@@ -433,7 +432,6 @@ class SchemaRule(object):
         self._initialised = False
         self._enum_map = None
         
-        self._unique_value_map = {}
         self._unique_key_map = {}
         self._correlation_map = {}
         self._suggestion_map = {}
@@ -690,8 +688,6 @@ class SchemaRule(object):
         result = True
         if not self._test_enumeration(value, row, column, raw_value=raw_value):
             result = False
-        if not self._test_unique(value, row, column, raw_value=raw_value):
-            result = False
 
         return result
 
@@ -740,21 +736,6 @@ class SchemaRule(object):
                     suggested_value=suggested_value
                 )
 
-        return True
-
-    def _test_unique(self, value, row, column, raw_value):
-        """Report if a value is not unique for a specific hashtag"""
-        if self.unique:
-            normalised_value = hxl.datatypes.normalise(value, column)
-            if self._unique_value_map.get(normalised_value):
-                return self._report_error(
-                    "Found duplicate value",
-                    value=raw_value,
-                    row=row,
-                    column=column
-                )
-            else:
-                self._unique_value_map[normalised_value] = True
         return True
 
     def __str__(self):
@@ -927,8 +908,10 @@ class Schema(object):
                 regex = row.get('#valid_value+regex')
                 if regex is not None:
                     rule.tests.append(RegexTest(regex))
+
+                if to_boolean(row.get('#valid_unique-key')):
+                    rule.tests.append(UniqueValueTest())
                 
-                rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')
                 rule.correlation_key = row.get('#valid_correlation')
                 rule.severity = row.get('#valid_severity') or 'error'
