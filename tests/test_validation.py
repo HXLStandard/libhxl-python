@@ -145,6 +145,17 @@ class TestTests(unittest.TestCase):
         self.assertTrue(t.validate_cell('b', None, None))
         self.assertTrue(t.end())
 
+    def test_unique_row(self):
+        COLUMNS = ['#adm1', '#sector', '#org']
+        t = hxl.validation.UniqueRowTest('org,sector')
+        t.start() # to set up context
+        self.assertTrue(t.validate_row(make_row(['Coast', 'WASH', 'Org A'], COLUMNS)))
+        self.assertFalse(t.validate_row(make_row(['Coast', 'WASH', 'Org A'], COLUMNS))) # pure repeat
+        self.assertFalse(t.validate_row(make_row(['Plains', 'WASH', 'Org A'], COLUMNS))) # adm1 is not in the key
+        self.assertFalse(t.validate_row(make_row(['Coast', '  wash', 'Org A'], COLUMNS))) # space-/case-insensitive
+        self.assertTrue(t.validate_row(make_row(['Coast', 'WASH', 'Org B'], COLUMNS))) # org is in the key
+        self.assertTrue(t.end())
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.

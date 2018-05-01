@@ -391,6 +391,39 @@ class UniqueValueTest(AbstractRuleTest):
             self.values_seen.add(norm_value)
             return True
 
+
+class UniqueRowTest(AbstractRuleTest):
+    """Test for duplicate rows, optionally using a list of tag patterns as a key"""
+
+    def __init__(self, tag_patterns=None):
+        """Constructor
+        If no tag patterns are supplied, test the whole row.
+        @param tag_patterns: list of tag patterns to test
+        """
+        super().__init__()
+        if tag_patterns is not None:
+            self.tag_patterns = hxl.model.TagPattern.parse_list(tag_patterns)
+        else:
+            self.tag_patterns = None
+
+    def start(self):
+        self.keys_seen = set() # create the empty key set
+
+    def end(self):
+        self.keys_seen = None # free some memory
+        return True
+
+    def validate_row(self, row, indices=[], tag_pattern=None):
+        key = row.key(self.tag_patterns)
+        if key in self.keys_seen:
+            return self.report_error(
+                'Duplicate row according to key values {}'.format(str(key)),
+                row=row
+            )
+        else:
+            self.keys_seen.add(key)
+            return True
+
 #
 # A single rule (containing one or more tests) within a schema
 #
