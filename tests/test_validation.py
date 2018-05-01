@@ -25,22 +25,43 @@ class TestTests(unittest.TestCase):
         def t():
             return hxl.validation.RequiredTest(min_occurs=1, max_occurs=2)
 
-        tag_pattern = hxl.model.TagPattern.parse('#sector')
-
         # successful dataset tests
-        self.assertTrue(t().validate_dataset(make_dataset(['#org', '#sector']), tag_pattern=tag_pattern))
-        self.assertTrue(t().validate_dataset(make_dataset(['#org', '#sector', '#sector']), tag_pattern=tag_pattern))
+        self.assertTrue(t().validate_dataset(make_dataset(['#org', '#sector']), tag_pattern='#sector'))
+        self.assertTrue(t().validate_dataset(make_dataset(['#org', '#sector', '#sector']), tag_pattern='#sector'))
 
         # failed dataset tests
-        self.assertFalse(t().validate_dataset(make_dataset(['#org']), tag_pattern=tag_pattern))
+        self.assertFalse(t().validate_dataset(make_dataset(['#org']), tag_pattern='#sector'))
 
         # successful row tests
-        self.assertTrue(t().validate_row(make_row(['aaa', 'xxx'], ['#org', '#sector']), tag_pattern=tag_pattern))
-        self.assertTrue(t().validate_row(make_row(['aaa', 'xxx', 'yyy'], ['#org', '#sector', '#sector']), tag_pattern=tag_pattern))
+        self.assertTrue(t().validate_row(make_row(['aaa', 'xxx'], ['#org', '#sector']), tag_pattern='#sector'))
+        self.assertTrue(t().validate_row(make_row(['aaa', 'xxx', 'yyy'], ['#org', '#sector', '#sector']), tag_pattern='#sector'))
 
         # failed row tests
-        self.assertFalse(t().validate_row(make_row(['xxx', ''], ['#org', '#sector']), tag_pattern=tag_pattern))
-        self.assertFalse(t().validate_row(make_row(['xxx', 'yyy', 'zzz'], ['#sector', '#sector', '#sector']), tag_pattern=tag_pattern))
+        self.assertFalse(t().validate_row(make_row(['xxx', ''], ['#org', '#sector']), tag_pattern='#sector'))
+        self.assertFalse(t().validate_row(make_row(['xxx', 'yyy', 'zzz'], ['#sector', '#sector', '#sector']), tag_pattern='#sector'))
+
+    def test_datatype(self):
+        def t(datatype='text'):
+            return hxl.validation.DatatypeTest(datatype)
+
+        # check for bad datatype
+        with self.assertRaises(hxl.HXLException):
+            t('xxx')
+
+        # successful tests (OK to leave row and column as None)
+        self.assertTrue(t().validate_cell('xxx', None, None))
+        self.assertTrue(t('number').validate_cell('20.1', None, None))
+        self.assertTrue(t('url').validate_cell('http://example.org', None, None))
+        self.assertTrue(t('email').validate_cell('nobody@example.org', None, None))
+        self.assertTrue(t('phone').validate_cell('123-456-7890', None, None))
+        self.assertTrue(t('date').validate_cell('2018-05-01', None, None))
+
+        # failed tests
+        self.assertFalse(t('number').validate_cell('xxx', None, None))
+        self.assertFalse(t('url').validate_cell('/example.org', None, None))
+        self.assertFalse(t('email').validate_cell('nobody@@example.org', None, None))
+        self.assertFalse(t('phone').validate_cell('123-456-A890', None, None))
+        self.assertFalse(t('date').validate_cell('2018-05-32', None, None))
                        
 
 class TestRule(unittest.TestCase):

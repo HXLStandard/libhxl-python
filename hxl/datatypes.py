@@ -140,7 +140,35 @@ def is_date(v):
     @see: L{normalise_date}
     """
     v = normalise_string(v)
-    if ISO_DATE_PATTERN.match(v):
+    result = ISO_DATE_PATTERN.match(v)
+    if result:
+        # lots of ugly ISO date hackery
+        # TODO not distinguishing non-leap-years yet
+
+        def in_range(n, min, max):
+            if n is None:
+                return True
+            else:
+                n = int(n)
+                return (n >= min and n <= max)
+
+        if not in_range(result.group('year'), 1900, 2100):
+            return False
+        if not in_range(result.group('month'), 1, 12):
+            return False
+        if result.group('day') is not None:
+            month = int(result.group('month'))
+            if month == 2 and not in_range(result.group('day'), 1, 29):
+                return False
+            elif month in [4, 6, 9, 11] and not in_range(result.group('day'), 1, 30):
+                return False
+            elif not in_range(result.group('day'), 1, 31):
+                return False
+        if not in_range(result.group('quarter'), 1, 4):
+            return False
+        if not in_range(result.group('week'), 0, 53):
+            return False
+
         return True
     try:
         dateutil.parser.parse(normalise_string(v))

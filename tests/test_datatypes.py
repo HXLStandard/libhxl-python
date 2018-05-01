@@ -81,8 +81,14 @@ class TestDates(unittest.TestCase):
         self.assertTrue(hxl.datatypes.is_date('2018-03'))
         self.assertTrue(hxl.datatypes.is_date('2018-03-01'))
 
+        # edge cases
+        self.assertFalse(hxl.datatypes.is_date('2018-04-31'))
+        self.assertFalse(hxl.datatypes.is_date('2018-13-01'))
+        self.assertFalse(hxl.datatypes.is_date('2018W54'))
+
     def test_is_quarter(self):
         self.assertTrue(hxl.datatypes.is_date('2018Q2'))
+        self.assertFalse(hxl.datatypes.is_date('2018Q5'))
 
     def test_is_non_iso_date(self):
         self.assertTrue(hxl.datatypes.is_date('Feb 2/17'))

@@ -42,7 +42,7 @@ class HXLValidationException(hxl.HXLException):
 # Individual tests within a Schema Rule
 #
 
-class AbstractSchemaTest(object):
+class AbstractRuleTest(object):
     """Base class for a single test inside a validation rule.
     Safe assumptions for subclasses:
     - \I{start} gets called before parsing starts
@@ -119,6 +119,7 @@ class AbstractSchemaTest(object):
         if indices is not None:
             return indices
         elif tag_pattern is not None:
+            tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
             return get_column_indices(tag_pattern, columns)
         else:
             raise HXLException("Internal error: rule test requires a tag pattern or a list of indices")
@@ -137,7 +138,7 @@ class AbstractSchemaTest(object):
         return False # for convenience
 
 
-class RequiredTest(AbstractSchemaTest):
+class RequiredTest(AbstractRuleTest):
     """Test min/max occurrence for #valid_required
     If the columns don't exist at all, report only a single error.
     Otherwise, report an error for each row where the test fails.
@@ -203,6 +204,40 @@ class RequiredTest(AbstractSchemaTest):
 
         return result
 
+    
+class DatatypeTest(AbstractRuleTest):
+
+    # allowed datatypes
+    DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
+
+    def __init__(self, datatype):
+        super().__init__()
+        datatype = hxl.datatypes.normalise_string(datatype)
+        if datatype in DatatypeTest.DATATYPES:
+            self.datatype = datatype
+        else:
+            raise hxl.HXLException("Unsupported datatype: {}".format(datatype))
+
+    def validate_cell(self, value, row, column):
+        result = True
+        if self.datatype == 'number':
+            if not hxl.datatypes.is_number(value):
+                result = self.report_error("Expected a number", value, row, column)
+        elif self.datatype == 'url':
+            pieces = urllib.parse.urlparse(value)
+            if not (pieces.scheme and pieces.netloc):
+                result = self.report_error("Expected a URL", value, row, column)
+        elif self.datatype == 'email':
+            if not re.match(r'^[^@]+@[^@]+$', value):
+                result = self.report_error("Expected an email address", value, row, column)
+        elif self.datatype == 'phone':
+            if not re.match(r'^\+?[0-9xX()\s-]{5,}$', value):
+                result= self.report_error("Expected a phone number", value, row, column)
+        elif self.datatype == 'date':
+            if not hxl.datatypes.is_date(value):
+                result = self.report_error("Expected a date of some sort", value, row, column)
+        return result
+
 #
 # A single rule (containing one or more tests) within a schema
 #
@@ -225,7 +260,7 @@ class SchemaRule(object):
         """Tag pattern to match for the rule"""
 
         self.tests = []
-        """List of \L{AbstractSchemaTest} objects to apply as part of this rule"""
+        """List of \L{AbstractRuleTest} objects to apply as part of this rule"""
 
         self._saved_indices = None
         """List of saved column indices matching tag_pattern"""
