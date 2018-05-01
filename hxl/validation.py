@@ -424,6 +424,61 @@ class UniqueRowTest(AbstractRuleTest):
             self.keys_seen.add(key)
             return True
 
+
+class EnumerationTest(AbstractRuleTest):
+    """Test against a list of enumerated values #valid_value+enum and #valid_value+url"""
+
+    def __init__(self, allowed_values, case_sensitive=False):
+        super().__init__()
+        self.case_sensitive = case_sensitive
+        self.setup_tables(allowed_values)
+
+    def setup_tables(self, allowed_values):
+        self.suggested_value_cache = dict()
+        self.cooked_value_set = set()
+
+        if self.case_sensitive:
+            for raw_value in allowed_values:
+                raw_value = hxl.datatypes.normalise_space(raw_value)
+                self.cooked_value_set.add(raw_value)
+        else:
+            self.raw_value_map = dict()
+            for raw_value in allowed_values:
+                raw_value = hxl.datatypes.normalise_space(raw_value)
+                cooked_value = hxl.datatypes.normalise_string(raw_value)
+                self.cooked_value_set.add(cooked_value)
+                self.raw_value_map[cooked_value] = raw_value
+                
+    def validate_cell(self, value, row, column):
+        if self.case_sensitive:
+            cooked_value = hxl.datatypes.normalise_space(value)
+        else:
+            cooked_value = hxl.datatypes.normalise_string(value)
+            
+        if cooked_value in self.cooked_value_set:
+            return True
+        else:
+            suggested_value = self.get_suggested_value(cooked_value)
+            return self.report_error(
+                "Value not allowed",
+                value=value,
+                row=row,
+                column=column,
+                suggested_value=suggested_value
+            )
+
+    def get_suggested_value(self, value):
+        # try the cache first
+        suggested_value = self.suggested_value_cache.get(value, False) # False to allow for None values
+        if suggested_value is False:
+            suggested_value = find_closest_match(value, self.cooked_value_set)
+            if suggested_value is not None and not self.case_sensitive:
+                # we need the original character case if case-insensitive
+                suggested_value = self.raw_value_map[suggested_value]
+            self.suggested_value_cache[value] = suggested_value
+        return suggested_value
+
+
 #
 # A single rule (containing one or more tests) within a schema
 #

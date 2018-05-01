@@ -156,6 +156,37 @@ class TestTests(unittest.TestCase):
         self.assertTrue(t.validate_row(make_row(['Coast', 'WASH', 'Org B'], COLUMNS))) # org is in the key
         self.assertTrue(t.end())
 
+    def test_enumeration(self):
+        def t(allowed_values=['aaa', 'BBB', 'ccc'], case_sensitive=False):
+            return hxl.validation.EnumerationTest(allowed_values, case_sensitive)
+
+        self.assertTrue(t().validate_cell('aaa', None, None))
+        self.assertTrue(t().validate_cell('bBb', None, None)) # case-insensitive
+        self.assertTrue(t(case_sensitive=True).validate_cell('BBB', None, None)) # case-sensitive, but OK
+        self.assertTrue(t().validate_cell('   ccc   ', None, None)) # whitespace doesn't matter
+
+        self.assertFalse(t().validate_cell('ddd', None, None))
+        self.assertFalse(t(case_sensitive=True).validate_cell('bBb', None, None)) # case-sensitive
+
+    def test_enumeration_suggested_values(self):
+        
+        def make_callback(suggested_value):
+            def callback(e):
+                self.assertEqual(suggested_value, e.suggested_value)
+            return callback
+
+        t = hxl.validation.EnumerationTest(allowed_values=['Aaa', 'bbb', 'ccc'])
+        t.callback = make_callback('Aaa')
+        self.assertFalse(t.validate_cell('aa', None, None))
+        t.callback = make_callback('bbb')
+        self.assertFalse(t.validate_cell('BB', None, None))
+        t.callback = make_callback(None) # no close matches
+        self.assertFalse(t.validate_cell('xxx', None, None))
+
+        t = hxl.validation.EnumerationTest(allowed_values=['Aaa', 'bbb', 'ccc'], case_sensitive=True)
+        t.callback = make_callback('Aaa')
+        self.assertFalse(t.validate_cell('aaa', None, None))
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.
