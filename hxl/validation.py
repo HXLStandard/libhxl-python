@@ -248,6 +248,25 @@ class DatatypeTest(AbstractRuleTest):
         return result
 
 
+class WhitespaceTest(AbstractRuleTest):
+    """Test for irregular whitespace in a cell"""
+
+    PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
+    """Regular expression to detect irregular whitespace"""
+
+    def validate_cell(self, value, row, column):
+        """Is there irregular whitespace?"""
+        if re.match(WhitespaceTest.PATTERN, value):
+            return self.report_error(
+                'Found extra whitespace',
+                value=value,
+                row=row,
+                column=column
+            )
+        else:
+            return True
+        
+
 class RangeTest(AbstractRuleTest):
     """Test for #valid_value+min and #valid_value+max"""
 

@@ -111,6 +111,18 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t(max_value='e').validate_cell(' EaE', None, column))
         self.assertFalse(t(min_value='c', max_value='e').validate_cell('ee', None, column))
 
+    def test_whitespace(self):
+        def t():
+            return hxl.validation.WhitespaceTest()
+
+        self.assertTrue(t().validate_cell('xxx', None, None))
+        self.assertTrue(t().validate_cell('xxx yyy', None, None))
+
+        self.assertFalse(t().validate_cell(' xxx', None, None)) # leading space not allowed
+        self.assertFalse(t().validate_cell('xxx  ', None, None)) # trailing space not allowed
+        self.assertFalse(t().validate_cell('xxx  yyy', None, None)) # multiple internal spaces not allowed
+        self.assertFalse(t().validate_cell("xxx\tyyy", None, None)) # tabs not allowed
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class."""
