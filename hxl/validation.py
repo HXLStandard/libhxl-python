@@ -261,7 +261,8 @@ class WhitespaceTest(AbstractRuleTest):
                 'Found extra whitespace',
                 value=value,
                 row=row,
-                column=column
+                column=column,
+                suggested_value=hxl.datatypes.normalise_space(value)
             )
         else:
             return True
@@ -358,7 +359,7 @@ class SchemaRule(object):
                  regex=None, enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  unique=False, unique_key=None, correlation_key=None,
-                 consistent_datatypes = False, check_whitespace=False):
+                 consistent_datatypes = False):
         self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
         """Tag pattern to match for the rule"""
 
@@ -371,7 +372,6 @@ class SchemaRule(object):
         self.regex = regex
         self.enum = enum
         self.case_sensitive = case_sensitive
-        self.check_whitespace = check_whitespace
         self.consistent_datatypes = consistent_datatypes
         self.callback = callback
         self.severity = severity
@@ -644,8 +644,6 @@ class SchemaRule(object):
             value = hxl.datatypes.normalise_string(raw_value)
 
         result = True
-        if not self._test_whitespace(value, row, column, raw_value=raw_value):
-            result = False
         if not self._test_pattern(value, row, column, raw_value=raw_value):
             result = False
         if not self._test_enumeration(value, row, column, raw_value=raw_value):
@@ -669,25 +667,6 @@ class SchemaRule(object):
             )
             self.callback(e)
         return False
-
-    WHITESPACE_PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
-    """Pattern for irregular whitespace"""
-
-    def _test_whitespace(self, value, row, column, raw_value):
-        """Check for irregular whitespace
-        Expect no leading or trailing whitespace, and only single spaces internally.
-        Triggered by the check_whitespace flag
-        """
-        if self.check_whitespace and re.match(self.WHITESPACE_PATTERN, str(raw_value)):
-            return self._report_error(
-                message="Found extra whitespace",
-                value=raw_value,
-                row=row,
-                column=column,
-                suggested_value=hxl.datatypes.normalise_space(raw_value)
-            )
-        else:
-            return True
 
     def _test_pattern(self, value, row, column, raw_value):
         """Test against a regular expression pattern (if specified)."""
@@ -916,8 +895,10 @@ class Schema(object):
                 max_value = row.get('#valid_value+max')
                 if min_value is not None or max_value is not None:
                     rule.tests.append(RangeTest(min_value=min_value, max_value=max_value))
+
+                if to_boolean(row.get('#valid_value+whitespace')):
+                    rule.tests.append(WhitespaceTest())
                 
-                rule.check_whitespace = to_boolean(row.get('#valid_value+whitespace'))
                 rule.regex = to_regex(row.get('#valid_value+regex'))
                 rule.unique = to_boolean(row.get('#valid_unique-key'))
                 rule.unique_key = row.get('#valid_unique+key')

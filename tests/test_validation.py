@@ -125,7 +125,10 @@ class TestTests(unittest.TestCase):
 
 
 class TestRule(unittest.TestCase):
-    """Test the hxl.validation.SchemaRule class."""
+    """Test the hxl.validation.SchemaRule class.
+    Most of the tests just ensure that the AbstractRuleTest objects
+    get applied properly.
+    """
 
     COLUMNS = ['#x_test']
 
@@ -133,67 +136,26 @@ class TestRule(unittest.TestCase):
         self.errors = []
         self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), severity="warning")
 
-    def test_severity(self):
+    def test_rule_severity(self):
         self.rule.tests = [hxl.validation.DatatypeTest('number')]
         self._try_rule('xxx', 1)
         self.assertEqual('warning', self.errors[0].rule.severity)
 
-    def test_type_none(self):
-        self._try_rule('')
-        self._try_rule(10)
-        self._try_rule('hello, world')
-
-    def test_type_text(self):
-        self.rule.tests = [hxl.validation.DatatypeTest('text')]
-        self._try_rule('')
-        self._try_rule(10)
-        self._try_rule('hello, world')
-
-    def test_type_num(self):
+    def test_datatype(self):
         self.rule.tests = [hxl.validation.DatatypeTest('number')]
         self._try_rule(10)
         self._try_rule(' -10.1 ');
         self._try_rule('ten', 1)
 
-    def test_type_url(self):
-        self.rule.tests = [hxl.validation.DatatypeTest('url')]
-        self._try_rule('http://www.example.org')
-        self._try_rule('hello, world', 1)
-
-    def test_type_email(self):
-        self.rule.tests = [hxl.validation.DatatypeTest('email')]
-        self._try_rule('somebody@example.org')
-        self._try_rule('hello, world', 1)
-
-    def test_type_phone(self):
-        self.rule.tests = [hxl.validation.DatatypeTest('phone')]
-        self._try_rule('+1-613-555-1111 x1234')
-        self._try_rule('(613) 555-1111')
-        self._try_rule('123', 1)
-        self._try_rule('123456789abc', 1)
-        
-    def test_type_date(self):
-        self.rule.tests = [hxl.validation.DatatypeTest('date')]
-        self._try_rule('2015-03-15')
-        self._try_rule('2015-03')
-        self._try_rule('2015')
-        self._try_rule('xxx', 1)
-
-    def test_value_whitespace(self):
-        self.rule.check_whitespace = True
+    def test_whitespace(self):
+        self.rule.tests = [hxl.validation.WhitespaceTest()]
         self._try_rule('xxx', 0)
-        self._try_rule('xxx yyy', 0)
-        self._try_rule(' xxx', 1) # leading space not allowed
-        self._try_rule('xxx  ', 1) # trailing space not allowed
-        self._try_rule('xxx  yyy', 1) # multiple internal spaces not allowed
-        self._try_rule("xxx\tyyy", 1) # tabs not allowed
+        self._try_rule(' xxx', 1)
 
-    def test_value_range(self):
+    def test_range(self):
         self.rule.tests = [hxl.validation.RangeTest(3.5, 4.5)]
         self._try_rule(4.0)
-        self._try_rule('4')
         self._try_rule('3.49', 1)
-        self._try_rule(5.0, 1)
 
     def test_value_pattern(self):
         self.rule.regex = '^a+b$'
