@@ -67,7 +67,16 @@ def flatten(value, is_subitem=False):
         return '{' + ','.join(elements) + '}'
     else:
         return ','.join(elements)
+
     
+def is_truthy(s):
+    """Check for a boolean-type true value
+    @param s: the value to test
+    @returns: True if the value is truthy
+    """
+    return normalise_string(s) in ['y', 'yes', 't', 'true', '1']
+
+
 def is_empty(s):
     """Is this an empty value?
     None or whitespace only counts as empty; anything else doesn't.
@@ -75,6 +84,7 @@ def is_empty(s):
     @return: True if the value is empty
     """
     return (s is None or s == '' or str(s).isspace())
+
 
 def normalise_space(s):
     """Normalise whitespace only

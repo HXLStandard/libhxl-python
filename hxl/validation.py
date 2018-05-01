@@ -206,7 +206,7 @@ class RequiredTest(AbstractRuleTest):
 
     
 class DatatypeTest(AbstractRuleTest):
-    """Test for #valid_datatype (excluding +consistent)"""
+    """Test for #valid_datatype-consistent"""
 
     # allowed datatypes
     DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
@@ -327,7 +327,7 @@ class RangeTest(AbstractRuleTest):
 
 
 class WhitespaceTest(AbstractRuleTest):
-    """Test for irregular whitespace in a cell"""
+    """Test for irregular whitespace in a cell #valid_value+whitespace"""
 
     PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
     """Regular expression to detect irregular whitespace"""
@@ -347,7 +347,7 @@ class WhitespaceTest(AbstractRuleTest):
         
 
 class RegexTest(AbstractRuleTest):
-    """Test that non-empty values match a regular expression
+    """Test that non-empty values match a regular expression #valid_value+regex
     TODO: case-(in)sensitive
     """
 
@@ -368,7 +368,7 @@ class RegexTest(AbstractRuleTest):
 
 
 class UniqueValueTest(AbstractRuleTest):
-    """Test that individual values are unique"""
+    """Test that individual values are unique #valid_unique-key"""
 
     def start(self):
         self.values_seen = set() # create the empty value set
@@ -393,7 +393,7 @@ class UniqueValueTest(AbstractRuleTest):
 
 
 class UniqueRowTest(AbstractRuleTest):
-    """Test for duplicate rows, optionally using a list of tag patterns as a key"""
+    """Test for duplicate rows, optionally using a list of tag patterns as a key #valid_unique+key"""
 
     def __init__(self, tag_patterns=None):
         """Constructor
@@ -436,7 +436,7 @@ class SchemaRule(object):
     def __init__(self, tag_pattern,
                  enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
-                 unique_key=None, correlation_key=None,
+                 correlation_key=None,
                  consistent_datatypes = False):
         self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
         """Tag pattern to match for the rule"""
@@ -453,7 +453,6 @@ class SchemaRule(object):
         self.callback = callback
         self.severity = severity
         self.description = description
-        self.unique_key = unique_key
         self.correlation_key = correlation_key
 
         self.value_url = None # set later, if needed
@@ -465,7 +464,6 @@ class SchemaRule(object):
         self._initialised = False
         self._enum_map = None
         
-        self._unique_key_map = {}
         self._correlation_map = {}
         self._suggestion_map = {}
         self._consistency_map = {}
@@ -496,9 +494,6 @@ class SchemaRule(object):
                 else:
                     self._enum_map[hxl.datatypes.normalise_string(value)] = value
 
-        if self.unique_key:
-            self.unique_key = hxl.model.TagPattern.parse_list(self.unique_key)
-            self.unique_key.append(self.tag_pattern) # just in case
         if self.correlation_key:
             self.correlation_key = hxl.model.TagPattern.parse_list(self.correlation_key)
 
@@ -661,16 +656,6 @@ class SchemaRule(object):
         #
         # Run dataset-scope validations
         #
-
-        if self.unique_key is not None:
-            key = row.key(self.unique_key)
-            if self._unique_key_map.get(key):
-                result = self._report_error(
-                    "Duplicate row according to tag patterns " + str(self.unique_key),
-                    row=row
-                )
-            else:
-                self._unique_key_map[key] = True
 
         # track correlations here, then report at end of parse
         if self.correlation_key is not None:
@@ -944,8 +929,14 @@ class Schema(object):
 
                 if to_boolean(row.get('#valid_unique-key')):
                     rule.tests.append(UniqueValueTest())
-                
-                rule.unique_key = row.get('#valid_unique+key')
+
+                key = row.get('#valid_unique+key')
+                if hxl.datatypes.is_truthy(key):
+                    # could be problematic if there's even a hashtag like #true or #yes
+                    rule.tests.append(UniqueRowTest())
+                elif not hxl.datatypes.is_empty(key):
+                    rule.tests.append(UniqueRowTest(key))
+                    
                 rule.correlation_key = row.get('#valid_correlation')
                 rule.severity = row.get('#valid_severity') or 'error'
                 rule.description = row.get('#description')
