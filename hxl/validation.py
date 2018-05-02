@@ -1084,13 +1084,14 @@ class Schema(object):
                     try:
                         # read the values from an external dataset
                         source = hxl.data(url)
-                        allowed_values = value_source.get_value_set(row.get('#valid_value+target_tag'))
+                        allowed_values = source.get_value_set(row.get('#valid_value+target_tag'))
                         if len(allowed_values) > 0:
-                            rule.tests.add(EnumerationTest(allowed_values, case_sensitive))
+                            rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
                     except Exception as error:
                         rule.loading_errors.append(HXLValidationException(
                             'Error loading allowed values from {}: {}'.format(url, str(error)),
-                            scope='dataset'
+                            scope='dataset',
+                            rule=rule
                         ))
 
 
