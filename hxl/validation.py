@@ -142,7 +142,8 @@ class AbstractRuleTest(object):
 
 
 class RequiredTest(AbstractRuleTest):
-    """Test min/max occurrence for #valid_required
+    """Test min/max occurrence
+    HXL schema: #valid_required
     If the columns don't exist at all, report only a single error.
     Otherwise, report an error for each row where the test fails.
     """
@@ -209,13 +210,20 @@ class RequiredTest(AbstractRuleTest):
 
     
 class DatatypeTest(AbstractRuleTest):
-    """Test for #valid_datatype-consistent"""
+    """Test for a specified datatype
+    HXL schema: #valid_datatype-consistent
+    See also \L{ConsistentDatatypeTest}, which infers the most-common datatype.
+    """
 
     # allowed datatypes
-    DATATYPES = ['text', 'number', 'url', 'email', 'phone', 'date']
+    DATATYPES = ('text', 'number', 'url', 'email', 'phone', 'date',)
 
     def __init__(self, datatype):
+        """Constructor
+        @param datatype: a string specifying the datatype (e.g. "number")
+        """
         super().__init__()
+        # make sure we recognise the datatype
         datatype = hxl.datatypes.normalise_string(datatype)
         if datatype in DatatypeTest.DATATYPES:
             self.datatype = datatype
@@ -223,6 +231,7 @@ class DatatypeTest(AbstractRuleTest):
             raise hxl.HXLException("Unsupported datatype: {}".format(datatype))
 
     def validate_cell(self, value, row, column):
+        """Validate datatypes on the individual cell level"""
         result = True
         def report(message):
             return self.report_error(
@@ -252,9 +261,17 @@ class DatatypeTest(AbstractRuleTest):
 
 
 class RangeTest(AbstractRuleTest):
-    """Test for #valid_value+min and #valid_value+max"""
+    """Test for a range of numbers or strings
+    HXL schema: #valid_value+min and #valid_value+max
+    This class will try to determine whether to use date sorting, numeric sorting, or lexical sorting
+    to determine what is within a range. Ranges are always case-insensitive
+    """
 
     def __init__(self, min_value=None, max_value=None):
+        """Constructor
+        @param min_value: the minimum allowed value, or None for no minimum
+        @param max_value: the maximum allowed value, or None for no maximum
+        """
         super().__init__()
 
         # normalise strings
@@ -330,7 +347,11 @@ class RangeTest(AbstractRuleTest):
 
 
 class WhitespaceTest(AbstractRuleTest):
-    """Test for irregular whitespace in a cell #valid_value+whitespace"""
+    """Test for irregular whitespace in a cell 
+    HXL schema: #valid_value+whitespace
+    Irregular whitespace is any leading or trailing space, 
+    or anything but a single space character inside a string
+    """
 
     PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
     """Regular expression to detect irregular whitespace"""
@@ -350,20 +371,31 @@ class WhitespaceTest(AbstractRuleTest):
         
 
 class RegexTest(AbstractRuleTest):
-    """Test that non-empty values match a regular expression #valid_value+regex
-    TODO: case-(in)sensitive
+    """Test that non-empty values match a regular expression 
+    HXL schema: #valid_value+regex
+    The regex is unanchored, so use '^' or '$' to anchor if needed
+    Whitespace is not normalised before matching
     """
 
-    def __init__(self, regex):
+    def __init__(self, regex, case_sensitive=True):
+        """Constructor
+        @param regex: the regular expression to test against
+        @param case_sensitive: if True (default), matches are case-sensitive
+        """
         super().__init__()
-        self.regex = re.compile(regex)
+        self.regex_text = str(regex)
+        if case_sensitive:
+            self.regex = re.compile(regex)
+        else:
+            self.regex = re.compile(regex, flags=re.IGNORECASE)
 
     def validate_cell(self, value, row, column):
+        """Match value (including whitespace) against the regular expression"""
         if self.regex.search(value):
             return True
         else:
             return self.report_error(
-                'Should match regular expression /{}/'.format(str(self.regex)),
+                'Should match regular expression /{}/'.format(self.regex_text),
                 value=value,
                 row=row,
                 column=column
@@ -371,7 +403,12 @@ class RegexTest(AbstractRuleTest):
 
 
 class UniqueValueTest(AbstractRuleTest):
-    """Test that individual values are unique #valid_unique-key"""
+    """Test that individual values are unique
+    HXL schema: #valid_unique-key
+    Every value in any column matching tag_pattern must be unique.
+    Normalises case and whitespace before testing, so "Aaa" and "  aaa" 
+    would count as duplicates.
+    """
 
     def start(self):
         self.values_seen = set() # create the empty value set
@@ -381,7 +418,7 @@ class UniqueValueTest(AbstractRuleTest):
         return True
 
     def validate_cell(self, value, row, column):
-        """Report an error if we see the same (normalised) value twice"""
+        """Report an error if we see the same (normalised) value more than once"""
         norm_value = hxl.datatypes.normalise_string(value)
         if norm_value in self.values_seen:
             return self.report_error(
@@ -396,7 +433,11 @@ class UniqueValueTest(AbstractRuleTest):
 
 
 class UniqueRowTest(AbstractRuleTest):
-    """Test for duplicate rows, optionally using a list of tag patterns as a key #valid_unique+key"""
+    """Test for duplicate rows, optionally using a list of tag patterns as a key
+    HXL schema: #valid_unique+key
+    If there are no tag patterns provided, uses the entire row to make the key
+    Note that the target tag pattern (#valid_tag) is irrelevant for this test.
+    """
 
     def __init__(self, tag_patterns=None):
         """Constructor
@@ -430,10 +471,16 @@ class UniqueRowTest(AbstractRuleTest):
 
 class EnumerationTest(AbstractRuleTest):
     """Test against a list of enumerated values 
-    #valid_value+list #valid_value+url #valid_value+case
+    HXL schema: #valid_value+list #valid_value+url #valid_value+case
+    This test can also hold an extra error to report if there was a problem
+    e.g. reading the values externally.
     """
 
     def __init__(self, allowed_values, case_sensitive=False):
+        """Constructor
+        @param allowed_values: sequence of allowed values
+        @param case_sensitive: if True, make comparisons case-sensitive
+        """
         super().__init__()
         self.case_sensitive = case_sensitive
         self.setup_tables(allowed_values)
@@ -453,7 +500,7 @@ class EnumerationTest(AbstractRuleTest):
                 cooked_value = hxl.datatypes.normalise_string(raw_value)
                 self.cooked_value_set.add(cooked_value)
                 self.raw_value_map[cooked_value] = raw_value
-                
+
     def validate_cell(self, value, row, column):
         if self.case_sensitive:
             cooked_value = hxl.datatypes.normalise_space(value)
@@ -572,9 +619,10 @@ class ConsistentDatatypesTest(AbstractRuleTest):
         """Check for type consistency"""
         result = True
         for tagspec, type_maps in self.datatype_map.items():
-            # did we detect more than one type in the column?
+            # Possible error if we detected more than one type for any hashtag spec
             if len(type_maps) > 1:
                 result = False
+                # Sort the types found by descending number of occurrences
                 type_maps = sorted(
                     type_maps.items(),
                     key=lambda e: len(e[1]),
@@ -586,10 +634,13 @@ class ConsistentDatatypesTest(AbstractRuleTest):
                 for type_map in type_maps:
                     total_locations += len(type_map[1])
                 if len(type_maps[0][1]) >= total_locations*0.6:
+                    # the most-common one is the expected type
                     expected_type = type_maps[0][0]
+                    # iterate through the other types found
                     for type_map in type_maps[1:]:
                         actual_type = type_map[0]
                         message = "Inconsistent data types: expected {} but found {}".format(expected_type, actual_type)
+                        # iterate through the saved locations for each type and report the error
                         for location in type_map[1]:
                             self.report_error(
                                 message,
@@ -631,42 +682,49 @@ class ConsistentDatatypesTest(AbstractRuleTest):
 
 class SchemaRule(object):
     """A single rule within a schema.
-    A rule contains one or more tests.
+    A rule contains one or more tests, together with some common metadata
+    (a tag pattern, severity level, and description). If any test fails, then
+    the whole rule fails.
     """
 
-    def __init__(self, tag_pattern,
-                 callback=None, severity="error", description=None,
-                 consistent_datatypes = False):
-        self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
-        """Tag pattern to match for the rule"""
+    SEVERITY = ('info', 'warning', 'error',)
 
+    def __init__(self, tag_pattern, severity="error", description=None, callback=None):
+        """Constructor
+        @param tag_pattern: the tag pattern to match for the rule
+        @param severity: one of 'info', 'warning', or 'error' (default)
+        @param description: an optional error message to override the default from the tests
+        @param callback: an optional callback function to handle error reports
+        """
+        self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
+        self.description = description
+        self.callback = callback
+
+        # make sure the severity level is valid
+        severity = hxl.datatypes.normalise_string(severity)
+        if severity in SchemaRule.SEVERITY:
+            self.severity = severity
+        else:
+            raise HXLException("Unsupported rule severity level: {}".format(severity))
+
+        # Additional internal variables
         self.tests = []
         """List of \L{AbstractRuleTest} objects to apply as part of this rule"""
 
-        self._saved_indices = None
-        """List of saved column indices matching tag_pattern"""
-        
-        self.consistent_datatypes = consistent_datatypes
-        self.callback = callback
-        self.severity = severity
-        self.description = description
+        self.loading_errors = []
+        """Errors setting up the rule, to be reported once during each run."""
 
-        self.value_url = None # set later, if needed
-        """(Failed) URL for reading an external taxonomy"""
-        
-        self.value_url_error = None # set later, if needed
-        """Error from trying to load an external taxonomy"""
+        self.saved_indices = None
+        """List of saved column indices matching tag_pattern"""
 
         self._initialised = False
         
-        self._consistency_map = {}
-
     def start(self):
         """Initialisation method
         Call after all values have been set, but before use
         """
 
-        self._saved_indices = None
+        self.saved_indices = None
 
         def test_callback(e):
             """Relay error reports from tests, with rule-level context added"""
@@ -694,52 +752,26 @@ class SchemaRule(object):
             if not test.end():
                 result = False
 
-        if self.consistent_datatypes and (not self._finish_consistency()):
-            result = False
-
-        self._saved_indices = None
+        self.saved_indices = None
         return result
 
-    def _finish_consistency(self):
-        result = True
-        m = self._consistency_map
-        if not m:
-            return
-        for hashtag in m:
-            # each hashtag should be consistent
-            types_found = sorted(m[hashtag].items(), key=lambda e: len(e[1]), reverse=True)
-            if len(types_found) > 1:
-                # We found more than one data type for the column
-                result = False
-                for type_data in types_found[1:]:
-                    for entry in type_data[1]:
-                        self._report_error(
-                            'inconsistent datatype {} (expected {})'.format(type_data[0], types_found[0][0]),
-                            row=entry[0],
-                            column=entry[1],
-                            value=entry[2]
-                        )
-
-        return result
-                
-
-    def validate_dataset(self, dataset):
+    def validate_dataset(self, dataset, indices=None, tag_pattern=None):
         """Test whether the columns are present to satisfy this rule."""
         self._check_init()
         
         result = True
-        if self._saved_indices is None:
-            self._saved_indices = get_column_indices(self.tag_pattern, dataset.columns)
+        if self.saved_indices is None:
+            self.saved_indices = get_column_indices(self.tag_pattern, dataset.columns)
 
-        # Did we fail to load an external URL?
-        if self.value_url_error is not None:
-            result = self._report_error(
-                str("Error reading allowed values from {} ({})".format(self.value_url, str(self.value_url_error)))
-            )
+        # Report any loading errors
+        for error in self.loading_errors:
+            result = False
+            if self.callback:
+                self.callback(error)
 
         # run each of the tests
         for test in self.tests:
-            if not test.validate_dataset(dataset, self._saved_indices):
+            if not test.validate_dataset(dataset, indices=self.saved_indices):
                 result = False
 
         return result
@@ -754,50 +786,19 @@ class SchemaRule(object):
 
         # individual rules may change to False
         result = True
-        if self._saved_indices is None:
-            self._saved_indices = get_column_indices(self.tag_pattern, row.columns)
+        if self.saved_indices is None:
+            self.saved_indices = get_column_indices(self.tag_pattern, row.columns)
 
         # run each test on the complete row, then on individual cells
         for test in self.tests:
-            if not test.validate_row(row, self._saved_indices):
+            if not test.validate_row(row, self.saved_indices):
                 result = False
-            for i in self._saved_indices: # validate individual cells
+            for i in self.saved_indices: # validate individual cells
                 if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
                     if not test.validate_cell(row.values[i], row, row.columns[i]):
                         result = False
-        #
-        # Run dataset-scope validations
-        #
-
-        # track datatypes here, then report at end of parse
-        if self.consistent_datatypes:
-            for column_number, value in enumerate(row.values):
-                column = row.columns[column_number]
-                if self.tag_pattern.match(column):
-                    if hxl.datatypes.is_empty(value):
-                        continue
-                    hashtag = row.columns[column_number].display_tag
-                    type = hxl.datatypes.typeof(value, column)
-                    entry = (row, column, value)
-                    self._consistency_map.setdefault(hashtag, {}).setdefault(type, []).append(entry)
 
         return result
-
-
-    def _report_error(self, message, value=None, row=None, column=None, raw_value=None, suggested_value=None):
-        """Report an error to the callback."""
-        if self.callback != None:
-            e = HXLValidationException(
-                message=message,
-                rule=self,
-                value = value,
-                row = row,
-                column = column,
-                raw_value = None,
-                suggested_value = suggested_value
-            )
-            self.callback(e)
-        return False
 
     def __str__(self):
         """String representation of a rule (for debugging)"""
@@ -813,10 +814,6 @@ class Schema(object):
         self.rules = copy.copy(rules)
         self.callback = callback
         self.impossible_rules = {}
-
-    # TODO add support for validating columns against rules, too
-    # this is where to mention impossible conditions, or columns
-    # without rules
 
     def validate(self, source):
         result = True
@@ -850,7 +847,7 @@ class Schema(object):
                 result = False
         return result
 
-    def validate_dataset(self, dataset):
+    def validate_dataset(self, dataset, indices=None, tag_pattern=None):
         """Validate just at the dataset level
         e.g. are required columns present
         @param dataset: the \L{hxl.model.Dataset} object to validate
@@ -972,7 +969,7 @@ class Schema(object):
 
                 regex = row.get('#valid_value+regex')
                 if regex is not None:
-                    rule.tests.append(RegexTest(regex))
+                    rule.tests.append(RegexTest(regex, case_sensitive))
 
                 if to_boolean(row.get('#valid_unique-key')):
                     rule.tests.append(UniqueValueTest())
@@ -988,11 +985,14 @@ class Schema(object):
                 if not hxl.datatypes.is_empty(correlations):
                     rule.tests.append(CorrelationTest(correlations))
 
+                if to_boolean(row.get('#valid_datatype+consistent')):
+                    rule.tests.append(ConsistentDatatypesTest())
+                    
                 l = row.get('#valid_value+list')
                 if not hxl.datatypes.is_empty(l):
                     allowed_values = re.split(r'\s*\|\s*', l)
                     if len(allowed_values) > 0:
-                        rule.tests.append(EnumerationTest(allowed_values))
+                        rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
 
                 url = row.get('#valid_value+url')
                 if not hxl.datatypes.is_empty(url):
@@ -1005,14 +1005,10 @@ class Schema(object):
                         if len(allowed_values) > 0:
                             rule.tests.add(EnumerationTest(allowed_values, case_sensitive))
                     except Exception as error:
-                        # FIXME - this is kludgey and violates encapsulation
-                        # note that we had a problem reading data, but don't stop
-                        rule.value_url = url
-                        rule.value_url_error = error
+                        rule.loading_errors.append(HXLValidationException(
+                            'Error loading allowed values from {}: {}'.format(url, str(error))
+                        ))
 
-                # To be replaced
-
-                rule.consistent_datatypes = to_boolean(row.get('#valid_datatype+consistent'))
 
                 schema.rules.append(rule)
 
