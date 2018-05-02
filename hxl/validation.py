@@ -426,7 +426,9 @@ class UniqueRowTest(AbstractRuleTest):
 
 
 class EnumerationTest(AbstractRuleTest):
-    """Test against a list of enumerated values #valid_value+enum and #valid_value+url"""
+    """Test against a list of enumerated values 
+    #valid_value+list #valid_value+url #valid_value+case
+    """
 
     def __init__(self, allowed_values, case_sensitive=False):
         super().__init__()
@@ -454,7 +456,7 @@ class EnumerationTest(AbstractRuleTest):
             cooked_value = hxl.datatypes.normalise_space(value)
         else:
             cooked_value = hxl.datatypes.normalise_string(value)
-            
+
         if cooked_value in self.cooked_value_set:
             return True
         else:
@@ -489,7 +491,6 @@ class SchemaRule(object):
     """
 
     def __init__(self, tag_pattern,
-                 enum=None, case_sensitive=False,
                  callback=None, severity="error", description=None,
                  correlation_key=None,
                  consistent_datatypes = False):
@@ -502,8 +503,6 @@ class SchemaRule(object):
         self._saved_indices = None
         """List of saved column indices matching tag_pattern"""
         
-        self.enum = enum
-        self.case_sensitive = case_sensitive
         self.consistent_datatypes = consistent_datatypes
         self.callback = callback
         self.severity = severity
@@ -517,7 +516,6 @@ class SchemaRule(object):
         """Error from trying to load an external taxonomy"""
 
         self._initialised = False
-        self._enum_map = None
         
         self._correlation_map = {}
         self._suggestion_map = {}
@@ -540,14 +538,6 @@ class SchemaRule(object):
         for test in self.tests:
             test.callback = test_callback # call back to here
             test.start()
-
-        if self.enum:
-            self._enum_map = {}
-            for value in self.enum:
-                if self.case_sensitive:
-                    self._enum_map[hxl.datatypes.normalise_space(value)] = value
-                else:
-                    self._enum_map[hxl.datatypes.normalise_string(value)] = value
 
         if self.correlation_key:
             self.correlation_key = hxl.model.TagPattern.parse_list(self.correlation_key)
@@ -695,19 +685,6 @@ class SchemaRule(object):
                 if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
                     if not test.validate_cell(row.values[i], row, row.columns[i]):
                         result = False
-
-        #
-        # Run cell-scope validations
-        # TODO this should all be removed until the final return
-        #
-
-        for i, column in enumerate(row.columns):
-            value = None
-            if self.tag_pattern.match(column) and i < len(row.values):
-                value = row.values[i]
-                if not self.validate(value, row, column):
-                    result = False
-
         #
         # Run dataset-scope validations
         #
@@ -739,30 +716,6 @@ class SchemaRule(object):
 
         return result
 
-
-    def validate(self, raw_value, row = None, column = None):
-        """
-        Apply the rule to a single value. TODO: this will be removed when tests are complete
-        @param value the value to validate
-        @param row (optional) the Row being validated
-        @param column (optional) the Column being validated
-        @return True if valid; false otherwise
-        """
-        self._check_init()
-
-        if hxl.datatypes.is_empty(raw_value):
-            return True
-
-        if self.case_sensitive:
-            value = hxl.datatypes.normalise_space(raw_value)
-        else:
-            value = hxl.datatypes.normalise_string(raw_value)
-
-        result = True
-        if not self._test_enumeration(value, row, column, raw_value=raw_value):
-            result = False
-
-        return result
 
     def _report_error(self, message, value=None, row=None, column=None, raw_value=None, suggested_value=None):
         """Report an error to the callback."""
@@ -955,8 +908,12 @@ class Schema(object):
         for row in source:
             tag_pattern = row.get('#valid_tag')
             if tag_pattern:
-                tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
                 rule = SchemaRule(tag_pattern)
+                rule.severity = row.get('#valid_severity') or 'error'
+                rule.description = row.get('#description')
+
+                # for later use
+                case_sensitive = to_boolean(row.get('#valid_value+case'))
 
                 if to_boolean(row.get('#valid_required-min-max')):
                     rule.tests.append(RequiredTest(min_occurs=1, max_occurs=None))
@@ -991,29 +948,32 @@ class Schema(object):
                     rule.tests.append(UniqueRowTest())
                 elif not hxl.datatypes.is_empty(key):
                     rule.tests.append(UniqueRowTest(key))
-                    
-                rule.correlation_key = row.get('#valid_correlation')
-                rule.severity = row.get('#valid_severity') or 'error'
-                rule.description = row.get('#description')
 
-                rule.case_sensitive = to_boolean(row.get('#valid_value+case'))
-                rule.consistent_datatypes = to_boolean(row.get('#valid_datatype+consistent'))
+                l = row.get('#valid_value+list')
+                if not hxl.datatypes.is_empty(l):
+                    allowed_values = re.split(r'\s*\|\s*', l)
+                    if len(allowed_values) > 0:
+                        rule.tests.append(EnumerationTest(allowed_values))
 
-                # Determine allowed values
-                if row.get('#valid_value+list'):
-                    rule.enum = re.split(r'\s*\|\s*', row.get('#valid_value+list'))
-                elif row.get('#valid_value+url'):
+                url = row.get('#valid_value+url')
+                if not hxl.datatypes.is_empty(url):
+                    # default the target tag to the #valid_tag
+                    target_tag = row.get('#valid_value+target_tag', default=tag_pattern)
                     try:
-                        value_url = row.get('#valid_value+url')
-                        value_source = hxl.data(value_url)
-                        target_tag = row.get(
-                            '#valid_value+target_tag',
-                            default=row.get('#valid_tag')
-                        )
-                        rule.enum = set(value_source.get_value_set(row.get('#valid_value+target_tag')))
-                    except Exception as value_url_error:
-                        rule.value_url = value_url
-                        rule.value_url_error = value_url_error
+                        # read the values from an external dataset
+                        source = hxl.data(url)
+                        allowed_values = value_source.get_value_set(row.get('#valid_value+target_tag'))
+                        if len(allowed_values) > 0:
+                            rule.tests.add(EnumerationTest(allowed_values, case_sensitive))
+                    except Exception as error:
+                        # FIXME - this is kludgey and violates encapsulation
+                        # note that we had a problem reading data, but don't stop
+                        rule.value_url = url
+                        rule.value_url_error = error
+
+                # To be replaced
+                rule.correlation_key = row.get('#valid_correlation')
+                rule.consistent_datatypes = to_boolean(row.get('#valid_datatype+consistent'))
 
                 schema.rules.append(rule)
 

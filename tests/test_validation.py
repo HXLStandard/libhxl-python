@@ -166,6 +166,7 @@ class TestTests(unittest.TestCase):
         self.assertTrue(t().validate_cell('   ccc   ', None, None)) # whitespace doesn't matter
 
         self.assertFalse(t().validate_cell('ddd', None, None))
+        self.assertFalse(t(case_sensitive=True).validate_cell('ddd', None, None))
         self.assertFalse(t(case_sensitive=True).validate_cell('bBb', None, None)) # case-sensitive
 
     def test_enumeration_suggested_values(self):
@@ -197,13 +198,7 @@ class TestRule(unittest.TestCase):
     COLUMNS = ['#x_test']
 
     def setUp(self):
-        self.errors = []
         self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), severity="warning")
-
-    def test_rule_severity(self):
-        self.rule.tests = [hxl.validation.DatatypeTest('number')]
-        self._try_rule('xxx', 1)
-        self.assertEqual('warning', self.errors[0].rule.severity)
 
     def test_datatype(self):
         self.rule.tests = [hxl.validation.DatatypeTest('number')]
@@ -228,26 +223,17 @@ class TestRule(unittest.TestCase):
         self._try_rule('bb', 1)
 
     def test_value_enumeration(self):
-        self.rule.enum=['aa', 'bb', 'cc']
-
-        self.rule.case_sensitive = True
+        self.rule.tests = [hxl.validation.EnumerationTest(allowed_values=['aa', 'bb', 'cc'], case_sensitive=True)]
+        self.rule.start()
         self._try_rule('bb')
         self._try_rule('BB', 1)
         self._try_rule('dd', 1)
 
-        self.rule.case_sensitive = False
+        self.rule.tests = [hxl.validation.EnumerationTest(allowed_values=['aa', 'bb', 'cc'], case_sensitive=False)]
+        self.rule.start()
         self._try_rule('bb')
         self._try_rule('BB')
         self._try_rule('dd', 1)
-
-    def test_suggested_value_enumeration(self):
-        def callback(error):
-            self.assertEqual('cc', error.suggested_value)
-        self.rule.callback = callback
-        self.rule.enum = ['aa', 'bb', 'cc']
-        self.rule.validate('ccc')
-        self.rule.validate('dcc')
-        self.rule.validate('cdc')
 
     def test_row_restrictions(self):
         """Check tests at the rule level"""
@@ -273,15 +259,24 @@ class TestRule(unittest.TestCase):
 
     def _try_rule(self, value, errors_expected = 0):
         """Helper: Validate a single value with a SchemaRule"""
-        self.errors = [] # clear errors for the next run
-        if not isinstance(value, Row):
-            value = make_row([value], ['#x_test'])
-        result = self.rule.validate_row(value)
-        if errors_expected == 0:
-            self.assertTrue(result)
+        errors = []
+
+        def callback(e):
+            errors.append(e)
+
+        self.rule.callback = callback
+            
+        if isinstance(value, Row):
+            row = value
         else:
-            self.assertFalse(result)
-        self.assertEqual(len(self.errors), errors_expected)
+            row = make_row([value], ['#x_test'])
+
+        if errors_expected == 0:
+            self.assertTrue(self.rule.validate_row(row))
+        else:
+            self.assertFalse(self.rule.validate_row(row))
+
+        self.assertEqual(len(errors), errors_expected)
 
         
 class TestValidateColumns(unittest.TestCase):
