@@ -188,6 +188,27 @@ class TestTests(unittest.TestCase):
         t.callback = make_callback('Aaa')
         self.assertFalse(t.validate_cell('aaa', None, None))
 
+    def test_correlation(self):
+
+        COLUMNS = ['#adm1+name', '#adm1+code']
+
+        def callback(e):
+            # expect 'xxx' as the suggested value
+            self.assertEqual('xxx', e.suggested_value)
+
+        t = hxl.validation.CorrelationTest('#adm1+code')
+        t.callback = callback
+
+        t.start()
+        self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['aaa', 'bbb'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['aaa', 'bbb'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        # bad row:
+        self.assertTrue(t.validate_row(make_row(['zzz', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertFalse(t.end())
+            
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.

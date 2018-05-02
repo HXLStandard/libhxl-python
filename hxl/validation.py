@@ -480,6 +480,79 @@ class EnumerationTest(AbstractRuleTest):
             self.suggested_value_cache[value] = suggested_value
         return suggested_value
 
+    
+class CorrelationTest(AbstractRuleTest):
+    """Test for correlations with other values
+    Supply a list of tag patterns, and report any outliers that don't
+    correlate with those columns.
+    """
+
+    def __init__(self, tag_patterns):
+        """Constructor
+        @param tag_patterns: a list of tag patterns for the correlation
+        """
+        super().__init__()
+        self.tag_patterns = hxl.model.TagPattern.parse_list(tag_patterns)
+
+    def start(self):
+        """Build an empty correlation map"""
+        self.correlation_map = dict()
+
+    def end(self):
+        """All the error reporting happens here.
+        We don't know the most-common correlations for each key until the end.
+        Use the most-common value for each correlation key as the suggested
+        value for the others.
+        """
+        result = True
+        for key, value_maps in self.correlation_map.items():
+            if len(value_maps) > 1:
+                result = False
+                value_maps = sorted(
+                    list(value_maps.items()),
+                    key=lambda e: len(e[1]),
+                    reverse=True
+                )
+                suggested_value = value_maps[0][0]
+                for value_map in value_maps[1:]:
+                    value = value_map[0]
+                    for location in value_map[1]:
+                        self.report_error(
+                            "Unexpected value",
+                            value=value,
+                            row=location[0],
+                            column=location[1],
+                            suggested_value=suggested_value
+                        )
+        self.correlation_map = None
+        return result
+
+    def validate_row(self, row, indices=None, tag_pattern=None):
+        """Row validation always succeeds
+        We use this method to capture the correlation keys,
+        so that we can report on them in the end() method.
+        """
+
+        indices = self.get_indices(indices, tag_pattern, row.columns)
+
+        # Make the correlation key
+        key = row.key(self.tag_patterns)
+
+        # Record the locations
+        # key -> value -> location
+        for i in indices:
+            if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
+                value = row.values[i]
+                column = row.columns[i]
+                if not key in self.correlation_map:
+                    self.correlation_map[key] = {}
+                if not value in self.correlation_map[key]:
+                    self.correlation_map[key][value] = []
+                self.correlation_map[key][value].append((row, column,))
+
+        # always succeed
+        return True
+
 
 #
 # A single rule (containing one or more tests) within a schema
