@@ -565,7 +565,6 @@ class SchemaRule(object):
 
     def __init__(self, tag_pattern,
                  callback=None, severity="error", description=None,
-                 correlation_key=None,
                  consistent_datatypes = False):
         self.tag_pattern = hxl.TagPattern.parse(tag_pattern)
         """Tag pattern to match for the rule"""
@@ -580,7 +579,6 @@ class SchemaRule(object):
         self.callback = callback
         self.severity = severity
         self.description = description
-        self.correlation_key = correlation_key
 
         self.value_url = None # set later, if needed
         """(Failed) URL for reading an external taxonomy"""
@@ -590,8 +588,6 @@ class SchemaRule(object):
 
         self._initialised = False
         
-        self._correlation_map = {}
-        self._suggestion_map = {}
         self._consistency_map = {}
 
     def start(self):
@@ -612,9 +608,6 @@ class SchemaRule(object):
             test.callback = test_callback # call back to here
             test.start()
 
-        if self.correlation_key:
-            self.correlation_key = hxl.model.TagPattern.parse_list(self.correlation_key)
-
         self._initialised = True
 
     def _check_init(self):
@@ -630,67 +623,10 @@ class SchemaRule(object):
             if not test.end():
                 result = False
 
-        if not self._finish_correlations():
-            result = False
         if self.consistent_datatypes and (not self._finish_consistency()):
             result = False
 
         self._saved_indices = None
-        return result
-
-    def _finish_correlations(self):
-        """Check for correlation errors"""
-        m = self._correlation_map # shortcut
-
-        def sort_entries(e):
-            """Sort entries by the number of locations in the second element"""
-            return (len(e[1]), e[0],)
-
-        result = True
-        if m:
-            #
-            # Calculate the most-common value for each hashtag+key combo
-            #
-            expected_values = {}
-            for hashtag in m:
-                # collect hashtag+key+value+locations info into a map
-                for value, keys in m[hashtag].items():
-                    for key, locations in keys.items():
-                        expected_values.setdefault(hashtag, {}).setdefault(key, {}).setdefault(value, 0)
-                        expected_values[hashtag][key][value] += len(locations)
-                # reduce the expected values to top value for each hashtag+key combo
-                for key, values in expected_values[hashtag].items():
-                    entries = sorted(values.items(), key=lambda e: e[1], reverse=True)
-                    expected_values[hashtag][key] = entries[0][0] # this is the most-common value for the hashtag+key
-
-            #
-            # Process each matching hashtag/column found ...
-            #
-            for hashtag in m:
-                # for each correlation key found ...
-                for value, keys in m[hashtag].items():
-                    # if there's more than one value found matching the correlation key, assume an error
-                    if len(keys) > 1:
-                        result = False
-
-                        # get all the correlation key/location combinations, sorted with most-common first
-                        key_locations = sorted(keys.items(), key=sort_entries, reverse=True)
-
-                        # iterate through all but the most-common value for the key
-                        for key, locations in key_locations[1:]:
-                            # what value did we expect to find?
-                            suggested_value = expected_values[hashtag][key]
-                            if value == suggested_value:
-                                suggested_value = None
-                            for row, column in locations:
-                                self._report_error(
-                                    'wrong value for related column(s) ' + ', '.join([str(pattern) for pattern in self.correlation_key]),
-                                    value=value,
-                                    row=row,
-                                    column=column,
-                                    suggested_value=suggested_value
-                                )
-                    
         return result
 
     def _finish_consistency(self):
@@ -762,19 +698,6 @@ class SchemaRule(object):
         # Run dataset-scope validations
         #
 
-        # track correlations here, then report at end of parse
-        if self.correlation_key is not None:
-            key = row.key(self.correlation_key) # make a tuple of other values involved
-            for column_number, value in enumerate(row.values):
-                if self.tag_pattern.match(row.columns[column_number]):
-                    if hxl.datatypes.is_empty(value):
-                        continue
-                    hashtag = row.columns[column_number].display_tag
-                    value = hxl.datatypes.normalise(value)
-                    location = (row, row.columns[column_number],)
-                    self._correlation_map.setdefault(hashtag, {}).setdefault(value, {}).setdefault(key, []).append(location)
-                    break
-
         # track datatypes here, then report at end of parse
         if self.consistent_datatypes:
             for column_number, value in enumerate(row.values):
@@ -804,38 +727,6 @@ class SchemaRule(object):
             )
             self.callback(e)
         return False
-
-    def _test_enumeration(self, value, row, column, raw_value):
-        """Test against an enumerated set of values (if specified)."""
-        if self._enum_map is not None:
-            if value not in self._enum_map:
-
-                # do we already have a cached suggested value?
-                suggested_value = self._suggestion_map.get(value)
-                if suggested_value is None:
-                    suggested_value = find_closest_match(value, self._enum_map)
-                    self._suggestion_map[value] = suggested_value
-
-                # do we have a raw version of the value?
-                if suggested_value and suggested_value in self._enum_map:
-                    suggested_value = self._enum_map[suggested_value]
-
-                # if it's a short list, include it in the error message
-                if len(self.enum) <= 7:
-                    message = "Must be one of " + str(self.enum)
-                else:
-                    message = "Not in allowed values"
-
-                # generate the error report
-                return self._report_error(
-                    message,
-                    value=raw_value,
-                    row=row,
-                    column=column,
-                    suggested_value=suggested_value
-                )
-
-        return True
 
     def __str__(self):
         """String representation of a rule (for debugging)"""
@@ -1022,6 +913,10 @@ class Schema(object):
                 elif not hxl.datatypes.is_empty(key):
                     rule.tests.append(UniqueRowTest(key))
 
+                correlations = row.get('#valid_correlation')
+                if not hxl.datatypes.is_empty(correlations):
+                    rule.tests.append(CorrelationTest(correlations))
+
                 l = row.get('#valid_value+list')
                 if not hxl.datatypes.is_empty(l):
                     allowed_values = re.split(r'\s*\|\s*', l)
@@ -1045,7 +940,7 @@ class Schema(object):
                         rule.value_url_error = error
 
                 # To be replaced
-                rule.correlation_key = row.get('#valid_correlation')
+
                 rule.consistent_datatypes = to_boolean(row.get('#valid_datatype+consistent'))
 
                 schema.rules.append(rule)
