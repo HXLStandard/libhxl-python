@@ -88,6 +88,11 @@ class TestInput(unittest.TestCase):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list')
         self.assertTrue('#vocab' in source.tags)
 
+    def test_bytes_buffer(self):
+        """Test reading from a string via BytesIO"""
+        source = hxl.data(io.BytesIO("#org\nOrg A".encode('utf-8')))
+        self.assertTrue('#org' in source.tags)
+
 class TestUntaggedInput(unittest.TestCase):
 
     def test_untagged_json(self):
