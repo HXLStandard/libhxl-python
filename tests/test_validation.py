@@ -210,6 +210,29 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t.end())
             
 
+    def test_consistent_datatypes(self):
+
+        column = hxl.model.Column.parse('#x_test')
+        date_column = hxl.model.Column.parse('#date')
+        seen_callback = False
+        
+        def callback(e):
+            nonlocal seen_callback
+            seen_callback = True
+            self.assertEqual('xxx', e.value)
+
+        t = hxl.validation.ConsistentDatatypesTest()
+        t.callback = callback
+
+        # consistent numbers
+        t.start()
+        self.assertTrue(t.validate_cell('123', None, column))
+        self.assertTrue(t.validate_cell('456', None, column))
+        self.assertTrue(t.validate_cell('xxx', None, column))
+        self.assertTrue(t.validate_cell('789', None, column))
+        self.assertFalse(t.end())
+        self.assertTrue(seen_callback)
+        
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.
     Most of the tests just ensure that the AbstractRuleTest objects

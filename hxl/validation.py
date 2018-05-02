@@ -28,14 +28,17 @@ class HXLValidationException(hxl.HXLException):
 
     def __str__(self):
         """Get a string rendition of this error."""
-        s = ''
-        if self.rule.tag_pattern:
-            if self.value:
-                s += '{}={} '.format(str(self.rule.tag_pattern), str(self.value))
-            else:
-                s += '{} '.format(str(self.rule.tag_pattern))
+        s = '<HXLValidationException '
         if self.message:
-            s += '- {}'.format(self.message)
+            s += self.message + ' '
+        if self.rule:
+            if self.rule.tag_pattern:
+                if self.value:
+                    s += '{}={} '.format(str(self.rule.tag_pattern), str(self.value))
+                else:
+                    s += '{} '.format(str(self.rule.tag_pattern))
+            if self.message:
+                s += '- {}'.format(self.message)
         return s
 
 #
@@ -483,6 +486,7 @@ class EnumerationTest(AbstractRuleTest):
     
 class CorrelationTest(AbstractRuleTest):
     """Test for correlations with other values
+    #valid_correlation
     Supply a list of tag patterns, and report any outliers that don't
     correlate with those columns.
     """
@@ -509,7 +513,7 @@ class CorrelationTest(AbstractRuleTest):
             if len(value_maps) > 1:
                 result = False
                 value_maps = sorted(
-                    list(value_maps.items()),
+                    value_maps.items(),
                     key=lambda e: len(e[1]),
                     reverse=True
                 )
@@ -553,6 +557,73 @@ class CorrelationTest(AbstractRuleTest):
         # always succeed
         return True
 
+    
+class ConsistentDatatypesTest(AbstractRuleTest):
+    """Check for consistent datatypes in a column.
+    HXL: #valid_datatype+consistent
+    Will report all but the most-common datatype as errors.
+    Special knowledge of the #date hashtag
+    """
+
+    def start(self):
+        self.datatype_map = dict()
+
+    def end(self):
+        """Check for type consistency"""
+        result = True
+        for tagspec, type_maps in self.datatype_map.items():
+            # did we detect more than one type in the column?
+            if len(type_maps) > 1:
+                result = False
+                type_maps = sorted(
+                    type_maps.items(),
+                    key=lambda e: len(e[1]),
+                    reverse=True
+                )
+
+                # report errors only if the column is at least 60% the same type
+                total_locations = 0
+                for type_map in type_maps:
+                    total_locations += len(type_map[1])
+                if len(type_maps[0][1]) >= total_locations*0.6:
+                    expected_type = type_maps[0][0]
+                    for type_map in type_maps[1:]:
+                        actual_type = type_map[0]
+                        message = "Inconsistent data types: expected {} but found {}".format(expected_type, actual_type)
+                        for location in type_map[1]:
+                            self.report_error(
+                                message,
+                                row=location[0],
+                                column=location[1],
+                                value=location[2]
+                            )
+        
+        return result
+
+    def validate_cell(self, value, row, column):
+        """Keep track of each different datatype
+        Error reporting happens in the end() method, once we know which
+        type is most common.
+        @returns: always True
+        """
+
+        # determine the best-fit type
+        if column.tag == '#date' and hxl.datatypes.is_date(value):
+            type = 'date'
+        elif hxl.datatypes.is_number(value):
+            type = 'number'
+        else:
+            type = 'text'
+
+        # record the column and occurrence
+        tagspec = column.get_display_tag(sort_attributes=True)
+        if not tagspec in self.datatype_map:
+            self.datatype_map[tagspec] = {}
+        if not type in self.datatype_map[tagspec]:
+            self.datatype_map[tagspec][type] = []
+        self.datatype_map[tagspec][type].append((row, column, value,))
+
+        return True
 
 #
 # A single rule (containing one or more tests) within a schema
