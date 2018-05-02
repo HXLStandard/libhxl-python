@@ -309,6 +309,7 @@ class TestRule(unittest.TestCase):
             errors.append(e)
 
         self.rule.callback = callback
+        self.rule.start() # make sure the rule is initialised
             
         if isinstance(value, Row):
             row = value
