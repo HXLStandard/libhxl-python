@@ -38,7 +38,7 @@ validation, though error reporting will continue to the end.
 """
 
 import hxl
-import logging, os, re, urllib
+import logging, math, os, re, urllib
 
 logger = logging.getLogger(__name__)
 
@@ -731,6 +731,72 @@ class ConsistentDatatypesTest(AbstractRuleTest):
         self.datatype_map[tagspec][type].append((row, column, value,))
 
         return True
+
+
+class SpellingTest(AbstractRuleTest):
+
+    def __init__(self, case_sensitive=False):
+        super().__init__()
+        self.case_sensitive = case_sensitive
+
+    def start(self):
+        # spelling -> locations
+        self.tagspec_cache = dict()
+        self.spelling_map = dict()
+        self.total_occurrences = 0
+
+    def end(self):
+        status = True
+
+        # first pass: calculate standard deviation for occurrences for each spelling
+        total_spellings = len(self.spelling_map)
+        mean_occurrences = self.total_occurrences / total_spellings
+        deviation_squared = 0
+        for spelling, locations in self.spelling_map.items():
+            dist = len(locations)-mean_occurrences
+            deviation_squared += dist * dist
+        standard_deviation = math.sqrt(deviation_squared / total_spellings)
+
+        # second pass: collect and clear good spellings
+        good_spellings = list()
+        for spelling, locations in self.spelling_map.items():
+            dist = len(locations)-mean_occurrences
+            # big positive deviation is fine; we're just looking for rare words
+            # is it more than a standard deviation less than the mean?
+            if (dist > 0) or (abs(dist) < standard_deviation):
+                good_spellings.append(spelling)
+                self.spelling_map[spelling] = None # no potential errors
+
+        # third pass: report any remaining dubious spellings that have close matches
+        for spelling, locations in self.spelling_map.items():
+            if locations is None:
+                continue
+            correction = find_closest_match(spelling, good_spellings)
+            if correction is not None:
+                status = False
+                for location in locations:
+                    self.report_error(
+                        'Possible spelling error',
+                        value=location[2],
+                        row=location[0],
+                        column=location[1],
+                        suggested_value=correction,
+                        scope='cell'
+                    )
+                
+        return status
+
+    def validate_cell(self, value, row, column):
+        if self.case_sensitive:
+            cooked_value = hxl.datatypes.normalise_space(value)
+        else:
+            cooked_value = hxl.datatypes.normalise_string(value)
+        self.total_occurrences += 1
+        if not cooked_value in self.spelling_map:
+            self.spelling_map[cooked_value] = []
+        self.spelling_map[cooked_value].append((row, column, value,))
+        return True
+
 
 #
 # A single rule (containing one or more tests) within a schema

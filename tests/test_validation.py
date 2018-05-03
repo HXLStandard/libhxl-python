@@ -208,7 +208,50 @@ class TestTests(unittest.TestCase):
         self.assertTrue(t.validate_row(make_row(['zzz', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
         self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
         self.assertFalse(t.end())
-            
+
+    def test_spelling_case_sensitive(self):
+
+        errors_seen = 0
+
+        def callback(e):
+            nonlocal errors_seen
+            errors_seen += 1
+            self.assertEqual('xxx', e.suggested_value)
+
+        t = hxl.validation.SpellingTest(case_sensitive=True)
+        t.callback = callback
+
+        t.start()
+        for i in range(0, 10):
+            t.validate_cell('xxx', None, None)
+            t.validate_cell('yyy', None, None)
+        t.validate_cell('xx', None, None) # expect an error
+        t.validate_cell('Xxx', None, None) # expect an error
+        self.assertFalse(t.end()) # errors detected at end of parse
+
+        self.assertEqual(2, errors_seen)
+
+    def test_spelling_case_insensitive(self):
+
+        errors_seen = 0
+
+        def callback(e):
+            nonlocal errors_seen
+            errors_seen += 1
+            self.assertEqual('xxx', e.suggested_value)
+
+        t = hxl.validation.SpellingTest(case_sensitive=False)
+        t.callback = callback
+
+        t.start()
+        for i in range(0, 10):
+            t.validate_cell('xxx', None, None)
+            t.validate_cell('yyy', None, None)
+        t.validate_cell('xx', None, None) # expect an error
+        t.validate_cell('Xxx', None, None) # *not* an error (case-insensitive)
+        self.assertFalse(t.end()) # errors detected at end of parse
+
+        self.assertEqual(1, errors_seen)
 
     def test_consistent_datatypes(self):
 
