@@ -773,6 +773,8 @@ class SpellingTest(AbstractRuleTest):
 
         mean_frequency = self.total_occurrences / len(self.spelling_map)
 
+        suggested_value_cache = dict()
+
         # first pass: collect and clear good spellings
         good_spellings = list()
         for spelling, locations in self.spelling_map.items():
@@ -785,7 +787,11 @@ class SpellingTest(AbstractRuleTest):
             if locations is None: # this spelling was OK
                 continue
             # is there a near match among good spellings?
-            correction = find_closest_match(spelling, good_spellings)
+            if spelling in suggested_value_cache: # use a cache to speed things up
+                correction = suggested_value_cache[spelling]
+            else:
+                correction = find_closest_match(spelling, good_spellings)
+                suggested_value_cache[spelling] = correction
             if correction is not None:
                 # if it's rare and there's a near match, report an error
                 status = False
