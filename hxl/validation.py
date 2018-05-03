@@ -38,7 +38,7 @@ validation, though error reporting will continue to the end.
 """
 
 import hxl
-import logging, os, re, urllib
+import logging, math, os, re, urllib
 
 logger = logging.getLogger(__name__)
 
@@ -732,6 +732,88 @@ class ConsistentDatatypesTest(AbstractRuleTest):
 
         return True
 
+
+class SpellingTest(AbstractRuleTest):
+    """Detect spelling outliers in a column
+    HXL schema: #valid_value+spelling
+    Will treat numbers and dates as strings, so use this only in columns where
+    you expect text, and frequently-repeated values (e.g. #status, #org+name, #sector+name).
+
+    Collects all of the spelling variants first, then checks the rare ones in the end() method, and
+    reports any ones that have near matches among the common ones.
+    """
+
+    def __init__(self, case_sensitive=False):
+        """Constructor
+        @param case_sensitive: if True, differences in case are considered errors (default False)
+        """
+        super().__init__()
+        self.case_sensitive = case_sensitive
+
+    def start(self):
+        """Set up for a validation run"""
+        # spelling -> locations
+
+        self.spelling_map = dict()
+        """Store spellings and locations"""
+        
+        self.total_occurrences = 0
+        """Count the total spelling occurrences, for mean and standard deviation"""
+
+    def end(self):
+        """Report possible spelling errors.
+        Collect all spellings that appear less than 1/3 of the mean frequency.
+
+        For each of these, check whether there's a close match among
+        the more-common spellings, and if so, then report (once for
+        each location) with the suggested correction.
+        """
+
+        status = True
+
+        mean_frequency = self.total_occurrences / len(self.spelling_map)
+
+        # first pass: collect and clear good spellings
+        good_spellings = list()
+        for spelling, locations in self.spelling_map.items():
+            if len(locations) > mean_frequency * 0.333:
+                good_spellings.append(spelling)
+                self.spelling_map[spelling] = None # no potential errors
+
+        # second pass: report any remaining dubious spellings that have close matches among good spellings
+        for spelling, locations in self.spelling_map.items():
+            if locations is None: # this spelling was OK
+                continue
+            # is there a near match among good spellings?
+            correction = find_closest_match(spelling, good_spellings)
+            if correction is not None:
+                # if it's rare and there's a near match, report an error
+                status = False
+                for location in locations:
+                    self.report_error(
+                        'Possible spelling error',
+                        value=location[2],
+                        row=location[0],
+                        column=location[1],
+                        suggested_value=correction,
+                        scope='cell'
+                    )
+                
+        return status # false if we've found a possible correction
+
+    def validate_cell(self, value, row, column):
+        """Record all the spellings found, for later sorting"""
+        if self.case_sensitive:
+            cooked_value = hxl.datatypes.normalise_space(value)
+        else:
+            cooked_value = hxl.datatypes.normalise_string(value)
+        self.total_occurrences += 1
+        if not cooked_value in self.spelling_map:
+            self.spelling_map[cooked_value] = []
+        self.spelling_map[cooked_value].append((row, column, value,))
+        return True
+
+
 #
 # A single rule (containing one or more tests) within a schema
 #
@@ -1053,6 +1135,9 @@ class Schema(object):
                 regex = row.get('#valid_value+regex')
                 if regex is not None:
                     rule.tests.append(RegexTest(regex, case_sensitive))
+
+                if to_boolean(row.get('#valid_value+spelling')):
+                    rule.tests.append(SpellingTest(case_sensitive=case_sensitive))
 
                 if to_boolean(row.get('#valid_unique-key')):
                     rule.tests.append(UniqueValueTest())
