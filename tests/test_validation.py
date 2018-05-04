@@ -498,10 +498,26 @@ class TestValidateRow(unittest.TestCase):
 class TestValidateDataset(unittest.TestCase):
     """Test dataset-wide validation"""
 
-    DEFAULT_SCHEMA = [
+    SCHEMA = [
         ['#valid_tag', '#valid_unique'],
         ['#meta+id', 'true'],
     ]
+
+    def test_default_schema(self):
+        """Test the built-in schema"""
+        DATASET = [
+            ['#affected', '#date'],
+            ['100', '2018-01-01'],   # OK
+            ['200', 'xxx'],          # bad date
+            ['xxx', '2018-03-01'],   # bad number
+            ['100', ' 2018-04-01 '], # extra whitespace
+        ]
+        errors_seen = 0
+        def callback(e):
+            nonlocal errors_seen
+            errors_seen += 1
+        self.assertFalse(hxl.schema(callback=callback).validate(hxl.data(DATASET)))
+        self.assertEqual(3, errors_seen)
 
     def test_unique_single(self):
         DATASET = [
@@ -591,7 +607,7 @@ class TestValidateDataset(unittest.TestCase):
             errors.append(error)
 
         if schema is None:
-            schema = self.DEFAULT_SCHEMA
+            schema = self.SCHEMA
         schema = hxl.schema(schema, callback)
 
         if errors_expected == 0:

@@ -48,25 +48,11 @@ def typeof(s, col=None):
 def flatten(value, is_subitem=False):
     """Flatten potential lists and dictionaries"""
 
-    # handle scalar values, escaping special list characters
-    if not hasattr(value, '__len__') or isinstance(value, six.string_types):
-        if value is None:
-            return ''
-        else:
-            return str(value).replace('\\', '\\\\').replace('{', '\\{').replace('=', '\\=').replace(',', '\\,') # already scalar
-
-    # handle JSON arrays and objects
-    elements = []
-    if isinstance(value, dict):
-        for key in value:
-            elements.append(flatten(key, True) + '=' + flatten(value[key], True))
+    # keep it simple for now
+    if value is None:
+        return ''
     else:
-        for item in value:
-            elements.append(flatten(item, True))
-    if is_subitem:
-        return '{' + ','.join(elements) + '}'
-    else:
-        return ','.join(elements)
+        return str(value)
 
     
 def is_truthy(s):
