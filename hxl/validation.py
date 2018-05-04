@@ -743,6 +743,9 @@ class SpellingTest(AbstractRuleTest):
     reports any ones that have near matches among the common ones.
     """
 
+    ERROR_CUTOFF=0.05 # 5%
+    """Cutoff for reporting a possible error, as percentage of mean frequency for each spelling"""
+
     def __init__(self, case_sensitive=False):
         """Constructor
         @param case_sensitive: if True, differences in case are considered errors (default False)
@@ -779,7 +782,7 @@ class SpellingTest(AbstractRuleTest):
         # first pass: collect and clear good spellings
         good_spellings = list()
         for spelling, locations in self.spelling_map.items():
-            if len(locations) > mean_frequency * 0.333:
+            if len(locations) > mean_frequency * SpellingTest.ERROR_CUTOFF:
                 good_spellings.append(spelling)
                 self.spelling_map[spelling] = None # no potential errors
 
@@ -1210,14 +1213,14 @@ def find_closest_match(s, allowed_values):
     """Find the closest match for a value from a list.
     This is not super efficient right now; look at
     https://en.wikipedia.org/wiki/Edit_distance for better algorithms.
-    Uses a cutoff of len(s)/2 for candidate matches, and if two matches have the same 
+    Uses a cutoff of len(s)/3 for candidate matches, and if two matches have the same 
     edit distance, prefers the one with the longer common prefix.
     @param s: the misspelled string to check
     @param allowed_values: a list of allowed values
     @return: the best match, or None if there was no candidate
     """
     best_match = None
-    max_distance = len(s) / 2
+    max_distance = len(s) / 3
     for value in allowed_values:
         distance = get_edit_distance(s, value)
         if (best_match is not None and distance > best_match[1]) or (distance > max_distance):

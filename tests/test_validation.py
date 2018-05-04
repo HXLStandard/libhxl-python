@@ -176,11 +176,11 @@ class TestTests(unittest.TestCase):
                 self.assertEqual(suggested_value, e.suggested_value)
             return callback
 
-        t = hxl.validation.EnumerationTest(allowed_values=['Aaa', 'bbb', 'ccc'])
-        t.callback = make_callback('Aaa')
-        self.assertFalse(t.validate_cell('aa', None, None))
-        t.callback = make_callback('bbb')
-        self.assertFalse(t.validate_cell('BB', None, None))
+        t = hxl.validation.EnumerationTest(allowed_values=['Aaaa', 'bbbb', 'cccc'])
+        t.callback = make_callback('Aaaa')
+        self.assertFalse(t.validate_cell('aaa', None, None))
+        t.callback = make_callback('bbbb')
+        self.assertFalse(t.validate_cell('BBB', None, None))
         t.callback = make_callback(None) # no close matches
         self.assertFalse(t.validate_cell('xxx', None, None))
 
@@ -216,17 +216,17 @@ class TestTests(unittest.TestCase):
         def callback(e):
             nonlocal errors_seen
             errors_seen += 1
-            self.assertEqual('xxx', e.suggested_value)
+            self.assertEqual('xxxx', e.suggested_value)
 
         t = hxl.validation.SpellingTest(case_sensitive=True)
         t.callback = callback
 
         t.start()
-        for i in range(0, 10):
-            t.validate_cell('xxx', None, None)
-            t.validate_cell('yyy', None, None)
-        t.validate_cell('xx', None, None) # expect an error
-        t.validate_cell('Xxx', None, None) # expect an error
+        for i in range(0, 100):
+            t.validate_cell('xxxx', None, None)
+            t.validate_cell('yyyy', None, None)
+        t.validate_cell('xxx', None, None) # expect an error
+        t.validate_cell('Xxxx', None, None) # expect an error
         self.assertFalse(t.end()) # errors detected at end of parse
 
         self.assertEqual(2, errors_seen)
@@ -238,17 +238,17 @@ class TestTests(unittest.TestCase):
         def callback(e):
             nonlocal errors_seen
             errors_seen += 1
-            self.assertEqual('xxx', e.suggested_value)
+            self.assertEqual('xxxx', e.suggested_value)
 
         t = hxl.validation.SpellingTest(case_sensitive=False)
         t.callback = callback
 
         t.start()
-        for i in range(0, 10):
-            t.validate_cell('xxx', None, None)
-            t.validate_cell('yyy', None, None)
-        t.validate_cell('xx', None, None) # expect an error
-        t.validate_cell('Xxx', None, None) # *not* an error (case-insensitive)
+        for i in range(0, 100):
+            t.validate_cell('xxxx', None, None)
+            t.validate_cell('yyyy', None, None)
+        t.validate_cell('xxx', None, None) # expect an error
+        t.validate_cell('Xxxx', None, None) # *not* an error (case-insensitive)
         self.assertFalse(t.end()) # errors detected at end of parse
 
         self.assertEqual(1, errors_seen)

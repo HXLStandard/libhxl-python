@@ -16,14 +16,16 @@
         "#valid_tag": "#org,#sector,#subsector,#status,#beneficiary,#indicator+name,#access,#frequency,#item,#operations,#service,#channel,#modality,#currency,#impact,#group,#severity",
         "#valid_severity": "warning",
         "#valid_value+case": "true",
-        "#valid_value+spelling": "true"
+        "#valid_value+spelling": "true",
+        "#description": "Rare value: check that it is correct"
     },
     {
         "#meta+comment": "Placenames may benefit from spell checking",
         "#valid_tag": "#region,#country,#adm1,#adm2,#adm3,#adm4,#adm5,#loc",
-        "#valid_severity": "warning",
+        "#valid_severity": "info",
         "#valid_value+case": "true",
-        "#valid_value+spelling": "true"
+        "#valid_value+spelling": "true",
+        "#description": "Rare value: check that it is correct"
     },
     {
         "#meta+comment": "Look for consistent datatypes with indicators",
