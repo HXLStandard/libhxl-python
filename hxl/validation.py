@@ -771,6 +771,9 @@ class SpellingTest(AbstractRuleTest):
 
         status = True
 
+        if len(self.spelling_map) == 0:
+            return status
+
         mean_frequency = self.total_occurrences / len(self.spelling_map)
 
         # first pass: collect and clear good spellings
@@ -1054,7 +1057,7 @@ class Schema(object):
 
         if source is None:
             # Use the built-in default schema and recurse
-            path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.csv');
+            path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.json');
             with hxl.data(path, True) as source:
                 return Schema.parse(source, callback)
 
@@ -1103,84 +1106,86 @@ class Schema(object):
 
 
         for row in source:
-            tag_pattern = row.get('#valid_tag')
-            if tag_pattern:
-                rule = SchemaRule(tag_pattern)
-                rule.severity = row.get('#valid_severity') or 'error'
-                rule.description = row.get('#description')
+            tags = row.get('#valid_tag')
+            if tags:
+                tag_patterns = hxl.model.TagPattern.parse_list(tags)
+                for tag_pattern in tag_patterns:
+                    rule = SchemaRule(tag_pattern)
+                    rule.severity = row.get('#valid_severity') or 'error'
+                    rule.description = row.get('#description')
 
-                # for later use
-                case_sensitive = to_boolean(row.get('#valid_value+case'))
+                    # for later use
+                    case_sensitive = to_boolean(row.get('#valid_value+case'))
 
-                if to_boolean(row.get('#valid_required-min-max')):
-                    rule.tests.append(RequiredTest(min_occurs=1, max_occurs=None))
+                    if to_boolean(row.get('#valid_required-min-max')):
+                        rule.tests.append(RequiredTest(min_occurs=1, max_occurs=None))
 
-                min_occurs = to_int(row.get('#valid_required+min'))
-                max_occurs = to_int(row.get('#valid_required+max'))
-                if min_occurs is not None or max_occurs is not None:
-                    rule.tests.append(RequiredTest(min_occurs=min_occurs, max_occurs=max_occurs))
+                    min_occurs = to_int(row.get('#valid_required+min'))
+                    max_occurs = to_int(row.get('#valid_required+max'))
+                    if min_occurs is not None or max_occurs is not None:
+                        rule.tests.append(RequiredTest(min_occurs=min_occurs, max_occurs=max_occurs))
 
-                datatype = row.get('#valid_datatype-consistent')
-                if datatype is not None:
-                    rule.tests.append(DatatypeTest(datatype))
+                    datatype = row.get('#valid_datatype-consistent')
+                    if datatype is not None:
+                        rule.tests.append(DatatypeTest(datatype))
 
-                min_value = row.get('#valid_value+min')
-                max_value = row.get('#valid_value+max')
-                if min_value is not None or max_value is not None:
-                    rule.tests.append(RangeTest(min_value=min_value, max_value=max_value))
+                    min_value = row.get('#valid_value+min')
+                    max_value = row.get('#valid_value+max')
+                    if min_value is not None or max_value is not None:
+                        rule.tests.append(RangeTest(min_value=min_value, max_value=max_value))
 
-                if to_boolean(row.get('#valid_value+whitespace')):
-                    rule.tests.append(WhitespaceTest())
+                    if to_boolean(row.get('#valid_value+whitespace')):
+                        rule.tests.append(WhitespaceTest())
 
-                regex = row.get('#valid_value+regex')
-                if regex is not None:
-                    rule.tests.append(RegexTest(regex, case_sensitive))
+                    regex = row.get('#valid_value+regex')
+                    if regex is not None:
+                        rule.tests.append(RegexTest(regex, case_sensitive))
 
-                if to_boolean(row.get('#valid_value+spelling')):
-                    rule.tests.append(SpellingTest(case_sensitive=case_sensitive))
+                    if to_boolean(row.get('#valid_value+spelling')):
+                        rule.tests.append(SpellingTest(case_sensitive=case_sensitive))
 
-                if to_boolean(row.get('#valid_unique-key')):
-                    rule.tests.append(UniqueValueTest())
+                    if to_boolean(row.get('#valid_unique-key')):
+                        rule.tests.append(UniqueValueTest())
 
-                key = row.get('#valid_unique+key')
-                if hxl.datatypes.is_truthy(key):
-                    # could be problematic if there's even a hashtag like #true or #yes
-                    rule.tests.append(UniqueRowTest())
-                elif not hxl.datatypes.is_empty(key):
-                    rule.tests.append(UniqueRowTest(key))
+                    key = row.get('#valid_unique+key')
+                    if hxl.datatypes.is_truthy(key):
+                        # could be problematic if there's even a hashtag like #true or #yes
+                        rule.tests.append(UniqueRowTest())
+                    elif not hxl.datatypes.is_empty(key):
+                        rule.tests.append(UniqueRowTest(key))
 
-                correlations = row.get('#valid_correlation')
-                if not hxl.datatypes.is_empty(correlations):
-                    rule.tests.append(CorrelationTest(correlations))
+                    correlations = row.get('#valid_correlation')
+                    if not hxl.datatypes.is_empty(correlations):
+                        rule.tests.append(CorrelationTest(correlations))
 
-                if to_boolean(row.get('#valid_datatype+consistent')):
-                    rule.tests.append(ConsistentDatatypesTest())
-                    
-                l = row.get('#valid_value+list')
-                if not hxl.datatypes.is_empty(l):
-                    allowed_values = re.split(r'\s*\|\s*', l)
-                    if len(allowed_values) > 0:
-                        rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
+                    if to_boolean(row.get('#valid_datatype+consistent')):
+                        rule.tests.append(ConsistentDatatypesTest())
 
-                url = row.get('#valid_value+url')
-                if not hxl.datatypes.is_empty(url):
-                    # default the target tag to the #valid_tag
-                    target_tag = row.get('#valid_value+target_tag', default=tag_pattern)
-                    try:
-                        # read the values from an external dataset
-                        source = hxl.data(url)
-                        allowed_values = source.get_value_set(row.get('#valid_value+target_tag'))
+                    l = row.get('#valid_value+list')
+                    if not hxl.datatypes.is_empty(l):
+                        allowed_values = re.split(r'\s*\|\s*', l)
                         if len(allowed_values) > 0:
                             rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
-                    except Exception as error:
-                        rule.loading_errors.append(HXLValidationException(
-                            'Error loading allowed values from {}: {}'.format(url, str(error)),
-                            scope='dataset',
-                            rule=rule
-                        ))
+
+                    url = row.get('#valid_value+url')
+                    if not hxl.datatypes.is_empty(url):
+                        # default the target tag to the #valid_tag
+                        target_tag = row.get('#valid_value+target_tag', default=tag_pattern)
+                        try:
+                            # read the values from an external dataset
+                            source = hxl.data(url)
+                            allowed_values = source.get_value_set(row.get('#valid_value+target_tag'))
+                            if len(allowed_values) > 0:
+                                rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
+                        except Exception as error:
+                            rule.loading_errors.append(HXLValidationException(
+                                'Error loading allowed values from {}: {}'.format(url, str(error)),
+                                scope='dataset',
+                                rule=rule
+                            ))
 
 
-                schema.rules.append(rule)
+                    schema.rules.append(rule)
 
         return schema
 

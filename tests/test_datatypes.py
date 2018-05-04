@@ -9,21 +9,6 @@ License: Public Domain
 import hxl.datatypes, unittest
 
 
-class TestFlatten(unittest.TestCase):
-
-    def test_scalar(self):
-        self.assertEqual('foo', hxl.datatypes.flatten('foo'))
-        self.assertEqual('3', hxl.datatypes.flatten(3))
-        self.assertEqual('a\\,b', hxl.datatypes.flatten('a,b'))
-
-    def test_list(self):
-        self.assertEqual('a,b,c', hxl.datatypes.flatten(['a', 'b', 'c']))
-        self.assertEqual('a,{b,c,d},e', hxl.datatypes.flatten(['a', ['b', 'c', 'd'], 'e']))
-
-    def test_dict(self):
-        self.assertEqual('a=1,b=2,c=3', hxl.datatypes.flatten({'a':1, 'b':2, 'c':3}))
-        self.assertEqual('a=1,b={c=3,d=4},e=5', hxl.datatypes.flatten({'a':1, 'b':{'c':3, 'd':4}, 'e':5}))
-
 class TestStrings(unittest.TestCase):
 
     def test_empty(self):

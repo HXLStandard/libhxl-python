@@ -1,5 +1,8 @@
 2018-05-31 Release 4.8
-	- refactor the hxl.validation module for better testing and maintainability
+	- refactor the hxl.validation module for better testing and
+	  maintainability
+	- add a new default schema with useful default tests
+	- allow multiple tag patterns (comma-separated) for #valid_tag in a HXL schema
 
 2018-04-30 Release 4.7
 	- remove obsolete Python2 compatibility code
