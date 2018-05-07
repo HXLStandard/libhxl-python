@@ -12,6 +12,12 @@
         "#valid_datatype": "number"
     },
     {
+        "#meta+comment": "Gently point out numeric outliers",
+        "#valid_tag": "#population,#affected,#inneed,#targeted,#reached,#indicator+num,#output+num,#value",
+        "#valid_severity": "info",
+        "#valid_value+outliers": "true"
+    },
+    {
         "#meta+comment": "Spell-check highly-repetitive values",
         "#valid_tag": "#org,#sector,#subsector,#status,#beneficiary,#indicator+name,#access,#frequency,#item,#operations,#service,#channel,#modality,#currency,#impact,#group,#severity",
         "#valid_severity": "warning",
