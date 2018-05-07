@@ -879,38 +879,46 @@ class NumericOutlierTest(AbstractRuleTest):
         return True
 
     def start(self):
-        self.standard_deviation = None
-        self.values = []
+        self.standard_deviations = dict()
+        self.mean_values = dict()
+        self.values = dict()
 
     def scan_cell(self, value, row, column):
+        tagspec = column.get_display_tag(sort_attributes=True) # FIXME
         try:
             num = hxl.datatypes.normalise_number(value)
-            self.values.append(num)
+            if not tagspec in self.values:
+                self.values[tagspec] = list()
+            self.values[tagspec].append(num)
         except:
             # not a number, so ignore
             pass
 
     def end_scan(self):
-        # if the list is long enough, remove the min and max values
-        if len(set(self.values)) >= 5:
-            self.values.remove(max(self.values))
-            self.values.remove(min(self.values))
+        for tagspec in self.values:
 
-        # now calculate the standard deviation of the remaining values
-        self.mean_value = sum(self.values) / len(self.values)
-        self.standard_deviation = math.sqrt(
-            sum(map(lambda n: (n-self.mean_value)*(n-self.mean_value), self.values)) / len(self.values)
-        )
+            values = self.values[tagspec]
+
+            # if the list is long enough, remove the min and max values
+            if len(set(values)) >= 5:
+                values.remove(max(values))
+                values.remove(min(values))
+
+            # now calculate the standard deviation of the remaining values
+            self.mean_values[tagspec] = sum(values) / len(values)
+            self.standard_deviations[tagspec] = math.sqrt(
+                sum(map(lambda n: (n-self.mean_values[tagspec])*(n-self.mean_values[tagspec]), values)) / len(values)
+            )
 
         # free some memory
         del self.values
 
     def validate_cell(self, value, row, column):
+        tagspec = column.get_display_tag(sort_attributes=True) # FIXME
         try:
             num = hxl.datatypes.normalise_number(value)
-            distance = abs(num - self.mean_value)
-            print('***', num, distance, self.standard_deviation)
-            if distance > self.standard_deviation * 3:
+            distance = abs(num - self.mean_values[tagspec])
+            if distance > self.standard_deviations[tagspec] * 3:
                 self.report_error(
                     "Possible numeric outlier",
                     value=value,
