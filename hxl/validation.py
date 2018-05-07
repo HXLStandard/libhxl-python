@@ -27,7 +27,10 @@ create your new test from the HXL schema.
 
 Validation tests go through the following workflow:
 
+- needs_scan() to check if the test needs multiple passes
 - start()
+- scan_row(\L{hxl.model.Row}) for each row in the dataset (only if needs_scan() returned True)
+- scan_cell(value, \L{hxl.model.Row}, L\{hxl.model.Column}) for each non-empty cell in each row (only if needs_scan() returned True)
 - validate_dataset(\L{hxl.model.Dataset})
 - validate_row(\L{hxl.model.Row}) for each row (row-level validations only)
 - validate_cell(value, \L{hxl.model.Row}, \L{hxl.model.Column}) for each cell in each row
@@ -102,7 +105,9 @@ class AbstractRuleTest(object):
 
     Workflow (triggered by \L{SchemaRule}):
 
+    - needs_scan()
     - start()
+    - scan_row() for each row (only if needs_scan() returned True)
     - validate_dataset()
     - validate_row() for each row
     - validate_cell() for each matching non-empty cell in each row
@@ -115,12 +120,17 @@ class AbstractRuleTest(object):
         """
         self.callback = callback
 
-    @property
-    def needs_cache(self):
+    def needs_scan(self):
         """Report whether this test requires a cached dataset.
+
         A cached dataset is one that can be processed more than
         once. It requires more memory and processing time, so return
         True only if absolutely necessary.
+
+        If this method returns True, then the validation engine
+        will call scan_row() for each row in the dataset before
+        invoking any of the validate_* methods.
+
         @returns: True if the test requires a cached dataset.
         """
         return False
@@ -138,7 +148,39 @@ class AbstractRuleTest(object):
         """
         return True
 
+    def scan_row(self, row, indices=None, tag_pattern=None):
+        """Scan a row of the dataset to collect information.
+
+        Will be called for each row in the dataset, but only if
+        needs_scan() returns True.
+
+        This method does not report any errors; it simply collects
+        information for the validate_*() methods to use later.
+
+        @param row: the L{hxl.model.Row} object to pre-scan.
+        @param indices: optional pre-compiled indices for the rule to
+        look at (in lieu of tag_pattern)
+        @param tag_pattern: optional tag pattern for the rule to use.
+
+        """
+        return
+
+    def scan_cell(self, value, row, column):
+        """Pre-scan a single cell to collect information.
+        Will be called for each maching non-empty cell in each row,
+        but only if needs_scan() returns True.
+
+        This method does not report any errors; it simply collects
+        information for the validate_*() methods to use later.
+
+        @param value: the non-empty value to validate
+        @param row: a hxl.model.Row object for location
+        @param column: a hxl.model.Column object for location
+        """
+        return
+
     def validate_dataset(self, dataset, indices=None, tag_pattern=None):
+
         """Apply test at the dataset level
         Called before validate_row() or validate_value()
         Will report errors via the test's \I{callback}, if available.
@@ -284,6 +326,9 @@ class DatatypeTest(AbstractRuleTest):
             self.datatype = datatype
         else:
             raise hxl.HXLException("Unsupported datatype: {}".format(datatype))
+
+    def needs_scan(self):
+        return True
 
     def validate_cell(self, value, row, column):
         """Validate datatypes on the individual cell level"""
@@ -832,7 +877,10 @@ class SchemaRule(object):
 
     Workflow (triggered by \L{Schema.validate}:
 
+    - needs_scan()
     - start()
+    - scan_row() for each row (if needs_scan() returned True)
+    - scan_cell() for each maching non-empty cell (if needs_scan() returned True)
     - validate_dataset()
     - validate_row() for each row
     - validate_cell() for each matching non-empty cell in each row
@@ -869,6 +917,15 @@ class SchemaRule(object):
         self.saved_indices = None
         """List of saved column indices matching tag_pattern"""
 
+    def needs_scan(self):
+        """Check if any test in this rule requires a pre-scan of the dataset.
+        @returns: True if at least one test's needs_scan() method returns True
+        """
+        for test in self.tests:
+            if test.needs_scan():
+                return True
+        return False
+
     def start(self):
         """Initialisation method
         Call after all values have been set, but before use
@@ -898,6 +955,26 @@ class SchemaRule(object):
 
         self.saved_indices = None
         return status
+
+    def scan_row(self, row):
+        """
+        Pre-scan a row and its individual cells.
+        This method does not report errors or return a status.
+        Will be invoked only if needs_scan() returned True
+        Calls both scan_row() and scan_cell() for each test.
+        @param row the Row to scan
+        """
+        if self.saved_indices is None:
+            self.saved_indices = get_column_indices(self.tag_pattern, row.columns)
+
+        # scan each row, then each matching cell in the row
+        for test in self.tests:
+            if not test.needs_scan(): # don't invoke unless the test asked for it
+                continue
+            test.scan_row(row, self.saved_indices)
+            for i in self.saved_indices: # validate individual cells
+                if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
+                    test.scan_cell(row.values[i], row, row.columns[i])
 
     def validate_dataset(self, dataset, indices=None, tag_pattern=None):
         """Test whether the columns are present to satisfy this rule."""
@@ -979,9 +1056,23 @@ class Schema(object):
         @param source: the \L{hxl.model.Dataset} to validate
         """
         status = True # all is well at the beginning
+        needs_scan = False # assume we don't need a pre-scan
+
+        # do we need a cached, in-memory dataset?
+        if not source.is_cached:
+            for rule in self.rules:
+                if rule.needs_scan():
+                    needs_scan = True
+                    source = source.cache()
+                    break
 
         # initial setup
         self.start()
+
+        # scan rows if needed
+        if needs_scan:
+            for row in source:
+                self.scan_row(row)
 
         # dataset-level validations
         if not self.validate_dataset(source):
@@ -1018,6 +1109,12 @@ class Schema(object):
             if not rule.end():
                 status = False
         return status
+
+    def scan_row(self, row):
+        """Pre-scan a row, only for rules that require it."""
+        for rule in self.rules:
+            if rule.needs_scan():
+                rule.scan_row(row)
 
     def validate_dataset(self, dataset):
         """Validate just at the dataset level
