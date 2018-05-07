@@ -279,6 +279,35 @@ class TestTests(unittest.TestCase):
             self.assertFalse(t.validate_cell(value, None, COLUMN))
         self.assertTrue(seen_callback)
         
+    def test_outliers(self):
+        GOOD_VALUES = ['9000', '10000', '11000']
+        BAD_VALUES = ['5000000', '1']
+
+        seen_callback = False
+        
+        def callback(e):
+            nonlocal seen_callback
+            seen_callback = True
+            self.assertTrue(e.value in BAD_VALUES)
+
+        t = hxl.validation.NumericOutlierTest()
+        t.callback = callback
+
+        # consistent numbers
+        t.start()
+        for i in range(1, 1000):
+            for value in GOOD_VALUES:
+                t.scan_cell(value, None, None)
+        for value in BAD_VALUES:
+            t.scan_cell(value, None, None)
+        t.end_scan()
+        for value in GOOD_VALUES:
+            self.assertTrue(t.validate_cell(value, None, None))
+        for value in BAD_VALUES:
+            self.assertFalse(t.validate_cell(value, None, None))
+        self.assertTrue(seen_callback)
+
+
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.
     Most of the tests just ensure that the AbstractRuleTest objects

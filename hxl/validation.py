@@ -646,6 +646,7 @@ class CorrelationTest(AbstractRuleTest):
     #valid_correlation
     Supply a list of tag patterns, and report any outliers that don't
     correlate with those columns.
+    TODO: this might be more efficient with pre-scanning
     """
 
     def __init__(self, tag_patterns):
@@ -868,6 +869,60 @@ class SpellingTest(AbstractRuleTest):
         self.spelling_map[cooked_value].append((row, column, value,))
         return True
 
+    
+class NumericOutlierTest(AbstractRuleTest):
+    """Detect outliers among matching values
+    TODO keep a separate outlier map for different correlation keys
+    """
+
+    def needs_scan(self):
+        return True
+
+    def start(self):
+        self.standard_deviation = None
+        self.values = []
+
+    def scan_cell(self, value, row, column):
+        try:
+            num = hxl.datatypes.normalise_number(value)
+            self.values.append(num)
+        except:
+            # not a number, so ignore
+            pass
+
+    def end_scan(self):
+        # if the list is long enough, remove the min and max values
+        if len(set(self.values)) >= 5:
+            self.values.remove(max(self.values))
+            self.values.remove(min(self.values))
+
+        # now calculate the standard deviation of the remaining values
+        self.mean_value = sum(self.values) / len(self.values)
+        self.standard_deviation = math.sqrt(
+            sum(map(lambda n: (n-self.mean_value)*(n-self.mean_value), self.values)) / len(self.values)
+        )
+
+        # free some memory
+        del self.values
+
+    def validate_cell(self, value, row, column):
+        try:
+            num = hxl.datatypes.normalise_number(value)
+            distance = abs(num - self.mean_value)
+            print('***', num, distance, self.standard_deviation)
+            if distance > self.standard_deviation * 3:
+                self.report_error(
+                    "Possible numeric outlier",
+                    value=value,
+                    row=row,
+                    column=column
+                )
+                return False
+        except:
+            # not a number, so ignore
+            pass
+        return True
+    
 
 #
 # A single rule (containing one or more tests) within a schema
