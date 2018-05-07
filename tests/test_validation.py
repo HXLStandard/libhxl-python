@@ -280,6 +280,7 @@ class TestTests(unittest.TestCase):
         self.assertTrue(seen_callback)
         
     def test_outliers(self):
+        COLUMN = hxl.model.Column.parse('#x_test')
         GOOD_VALUES = ['9000', '10000', '11000']
         BAD_VALUES = ['5000000', '1']
 
@@ -297,14 +298,14 @@ class TestTests(unittest.TestCase):
         t.start()
         for i in range(1, 1000):
             for value in GOOD_VALUES:
-                t.scan_cell(value, None, None)
+                t.scan_cell(value, None, COLUMN)
         for value in BAD_VALUES:
-            t.scan_cell(value, None, None)
+            t.scan_cell(value, None, COLUMN)
         t.end_scan()
         for value in GOOD_VALUES:
-            self.assertTrue(t.validate_cell(value, None, None))
+            self.assertTrue(t.validate_cell(value, None, COLUMN))
         for value in BAD_VALUES:
-            self.assertFalse(t.validate_cell(value, None, None))
+            self.assertFalse(t.validate_cell(value, None, COLUMN))
         self.assertTrue(seen_callback)
 
 
@@ -594,6 +595,33 @@ class TestValidateDataset(unittest.TestCase):
         ])
 
         self.assertFalse(schema.validate(data))
+
+    def test_outliers(self):
+        BAD_VALUES = ['1', '1000000']
+
+        seen_callback = False
+
+        def callback(e):
+            nonlocal seen_callback
+            seen_callback = True
+            self.assertTrue(e.value in BAD_VALUES)
+
+        schema = hxl.schema([
+            ['#valid_tag', '#valid_datatype+outliers'],
+            ['#affected', 'true']
+        ], callback=callback)
+
+        data = hxl.data([
+            ['#affected'],
+            ['100'],
+            ['1'],
+            ['200'],
+            ['800'],
+            ['1000000']
+        ])
+
+        self.assertFalse(schema.validate(data))
+        self.assertTrue(seen_callback)
 
     def test_correlation(self):
         SCHEMA = [
