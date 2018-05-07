@@ -254,26 +254,29 @@ class TestTests(unittest.TestCase):
         self.assertEqual(1, errors_seen)
 
     def test_consistent_datatypes(self):
+        COLUMN = hxl.model.Column.parse('#x_test')
+        GOOD_VALUES = ['12', '34', '56', '78', '90']
+        BAD_VALUES = ['xxx', 'yyy']
 
-        column = hxl.model.Column.parse('#x_test')
-        date_column = hxl.model.Column.parse('#date')
         seen_callback = False
         
         def callback(e):
             nonlocal seen_callback
             seen_callback = True
-            self.assertEqual('xxx', e.value)
+            self.assertTrue(e.value in BAD_VALUES)
 
         t = hxl.validation.ConsistentDatatypesTest()
         t.callback = callback
 
         # consistent numbers
         t.start()
-        self.assertTrue(t.validate_cell('123', None, column))
-        self.assertTrue(t.validate_cell('456', None, column))
-        self.assertTrue(t.validate_cell('xxx', None, column))
-        self.assertTrue(t.validate_cell('789', None, column))
-        self.assertFalse(t.end())
+        for value in GOOD_VALUES + BAD_VALUES:
+            t.scan_cell(value, None, COLUMN)
+        t.end_scan()
+        for value in GOOD_VALUES:
+            self.assertTrue(t.validate_cell(value, None, COLUMN))
+        for value in BAD_VALUES:
+            self.assertFalse(t.validate_cell(value, None, COLUMN))
         self.assertTrue(seen_callback)
         
 class TestRule(unittest.TestCase):

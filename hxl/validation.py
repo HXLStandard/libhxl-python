@@ -31,6 +31,7 @@ Validation tests go through the following workflow:
 - start()
 - scan_row(\L{hxl.model.Row}) for each row in the dataset (only if needs_scan() returned True)
 - scan_cell(value, \L{hxl.model.Row}, L\{hxl.model.Column}) for each non-empty cell in each row (only if needs_scan() returned True)
+- end_scan() (only if needs_scan() returned True)
 - validate_dataset(\L{hxl.model.Dataset})
 - validate_row(\L{hxl.model.Row}) for each row (row-level validations only)
 - validate_cell(value, \L{hxl.model.Row}, \L{hxl.model.Column}) for each cell in each row
@@ -108,6 +109,8 @@ class AbstractRuleTest(object):
     - needs_scan()
     - start()
     - scan_row() for each row (only if needs_scan() returned True)
+    - scan_cell() for each non-empty matching cell (only if needs_scan() returned True)
+    - end_scan() (only if needs_scan() returned True)
     - validate_dataset()
     - validate_row() for each row
     - validate_cell() for each matching non-empty cell in each row
@@ -127,11 +130,13 @@ class AbstractRuleTest(object):
         once. It requires more memory and processing time, so return
         True only if absolutely necessary.
 
-        If this method returns True, then the validation engine
-        will call scan_row() for each row in the dataset before
-        invoking any of the validate_* methods.
+        If this method returns True, then the validation engine will
+        call scan_row() for each row in the dataset, scan_cell() for
+        each non-empty matching cell, and end_scan() before invoking
+        any of the validate_* methods.
 
         @returns: True if the test requires a cached dataset.
+
         """
         return False
 
@@ -176,6 +181,13 @@ class AbstractRuleTest(object):
         @param value: the non-empty value to validate
         @param row: a hxl.model.Row object for location
         @param column: a hxl.model.Column object for location
+        """
+        return
+
+    def end_scan(self):
+        """Clean-up calculations after scanning and before validation.
+        Will be called only if needs_scan() returned True
+        Does not report any errors
         """
         return
 
@@ -326,9 +338,6 @@ class DatatypeTest(AbstractRuleTest):
             self.datatype = datatype
         else:
             raise hxl.HXLException("Unsupported datatype: {}".format(datatype))
-
-    def needs_scan(self):
-        return True
 
     def validate_cell(self, value, row, column):
         """Validate datatypes on the individual cell level"""
@@ -713,44 +722,34 @@ class ConsistentDatatypesTest(AbstractRuleTest):
     Special knowledge of the #date hashtag
     """
 
+    def needs_scan(self):
+        """We want to prescan the dataset"""
+        return True
+
     def start(self):
         self.datatype_map = dict()
 
-    def end(self):
-        """Check for type consistency"""
-        status = True
-        for tagspec, type_maps in self.datatype_map.items():
-            # Possible error if we detected more than one type for any hashtag spec
-            if len(type_maps) > 1:
-                status = False
-                # Sort the types found by descending number of occurrences
-                type_maps = sorted(
-                    type_maps.items(),
-                    key=lambda e: len(e[1]),
-                    reverse=True
-                )
+    def scan_cell(self, value, row, column):
+        datatype = self.guess_type(value, column)
+        tagspec = column.get_display_tag(sort_attributes=True) # FIXME
 
-                # report errors only if the column is at least 60% the same type
-                total_locations = 0
-                for type_map in type_maps:
-                    total_locations += len(type_map[1])
-                if len(type_maps[0][1]) >= total_locations*0.6:
-                    # the most-common one is the expected type
-                    expected_type = type_maps[0][0]
-                    # iterate through the other types found
-                    for type_map in type_maps[1:]:
-                        actual_type = type_map[0]
-                        message = "Inconsistent data types: expected {} but found {}".format(expected_type, actual_type)
-                        # iterate through the saved locations for each type and report the error
-                        for location in type_map[1]:
-                            self.report_error(
-                                message,
-                                row=location[0],
-                                column=location[1],
-                                value=location[2]
-                            )
-        
-        return status
+        # keep track of how often the type appeared
+        if not tagspec in self.datatype_map:
+            self.datatype_map[tagspec] = {}
+        if not datatype in self.datatype_map[tagspec]:
+            self.datatype_map[tagspec][datatype] = 0
+        self.datatype_map[tagspec][datatype] += 1
+
+    def end_scan(self):
+        """Reduce the datatype_map to the most-common type for each tagspec"""
+        for tagspec, datatypes in self.datatype_map.items():
+            max_type = None
+            max_count = None
+            for datatype, count in datatypes.items():
+                if max_count is None or count > max_count:
+                    max_count = count
+                    max_type = datatype
+            self.datatype_map[tagspec] = max_type
 
     def validate_cell(self, value, row, column):
         """Keep track of each different datatype
@@ -758,24 +757,29 @@ class ConsistentDatatypesTest(AbstractRuleTest):
         type is most common.
         @returns: always True
         """
+        actual_datatype = self.guess_type(value, column)
+        tagspec = column.get_display_tag(sort_attributes=True) # FIXME
+        expected_datatype = self.datatype_map.get(tagspec)
 
-        # determine the best-fit type
-        if column.tag == '#date' and hxl.datatypes.is_date(value):
-            type = 'date'
-        elif hxl.datatypes.is_number(value):
-            type = 'number'
+        if actual_datatype == expected_datatype:
+            return True
         else:
-            type = 'text'
+            message = "Inconsistent data types: expected {} but found {}".format(expected_datatype, actual_datatype)
+            return self.report_error(
+                message,
+                value=value,
+                row=row,
+                column=column
+            )
 
-        # record the column and occurrence
-        tagspec = column.get_display_tag(sort_attributes=True)
-        if not tagspec in self.datatype_map:
-            self.datatype_map[tagspec] = {}
-        if not type in self.datatype_map[tagspec]:
-            self.datatype_map[tagspec][type] = []
-        self.datatype_map[tagspec][type].append((row, column, value,))
-
-        return True
+    def guess_type(self, value, column):
+        """Guess the type of a value"""
+        if column.tag == '#date' and hxl.datatypes.is_date(value):
+            return 'date'
+        elif hxl.datatypes.is_number(value):
+            return 'number'
+        else:
+            return 'text'
 
 
 class SpellingTest(AbstractRuleTest):
@@ -881,6 +885,7 @@ class SchemaRule(object):
     - start()
     - scan_row() for each row (if needs_scan() returned True)
     - scan_cell() for each maching non-empty cell (if needs_scan() returned True)
+    - end_scan() (if needs_scan() returned True)
     - validate_dataset()
     - validate_row() for each row
     - validate_cell() for each matching non-empty cell in each row
@@ -957,8 +962,7 @@ class SchemaRule(object):
         return status
 
     def scan_row(self, row):
-        """
-        Pre-scan a row and its individual cells.
+        """Pre-scan a row and its individual cells.
         This method does not report errors or return a status.
         Will be invoked only if needs_scan() returned True
         Calls both scan_row() and scan_cell() for each test.
@@ -976,6 +980,12 @@ class SchemaRule(object):
                 if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
                     test.scan_cell(row.values[i], row, row.columns[i])
 
+    def end_scan(self):
+        """Invoke end_scan() for all tests that need it"""
+        for test in self.tests:
+            if test.needs_scan():
+                test.end_scan()
+                    
     def validate_dataset(self, dataset, indices=None, tag_pattern=None):
         """Test whether the columns are present to satisfy this rule."""
         
@@ -1069,10 +1079,11 @@ class Schema(object):
         # initial setup
         self.start()
 
-        # scan rows if needed
+        # pre-scan if needed
         if needs_scan:
             for row in source:
                 self.scan_row(row)
+            self.end_scan()
 
         # dataset-level validations
         if not self.validate_dataset(source):
@@ -1115,6 +1126,12 @@ class Schema(object):
         for rule in self.rules:
             if rule.needs_scan():
                 rule.scan_row(row)
+
+    def end_scan(self):
+        """End pre-scan, for rules that require it."""
+        for rule in self.rules:
+            if rule.needs_scan():
+                rule.end_scan()
 
     def validate_dataset(self, dataset):
         """Validate just at the dataset level
