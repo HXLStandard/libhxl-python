@@ -845,12 +845,15 @@ class AppendFilter(AbstractBaseFilter):
         )
 
 
-class CacheFilter(AbstractCachingFilter):
+class CacheFilter(AbstractBaseFilter):
     """Composable filter to cache HXL data in memory.
 
     This filter saves a copy of the HXL data in memory. It supports
     the L{hxl.model.Dataset.cache} method, and has no corresponding
     command-line script.
+
+    Does not extend AbstractCachingFilter, because it needs to
+    preserve original row numbers (when they exist).
 
     While L{streaming filters<AbstractStreamingFilter>} are more
     efficient, sometimes you need to keep a copy of your HXL data in
@@ -883,6 +886,7 @@ class CacheFilter(AbstractCachingFilter):
     never run the replacements more than once::
 
       filter = hxl.data(url).replace_data_map(map_url).cache().with_rows('org=UNICEF')
+
     """
 
     def __init__(self, source, max_rows=None):
@@ -890,33 +894,47 @@ class CacheFilter(AbstractCachingFilter):
         @param source: the upstream data source
         @param max_rows: if >0, maximum number of rows to cache
         """
-        super(CacheFilter, self).__init__(source)
+        super().__init__(source)
+
         self.max_rows = max_rows
         """Maximum number of rows to keep in the cache (-1 means no limit)"""
+
         self.overflow = False
         """Flag for whether there were more rows than L{max_rows} available."""
+
+        self.cached_rows = None
+
+    @property
+    def is_cached(self):
+        return True
 
     def filter_columns(self):
         """@returns: a deep copy of the source columns"""
         return copy.deepcopy(self.source.columns)
 
-    def filter_rows(self):
-        """@returns: a local copy of the row data"""
-        values = []
-        max_rows = self.max_rows
-        for row in self.source:
-            if max_rows is not None:
-                max_rows -= 1
-                if max_rows < 0:
+    def __iter__(self):
+
+        # if we haven't read the source yet, cache some rows
+        if self.cached_rows is None:
+            self.cached_rows = []
+            for row_number, row in enumerate(self.source):
+                # is there a limit?
+                if self.max_rows is not None and row_number >= self.max_rows:
                     self.overflow = True
                     break
-            values.append(row.values)
-        return values
+                else:
+                    self.cached_rows.append(row)
+
+        # return the iterator over the cached rows (repeatable)
+        return iter(self.cached_rows)
 
     @staticmethod
     def _load(source, spec):
         """Create a new CacheFilter from a dict spec."""
-        return CacheFilter(source)
+        return CacheFilter(
+            source=source,
+            max_rows=opt_arg(spec, 'max_rows', None)
+        )
 
 
 class CleanDataFilter(AbstractStreamingFilter):
