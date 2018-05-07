@@ -320,7 +320,7 @@ class RequiredTest(AbstractRuleTest):
     
 class DatatypeTest(AbstractRuleTest):
     """Test for a specified datatype
-    HXL schema: #valid_datatype-consistent-outliers
+    HXL schema: #valid_datatype-consistent
     See also \L{ConsistentDatatypeTest}, which infers the most-common datatype.
     """
 
@@ -1305,7 +1305,7 @@ class Schema(object):
                     if min_occurs is not None or max_occurs is not None:
                         rule.tests.append(RequiredTest(min_occurs=min_occurs, max_occurs=max_occurs))
 
-                    datatype = row.get('#valid_datatype-consistent-outliers')
+                    datatype = row.get('#valid_datatype-consistent')
                     if datatype is not None:
                         rule.tests.append(DatatypeTest(datatype))
 
@@ -1341,7 +1341,7 @@ class Schema(object):
                     if to_boolean(row.get('#valid_datatype+consistent')):
                         rule.tests.append(ConsistentDatatypesTest())
 
-                    if to_boolean(row.get('#valid_datatype+outliers')):
+                    if to_boolean(row.get('#valid_value+outliers')):
                         rule.tests.append(NumericOutlierTest())
 
                     l = row.get('#valid_value+list')

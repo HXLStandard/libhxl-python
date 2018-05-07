@@ -607,7 +607,7 @@ class TestValidateDataset(unittest.TestCase):
             self.assertTrue(e.value in BAD_VALUES)
 
         schema = hxl.schema([
-            ['#valid_tag', '#valid_datatype+outliers'],
+            ['#valid_tag', '#valid_value+outliers'],
             ['#affected', 'true']
         ], callback=callback)
 
