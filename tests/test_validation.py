@@ -123,6 +123,8 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t().validate_cell('xxx  yyy', None, None)) # multiple internal spaces not allowed
         self.assertFalse(t().validate_cell("xxx\tyyy", None, None)) # tabs not allowed
 
+        self.assertTrue(t().validate_cell(3, None, None)) # Exception if it's not a string?
+
     def test_regex(self):
         def t(pattern):
             return hxl.validation.RegexTest(pattern)

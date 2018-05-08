@@ -467,16 +467,16 @@ class WhitespaceTest(AbstractRuleTest):
 
     def validate_cell(self, value, row, column):
         """Is there irregular whitespace?"""
-        if re.match(WhitespaceTest.PATTERN, value):
-            return self.report_error(
-                'Found extra whitespace',
-                value=value,
-                row=row,
-                column=column,
-                suggested_value=hxl.datatypes.normalise_space(value)
-            )
-        else:
-            return True
+        if hxl.datatypes.is_string(value):
+            if re.match(WhitespaceTest.PATTERN, value):
+                return self.report_error(
+                    'Found extra whitespace',
+                    value=value,
+                    row=row,
+                    column=column,
+                    suggested_value=hxl.datatypes.normalise_space(value)
+                )
+        return True
         
 
 class RegexTest(AbstractRuleTest):

@@ -72,6 +72,13 @@ def is_empty(s):
     return (s is None or s == '' or str(s).isspace())
 
 
+def is_string(v):
+    """Test if a value is currently a string
+    @param v: the value to test
+    @returns: True if the value is a string
+    """
+    return isinstance(v, six.string_types)
+    
 def normalise_space(s):
     """Normalise whitespace only
     @param v: value to normalise
@@ -87,7 +94,6 @@ def normalise_space(s):
             s
         )
 
-
 def normalise_string(s):
     """Normalise a string.
     Remove all leading and trailing whitespace. Convert to lower
@@ -101,7 +107,7 @@ def normalise_string(s):
         s = str(s)
     return normalise_space(unidecode.unidecode(s)).lower()
 
-    
+
 def is_number(v):
     """Test if a value contains something recognisable as a number.
     @param v: the value (string, int, float, etc) to test
@@ -114,7 +120,6 @@ def is_number(v):
     except:
         return False
 
-    
 def normalise_number(v):
     """Attempt to convert a value to a number.
     Will convert to int type if it has no decimal places.
