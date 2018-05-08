@@ -900,9 +900,8 @@ class NumericOutlierTest(AbstractRuleTest):
             values = self.values[tagspec]
 
             # if the list is long enough, remove the min and max values
-            if len(set(values)) >= 5:
-                values.remove(max(values))
-                values.remove(min(values))
+            if len(values) >= 10: # 10 is our cutoff for removing lowest and highest values
+                values = sorted(values)[1:-1]
 
             # now calculate the standard deviation of the remaining values
             self.mean_values[tagspec] = sum(values) / len(values)

@@ -599,6 +599,19 @@ class TestValidateDataset(unittest.TestCase):
     def test_outliers(self):
         BAD_VALUES = ['1', '1000000']
 
+        raw_data = [
+            ['#affected'],
+            ['1'],
+            ['1000000']
+        ]
+
+        for i in range(0, 10):
+            raw_data += [
+                ['100'],
+                ['200'],
+                ['800']
+            ]
+            
         seen_callback = False
 
         def callback(e):
@@ -611,14 +624,7 @@ class TestValidateDataset(unittest.TestCase):
             ['#affected', 'true']
         ], callback=callback)
 
-        data = hxl.data([
-            ['#affected'],
-            ['100'],
-            ['1'],
-            ['200'],
-            ['800'],
-            ['1000000']
-        ])
+        data = hxl.data(raw_data)
 
         self.assertFalse(schema.validate(data))
         self.assertTrue(seen_callback)
