@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<iati-activities version="2.03" generated-datetime="2018-04-29T18:30:45">
+  <iati-activity last-updated-datetime="2018-04-31T00:00:00" xml:lang="en" default-currency="USD" hierarchy="2">
+    <iati-identifier>XX-1-00000-001</iati-identifier>
+    <reporting-org ref="XX-XXX-1" type="10">
+      <narrative>Donor</narrative>
+    </reporting-org>
+    <title>
+      <narrative>Activity 1</narrative>
+    </title>
+    <description>
+      <narrative>Activity 1 description</narrative>
+    </description>
+    <participating-org ref="XX-XXX-2" type="10" role="1">
+      <narrative>Role 1 participating org</narrative>
+    </participating-org>
+    <participating-org ref="XX-XXX-3" type="10" role="2">
+      <narrative>Role 2 participating org</narrative>
+    </participating-org>
+    <participating-org ref="XX-XXX-4" type="10" role="3">
+      <narrative>Role 3 participating org</narrative>
+    </participating-org>
+    <other-identifier ref="107177-101" type="A1">
+      <owner-org ref="XX-XXX-1">
+        <narrative>Donor</narrative>
+      </owner-org>
+    </other-identifier>
+    <activity-status code="4"/>
+    <activity-date type="1" iso-date="2017-07-01"/>
+    <activity-date type="2" iso-date="2017-07-01"/>
+    <activity-date type="3" iso-date="2017-10-31"/>
+    <activity-date type="4" iso-date="2017-10-31"/>
+    <contact-info type="1">
+      <organisation>
+        <narrative>Donor</narrative>
+      </organisation>
+      <telephone>+1 555 1212</telephone>
+      <email>donor@example.org</email>
+      <mailing-address>
+        <narrative>Address</narrative>
+      </mailing-address>
+    </contact-info>
+    <recipient-country code="AF"/>
+    <sector code="31110">
+      <narrative>Agricultural policy and administrative management</narrative>
+    </sector>
+    <country-budget-items vocabulary="1">
+      <budget-item code="3.3.1" percentage="100">
+        <description>
+          <narrative>Agriculture - Economic Affairs - Agriculture - policy, planning and administration</narrative>
+        </description>
+      </budget-item>
+    </country-budget-items>
+    <policy-marker vocabulary="1" code="1" significance="1">
+      <narrative>Gender Equality</narrative>
+    </policy-marker>
+    <policy-marker vocabulary="1" code="4" significance="2">
+      <narrative>Trade Development</narrative>
+    </policy-marker>
+    <collaboration-type code="1"/>
+    <default-flow-type code="10"/>
+    <default-finance-type code="110"/>
+    <default-aid-type code="C01"/>
+    <default-tied-status code="5"/>
+    <budget type="1">
+      <period-start iso-date="2018-04-01"/>
+      <period-end iso-date="2018-06-30"/>
+      <value value-date="2018-07-01" currency="USD">1000000</value>
+    </budget>
+    <capital-spend percentage="0"/>
+    <transaction>
+      <transaction-type code="2"/>
+      <transaction-date iso-date="2017-07-01"/>
+      <value value-date="2017-07-01">100000</value>
+    </transaction>
+    <transaction>
+      <transaction-type code="2"/>
+      <transaction-date iso-date="2017-08-01"/>
+      <value value-date="2017-07-01">200000</value>
+    </transaction>
+  </iati-activity>
+  <iati-activity last-updated-datetime="2018-04-31T00:00:00" xml:lang="en" default-currency="USD" hierarchy="2">
+    <iati-identifier>XX-1-00000-002</iati-identifier>
+    <reporting-org ref="XX-XXX-1" type="10">
+      <narrative>Donor</narrative>
+    </reporting-org>
+    <title>
+      <narrative>Activity 1</narrative>
+    </title>
+    <description>
+      <narrative>Activity 1 description</narrative>
+    </description>
+    <participating-org ref="XX-XXX-2" type="10" role="1">
+      <narrative>Role 1 participating org</narrative>
+    </participating-org>
+    <participating-org ref="XX-XXX-3" type="10" role="2">
+      <narrative>Role 2 participating org</narrative>
+    </participating-org>
+    <participating-org ref="XX-XXX-4" type="10" role="3">
+      <narrative>Role 3 participating org</narrative>
+    </participating-org>
+    <other-identifier ref="107177-101" type="A1">
+      <owner-org ref="XX-XXX-1">
+        <narrative>Donor</narrative>
+      </owner-org>
+    </other-identifier>
+    <activity-status code="4"/>
+    <activity-date type="1" iso-date="2017-07-01"/>
+    <activity-date type="2" iso-date="2017-07-01"/>
+    <activity-date type="3" iso-date="2017-10-31"/>
+    <activity-date type="4" iso-date="2017-10-31"/>
+    <contact-info type="1">
+      <organisation>
+        <narrative>Donor</narrative>
+      </organisation>
+      <telephone>+1 555 1212</telephone>
+      <email>donor@example.org</email>
+      <mailing-address>
+        <narrative>Address</narrative>
+      </mailing-address>
+    </contact-info>
+    <recipient-country code="AF"/>
+    <sector code="31110">
+      <narrative>Agricultural policy and administrative management</narrative>
+    </sector>
+    <country-budget-items vocabulary="1">
+      <budget-item code="3.3.1" percentage="100">
+        <description>
+          <narrative>Agriculture - Economic Affairs - Agriculture - policy, planning and administration</narrative>
+        </description>
+      </budget-item>
+    </country-budget-items>
+    <policy-marker vocabulary="1" code="1" significance="1">
+      <narrative>Gender Equality</narrative>
+    </policy-marker>
+    <policy-marker vocabulary="1" code="4" significance="2">
+      <narrative>Trade Development</narrative>
+    </policy-marker>
+    <collaboration-type code="1"/>
+    <default-flow-type code="10"/>
+    <default-finance-type code="110"/>
+    <default-aid-type code="C01"/>
+    <default-tied-status code="5"/>
+    <budget type="1">
+      <period-start iso-date="2018-04-01"/>
+      <period-end iso-date="2018-06-30"/>
+      <value value-date="2018-07-01" currency="USD">1000000</value>
+    </budget>
+    <capital-spend percentage="0"/>
+    <transaction>
+      <transaction-type code="2"/>
+      <transaction-date iso-date="2017-07-01"/>
+      <value value-date="2017-07-01">100000</value>
+    </transaction>
+    <transaction>
+      <transaction-type code="2"/>
+      <transaction-date iso-date="2017-08-01"/>
+      <value value-date="2017-07-01">200000</value>
+    </transaction>
+  </iati-activity>
+  <iati-activity last-updated-datetime="2018-04-31T00:00:00" xml:lang="en" default-currency="USD" hierarchy="2">
+    <iati-identifier>XX-1-00000-003</iati-identifier>
+    <reporting-org ref="XX-XXX-1" type="10">
+      <narrative>Donor</narrative>
+    </reporting-org>
+    <title>
+      <narrative>Activity 1</narrative>
+    </title>
+    <description>
+      <narrative>Activity 1 description</narrative>
+    </description>
+    <participating-org ref="XX-XXX-2" type="10" role="1">
+      <narrative>Role 1 participating org</narrative>
+    </participating-org>
+    <participating-org ref="XX-XXX-3" type="10" role="2">
+      <narrative>Role 2 participating org</narrative>
+    </participating-org>
+    <participating-org ref="XX-XXX-4" type="10" role="3">
+      <narrative>Role 3 participating org</narrative>
+    </participating-org>
+    <other-identifier ref="107177-101" type="A1">
+      <owner-org ref="XX-XXX-1">
+        <narrative>Donor</narrative>
+      </owner-org>
+    </other-identifier>
+    <activity-status code="4"/>
+    <activity-date type="1" iso-date="2017-07-01"/>
+    <activity-date type="2" iso-date="2017-07-01"/>
+    <activity-date type="3" iso-date="2017-10-31"/>
+    <activity-date type="4" iso-date="2017-10-31"/>
+    <contact-info type="1">
+      <organisation>
+        <narrative>Donor</narrative>
+      </organisation>
+      <telephone>+1 555 1212</telephone>
+      <email>donor@example.org</email>
+      <mailing-address>
+        <narrative>Address</narrative>
+      </mailing-address>
+    </contact-info>
+    <recipient-country code="AF"/>
+    <sector code="31110">
+      <narrative>Agricultural policy and administrative management</narrative>
+    </sector>
+    <country-budget-items vocabulary="1">
+      <budget-item code="3.3.1" percentage="100">
+        <description>
+          <narrative>Agriculture - Economic Affairs - Agriculture - policy, planning and administration</narrative>
+        </description>
+      </budget-item>
+    </country-budget-items>
+    <policy-marker vocabulary="1" code="1" significance="1">
+      <narrative>Gender Equality</narrative>
+    </policy-marker>
+    <policy-marker vocabulary="1" code="4" significance="2">
+      <narrative>Trade Development</narrative>
+    </policy-marker>
+    <collaboration-type code="1"/>
+    <default-flow-type code="10"/>
+    <default-finance-type code="110"/>
+    <default-aid-type code="C01"/>
+    <default-tied-status code="5"/>
+    <budget type="1">
+      <period-start iso-date="2018-04-01"/>
+      <period-end iso-date="2018-06-30"/>
+      <value value-date="2018-07-01" currency="USD">1000000</value>
+    </budget>
+    <capital-spend percentage="0"/>
+    <transaction>
+      <transaction-type code="2"/>
+      <transaction-date iso-date="2017-07-01"/>
+      <value value-date="2017-07-01">100000</value>
+    </transaction>
+    <transaction>
+      <transaction-type code="2"/>
+      <transaction-date iso-date="2017-08-01"/>
+      <value value-date="2017-07-01">200000</value>
+    </transaction>
+  </iati-activity>
+</iati-activities>
