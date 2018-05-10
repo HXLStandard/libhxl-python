@@ -1,22 +1,4 @@
-﻿import hxl, io
-
-import csv, requests, sys, xml.sax
-
-class IATIInput(hxl.io.AbstractInput):
-
-    def __init__(self, input, encoding='utf-8'):
-        super().__init__()
-        self.input = input
-
-    def __exit__(self, value, type, traceback):
-        pass
-
-    def __iter__(self):
-        handler = SAXHandler()
-        xml.sax.parse(self.input, handler)
-        for row in handler.rows:
-            yield row
-
+﻿import hxl, io, xml.sax
 
 class SAXHandler(xml.sax.handler.ContentHandler):
     """SAX event handler to convert an IATI activity report to a series of CSV-style rows"""

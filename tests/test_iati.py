@@ -6,12 +6,11 @@ May 2018
 License: Public Domain
 """
 
-import io, unittest
-import hxl.iati
+import hxl, io, unittest
 
 from . import resolve_path
 
-class TestParse(unittest.TestCase):
+class TestIATIInput(unittest.TestCase):
     """Test the TagPattern class."""
 
     def setUp(self):
@@ -19,7 +18,7 @@ class TestParse(unittest.TestCase):
 
     def test_raw_input(self):
         with io.open(self.file, 'r') as input:
-            iati_input = hxl.iati.IATIInput(input)
+            iati_input = hxl.io.IATIInput(input)
             rows = [row for row in iati_input]
         self.assertEqual(5, len(rows))
         for value in [
@@ -29,4 +28,10 @@ class TestParse(unittest.TestCase):
         ]:
             self.assertTrue(value in rows[2], value)
 
+    def test_cooked_input(self):
+        source = hxl.data(self.file, allow_local=True)
+        tags = [column.tag for column in source.columns]
+        rows = [row.values for row in source]
+        self.assertTrue('#org' in tags)
+        
 # end
