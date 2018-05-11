@@ -99,3 +99,6 @@ class TestDates(unittest.TestCase):
         self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('01-20-2008'))
         self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('20-01-2008'))
         self.assertEqual('2008-01', hxl.datatypes.normalise_date('Jan 2008'))
+
+        # test no exception
+        hxl.datatypes.normalise_date('30')

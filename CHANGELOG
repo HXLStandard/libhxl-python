@@ -8,6 +8,9 @@
 	- add a numeric-outlier validation test
 	- refactor CacheFilter to preserve row numbers
 
+2018-05-11 Release 4.7.1
+	- hotfix for bug in date parsing
+
 2018-04-30 Release 4.7
 	- remove obsolete Python2 compatibility code
 	- added source_row_number and source_column_number to support validation

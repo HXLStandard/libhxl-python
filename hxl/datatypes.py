@@ -22,7 +22,7 @@ ISO_DATE_PATTERN = re.compile('^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<
 
 DEFAULT_DATE_1 = datetime.date(2015, 1, 1)
 
-DEFAULT_DATE_2 = datetime.date(2016, 2, 2)
+DEFAULT_DATE_2 = datetime.date(2016, 3, 3)
 
 def normalise(s, col=None):
     """Intelligently normalise a value, optionally using the HXL hashtag for hints"""
