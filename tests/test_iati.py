@@ -23,7 +23,7 @@ class TestIATIInput(unittest.TestCase):
         self.assertEqual(5, len(rows))
         for value in [
                 'XX-1-00000-001',
-                'Donor',
+                'Role 1 participating org',
                 'Activity 1',
         ]:
             self.assertTrue(value in rows[2], value)
