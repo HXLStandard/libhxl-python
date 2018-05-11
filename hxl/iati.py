@@ -7,8 +7,9 @@ class SAXHandler(xml.sax.handler.ContentHandler):
         ['IATI id', '#activity+id+v_iati_activities', 1],
         ['Last updated', '#date+updated', 1],
         ['Activity status', '#status', 1],
-        ['Reporting org', '#org+name+reporting', 1],
-        ['Participating org', '#org+name+participating', 3],
+        ['Funding org', '#org+name+funder', 1],
+        ['Programming org', '#org+name+prog', 1],
+        ['Implementing partner', '#org+name+impl', 1],
         ['Activity', '#activity+name', 1],
         ['DAC sector', '#sector+name', 3],
         ['Country code', '#country+code+recipient', 3],
@@ -104,7 +105,13 @@ class SAXHandler(xml.sax.handler.ContentHandler):
         elif name == 'reporting-org':
             self.add_prop('#org+code+reporting', atts.get('ref'))
         elif name == 'participating-org':
-            self.add_prop('#org+code+participating', atts.get('ref'))
+            role = atts.get('role')
+            if role == '1':
+                self.add_prop('#org+code+funder', atts.get('ref'))
+            elif role in ('2', '3'):
+                self.add_prop('#org+code+prog', atts.get('ref'))
+            else:
+                self.add_prop('#org+code+impl', atts.get('ref'))
         elif name == 'recipient-country':
             self.add_prop('#country+code+recipient', atts.get('code'))
         elif name == 'sector':
@@ -128,7 +135,7 @@ class SAXHandler(xml.sax.handler.ContentHandler):
             if self.STATUS_CODES.get(atts.get('code')):
                 self.add_prop('#status', self.STATUS_CODES[atts['code']])
             
-        self.element_stack.append(name)
+        self.element_stack.append((name, atts,))
         self.content = ''
 
     def endElement(self, name):
@@ -148,7 +155,13 @@ class SAXHandler(xml.sax.handler.ContentHandler):
             elif self.has_parent('reporting-org'):
                 self.add_prop('#org+name+reporting', self.content)
             elif self.has_parent('participating-org'):
-                self.add_prop('#org+name+participating', self.content)
+                role = self.get_parent_att('role')
+                if role == '1':
+                    self.add_prop('#org+name+funder', self.content)
+                elif role == '2' or role == '3':
+                    self.add_prop('#org+name+prog', self.content)
+                elif role == '4':
+                    self.add_prop('#org+name+impl', self.content)
 
     def characters(self, content):
         """Any chunk of character data (may not be complete)"""
@@ -165,7 +178,10 @@ class SAXHandler(xml.sax.handler.ContentHandler):
 
     def has_parent(self, name):
         """Check for a specific parent element"""
-        return (self.element_stack[-1] == name)
+        return (self.element_stack[-1][0] == name)
+
+    def get_parent_att(self, att_name):
+        return self.element_stack[-1][1].get(att_name)
 
     def write_headers(self):
         """Write the CSV header row"""
