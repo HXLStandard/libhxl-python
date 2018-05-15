@@ -1451,7 +1451,7 @@ def get_edit_distance(s1, s2):
 # Exported functions
 #
 def schema(source=None, callback=None):
-    """Convenience method for making a schema
+    """Convenience function for making a schema
     Imported into __init__, and usually called as hxl.schema(source, callback).
     The callback, if provided, will receive a HXLValidationException object for each error
     @param source: something that can be used as a HXL data source
@@ -1461,6 +1461,17 @@ def schema(source=None, callback=None):
 
 
 def validate(data, schema=None):
+    """Convenience function for validating HXL data.
+    The is_valid parameter in the report will be a True/False value for the result.
+
+    If you want to do anything tricky (eg use a local file), you can pass pre-cooked hxl.data values in, e.g.
+
+    result = hxl.validate(hxl.data('foo.csv', allow_local=True))
+
+    @param data: the data to validate (a URL or anything else accepted by \L{hxl.data})
+    @param schema: the schema to validate against (anything accepted by L{hxl.data}), or None (default) to use the built-in schema.
+    @returns: a JSON validation report as documented at https://github.com/HXLStandard/hxl-proxy/wiki/Validation-reports
+    """
 
     issue_map = dict()
 
