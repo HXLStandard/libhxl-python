@@ -715,7 +715,7 @@ class TestLoad(unittest.TestCase):
     #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
 
 
-class TestJSON(unittest.TestCase):
+class TestJSONSchema(unittest.TestCase):
 
     def test_truthy(self):
         schema = hxl.schema(hxl.data(resolve_path('files/test_validation/truthy-schema.json'), allow_local=True))
@@ -729,6 +729,26 @@ class TestJSON(unittest.TestCase):
             ['xxx']
         ]
         self.assertTrue(schema.validate(hxl.data(GOOD_DATA)))
+
+class TestJSONReport(unittest.TestCase):
+
+    DATA = [
+        ['#xxx', '#yyy', '#zzz'],
+        ['100', 'abc', '2018-01-01'],
+        ['200', '300', '2018-01-02'],
+    ]
+
+    def test_default(self):
+        report = hxl.validation.validate(self.DATA)
+        self.assertTrue(report['status'])
+
+    def test_errors(self):
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype'],
+            ['#yyy', 'number'],
+        ]
+        report = hxl.validation.validate(self.DATA, SCHEMA)
+        self.assertFalse(report['status'])
 
 #
 # Functions

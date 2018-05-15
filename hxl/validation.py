@@ -42,7 +42,7 @@ validation, though error reporting will continue to the end.
 """
 
 import hxl
-import logging, math, os, re, urllib
+import base64, datetime, hashlib, logging, math, os, re, urllib
 
 logger = logging.getLogger(__name__)
 
@@ -1459,5 +1459,123 @@ def schema(source=None, callback=None):
     """
     return Schema.parse(source, callback)
 
+
+def validate(data, schema=None):
+
+    issue_map = dict()
+
+    def make_rule_hash(rule):
+        """Make a good-enough hash for a rule."""
+        s = "\r".join([str(rule.severity), str(rule.description), str(rule.tag_pattern)])
+        return base64.urlsafe_b64encode(hashlib.md5(s.encode('utf-8')).digest())[:8].decode('ascii')
+
+    def add_issue(issue):
+        hash = make_rule_hash(issue.rule)
+        issue_map.setdefault(hash, []).append(issue)
+
+    status = hxl.schema(schema, callback=add_issue).validate(hxl.data(data))
+
+    schema_url = None
+    data_url = None
+    if hxl.datatypes.is_string(schema):
+        schema_url = schema
+    if hxl.datatypes.is_string(data):
+        data_url = data
+
+    return make_json_report(status, issue_map, schema_url=schema_url, data_url=data_url)
+
+
+#
+# Local functions
+#
+
+def make_json_report(status, issue_map, schema_url=None, data_url=None):
+    """Generate a JSON error report from a dict of errors
+    @param status: the validation status (boolean)
+    @param issue_map: a dict of lists of \L{HXLValidationException} objects grouped by rule hash
+    @param data_url: the original URL of the data, if available
+    @param schema_url: the original URL of the schema, if available
+    """
+
+    json_report = {
+        "validator": "libhxl-python",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "status": status,
+        "stats": {
+            "info": 0,
+            "warning": 0,
+            "error": 0,
+            "total": 0
+        },
+        "issues": [],
+    }
+
+    if schema_url is not None:
+        json_report['schema_url'] = schema_url
+        
+    if data_url is not None:
+        json_report['data_url'] = data_url
+
+    # add the issue objects
+    for rule_id, locations in issue_map.items():
+        json_report['stats']['total'] += len(locations)
+        json_report['stats'][locations[0].rule.severity] += len(locations)
+        json_report['issues'].append(make_json_issue(rule_id, locations))
+
+    return json_report
+
+def make_json_issue(rule_id, locations):
+    """Create an issue (with list of locations) for a JSON validation report
+    @param rule_id: the hash for the rule (used to group locations)
+    @param locations: a list of \L{HXLValidation"""
+
+    # grab first location as a model
+    model = locations[0]
+
+    # get a custom description first, then the generic message as a fallback
+    description = model.rule.description
+    if not description:
+        description = model.message
+
+    # make the issue
+    json_issue = {
+        "rule_id": rule_id,
+        "tag_pattern": str(model.rule.tag_pattern),
+        "description": description,
+        "severity": model.rule.severity,
+        "location_count": len(locations),
+        "scope": model.scope,
+        "locations": [make_json_location(location) for location in locations]
+    }
+
+    return json_issue
+
+def make_json_location(location):
+    """Create a single location for a JSON validation report"""
+    json_location = {}
+
+    # is there a row object?
+    if location.row is not None:
+        if location.row.row_number is not None:
+            json_location['row'] = location.row.row_number
+        if location.row.source_row_number is not None:
+            json_location['source_row'] = location.row.source_row_number
+
+    # is there a column object?
+    if location.column is not None:
+        if location.column.column_number is not None:
+            json_location['col'] = location.column.column_number
+        if location.column.display_tag is not None:
+            json_location['hashtag'] = location.column.display_tag
+
+    # is there an error value?
+    if location.value is not None:
+        json_location['location_value'] = location.value
+
+    # is there a suggested value?
+    if location.suggested_value is not None:
+        json_location['suggested_value'] = location.suggested_value
+
+    return json_location
 
 # end
