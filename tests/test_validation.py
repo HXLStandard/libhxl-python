@@ -738,17 +738,28 @@ class TestJSONReport(unittest.TestCase):
         ['200', '300', '2018-01-02'],
     ]
 
+    def test_top_level(self):
+        """Use the package-level alias"""
+        report = hxl.validate(self.DATA)
+
     def test_default(self):
+        """Test successful validation against a default schema"""
         report = hxl.validation.validate(self.DATA)
-        self.assertTrue(report['status'])
+        self.assertTrue(report['is_valid'])
+        for severity in ('total', 'info', 'warning', 'error'):
+            self.assertEqual(0, report['stats'][severity])
 
     def test_errors(self):
+        """Test unsuccessful validation against an explicit schema"""
         SCHEMA = [
             ['#valid_tag', '#valid_datatype'],
             ['#yyy', 'number'],
+            ['#xxx', 'url'],
         ]
         report = hxl.validation.validate(self.DATA, SCHEMA)
-        self.assertFalse(report['status'])
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(3, report['stats']['total'])
+        self.assertEqual(2, len(report['issues']))
 
 #
 # Functions

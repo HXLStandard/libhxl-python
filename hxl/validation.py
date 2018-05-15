@@ -1500,7 +1500,7 @@ def make_json_report(status, issue_map, schema_url=None, data_url=None):
     json_report = {
         "validator": "libhxl-python",
         "timestamp": datetime.datetime.now().isoformat(),
-        "status": status,
+        "is_valid": status,
         "stats": {
             "info": 0,
             "warning": 0,

@@ -71,7 +71,7 @@ import hxl.geo
 import hxl.datatypes
 from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
 from hxl.io import data, tagger, HXLParseException, write_hxl, make_input, from_spec
-from hxl.validation import schema, HXLValidationException
+from hxl.validation import schema, validate, HXLValidationException
 
 # end
 
