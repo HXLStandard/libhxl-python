@@ -1464,9 +1464,9 @@ def validate(data, schema=None):
     """Convenience function for validating HXL data.
     The is_valid parameter in the report will be a True/False value for the result.
 
-    If you want to do anything tricky (eg use a local file), you can pass pre-cooked hxl.data values in, e.g.
+    If you want to do anything tricky, you can pass pre-cooked hxl.data() parameters in, e.g.
 
-    result = hxl.validate(hxl.data('foo.csv', allow_local=True))
+    result = hxl.validate(hxl.data('foo.csv', allow_local=True), hxl.data('schema.csv', allow_local=True))
 
     @param data: the data to validate (a URL or anything else accepted by \L{hxl.data})
     @param schema: the schema to validate against (anything accepted by L{hxl.data}), or None (default) to use the built-in schema.
