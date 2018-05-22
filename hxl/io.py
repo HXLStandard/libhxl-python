@@ -7,7 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc, collections, csv, io, json, logging, re, requests, six, sys, xlrd, xml.sax
+import abc, collections, csv, io, io_wrapper, json, logging, re, requests, six, sys, xlrd, xml.sax
 
 import hxl, hxl.iati
 
@@ -191,7 +191,8 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             # already buffered
             return stream
         else:
-            return io.BufferedReader(stream)
+            stream = io_wrapper.RawIOWrapper(stream)
+            return io.BufferedReader(io_wrapper.RawIOWrapper(stream))
 
     def match_sigs(sig, sigs):
         for s in sigs:
@@ -391,9 +392,9 @@ class RequestResponseIOWrapper(io.RawIOBase):
 
     def readable(self):
         """Flag whether the content is readable."""
-        if hasattr(self.response.raw, 'readable'):
+        try:
             return self.response.raw.readable()
-        else:
+        except:
             return True
 
     @property

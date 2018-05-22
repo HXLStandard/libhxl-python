@@ -9,6 +9,7 @@
 	- refactor CacheFilter to preserve row numbers
 	- add ability to generate a JSON-style validation report easily
 	  via hxl.validate()
+	- new requirement: python-io-wrapper
 
 2018-05-11 Release 4.7.1
 	- hotfix for bug in date parsing
