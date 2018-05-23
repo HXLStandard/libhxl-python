@@ -864,9 +864,9 @@ class RowQuery(object):
         # try all the matching column values
         indices = self._get_saved_indices(row.columns)
         for i in indices:
-            if i < len(row.values) and row.values[i] and self.match_value(row.values[i], self.op):
-                return True
-        return False
+            if i < len(row.values) and not self.match_value(row.values[i], self.op):
+                return False
+        return True
 
     def match_value(self, value, op):
         """Try matching as dates, then as numbers, then as simple strings"""

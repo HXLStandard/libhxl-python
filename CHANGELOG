@@ -10,6 +10,8 @@
 	- add ability to generate a JSON-style validation report easily
 	  via hxl.validate()
 	- new requirement: python-io-wrapper
+	- RowFilter (with_rows, without_rows) no longer ignores empty
+	  cells; that will occasionally give some different results
 
 2018-05-11 Release 4.7.1
 	- hotfix for bug in date parsing
