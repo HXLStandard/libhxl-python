@@ -864,9 +864,9 @@ class RowQuery(object):
         # try all the matching column values
         indices = self._get_saved_indices(row.columns)
         for i in indices:
-            if i < len(row.values) and not self.match_value(row.values[i], self.op):
-                return False
-        return True
+            if i < len(row.values) and self.match_value(row.values[i], self.op):
+                return True
+        return False
 
     def match_value(self, value, op):
         """Try matching as dates, then as numbers, then as simple strings"""
@@ -892,7 +892,7 @@ class RowQuery(object):
         if isinstance(query, RowQuery):
             # already parsed
             return query
-        parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.datatypes.normalise_string(query), maxsplit=1)
+        parts = re.split(r'([<>]=?|!?=|!?~|\bis\b)', hxl.datatypes.normalise_string(query), maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op_name = hxl.datatypes.normalise_string(parts[1])
         op = RowQuery.OPERATOR_MAP.get(op_name)

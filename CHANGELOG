@@ -12,6 +12,9 @@
 	- new requirement: python-io-wrapper
 	- RowFilter (with_rows, without_rows) no longer ignores empty
 	  cells; that will occasionally give some different results
+	- when multiple columns match a row query, it will succeed with at
+	  least one success
+	- fixed a bug parsing "is" row queries
 
 2018-05-11 Release 4.7.1
 	- hotfix for bug in date parsing
