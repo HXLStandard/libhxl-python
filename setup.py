@@ -6,8 +6,10 @@ import sys
 if sys.version_info < (3,):
     raise RuntimeError("libhxl requires Python 3 or higher")
 
+from hxl import __version__
+
 setup(name='libhxl',
-      version='4.7.1',
+      version=__version__,
       description='Python support for the Humanitarian Exchange Language (HXL).',
       author='David Megginson',
       author_email='contact@megginson.com',

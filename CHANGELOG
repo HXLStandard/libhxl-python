@@ -1,4 +1,5 @@
 2018-05-31 Release 4.8
+	- added __version__ attribute to module
 	- refactor the hxl.validation module for better testing and
 	  maintainability
 	- add a new default schema with useful default tests
