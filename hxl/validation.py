@@ -789,6 +789,8 @@ class SpellingTest(AbstractRuleTest):
     Will treat numbers and dates as strings, so use this only in columns where
     you expect text, and frequently-repeated values (e.g. #status, #org+name, #sector+name).
 
+    Will skip validation if the coefficient of variation > 1.0
+
     Collects all of the spelling variants first, then checks the rare ones in the end() method, and
     reports any ones that have near matches among the common ones.
     """
@@ -822,12 +824,28 @@ class SpellingTest(AbstractRuleTest):
         each location) with the suggested correction.
         """
 
+        # start by assuming all is well
         status = True
 
+        # cache corrections so that we don't keep looking up the same ones
+        correction_cache = dict()
+
+        # if there aren't any spellings, then we're done
         if len(self.spelling_map) == 0:
             return status
 
+        # get the average (mean) occurrences for each spelling
         mean_frequency = self.total_occurrences / len(self.spelling_map)
+
+        # calculate the coefficiant of variance (dimensionless)
+        standard_deviation = math.sqrt(
+            sum(map(lambda n: (len(n)-mean_frequency)**2, self.spelling_map.values())) / len(self.spelling_map)
+        )
+        variance_coefficient = standard_deviation / mean_frequency
+
+        # there's no point spelling checking unless the variance coefficient is low enough to be meaningful
+        if variance_coefficient > 1.0:
+            return status
 
         # first pass: collect and clear good spellings
         good_spellings = list()
@@ -841,7 +859,10 @@ class SpellingTest(AbstractRuleTest):
             if locations is None: # this spelling was OK
                 continue
             # is there a near match among good spellings?
-            correction = find_closest_match(spelling, good_spellings)
+            correction = correction_cache.get(spelling, False)
+            if correction is False:
+                correction = find_closest_match(spelling, good_spellings)
+                correction_cache[spelling] = correction
             if correction is not None:
                 # if it's rare and there's a near match, report an error
                 status = False
@@ -872,7 +893,7 @@ class SpellingTest(AbstractRuleTest):
     
 class NumericOutlierTest(AbstractRuleTest):
     """Detect outliers among matching values
-    TODO keep a separate outlier map for different correlation keys
+    Will skip any tagset with a coefficient of variation > 1.0
     """
 
     def needs_scan(self):
@@ -881,6 +902,7 @@ class NumericOutlierTest(AbstractRuleTest):
     def start(self):
         self.standard_deviations = dict()
         self.mean_values = dict()
+        self.variation_coefficients = dict()
         self.values = dict()
 
     def scan_cell(self, value, row, column):
@@ -909,11 +931,20 @@ class NumericOutlierTest(AbstractRuleTest):
                 sum(map(lambda n: (n-self.mean_values[tagspec])*(n-self.mean_values[tagspec]), values)) / len(values)
             )
 
+            # calculate the coefficient of variance, which we'll use as a cutoff
+            self.variation_coefficients[tagspec] = self.standard_deviations[tagspec] / self.mean_values[tagspec]
+
         # free some memory
         del self.values
 
     def validate_cell(self, value, row, column):
         tagspec = column.get_display_tag(sort_attributes=True) # FIXME
+
+        # don't bother if the data is highly variable
+        if self.variation_coefficients[tagspec] > 1.0:
+            return True
+
+        # try numeric validation
         try:
             num = hxl.datatypes.normalise_number(value)
             distance = abs(num - self.mean_values[tagspec])
