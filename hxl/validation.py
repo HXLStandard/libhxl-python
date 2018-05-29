@@ -941,7 +941,7 @@ class NumericOutlierTest(AbstractRuleTest):
         tagspec = column.get_display_tag(sort_attributes=True) # FIXME
 
         # don't bother if the data is highly variable
-        if self.variation_coefficients[tagspec] > 1.0:
+        if self.variation_coefficients.get(tagspec, 0.0) > 1.0:
             return True
 
         # try numeric validation
