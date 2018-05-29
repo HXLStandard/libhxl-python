@@ -16,6 +16,7 @@
 	- when multiple columns match a row query, it will succeed with at
 	  least one success
 	- fixed a bug parsing "is" row queries
+	- handle more Google Sheets URLs
 
 2018-05-11 Release 4.7.1
 	- hotfix for bug in date parsing
