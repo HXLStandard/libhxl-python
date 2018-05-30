@@ -1508,11 +1508,6 @@ def validate(data, schema=None):
 
     issue_map = dict()
 
-    def make_rule_hash(rule):
-        """Make a good-enough hash for a rule."""
-        s = "\r".join([str(rule.severity), str(rule.description), str(rule.tag_pattern)])
-        return base64.urlsafe_b64encode(hashlib.md5(s.encode('utf-8')).digest())[:8].decode('ascii')
-
     def add_issue(issue):
         hash = make_rule_hash(issue.rule)
         issue_map.setdefault(hash, []).append(issue)
@@ -1562,9 +1557,10 @@ def make_json_report(status, issue_map, schema_url=None, data_url=None):
 
     # add the issue objects
     for rule_id, locations in issue_map.items():
-        json_report['stats']['total'] += len(locations)
-        json_report['stats'][locations[0].rule.severity] += len(locations)
-        json_report['issues'].append(make_json_issue(rule_id, locations))
+        json_issue = make_json_issue(rule_id, locations)
+        json_report['stats']['total'] += len(json_issue['locations'])
+        json_report['stats'][locations[0].rule.severity] += len(json_issue['locations'])
+        json_report['issues'].append(json_issue)
 
     return json_report
 
@@ -1581,6 +1577,15 @@ def make_json_issue(rule_id, locations):
     if not description:
         description = model.message
 
+    # get all unique locations
+    location_keys = set()
+    json_locations = []
+    for location in locations:
+        location_key = (location.row.row_number, location.column.column_number, location.value, location.suggested_value,)
+        if not location_key in location_keys:
+            json_locations.append(make_json_location(location))
+            location_keys.add(location_key)
+
     # make the issue
     json_issue = {
         "rule_id": rule_id,
@@ -1589,7 +1594,7 @@ def make_json_issue(rule_id, locations):
         "severity": model.rule.severity,
         "location_count": len(locations),
         "scope": model.scope,
-        "locations": [make_json_location(location) for location in locations]
+        "locations": json_locations
     }
 
     return json_issue
@@ -1621,5 +1626,11 @@ def make_json_location(location):
         json_location['suggested_value'] = location.suggested_value
 
     return json_location
+
+
+def make_rule_hash(rule):
+    """Make a good-enough hash for a rule."""
+    s = "\r".join([str(rule.severity), str(rule.description), str(rule.tag_pattern)])
+    return base64.urlsafe_b64encode(hashlib.md5(s.encode('utf-8')).digest())[:8].decode('ascii')
 
 # end
