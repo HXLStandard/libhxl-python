@@ -655,8 +655,8 @@ class TestValidateDataset(unittest.TestCase):
     def test_double_correlation(self):
         """Test correlation when more than one column has same tagspec"""
         SCHEMA = [
-            ['#valid_tag', '#valid_correlation'],
-            ['#adm1+code', '#adm1+name']
+            ['#valid_tag', '#description', '#valid_correlation', '#valid_value+list'],
+            ['#adm1+code', 'xxxxx', '#adm1+name', 'X001|X002']
         ]
         DATASET = [
             ['#adm1+name', '#adm1+code', '#adm1+code'],
