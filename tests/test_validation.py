@@ -652,6 +652,23 @@ class TestValidateDataset(unittest.TestCase):
         self.assertDatasetErrors(DATASET[:7], 1, schema=SCHEMA)
         self.assertDatasetErrors(DATASET, 2, schema=SCHEMA)
 
+    def test_double_correlation(self):
+        """Test correlation when more than one column has same tagspec"""
+        SCHEMA = [
+            ['#valid_tag', '#valid_correlation'],
+            ['#adm1+code', '#adm1+name']
+        ]
+        DATASET = [
+            ['#adm1+name', '#adm1+code', '#adm1+code'],
+            ['Coast', 'X001', 'X001'],
+            ['Plains', 'X002', 'X02'],
+            ['Plains', 'X002', 'X02'],
+            ['Plains', 'X002', 'X02'],
+            ['Plains', 'X002', 'X02'],
+        ]
+        report = hxl.validate(DATASET, SCHEMA)
+        self.assertEquals(4, report['stats']['total'])
+
     def test_suggested_value_correlation_key(self):
         """Complex test: can we suggest a value based on the correlation key?"""
         def callback(e):
