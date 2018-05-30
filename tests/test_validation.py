@@ -212,6 +212,7 @@ class TestTests(unittest.TestCase):
         self.assertFalse(t.end())
 
     def test_spelling_case_sensitive(self):
+        COLUMN = hxl.model.Column.parse('#xxx')
 
         errors_seen = 0
 
@@ -225,15 +226,16 @@ class TestTests(unittest.TestCase):
 
         t.start()
         for i in range(0, 100):
-            t.validate_cell('xxxx', None, None)
-            t.validate_cell('yyyy', None, None)
-        t.validate_cell('xxx', None, None) # expect an error
-        t.validate_cell('Xxxx', None, None) # expect an error
+            t.validate_cell('xxxx', None, COLUMN)
+            t.validate_cell('yyyy', None, COLUMN)
+        t.validate_cell('xxx', None, COLUMN) # expect an error
+        t.validate_cell('Xxxx', None, COLUMN) # expect an error
         self.assertFalse(t.end()) # errors detected at end of parse
 
         self.assertEqual(2, errors_seen)
 
     def test_spelling_case_insensitive(self):
+        COLUMN = hxl.model.Column.parse('#xxx')
 
         errors_seen = 0
 
@@ -247,10 +249,10 @@ class TestTests(unittest.TestCase):
 
         t.start()
         for i in range(0, 100):
-            t.validate_cell('xxxx', None, None)
-            t.validate_cell('yyyy', None, None)
-        t.validate_cell('xxx', None, None) # expect an error
-        t.validate_cell('Xxxx', None, None) # *not* an error (case-insensitive)
+            t.validate_cell('xxxx', None, COLUMN)
+            t.validate_cell('yyyy', None, COLUMN)
+        t.validate_cell('xxx', None, COLUMN) # expect an error
+        t.validate_cell('Xxxx', None, COLUMN) # *not* an error (case-insensitive)
         self.assertFalse(t.end()) # errors detected at end of parse
 
         self.assertEqual(1, errors_seen)
@@ -668,6 +670,57 @@ class TestValidateDataset(unittest.TestCase):
         ])
         self.assertFalse(schema.validate(data))
 
+    def test_different_indicator_datatypes(self):
+        """One rule, but three different indicators with different tagspecs and datatypes"""
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype+consistent'],
+            ['#indicator', 'true']
+        ]
+        GOOD_DATA = [
+            ['#indicator+xxx', '#indicator+yyy', '#indicator+zzz'],
+            ['100', 'aaa', '100'],
+            ['200', '', '200'],
+            ['300', '', '300'],
+            ['400', '', '400'],
+            ['500', '', '500']
+        ]
+        BAD_DATA = [
+            ['#indicator+xxx', '#indicator+yyy', '#indicator+zzz'],
+            ['100', 'aaa', '100'],
+            ['200', '2', '200'],
+            ['300', '3', '300'],
+            ['400', '4', '400'],
+            ['500', '5', '500']
+        ]
+
+        report = hxl.validate(GOOD_DATA, SCHEMA)
+        self.assertTrue(report['is_valid'])
+        self.assertEqual(0, report['stats']['total'])
+
+        report = hxl.validate(BAD_DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(1, report['stats']['total'])
+
+    def test_spellings(self):
+        SCHEMA = [
+            ['#valid_tag', '#valid_value+spelling'],
+            ['#indicator', 'true']
+        ]
+        DATA = [['#indicator']] + [['aaaaa'] for n in range(0,50)] + [['bbbbb'] for n in range(0,50)] + [['aabaa']]
+        report = hxl.validate(DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(1, report['stats']['total'])
+        
+    def test_spellings_multiple(self):
+        SCHEMA = [
+            ['#valid_tag', '#valid_value+spelling'],
+            ['#indicator', 'true']
+        ]
+        DATA = [['#indicator+xxx', '#indicator+yyy']] + [['aaaaa', 'aaaab'] for n in range(0,50)] + [['aaaab', 'aaaaa']]
+        report = hxl.validate(DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(2, report['stats']['total'])
+        
     def assertDatasetErrors(self, dataset, errors_expected, schema=None):
         errors = []
 

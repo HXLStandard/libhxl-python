@@ -810,10 +810,10 @@ class SpellingTest(AbstractRuleTest):
         # spelling -> locations
 
         self.spelling_map = dict()
-        """Store spellings and locations"""
+        """Store spellings and locations by tagspec"""
         
-        self.total_occurrences = 0
-        """Count the total spelling occurrences, for mean and standard deviation"""
+        self.total_occurrences = dict()
+        """Count the total spelling occurrences, for mean and standard deviation, by tagspec"""
 
     def end(self):
         """Report possible spelling errors.
@@ -827,67 +827,71 @@ class SpellingTest(AbstractRuleTest):
         # start by assuming all is well
         status = True
 
-        # cache corrections so that we don't keep looking up the same ones
-        correction_cache = dict()
+        for tagspec, spellings in self.spelling_map.items():
 
-        # if there aren't any spellings, then we're done
-        if len(self.spelling_map) == 0:
-            return status
+            # cache corrections so that we don't keep looking up the same ones
+            correction_cache = {}
 
-        # get the average (mean) occurrences for each spelling
-        mean_frequency = self.total_occurrences / len(self.spelling_map)
+            # if there aren't any spellings, then we're done
+            if len(spellings) == 0:
+                break
 
-        # calculate the coefficiant of variance (dimensionless)
-        standard_deviation = math.sqrt(
-            sum(map(lambda n: (len(n)-mean_frequency)**2, self.spelling_map.values())) / len(self.spelling_map)
-        )
-        variance_coefficient = standard_deviation / mean_frequency
+            # get the average (mean) occurrences for each spelling
+            mean_frequency = self.total_occurrences[tagspec] / len(spellings)
 
-        # there's no point spelling checking unless the variance coefficient is low enough to be meaningful
-        if variance_coefficient > 1.0:
-            return status
+            # calculate the coefficiant of variance (dimensionless)
+            standard_deviation = math.sqrt(
+                sum(map(lambda n: (len(n)-mean_frequency)**2, spellings.values())) / len(spellings)
+            )
+            variance_coefficient = standard_deviation / mean_frequency
 
-        # first pass: collect and clear good spellings
-        good_spellings = list()
-        for spelling, locations in self.spelling_map.items():
-            if len(locations) > mean_frequency * SpellingTest.ERROR_CUTOFF:
-                good_spellings.append(spelling)
-                self.spelling_map[spelling] = None # no potential errors
+            # there's no point spelling checking unless the variance coefficient is low enough to be meaningful
+            if variance_coefficient > 1.0:
+                break
 
-        # second pass: report any remaining dubious spellings that have close matches among good spellings
-        for spelling, locations in self.spelling_map.items():
-            if locations is None: # this spelling was OK
-                continue
-            # is there a near match among good spellings?
-            correction = correction_cache.get(spelling, False)
-            if correction is False:
-                correction = find_closest_match(spelling, good_spellings)
-                correction_cache[spelling] = correction
-            if correction is not None:
-                # if it's rare and there's a near match, report an error
-                status = False
-                for location in locations:
-                    self.report_error(
-                        'Possible spelling error',
-                        value=location[2],
-                        row=location[0],
-                        column=location[1],
-                        suggested_value=correction,
-                        scope='cell'
-                    )
+            # first pass: collect and clear good spellings
+            good_spellings = list()
+            for spelling, locations in spellings.items():
+                if len(locations) > mean_frequency * SpellingTest.ERROR_CUTOFF:
+                    good_spellings.append(spelling)
+                    spellings[spelling] = None # no potential errors
+
+            # second pass: report any remaining dubious spellings that have close matches among good spellings
+            for spelling, locations in spellings.items():
+                if locations is None: # this spelling was OK
+                    continue
+                # is there a near match among good spellings?
+                if spelling in correction_cache:
+                    correction = correction_cache['spelling']
+                else:
+                    correction = find_closest_match(spelling, good_spellings)
+                    correction_cache[spelling] = correction
+                if correction is not None:
+                    # if it's rare and there's a near match, report an error
+                    status = False
+                    for location in locations:
+                        self.report_error(
+                            'Possible spelling error',
+                            value=location[2],
+                            row=location[0],
+                            column=location[1],
+                            suggested_value=correction,
+                            scope='cell'
+                        )
                 
         return status # false if we've found a possible correction
 
     def validate_cell(self, value, row, column):
         """Record all the spellings found, for later sorting"""
+
+        tagspec = column.get_display_tag(sort_attributes=True) # FIXME
+
         if self.case_sensitive:
             cooked_value = hxl.datatypes.normalise_space(value)
         else:
             cooked_value = hxl.datatypes.normalise_string(value)
-        self.total_occurrences += 1
-        if not cooked_value in self.spelling_map:
-            self.spelling_map[cooked_value] = []
-        self.spelling_map[cooked_value].append((row, column, value,))
+        self.total_occurrences[tagspec] = self.total_occurrences.setdefault(tagspec, 0) + 1
+        self.spelling_map.setdefault(tagspec, {}).setdefault(cooked_value, []).append((row, column, value,))
         return True
 
     
