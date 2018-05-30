@@ -667,25 +667,26 @@ class CorrelationTest(AbstractRuleTest):
         value for the others.
         """
         status = True
-        for key, value_maps in self.correlation_map.items():
-            if len(value_maps) > 1:
-                status = False
-                value_maps = sorted(
-                    value_maps.items(),
-                    key=lambda e: len(e[1]),
-                    reverse=True
-                )
-                suggested_value = value_maps[0][0]
-                for value_map in value_maps[1:]:
-                    value = value_map[0]
-                    for location in value_map[1]:
-                        self.report_error(
-                            "Unexpected value",
-                            value=value,
-                            row=location[0],
-                            column=location[1],
-                            suggested_value=suggested_value
-                        )
+        for tagspec, correlations in self.correlation_map.items():
+            for key, value_maps in correlations.items():
+                if len(value_maps) > 1:
+                    status = False
+                    value_maps = sorted(
+                        value_maps.items(),
+                        key=lambda e: len(e[1]),
+                        reverse=True
+                    )
+                    suggested_value = value_maps[0][0]
+                    for value_map in value_maps[1:]:
+                        value = value_map[0]
+                        for location in value_map[1]:
+                            self.report_error(
+                                "Unexpected value",
+                                value=value,
+                                row=location[0],
+                                column=location[1],
+                                suggested_value=suggested_value
+                            )
         self.correlation_map = None
         return status
 
@@ -703,14 +704,11 @@ class CorrelationTest(AbstractRuleTest):
         # Record the locations
         # key -> value -> location
         for i in indices:
+            tagspec = row.columns[i].get_display_tag(sort_attributes=True)
             if i < len(row.values) and not hxl.datatypes.is_empty(row.values[i]):
                 value = row.values[i]
                 column = row.columns[i]
-                if not key in self.correlation_map:
-                    self.correlation_map[key] = {}
-                if not value in self.correlation_map[key]:
-                    self.correlation_map[key][value] = []
-                self.correlation_map[key][value].append((row, column,))
+                self.correlation_map.setdefault(tagspec, {}).setdefault(key, {}).setdefault(value, []).append((row, column,))
 
         # always succeed
         return True
