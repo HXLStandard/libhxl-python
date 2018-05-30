@@ -71,6 +71,15 @@ class TestDates(unittest.TestCase):
         self.assertFalse(hxl.datatypes.is_date('2018-13-01'))
         self.assertFalse(hxl.datatypes.is_date('2018W54'))
 
+    def test_iso_datetime(self):
+        self.assertTrue(hxl.datatypes.is_date("2011-01-01T00:00:00.000Z"))
+        self.assertEqual('2011-01-01', hxl.datatypes.normalise_date("2011-01-01T00:00:00.000Z"))
+
+    def test_rfc822_datetime(self):
+        self.assertTrue(hxl.datatypes.is_date("30 May 2018 02:57:50 GMT"))
+        self.assertTrue(hxl.datatypes.is_date("Thu, 30 May 2018 02:57:50 GMT"))
+        self.assertEqual('2018-05-30', hxl.datatypes.normalise_date("Thu, 30 May 2018 02:57:50 GMT"))
+
     def test_is_quarter(self):
         self.assertTrue(hxl.datatypes.is_date('2018Q2'))
         self.assertFalse(hxl.datatypes.is_date('2018Q5'))
