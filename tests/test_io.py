@@ -49,7 +49,7 @@ URL_EXCEL = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/
 URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.json'
 URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
-
+URL_GOOGLE_OPEN = 'https://drive.google.com/open?id=1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg'
 
 class TestInput(unittest.TestCase):
 
@@ -279,7 +279,7 @@ class TestParser(unittest.TestCase):
         with hxl.data(URL_JSON) as source:
             self.compare_input(source)
 
-    def test_remote_google(self):
+    def test_google_urls(self):
         """Test reading from a Google Sheet (will fail without connectivity)."""
 
         # default tab
@@ -288,6 +288,10 @@ class TestParser(unittest.TestCase):
 
         # specific tab
         with hxl.data(URL_GOOGLE_HASH, timeout=5) as source:
+            self.compare_input(source)
+
+        # drive "open" URL
+        with hxl.data(URL_GOOGLE_OPEN, timeout=5) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):

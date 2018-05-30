@@ -13,146 +13,395 @@ import os
 
 import hxl
 from hxl.model import Column, Row
-from hxl.validation import Schema, SchemaRule
+from hxl.validation import HXLValidationException, Schema, SchemaRule
 
 from . import resolve_path
 
 
+class TestTests(unittest.TestCase):
+    """Test individual tests for a rule."""
+
+    def test_required(self):
+        def t():
+            return hxl.validation.RequiredTest(min_occurs=1, max_occurs=2)
+
+        # successful dataset tests
+        self.assertTrue(t().validate_dataset(make_dataset(['#org', '#sector']), tag_pattern='#sector'))
+        self.assertTrue(t().validate_dataset(make_dataset(['#org', '#sector', '#sector']), tag_pattern='#sector'))
+
+        # failed dataset tests
+        self.assertFalse(t().validate_dataset(make_dataset(['#org']), tag_pattern='#sector'))
+
+        # successful row tests
+        self.assertTrue(t().validate_row(make_row(['aaa', 'xxx'], ['#org', '#sector']), tag_pattern='#sector'))
+        self.assertTrue(t().validate_row(make_row(['aaa', 'xxx', 'yyy'], ['#org', '#sector', '#sector']), tag_pattern='#sector'))
+
+        # failed row tests
+        self.assertFalse(t().validate_row(make_row(['xxx', ''], ['#org', '#sector']), tag_pattern='#sector'))
+        self.assertFalse(t().validate_row(make_row(['xxx', 'yyy', 'zzz'], ['#sector', '#sector', '#sector']), tag_pattern='#sector'))
+
+    def test_datatype(self):
+        def t(datatype='text'):
+            return hxl.validation.DatatypeTest(datatype)
+
+        # check for bad datatype
+        with self.assertRaises(hxl.HXLException):
+            t('xxx')
+
+        # successful tests (OK to leave row and column as None)
+        self.assertTrue(t().validate_cell('xxx', None, None))
+        self.assertTrue(t('number').validate_cell('20.1', None, None))
+        self.assertTrue(t('url').validate_cell('http://example.org', None, None))
+        self.assertTrue(t('email').validate_cell('nobody@example.org', None, None))
+        self.assertTrue(t('phone').validate_cell('123-456-7890', None, None))
+        self.assertTrue(t('date').validate_cell('2018-05-01', None, None))
+
+        # failed tests
+        self.assertFalse(t('number').validate_cell('xxx', None, None))
+        self.assertFalse(t('url').validate_cell('/example.org', None, None))
+        self.assertFalse(t('email').validate_cell('nobody@@example.org', None, None))
+        self.assertFalse(t('phone').validate_cell('123-456-A890', None, None))
+        self.assertFalse(t('date').validate_cell('2018-05-32', None, None))
+
+    def test_range(self):
+        def t(min_value=None, max_value=None):
+            return hxl.validation.RangeTest(min_value, max_value)
+
+        column = hxl.model.Column.parse('#x_test')
+        date_column = hxl.model.Column.parse('#date')
+
+        # dates
+        self.assertTrue(t(min_value='2018-01-01').validate_cell('2018-01-01', None, date_column))
+        self.assertTrue(t(min_value='2018-01-01').validate_cell('Jan-2/18', None, date_column))
+        self.assertTrue(t(max_value='2018-01-01').validate_cell('2017-01-01', None, date_column))
+        self.assertTrue(t(max_value='2018-01-01').validate_cell('Jan-2/17', None, date_column))
+        self.assertTrue(t(min_value='2018-01-01', max_value='2018-02-01').validate_cell('3 January 2018', None, date_column))
+
+        self.assertFalse(t(min_value='2018-01-01').validate_cell('2017-01-01', None, date_column))
+        self.assertFalse(t(min_value='2018-01-01').validate_cell('Jan-2/17', None, date_column))
+        self.assertFalse(t(max_value='2018-01-01').validate_cell('2019-01-01', None, date_column))
+        self.assertFalse(t(max_value='2018-01-01').validate_cell('Jan-2/18', None, date_column))
+        self.assertFalse(t(min_value='2018-01-01', max_value='2018-02-01').validate_cell('3 January 2019', None, date_column))
+
+        # numbers
+        self.assertTrue(t(min_value=200).validate_cell('200', None, column))
+        self.assertTrue(t(min_value=200).validate_cell('1000', None, column))
+        self.assertTrue(t(max_value=300).validate_cell('300', None, column))
+        self.assertTrue(t(max_value=300).validate_cell('40', None, column))
+        self.assertTrue(t(min_value=200, max_value=300).validate_cell('250', None, column))
+
+        self.assertFalse(t(min_value=200).validate_cell('30', None, column))
+        self.assertFalse(t(max_value=300).validate_cell('2000', None, column))
+        self.assertFalse(t(min_value=200, max_value=300).validate_cell('301', None, column))
+
+        # lexical comparison
+        self.assertTrue(t(min_value='c').validate_cell('c', None, column))
+        self.assertTrue(t(min_value='c').validate_cell('Ddd', None, column))
+        self.assertTrue(t(min_value='c').validate_cell(' Ccc', None, column))
+        self.assertTrue(t(max_value='e').validate_cell('e', None, column))
+        self.assertTrue(t(max_value='e').validate_cell('DaD', None, column))
+        self.assertTrue(t(max_value='e').validate_cell(' BaB', None, column))
+        self.assertTrue(t(min_value='c', max_value='e').validate_cell('d', None, column))
+
+        self.assertFalse(t(min_value='c').validate_cell('b', None, column))
+        self.assertFalse(t(min_value='c').validate_cell('Bbb', None, column))
+        self.assertFalse(t(min_value='c').validate_cell(' Aaa', None, column))
+        self.assertFalse(t(max_value='e').validate_cell('ee', None, column))
+        self.assertFalse(t(max_value='e').validate_cell('F', None, column))
+        self.assertFalse(t(max_value='e').validate_cell(' EaE', None, column))
+        self.assertFalse(t(min_value='c', max_value='e').validate_cell('ee', None, column))
+
+    def test_whitespace(self):
+        def t():
+            return hxl.validation.WhitespaceTest()
+
+        self.assertTrue(t().validate_cell('xxx', None, None))
+        self.assertTrue(t().validate_cell('xxx yyy', None, None))
+
+        self.assertFalse(t().validate_cell(' xxx', None, None)) # leading space not allowed
+        self.assertFalse(t().validate_cell('xxx  ', None, None)) # trailing space not allowed
+        self.assertFalse(t().validate_cell('xxx  yyy', None, None)) # multiple internal spaces not allowed
+        self.assertFalse(t().validate_cell("xxx\tyyy", None, None)) # tabs not allowed
+
+        self.assertTrue(t().validate_cell(3, None, None)) # Exception if it's not a string?
+
+    def test_regex(self):
+        def t(pattern):
+            return hxl.validation.RegexTest(pattern)
+
+        self.assertTrue(t('.').validate_cell('xxx', None, None))
+        self.assertTrue(t('c').validate_cell('abcd', None, None))
+        self.assertTrue(t('^a').validate_cell('abcd', None, None))
+        self.assertTrue(t('d$').validate_cell('abcd', None, None))
+
+        self.assertFalse(t('e').validate_cell('abcd', None, None))
+        self.assertFalse(t('^b').validate_cell('abcd', None, None))
+        self.assertFalse(t('c$').validate_cell('abcd', None, None))
+
+    def test_unique_value(self):
+        t = hxl.validation.UniqueValueTest()
+        t.start() # to set up context
+        self.assertTrue(t.validate_cell('a', None, None))
+        self.assertFalse(t.validate_cell('a', None, None))
+        self.assertFalse(t.validate_cell('  A  ', None, None))
+        self.assertTrue(t.validate_cell('b', None, None))
+        self.assertTrue(t.end())
+
+    def test_unique_row(self):
+        COLUMNS = ['#adm1', '#sector', '#org']
+        t = hxl.validation.UniqueRowTest('org,sector')
+        t.start() # to set up context
+        self.assertTrue(t.validate_row(make_row(['Coast', 'WASH', 'Org A'], COLUMNS)))
+        self.assertFalse(t.validate_row(make_row(['Coast', 'WASH', 'Org A'], COLUMNS))) # pure repeat
+        self.assertFalse(t.validate_row(make_row(['Plains', 'WASH', 'Org A'], COLUMNS))) # adm1 is not in the key
+        self.assertFalse(t.validate_row(make_row(['Coast', '  wash', 'Org A'], COLUMNS))) # space-/case-insensitive
+        self.assertTrue(t.validate_row(make_row(['Coast', 'WASH', 'Org B'], COLUMNS))) # org is in the key
+        self.assertTrue(t.end())
+
+    def test_enumeration(self):
+        def t(allowed_values=['aaa', 'BBB', 'ccc'], case_sensitive=False):
+            return hxl.validation.EnumerationTest(allowed_values, case_sensitive)
+
+        self.assertTrue(t().validate_cell('aaa', None, None))
+        self.assertTrue(t().validate_cell('bBb', None, None)) # case-insensitive
+        self.assertTrue(t(case_sensitive=True).validate_cell('BBB', None, None)) # case-sensitive, but OK
+        self.assertTrue(t().validate_cell('   ccc   ', None, None)) # whitespace doesn't matter
+
+        self.assertFalse(t().validate_cell('ddd', None, None))
+        self.assertFalse(t(case_sensitive=True).validate_cell('ddd', None, None))
+        self.assertFalse(t(case_sensitive=True).validate_cell('bBb', None, None)) # case-sensitive
+
+    def test_enumeration_suggested_values(self):
+        
+        def make_callback(suggested_value):
+            def callback(e):
+                self.assertEqual(suggested_value, e.suggested_value)
+            return callback
+
+        t = hxl.validation.EnumerationTest(allowed_values=['Aaaa', 'bbbb', 'cccc'])
+        t.callback = make_callback('Aaaa')
+        self.assertFalse(t.validate_cell('aaa', None, None))
+        t.callback = make_callback('bbbb')
+        self.assertFalse(t.validate_cell('BBB', None, None))
+        t.callback = make_callback(None) # no close matches
+        self.assertFalse(t.validate_cell('xxx', None, None))
+
+        t = hxl.validation.EnumerationTest(allowed_values=['Aaa', 'bbb', 'ccc'], case_sensitive=True)
+        t.callback = make_callback('Aaa')
+        self.assertFalse(t.validate_cell('aaa', None, None))
+
+    def test_correlation(self):
+
+        COLUMNS = ['#adm1+name', '#adm1+code']
+
+        def callback(e):
+            # expect 'xxx' as the suggested value
+            self.assertEqual('xxx', e.suggested_value)
+
+        t = hxl.validation.CorrelationTest('#adm1+code')
+        t.callback = callback
+
+        t.start()
+        self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['aaa', 'bbb'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['aaa', 'bbb'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        # bad row:
+        self.assertTrue(t.validate_row(make_row(['zzz', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertTrue(t.validate_row(make_row(['xxx', 'yyy'], COLUMNS), tag_pattern='#adm1+name'))
+        self.assertFalse(t.end())
+
+    def test_spelling_case_sensitive(self):
+        COLUMN = hxl.model.Column.parse('#xxx')
+
+        errors_seen = 0
+
+        def callback(e):
+            nonlocal errors_seen
+            errors_seen += 1
+            self.assertEqual('xxxx', e.suggested_value)
+
+        t = hxl.validation.SpellingTest(case_sensitive=True)
+        t.callback = callback
+
+        t.start()
+        for i in range(0, 100):
+            t.validate_cell('xxxx', None, COLUMN)
+            t.validate_cell('yyyy', None, COLUMN)
+        t.validate_cell('xxx', None, COLUMN) # expect an error
+        t.validate_cell('Xxxx', None, COLUMN) # expect an error
+        self.assertFalse(t.end()) # errors detected at end of parse
+
+        self.assertEqual(2, errors_seen)
+
+    def test_spelling_case_insensitive(self):
+        COLUMN = hxl.model.Column.parse('#xxx')
+
+        errors_seen = 0
+
+        def callback(e):
+            nonlocal errors_seen
+            errors_seen += 1
+            self.assertEqual('xxxx', e.suggested_value)
+
+        t = hxl.validation.SpellingTest(case_sensitive=False)
+        t.callback = callback
+
+        t.start()
+        for i in range(0, 100):
+            t.validate_cell('xxxx', None, COLUMN)
+            t.validate_cell('yyyy', None, COLUMN)
+        t.validate_cell('xxx', None, COLUMN) # expect an error
+        t.validate_cell('Xxxx', None, COLUMN) # *not* an error (case-insensitive)
+        self.assertFalse(t.end()) # errors detected at end of parse
+
+        self.assertEqual(1, errors_seen)
+
+    def test_consistent_datatypes(self):
+        COLUMN = hxl.model.Column.parse('#x_test')
+        GOOD_VALUES = ['12', '34', '56', '78', '90']
+        BAD_VALUES = ['xxx', 'yyy']
+
+        seen_callback = False
+        
+        def callback(e):
+            nonlocal seen_callback
+            seen_callback = True
+            self.assertTrue(e.value in BAD_VALUES)
+
+        t = hxl.validation.ConsistentDatatypesTest()
+        t.callback = callback
+
+        # consistent numbers
+        t.start()
+        for value in GOOD_VALUES + BAD_VALUES:
+            t.scan_cell(value, None, COLUMN)
+        t.end_scan()
+        for value in GOOD_VALUES:
+            self.assertTrue(t.validate_cell(value, None, COLUMN))
+        for value in BAD_VALUES:
+            self.assertFalse(t.validate_cell(value, None, COLUMN))
+        self.assertTrue(seen_callback)
+        
+    def test_outliers(self):
+        COLUMN = hxl.model.Column.parse('#x_test')
+        GOOD_VALUES = ['9000', '10000', '11000']
+        BAD_VALUES = ['5000000', '1']
+
+        seen_callback = False
+        
+        def callback(e):
+            nonlocal seen_callback
+            seen_callback = True
+            self.assertTrue(e.value in BAD_VALUES)
+
+        t = hxl.validation.NumericOutlierTest()
+        t.callback = callback
+
+        # consistent numbers
+        t.start()
+        for i in range(1, 1000):
+            for value in GOOD_VALUES:
+                t.scan_cell(value, None, COLUMN)
+        for value in BAD_VALUES:
+            t.scan_cell(value, None, COLUMN)
+        t.end_scan()
+        for value in GOOD_VALUES:
+            self.assertTrue(t.validate_cell(value, None, COLUMN))
+        for value in BAD_VALUES:
+            self.assertFalse(t.validate_cell(value, None, COLUMN))
+        self.assertTrue(seen_callback)
+
+
 class TestRule(unittest.TestCase):
-    """Test the hxl.validation.SchemaRule class."""
+    """Test the hxl.validation.SchemaRule class.
+    Most of the tests just ensure that the AbstractRuleTest objects
+    get applied properly.
+    """
+
+    COLUMNS = ['#x_test']
 
     def setUp(self):
-        self.errors = []
         self.rule = SchemaRule('#x_test', callback=lambda error: self.errors.append(error), severity="warning")
 
-    def test_severity(self):
-        self.rule.data_type = 'number'
-        self._try_rule('xxx', 1)
-        self.assertEqual('warning', self.errors[0].rule.severity)
-
-    def test_type_none(self):
-        self._try_rule('')
-        self._try_rule(10)
-        self._try_rule('hello, world')
-
-    def test_type_text(self):
-        self.rule.data_type = 'text'
-        self._try_rule('')
-        self._try_rule(10)
-        self._try_rule('hello, world')
-
-    def test_type_num(self):
-        self.rule.data_type = 'number'
+    def test_datatype(self):
+        self.rule.tests = [hxl.validation.DatatypeTest('number')]
         self._try_rule(10)
         self._try_rule(' -10.1 ');
         self._try_rule('ten', 1)
 
-    def test_type_url(self):
-        self.rule.data_type = 'url'
-        self._try_rule('http://www.example.org')
-        self._try_rule('hello, world', 1)
-
-    def test_type_email(self):
-        self.rule.data_type = 'email'
-        self._try_rule('somebody@example.org')
-        self._try_rule('hello, world', 1)
-
-    def test_type_phone(self):
-        self.rule.data_type = 'phone'
-        self._try_rule('+1-613-555-1111 x1234')
-        self._try_rule('(613) 555-1111')
-        self._try_rule('123', 1)
-        self._try_rule('123456789abc', 1)
-        
-    def test_type_date(self):
-        self.rule.data_type = 'date'
-        self._try_rule('2015-03-15')
-        self._try_rule('2015-03')
-        self._try_rule('2015')
-        self._try_rule('xxx', 1)
-
-    def test_value_whitespace(self):
-        self.rule.check_whitespace = True
+    def test_whitespace(self):
+        self.rule.tests = [hxl.validation.WhitespaceTest()]
         self._try_rule('xxx', 0)
-        self._try_rule('xxx yyy', 0)
-        self._try_rule(' xxx', 1) # leading space not allowed
-        self._try_rule('xxx  ', 1) # trailing space not allowed
-        self._try_rule('xxx  yyy', 1) # multiple internal spaces not allowed
-        self._try_rule("xxx\tyyy", 1) # tabs not allowed
+        self._try_rule(' xxx', 1)
 
-    def test_value_range(self):
-        self.rule.min_value = 3.5
-        self.rule.max_value = 4.5
+    def test_range(self):
+        self.rule.tests = [hxl.validation.RangeTest(3.5, 4.5)]
         self._try_rule(4.0)
-        self._try_rule('4')
         self._try_rule('3.49', 1)
-        self._try_rule(5.0, 1)
 
-    def test_value_pattern(self):
-        self.rule.regex = '^a+b$'
+    def test_regex(self):
+        self.rule.tests = [hxl.validation.RegexTest('^a+b$')]
         self._try_rule('ab', 0)
         self._try_rule('aab', 0)
         self._try_rule('bb', 1)
 
     def test_value_enumeration(self):
-        self.rule.enum=['aa', 'bb', 'cc']
-
-        self.rule.case_sensitive = True
+        self.rule.tests = [hxl.validation.EnumerationTest(allowed_values=['aa', 'bb', 'cc'], case_sensitive=True)]
+        self.rule.start()
         self._try_rule('bb')
         self._try_rule('BB', 1)
         self._try_rule('dd', 1)
 
-        self.rule.case_sensitive = False
+        self.rule.tests = [hxl.validation.EnumerationTest(allowed_values=['aa', 'bb', 'cc'], case_sensitive=False)]
+        self.rule.start()
         self._try_rule('bb')
         self._try_rule('BB')
         self._try_rule('dd', 1)
 
-    def test_suggested_value_enumeration(self):
-        def callback(error):
-            self.assertEqual('cc', error.suggested_value)
-        self.rule.callback = callback
-        self.rule.enum = ['aa', 'bb', 'cc']
-        self.rule.validate('ccc')
-        self.rule.validate('dcc')
-        self.rule.validate('cdc')
-
     def test_row_restrictions(self):
-        row = Row(
-            columns = [
-                Column(tag='#x_test'),
-                Column(tag='#subsector'),
-                Column(tag='#x_test')
-            ],
-            values=['WASH', '', '']
-            );
+        """Check tests at the rule level"""
 
-        self.rule.min_occur = 1
+        test = hxl.validation.RequiredTest(self.rule.tag_pattern)
+        self.rule.tests.append(test)
+        
+        row = make_row(['WASH', '', ''], ['#x_test', '#subsector', '#x_test'])
+
+        test.min_occurs = 1
         self._try_rule(row)
 
-        self.rule.min_occur = 2
+        test.min_occurs = 2
         self._try_rule(row, 1)
 
-        self.rule.min_occur = None
-
-        self.rule.max_occur = 1
+        test.min_occurs = None
+        test.max_occurs = 1
         self._try_rule(row)
 
-        self.rule.max_occur = 0
+        test.max_occurs = 0
         self._try_rule(row, 1)
 
 
     def _try_rule(self, value, errors_expected = 0):
         """Helper: Validate a single value with a SchemaRule"""
-        self.errors = [] # clear errors for the next run
+        errors = []
+
+        def callback(e):
+            errors.append(e)
+
+        self.rule.callback = callback
+        self.rule.start() # make sure the rule is initialised
+            
         if isinstance(value, Row):
-            result = self.rule.validate_row(value)
+            row = value
         else:
-            result = self.rule.validate(value)
+            row = make_row([value], ['#x_test'])
+
         if errors_expected == 0:
-            self.assertTrue(result)
+            self.assertTrue(self.rule.validate_row(row))
         else:
-            self.assertFalse(result)
-        self.assertEqual(len(self.errors), errors_expected)
+            self.assertFalse(self.rule.validate_row(row))
+
+        self.assertEqual(len(errors), errors_expected)
 
         
 class TestValidateColumns(unittest.TestCase):
@@ -160,23 +409,23 @@ class TestValidateColumns(unittest.TestCase):
 
     def test_required(self):
         """Test if a column is present to potentially satisfy #valid_required"""
-        SCHEMA = [
+        SCHEMA_VALUES = [
             ['#valid_tag', '#valid_required'],
             ['#adm1+code', 'true']
         ]
-        self.assertColumnErrors(['#org', '#adm1+code'], 0, SCHEMA)
-        self.assertColumnErrors(['#org', '#adm2+code'], 1, SCHEMA)
-        self.assertColumnErrors(['#org', '#adm1+name'], 1, SCHEMA)
+        self.assertColumnErrors(['#org', '#adm1+code'], 0, schema_values=SCHEMA_VALUES)
+        self.assertColumnErrors(['#org', '#adm2+code'], 1, schema_values=SCHEMA_VALUES)
+        self.assertColumnErrors(['#org', '#adm1+name'], 1, schema_values=SCHEMA_VALUES)
 
     def test_min_occurs(self):
         """Test if enough columns are present to potentially satisfy #valid_required+min"""
-        SCHEMA = [
+        SCHEMA_VALUES = [
             ['#valid_tag', '#valid_required+min'],
             ['#org', '2']
         ]
-        self.assertColumnErrors(['#org', '#adm1', '#org'], 0, SCHEMA)
-        self.assertColumnErrors(['#org', '#adm1', '#org', '#org'], 0, SCHEMA)
-        self.assertColumnErrors(['#org', '#adm1'], 1, SCHEMA)
+        self.assertColumnErrors(['#org', '#adm1', '#org'], 0, schema_values=SCHEMA_VALUES)
+        self.assertColumnErrors(['#org', '#adm1', '#org', '#org'], 0, schema_values=SCHEMA_VALUES)
+        self.assertColumnErrors(['#org', '#adm1'], 1, schema_values=SCHEMA_VALUES)
 
     def test_bad_value_url(self):
         """Test for an error with an unresolvable #valid_value+url"""
@@ -194,11 +443,13 @@ class TestValidateColumns(unittest.TestCase):
             errors.append(error)
 
         schema = hxl.schema(schema_values, callback=callback)
-        columns = [hxl.model.Column.parse(s) for s in column_values]
+        dataset = make_dataset(column_values)
+
+        schema.start()
         if errors_expected == 0:
-            self.assertTrue(schema.validate_columns(columns))
+            self.assertTrue(schema.validate_dataset(dataset))
         else:
-            self.assertFalse(schema.validate_columns(columns))
+            self.assertFalse(schema.validate_dataset(dataset))
         self.assertEqual(len(errors), errors_expected)
 
 
@@ -226,13 +477,13 @@ class TestValidateRow(unittest.TestCase):
 
     def test_date(self):
         COLUMNS = ['#date']
-        SCHEMA = [
+        SCHEMA_VALUES = [
             ['#valid_tag', '#valid_datatype'],
             ['#date', 'date'],
         ]
-        self.assertRowErrors(['2017-01-01'], 0, columns=COLUMNS, schema=SCHEMA)
-        self.assertRowErrors(['1/1/17'], 0, columns=COLUMNS, schema=SCHEMA)
-        self.assertRowErrors(['13/13/17'], 1, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['2017-01-01'], 0, columns=COLUMNS, schema_values=SCHEMA_VALUES)
+        self.assertRowErrors(['1/1/17'], 0, columns=COLUMNS, schema_values=SCHEMA_VALUES)
+        self.assertRowErrors(['13/13/17'], 1, columns=COLUMNS, schema_values=SCHEMA_VALUES)
 
     def test_url(self):
         COLUMNS = ['#meta+url']
@@ -240,8 +491,8 @@ class TestValidateRow(unittest.TestCase):
             ['#valid_tag', '#valid_datatype'],
             ['#meta+url', 'url'],
         ]
-        self.assertRowErrors(['http://example.org'], 0, columns=COLUMNS, schema=SCHEMA)
-        self.assertRowErrors(['example.org'], 1, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['http://example.org'], 0, columns=COLUMNS, schema_values=SCHEMA)
+        self.assertRowErrors(['example.org'], 1, columns=COLUMNS, schema_values=SCHEMA)
 
     def test_email(self):
         COLUMNS = ['#contact+email']
@@ -249,19 +500,20 @@ class TestValidateRow(unittest.TestCase):
             ['#valid_tag', '#valid_datatype'],
             ['#contact+email', 'email'],
         ]
-        self.assertRowErrors(['nobody@example.org'], 0, columns=COLUMNS, schema=SCHEMA)
-        self.assertRowErrors(['nobody@@example.org'], 1, columns=COLUMNS, schema=SCHEMA)
+        self.assertRowErrors(['nobody@example.org'], 0, columns=COLUMNS, schema_values=SCHEMA)
+        self.assertRowErrors(['nobody@@example.org'], 1, columns=COLUMNS, schema_values=SCHEMA)
 
-    def assertRowErrors(self, row_values, errors_expected, schema=None, columns=None):
+    def assertRowErrors(self, row_values, errors_expected, schema_values=None, columns=None):
         """Set up a HXL row and count the errors in it"""
         errors = []
 
         def callback(error):
             errors.append(error)
 
-        if schema is None:
-            schema = self.DEFAULT_SCHEMA
-        schema = hxl.schema(schema, callback=callback)
+        if schema_values is None:
+            schema = hxl.schema(hxl.data(self.DEFAULT_SCHEMA), callback=callback)
+        else:
+            schema = hxl.schema(hxl.data(schema_values), callback=callback)
 
         if columns is None:
             columns = self.DEFAULT_COLUMNS
@@ -270,6 +522,8 @@ class TestValidateRow(unittest.TestCase):
             values=row_values,
             columns=[Column.parse(tag) for tag in columns]
         )
+
+        schema.start()
 
         if errors_expected == 0:
             self.assertTrue(schema.validate_row(row))
@@ -281,10 +535,26 @@ class TestValidateRow(unittest.TestCase):
 class TestValidateDataset(unittest.TestCase):
     """Test dataset-wide validation"""
 
-    DEFAULT_SCHEMA = [
+    SCHEMA = [
         ['#valid_tag', '#valid_unique'],
         ['#meta+id', 'true'],
     ]
+
+    def test_default_schema(self):
+        """Test the built-in schema"""
+        DATASET = [
+            ['#affected', '#date'],
+            ['100', '2018-01-01'],   # OK
+            ['200', 'xxx'],          # bad date
+            ['xxx', '2018-03-01'],   # bad number
+            ['100', ' 2018-04-01 '], # extra whitespace
+        ]
+        errors_seen = 0
+        def callback(e):
+            nonlocal errors_seen
+            errors_seen += 1
+        self.assertFalse(hxl.schema(callback=callback).validate(hxl.data(DATASET)))
+        self.assertEqual(3, errors_seen)
 
     def test_unique_single(self):
         DATASET = [
@@ -330,6 +600,39 @@ class TestValidateDataset(unittest.TestCase):
 
         self.assertFalse(schema.validate(data))
 
+    def test_outliers(self):
+        BAD_VALUES = ['1', '1000000']
+
+        raw_data = [
+            ['#affected'],
+            ['1'],
+            ['1000000']
+        ]
+
+        for i in range(0, 10):
+            raw_data += [
+                ['100'],
+                ['200'],
+                ['800']
+            ]
+            
+        seen_callback = False
+
+        def callback(e):
+            nonlocal seen_callback
+            seen_callback = True
+            self.assertTrue(e.value in BAD_VALUES)
+
+        schema = hxl.schema([
+            ['#valid_tag', '#valid_value+outliers'],
+            ['#affected', 'true']
+        ], callback=callback)
+
+        data = hxl.data(raw_data)
+
+        self.assertFalse(schema.validate(data))
+        self.assertTrue(seen_callback)
+
     def test_correlation(self):
         SCHEMA = [
             ['#valid_tag', '#valid_correlation'],
@@ -367,6 +670,57 @@ class TestValidateDataset(unittest.TestCase):
         ])
         self.assertFalse(schema.validate(data))
 
+    def test_different_indicator_datatypes(self):
+        """One rule, but three different indicators with different tagspecs and datatypes"""
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype+consistent'],
+            ['#indicator', 'true']
+        ]
+        GOOD_DATA = [
+            ['#indicator+xxx', '#indicator+yyy', '#indicator+zzz'],
+            ['100', 'aaa', '100'],
+            ['200', '', '200'],
+            ['300', '', '300'],
+            ['400', '', '400'],
+            ['500', '', '500']
+        ]
+        BAD_DATA = [
+            ['#indicator+xxx', '#indicator+yyy', '#indicator+zzz'],
+            ['100', 'aaa', '100'],
+            ['200', '2', '200'],
+            ['300', '3', '300'],
+            ['400', '4', '400'],
+            ['500', '5', '500']
+        ]
+
+        report = hxl.validate(GOOD_DATA, SCHEMA)
+        self.assertTrue(report['is_valid'])
+        self.assertEqual(0, report['stats']['total'])
+
+        report = hxl.validate(BAD_DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(1, report['stats']['total'])
+
+    def test_spellings(self):
+        SCHEMA = [
+            ['#valid_tag', '#valid_value+spelling'],
+            ['#indicator', 'true']
+        ]
+        DATA = [['#indicator']] + [['aaaaa'] for n in range(0,50)] + [['bbbbb'] for n in range(0,50)] + [['aabaa']]
+        report = hxl.validate(DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(1, report['stats']['total'])
+        
+    def test_spellings_multiple(self):
+        SCHEMA = [
+            ['#valid_tag', '#valid_value+spelling'],
+            ['#indicator', 'true']
+        ]
+        DATA = [['#indicator+xxx', '#indicator+yyy']] + [['aaaaa', 'aaaab'] for n in range(0,50)] + [['aaaab', 'aaaaa']]
+        report = hxl.validate(DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(2, report['stats']['total'])
+        
     def assertDatasetErrors(self, dataset, errors_expected, schema=None):
         errors = []
 
@@ -374,7 +728,7 @@ class TestValidateDataset(unittest.TestCase):
             errors.append(error)
 
         if schema is None:
-            schema = self.DEFAULT_SCHEMA
+            schema = self.SCHEMA
         schema = hxl.schema(schema, callback)
 
         if errors_expected == 0:
@@ -414,7 +768,7 @@ class TestLoad(unittest.TestCase):
     #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
 
 
-class TestJSON(unittest.TestCase):
+class TestJSONSchema(unittest.TestCase):
 
     def test_truthy(self):
         schema = hxl.schema(hxl.data(resolve_path('files/test_validation/truthy-schema.json'), allow_local=True))
@@ -428,6 +782,49 @@ class TestJSON(unittest.TestCase):
             ['xxx']
         ]
         self.assertTrue(schema.validate(hxl.data(GOOD_DATA)))
+
+class TestJSONReport(unittest.TestCase):
+
+    DATA = [
+        ['#xxx', '#yyy', '#zzz'],
+        ['100', 'abc', '2018-01-01'],
+        ['200', '300', '2018-01-02'],
+    ]
+
+    def test_top_level(self):
+        """Use the package-level alias"""
+        report = hxl.validate(self.DATA)
+
+    def test_default(self):
+        """Test successful validation against a default schema"""
+        report = hxl.validation.validate(self.DATA)
+        self.assertTrue(report['is_valid'])
+        for severity in ('total', 'info', 'warning', 'error'):
+            self.assertEqual(0, report['stats'][severity])
+
+    def test_errors(self):
+        """Test unsuccessful validation against an explicit schema"""
+        SCHEMA = [
+            ['#valid_tag', '#valid_datatype'],
+            ['#yyy', 'number'],
+            ['#xxx', 'url'],
+        ]
+        report = hxl.validation.validate(self.DATA, SCHEMA)
+        self.assertFalse(report['is_valid'])
+        self.assertEqual(3, report['stats']['total'])
+        self.assertEqual(2, len(report['issues']))
+
+#
+# Functions
+#
+
+def make_dataset(hashtags, values=[]):
+    return hxl.data([hashtags] + values)
+    
+
+def make_row(values, hashtags):
+    columns = [hxl.model.Column.parse(hashtag) for hashtag in hashtags]
+    return hxl.model.Row(columns, values=values)
 
 #
 # Test data

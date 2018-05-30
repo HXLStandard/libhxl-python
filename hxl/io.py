@@ -7,9 +7,9 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc, collections, csv, io, json, logging, re, requests, six, sys, xlrd
+import abc, collections, csv, io, io_wrapper, json, logging, re, requests, six, sys, xlrd, xml.sax
 
-import hxl
+import hxl, hxl.iati
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 FUZZY_HASHTAG_PERCENTAGE = 0.5
 
 # Patterns for URL munging
-GOOGLE_SHEETS_URL = r'^https?://docs.google.com/.*spreadsheets.*([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+))?.*$'
+GOOGLE_SHEETS_URL = r'^https?://[^/]+google.com/.*[^0-9A-Za-z_-]([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+))?.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)(?:/resource/([a-z0-9-]{36}))?$'
 
@@ -66,6 +66,19 @@ HTML5_MIME_TYPES = [
 HTML5_SIGS = [
     b"<!DO",
     b"\n<!D"
+]
+
+IATI_MIME_TYPES = [
+    'application/xml',
+]
+
+IATI_FILE_EXTS = [
+    'xml',
+]
+
+IATI_SIGS = [
+    b"<?xm",
+    b"<iat",
 ]
 
 
@@ -178,7 +191,8 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             # already buffered
             return stream
         else:
-            return io.BufferedReader(stream)
+            stream = io_wrapper.RawIOWrapper(stream)
+            return io.BufferedReader(io_wrapper.RawIOWrapper(stream))
 
     def match_sigs(sig, sigs):
         for s in sigs:
@@ -212,7 +226,11 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
         sig = input.peek(4)[:4]
 
-        if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
+        if (mime_type in IATI_MIME_TYPES) or (file_ext in IATI_FILE_EXTS) or match_sigs(sig, IATI_SIGS):
+            logger.debug('Making input from an IATI document')
+            return IATIInput(input)
+
+        elif (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
             logger.exception(hxl.HXLException(
                 "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {
@@ -374,9 +392,9 @@ class RequestResponseIOWrapper(io.RawIOBase):
 
     def readable(self):
         """Flag whether the content is readable."""
-        if hasattr(self.response.raw, 'readable'):
+        try:
             return self.response.raw.readable()
-        else:
+        except:
             return True
 
     @property
@@ -635,6 +653,22 @@ class ArrayInput(AbstractInput):
 
     def __iter__(self):
         return iter(self.data)
+
+
+class IATIInput(AbstractInput):
+
+    def __init__(self, input, encoding='utf-8'):
+        super().__init__()
+        self.input = input
+
+    def __exit__(self, value, type, traceback):
+        pass
+
+    def __iter__(self):
+        handler = hxl.iati.SAXHandler()
+        xml.sax.parse(self.input, handler)
+        for row in handler.rows:
+            yield row
 
 
 class HXLReader(hxl.model.Dataset):

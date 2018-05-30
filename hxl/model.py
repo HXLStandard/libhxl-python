@@ -58,6 +58,17 @@ class TagPattern(object):
         else:
             return False
 
+    def get_matching_columns(self, columns):
+        """Return a list of columns that match the pattern.
+        @param columns: a list of L{hxl.model.Column} objects
+        @returns: a list (possibly empty)
+        """
+        result = []
+        for column in columns:
+            if self.match(column):
+                result.append(column)
+        return result
+
     def find_column_index(self, columns):
         """Get the index of the first matching column.
         @param columns: a list of columns to check
@@ -853,7 +864,7 @@ class RowQuery(object):
         # try all the matching column values
         indices = self._get_saved_indices(row.columns)
         for i in indices:
-            if i < len(row.values) and row.values[i] and self.match_value(row.values[i], self.op):
+            if i < len(row.values) and self.match_value(row.values[i], self.op):
                 return True
         return False
 
@@ -881,7 +892,7 @@ class RowQuery(object):
         if isinstance(query, RowQuery):
             # already parsed
             return query
-        parts = re.split(r'([<>]=?|!?=|!?~|is)', hxl.datatypes.normalise_string(query), maxsplit=1)
+        parts = re.split(r'([<>]=?|!?=|!?~|\bis\b)', hxl.datatypes.normalise_string(query), maxsplit=1)
         pattern = TagPattern.parse(parts[0])
         op_name = hxl.datatypes.normalise_string(parts[1])
         op = RowQuery.OPERATOR_MAP.get(op_name)

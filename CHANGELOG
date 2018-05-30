@@ -1,3 +1,23 @@
+2018-05-31 Release 4.8
+	- added __version__ attribute to module
+	- refactor the hxl.validation module for better testing and
+	  maintainability
+	- add a new default schema with useful default tests
+	- allow multiple tag patterns (comma-separated) for #valid_tag in
+	  a HXL schema
+	- add a spelling validation test
+	- add a numeric-outlier validation test
+	- refactor CacheFilter to preserve row numbers
+	- add ability to generate a JSON-style validation report easily
+	  via hxl.validate()
+	- new requirement: python-io-wrapper
+	- RowFilter (with_rows, without_rows) no longer ignores empty
+	  cells; that will occasionally give some different results
+	- when multiple columns match a row query, it will succeed with at
+	  least one success
+	- fixed a bug parsing "is" row queries
+	- handle more Google Sheets URLs
+
 2018-05-11 Release 4.7.1
 	- hotfix for bug in date parsing
 

@@ -8,7 +8,7 @@ Utility functions for testing and normalising scalar-ish data types
 @see: U{http://hxlstandard.org}
 """
 
-import collections, datetime, dateutil, re, six, unidecode
+import collections, datetime, dateutil.parser, re, six, unidecode
 
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
@@ -20,9 +20,9 @@ WHITESPACE_PATTERN = re.compile('\s+', re.MULTILINE)
 ISO_DATE_PATTERN = re.compile('^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$', re.IGNORECASE)
 """Regular expression for basic ISO 8601 dates, plus extension to recognise quarters."""
 
-DEFAULT_DATE_1 = datetime.date(2015, 1, 1)
+DEFAULT_DATE_1 = datetime.datetime(2015, 1, 1)
 
-DEFAULT_DATE_2 = datetime.date(2016, 3, 3)
+DEFAULT_DATE_2 = datetime.datetime(2016, 3, 3)
 
 def normalise(s, col=None):
     """Intelligently normalise a value, optionally using the HXL hashtag for hints"""
@@ -48,26 +48,21 @@ def typeof(s, col=None):
 def flatten(value, is_subitem=False):
     """Flatten potential lists and dictionaries"""
 
-    # handle scalar values, escaping special list characters
-    if not hasattr(value, '__len__') or isinstance(value, six.string_types):
-        if value is None:
-            return ''
-        else:
-            return str(value).replace('\\', '\\\\').replace('{', '\\{').replace('=', '\\=').replace(',', '\\,') # already scalar
+    # keep it simple for now
+    if value is None:
+        return ''
+    else:
+        return str(value)
 
-    # handle JSON arrays and objects
-    elements = []
-    if isinstance(value, dict):
-        for key in value:
-            elements.append(flatten(key, True) + '=' + flatten(value[key], True))
-    else:
-        for item in value:
-            elements.append(flatten(item, True))
-    if is_subitem:
-        return '{' + ','.join(elements) + '}'
-    else:
-        return ','.join(elements)
     
+def is_truthy(s):
+    """Check for a boolean-type true value
+    @param s: the value to test
+    @returns: True if the value is truthy
+    """
+    return normalise_string(s) in ['y', 'yes', 't', 'true', '1']
+
+
 def is_empty(s):
     """Is this an empty value?
     None or whitespace only counts as empty; anything else doesn't.
@@ -76,6 +71,14 @@ def is_empty(s):
     """
     return (s is None or s == '' or str(s).isspace())
 
+
+def is_string(v):
+    """Test if a value is currently a string
+    @param v: the value to test
+    @returns: True if the value is a string
+    """
+    return isinstance(v, six.string_types)
+    
 def normalise_space(s):
     """Normalise whitespace only
     @param v: value to normalise
@@ -91,7 +94,6 @@ def normalise_space(s):
             s
         )
 
-
 def normalise_string(s):
     """Normalise a string.
     Remove all leading and trailing whitespace. Convert to lower
@@ -105,7 +107,7 @@ def normalise_string(s):
         s = str(s)
     return normalise_space(unidecode.unidecode(s)).lower()
 
-    
+
 def is_number(v):
     """Test if a value contains something recognisable as a number.
     @param v: the value (string, int, float, etc) to test
@@ -118,7 +120,6 @@ def is_number(v):
     except:
         return False
 
-    
 def normalise_number(v):
     """Attempt to convert a value to a number.
     Will convert to int type if it has no decimal places.
@@ -139,13 +140,41 @@ def is_date(v):
     @returns: True if usable as a date
     @see: L{normalise_date}
     """
-    v = normalise_string(v)
-    if ISO_DATE_PATTERN.match(v):
+    v = normalise_space(v)
+    result = ISO_DATE_PATTERN.match(v)
+    if result:
+        # lots of ugly ISO date hackery
+        # TODO not distinguishing non-leap-years yet
+
+        def in_range(n, min, max):
+            if n is None:
+                return True
+            else:
+                n = int(n)
+                return (n >= min and n <= max)
+
+        if not in_range(result.group('year'), 1900, 2100):
+            return False
+        if not in_range(result.group('month'), 1, 12):
+            return False
+        if result.group('day') is not None:
+            month = int(result.group('month'))
+            if month == 2 and not in_range(result.group('day'), 1, 29):
+                return False
+            elif month in [4, 6, 9, 11] and not in_range(result.group('day'), 1, 30):
+                return False
+            elif not in_range(result.group('day'), 1, 31):
+                return False
+        if not in_range(result.group('quarter'), 1, 4):
+            return False
+        if not in_range(result.group('week'), 0, 53):
+            return False
+
         return True
     try:
-        dateutil.parser.parse(normalise_string(v))
+        result = dateutil.parser.parse(v)
         return True
-    except:
+    except ValueError as e:
         return False
 
 def normalise_date(v):
@@ -172,6 +201,7 @@ def normalise_date(v):
         
 
     # First, try our quick ISO date pattern, extended to support quarter notation
+    v = normalise_space(v)
     result = ISO_DATE_PATTERN.match(v)
     if result:
         return make_date(

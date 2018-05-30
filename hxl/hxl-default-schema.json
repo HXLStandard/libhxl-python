@@ -1,0 +1,50 @@
+[
+    {
+        "#meta+comment": "Always a date",
+        "#valid_tag": "#date",
+        "#valid_severity": "error",
+        "#valid_datatype": "date"
+    },
+    {
+        "#meta+comment": "Always a number",
+        "#valid_tag": "#population,#affected,#inneed,#targeted,#reached,#indicator+num,#output+num,#value",
+        "#valid_severity": "error",
+        "#valid_datatype": "number"
+    },
+    {
+        "#meta+comment": "Gently point out numeric outliers",
+        "#valid_tag": "#population,#affected,#inneed,#targeted,#reached,#indicator+num,#output+num,#value",
+        "#valid_severity": "info",
+        "#valid_value+outliers": "true"
+    },
+    {
+        "#meta+comment": "Spell-check highly-repetitive values",
+        "#valid_tag": "#org,#sector,#subsector,#status,#beneficiary,#indicator+name,#access,#frequency,#item,#operations,#service,#channel,#modality,#currency,#impact,#group,#severity",
+        "#valid_severity": "warning",
+        "#valid_value+case": "true",
+        "#valid_value+spelling": "true",
+        "#description": "Rare value: check that it is correct"
+    },
+    {
+        "#meta+comment": "Placenames may benefit from spell checking",
+        "#valid_tag": "#region,#country,#adm1,#adm2,#adm3,#adm4,#adm5,#loc",
+        "#valid_severity": "info",
+        "#valid_value+case": "true",
+        "#valid_value+spelling": "true",
+        "#description": "Rare value: check that it is correct"
+    },
+    {
+        "#meta+comment": "Look for consistent datatypes with indicators",
+        "#valid_tag": "#indicator",
+        "#valid_severity": "warning",
+        "#valid_datatype+consistent": "true",
+        "#description": "Possibly inconsistent datatype for this indicator"
+    },
+    {
+        "#meta+comment": "Detect sloppy whitespace anywhere",
+        "#valid_tag": "#*",
+        "#valid_severity": "warning",
+        "#valid_value+whitespace": "true",
+        "#description": "Extra whitespace can affect reporting and visualisation"
+    }
+]

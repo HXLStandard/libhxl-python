@@ -9,21 +9,6 @@ License: Public Domain
 import hxl.datatypes, unittest
 
 
-class TestFlatten(unittest.TestCase):
-
-    def test_scalar(self):
-        self.assertEqual('foo', hxl.datatypes.flatten('foo'))
-        self.assertEqual('3', hxl.datatypes.flatten(3))
-        self.assertEqual('a\\,b', hxl.datatypes.flatten('a,b'))
-
-    def test_list(self):
-        self.assertEqual('a,b,c', hxl.datatypes.flatten(['a', 'b', 'c']))
-        self.assertEqual('a,{b,c,d},e', hxl.datatypes.flatten(['a', ['b', 'c', 'd'], 'e']))
-
-    def test_dict(self):
-        self.assertEqual('a=1,b=2,c=3', hxl.datatypes.flatten({'a':1, 'b':2, 'c':3}))
-        self.assertEqual('a=1,b={c=3,d=4},e=5', hxl.datatypes.flatten({'a':1, 'b':{'c':3, 'd':4}, 'e':5}))
-
 class TestStrings(unittest.TestCase):
 
     def test_empty(self):
@@ -81,8 +66,23 @@ class TestDates(unittest.TestCase):
         self.assertTrue(hxl.datatypes.is_date('2018-03'))
         self.assertTrue(hxl.datatypes.is_date('2018-03-01'))
 
+        # edge cases
+        self.assertFalse(hxl.datatypes.is_date('2018-04-31'))
+        self.assertFalse(hxl.datatypes.is_date('2018-13-01'))
+        self.assertFalse(hxl.datatypes.is_date('2018W54'))
+
+    def test_iso_datetime(self):
+        self.assertTrue(hxl.datatypes.is_date("2011-01-01T00:00:00.000Z"))
+        self.assertEqual('2011-01-01', hxl.datatypes.normalise_date("2011-01-01T00:00:00.000Z"))
+
+    def test_rfc822_datetime(self):
+        self.assertTrue(hxl.datatypes.is_date("30 May 2018 02:57:50 GMT"))
+        self.assertTrue(hxl.datatypes.is_date("Thu, 30 May 2018 02:57:50 GMT"))
+        self.assertEqual('2018-05-30', hxl.datatypes.normalise_date("Thu, 30 May 2018 02:57:50 GMT"))
+
     def test_is_quarter(self):
         self.assertTrue(hxl.datatypes.is_date('2018Q2'))
+        self.assertFalse(hxl.datatypes.is_date('2018Q5'))
 
     def test_is_non_iso_date(self):
         self.assertTrue(hxl.datatypes.is_date('Feb 2/17'))
