@@ -8,7 +8,7 @@ Utility functions for testing and normalising scalar-ish data types
 @see: U{http://hxlstandard.org}
 """
 
-import collections, datetime, dateutil, re, six, unidecode
+import collections, datetime, dateutil.parser, re, six, unidecode
 
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
@@ -20,9 +20,9 @@ WHITESPACE_PATTERN = re.compile('\s+', re.MULTILINE)
 ISO_DATE_PATTERN = re.compile('^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$', re.IGNORECASE)
 """Regular expression for basic ISO 8601 dates, plus extension to recognise quarters."""
 
-DEFAULT_DATE_1 = datetime.date(2015, 1, 1)
+DEFAULT_DATE_1 = datetime.datetime(2015, 1, 1)
 
-DEFAULT_DATE_2 = datetime.date(2016, 3, 3)
+DEFAULT_DATE_2 = datetime.datetime(2016, 3, 3)
 
 def normalise(s, col=None):
     """Intelligently normalise a value, optionally using the HXL hashtag for hints"""
@@ -140,7 +140,7 @@ def is_date(v):
     @returns: True if usable as a date
     @see: L{normalise_date}
     """
-    v = normalise_string(v)
+    v = normalise_space(v)
     result = ISO_DATE_PATTERN.match(v)
     if result:
         # lots of ugly ISO date hackery
@@ -172,9 +172,9 @@ def is_date(v):
 
         return True
     try:
-        dateutil.parser.parse(normalise_string(v))
+        result = dateutil.parser.parse(v)
         return True
-    except:
+    except ValueError as e:
         return False
 
 def normalise_date(v):
@@ -201,7 +201,7 @@ def normalise_date(v):
         
 
     # First, try our quick ISO date pattern, extended to support quarter notation
-    v = normalise_string(v)
+    v = normalise_space(v)
     result = ISO_DATE_PATTERN.match(v)
     if result:
         return make_date(
