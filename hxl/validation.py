@@ -1164,12 +1164,12 @@ class Schema(object):
         needs_scan = False # assume we don't need a pre-scan
 
         # do we need a cached, in-memory dataset?
-        if not source.is_cached:
-            for rule in self.rules:
-                if rule.needs_scan():
-                    needs_scan = True
+        for rule in self.rules:
+            if rule.needs_scan():
+                needs_scan = True
+                if not source.is_cached:
                     source = source.cache()
-                    break
+                break
 
         # initial setup
         self.start()
