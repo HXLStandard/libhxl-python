@@ -1,5 +1,5 @@
 2018-05-31 Release 4.8
-	- added __version__ attribute to module
+	- add __version__ attribute to module
 	- refactor the hxl.validation module for better testing and
 	  maintainability
 	- add a new default schema with useful default tests
@@ -17,6 +17,7 @@
 	  least one success
 	- fixed a bug parsing "is" row queries
 	- handle more Google Sheets URLs
+	- recognise datetime formats as dates
 
 2018-05-11 Release 4.7.1
 	- hotfix for bug in date parsing
