@@ -1,3 +1,6 @@
+2018-05-31 Release 4.8.1
+	- hotfix for installation problem with 4.8 (in a clean install)
+
 2018-05-31 Release 4.8
 	- add __version__ attribute to module
 	- refactor the hxl.validation module for better testing and
