@@ -60,9 +60,27 @@
 </pre>
 
 <hr />
-<p>Read raw XLS input from a URL or filename. If sheet number is not 
-  specified, will scan for the first tab with a HXL tag row.</p>
+<p>Iterable: Read raw XLS input from a URL or filename. If sheet number 
+  is not specified, will scan for the first tab with a HXL tag row.</p>
 
+<!-- ==================== NESTED CLASSES ==================== -->
+<a name="section-NestedClasses"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Nested Classes</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.io.ExcelInput.ExcelIter-class.html" class="summary-name">ExcelIter</a><br />
+      Internal iterator class for reading through an Excel sheet multiple
+        times.
+    </td>
+  </tr>
+</table>
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -98,44 +116,9 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.io.ExcelInput-class.html#__next__" class="summary-sig-name">__next__</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.io.ExcelInput-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__next__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="next"></a><span class="summary-sig-name">next</span>(<span class="summary-sig-arg">self</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__next__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.io.ExcelInput-class.html#__exit__" class="summary-sig-name">__exit__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">value</span>,
-        <span class="summary-sig-arg">type</span>,
-        <span class="summary-sig-arg">traceback</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__exit__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__iter__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -147,7 +130,7 @@
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.io.AbstractInput-class.html">AbstractInput</a></code></b>:
       <code><a href="hxl.io.AbstractInput-class.html#__enter__">__enter__</a></code>,
-      <code><a href="hxl.io.AbstractInput-class.html#__iter__">__iter__</a></code>
+      <code><a href="hxl.io.AbstractInput-class.html#__exit__">__exit__</a></code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__delattr__</code>,
@@ -234,49 +217,24 @@
   </dl>
 </td></tr></table>
 </div>
-<a name="__next__"></a>
+<a name="__iter__"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__next__</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__iter__</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__next__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__iter__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
   
   <dl class="fields">
     <dt>Overrides:
-        <a href="hxl.io.AbstractInput-class.html#__next__">AbstractInput.__next__</a>
-    </dt>
-  </dl>
-</td></tr></table>
-</div>
-<a name="__exit__"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__exit__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">value</span>,
-        <span class="sig-arg">type</span>,
-        <span class="sig-arg">traceback</span>)</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#ExcelInput.__exit__">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  
-  <dl class="fields">
-    <dt>Overrides:
-        <a href="hxl.io.AbstractInput-class.html#__exit__">AbstractInput.__exit__</a>
+        <a href="hxl.io.AbstractInput-class.html#__iter__">AbstractInput.__iter__</a>
     </dt>
   </dl>
 </td></tr></table>
@@ -309,7 +267,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

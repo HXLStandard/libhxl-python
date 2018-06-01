@@ -58,10 +58,10 @@ object --+
 </pre>
 
 <hr />
-<p>Pattern for matching a tag.</p>
-  <p>#tag matches #tag with any attributes #tag+foo matches #tag with foo 
-  among its attributes #tag-foo matches #tag with foo *not* among its 
-  attributes #tag+foo-bar matches #tag with foo but not bar</p>
+<p>Pattern for matching a HXL hashtag and attributes #tag matches #tag 
+  with any attributes #tag+foo matches #tag with foo among its attributes 
+  #tag-foo matches #tag with foo *not* among its attributes #tag+foo-bar 
+  matches #tag with foo but not bar</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -97,7 +97,23 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="match"></a><span class="summary-sig-name">match</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a name="is_wildcard"></a><span class="summary-sig-name">is_wildcard</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.is_wildcard">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.TagPattern-class.html#match" class="summary-sig-name">match</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">column</span>)</span><br />
       Check whether a Column matches this pattern.</td>
           <td align="right" valign="top">
@@ -115,7 +131,25 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="find_column_index"></a><span class="summary-sig-name">find_column_index</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="hxl.model.TagPattern-class.html#get_matching_columns" class="summary-sig-name">get_matching_columns</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">columns</span>)</span><br />
+      Return a list of columns that match the pattern.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.get_matching_columns">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.TagPattern-class.html#find_column_index" class="summary-sig-name">find_column_index</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">columns</span>)</span><br />
       Get the index of the first matching column.</td>
           <td align="right" valign="top">
@@ -238,6 +272,24 @@ object --+
       
     </td>
   </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.TagPattern-class.html#match_list" class="summary-sig-name">match_list</a>(<span class="summary-sig-arg">column</span>,
+        <span class="summary-sig-arg">patterns</span>)</span><br />
+      Test if a column matches any of the patterns in a list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.match_list">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
 </table>
 <!-- ==================== CLASS VARIABLES ==================== -->
 <a name="section-ClassVariables"></a>
@@ -251,8 +303,8 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.TagPattern-class.html#PATTERN" class="summary-name">PATTERN</a> = <code title="r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token= hxl.common.T\
-OKEN_PATTERN)">r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(t<code class="variable-ellipsis">...</code></code>
+        <a href="hxl.model.TagPattern-class.html#PATTERN" class="summary-name">PATTERN</a> = <code title="r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*$'.format(token= hxl.datat\
+ypes.TOKEN_PATTERN)">r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*$'.forma<code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 </table>
@@ -301,9 +353,95 @@ OKEN_PATTERN)">r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(t<code class="
   
   <p>Like a column, but has a whitelist and a blacklist.</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>tag</code></strong> - the basic hashtag (without attributes)</li>
+        <li><strong class="pname"><code>include_attributes</code></strong> - a list of attributes that must be present</li>
+        <li><strong class="pname"><code>exclude_attributes</code></strong> - a list of attributes that must not be present</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="match"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">match</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">column</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.match">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Check whether a Column matches this pattern.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>column</code></strong> - the column to check</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if the column is a match</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_matching_columns"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_matching_columns</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">columns</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.get_matching_columns">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return a list of columns that match the pattern.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>columns</code></strong> - a list of <a href="hxl.model.Column-class.html" 
+          class="link">hxl.model.Column</a> objects</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a list (possibly empty)</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="find_column_index"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">find_column_index</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">columns</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.find_column_index">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get the index of the first matching column.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>columns</code></strong> - a list of columns to check</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the 0-based index of the first matching column, or None for no 
+          match</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -377,6 +515,34 @@ OKEN_PATTERN)">r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(t<code class="
   </dl>
 </td></tr></table>
 </div>
+<a name="match_list"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">match_list</span>(<span class="sig-arg">column</span>,
+        <span class="sig-arg">patterns</span>)</span>
+    <br /><em class="fname">Static Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#TagPattern.match_list">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test if a column matches any of the patterns in a list.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>column</code></strong> - the column to test</li>
+        <li><strong class="pname"><code>patterns</code></strong> - a list of zero or more patterns.</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if there is a match</dd>
+  </dl>
+</td></tr></table>
+</div>
 <br />
 <!-- ==================== CLASS VARIABLE DETAILS ==================== -->
 <a name="section-ClassVariableDetails"></a>
@@ -399,8 +565,8 @@ OKEN_PATTERN)">r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(t<code class="
   <dl class="fields">
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
-r'^\s*#?({token})((?:\s*[+-]{token})*)\s*$'.format(token= hxl.common.T<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-OKEN_PATTERN)
+r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*$'.format(token= hxl.datat<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ypes.TOKEN_PATTERN)
 </pre></td></tr></table>
 </dd>
   </dl>
@@ -434,7 +600,7 @@ OKEN_PATTERN)
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

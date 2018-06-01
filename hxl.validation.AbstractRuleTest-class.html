@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>hxl.validation.AbstractRuleTest</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="hxl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="hxl-module.html">Package&nbsp;hxl</a> ::
+        <a href="hxl.validation-module.html">Module&nbsp;validation</a> ::
+        Class&nbsp;AbstractRuleTest
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class AbstractRuleTest</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest">source&nbsp;code</a></span></p>
+<pre class="base-tree">
+object --+
+         |
+        <strong class="uidshort">AbstractRuleTest</strong>
+</pre>
+
+<hr />
+<pre class="literalblock">
+Base class for a single test inside a validation rule.
+
+Workflow (triggered by \L{SchemaRule}):
+
+- needs_scan()
+- start()
+- scan_row() for each row (only if needs_scan() returned True)
+- scan_cell() for each non-empty matching cell (only if needs_scan() returned True)
+- end_scan() (only if needs_scan() returned True)
+- validate_dataset()
+- validate_row() for each row
+- validate_cell() for each matching non-empty cell in each row
+- end()
+
+</pre>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Methods</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">callback</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Set up a schema test.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#needs_scan" class="summary-sig-name">needs_scan</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Report whether this test requires a cached dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.needs_scan">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#start" class="summary-sig-name">start</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Setup code to run before validating each dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.start">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#end" class="summary-sig-name">end</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Code to run after validating each dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.end">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#scan_row" class="summary-sig-name">scan_row</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>,
+        <span class="summary-sig-arg">indices</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tag_pattern</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Scan a row of the dataset to collect information.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.scan_row">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#scan_cell" class="summary-sig-name">scan_cell</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>,
+        <span class="summary-sig-arg">row</span>,
+        <span class="summary-sig-arg">column</span>)</span><br />
+      Pre-scan a single cell to collect information.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.scan_cell">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#end_scan" class="summary-sig-name">end_scan</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Clean-up calculations after scanning and before validation.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.end_scan">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#validate_dataset" class="summary-sig-name">validate_dataset</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dataset</span>,
+        <span class="summary-sig-arg">indices</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tag_pattern</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Apply test at the dataset level Called before validate_row() or 
+      validate_value() Will report errors via the test's \<i>callback</i>, 
+      if available.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.validate_dataset">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#validate_row" class="summary-sig-name">validate_row</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>,
+        <span class="summary-sig-arg">indices</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tag_pattern</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Apply test at the row level Called for each row before 
+      validate_cell() calls.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.validate_row">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.AbstractRuleTest-class.html#validate_cell" class="summary-sig-name">validate_cell</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>,
+        <span class="summary-sig-arg">row</span>,
+        <span class="summary-sig-arg">column</span>)</span><br />
+      Apply test at the cell level Called for each matching non-empty 
+      value.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.validate_cell">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_indices"></a><span class="summary-sig-name">get_indices</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">indices</span>,
+        <span class="summary-sig-arg">tag_pattern</span>,
+        <span class="summary-sig-arg">columns</span>)</span><br />
+      Get a set of column indices by hook or by crook, based on what we 
+      have</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.get_indices">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="report_error"></a><span class="summary-sig-name">report_error</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">message</span>,
+        <span class="summary-sig-arg">row</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">column</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">value</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">suggested_value</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">scope</span>=<span class="summary-sig-default">'cell'</span>)</span><br />
+      Report an error from this test, if there is a callback function 
+      available.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.report_error">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Properties</span></td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Method Details</span></td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">callback</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Set up a schema test.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>callback</code></strong> - a callback function to receive error reports</li>
+    </ul></dd>
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="needs_scan"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">needs_scan</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.needs_scan">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Report whether this test requires a cached dataset.</p>
+  <p>A cached dataset is one that can be processed more than once. It 
+  requires more memory and processing time, so return True only if 
+  absolutely necessary.</p>
+  <p>If this method returns True, then the validation engine will call 
+  scan_row() for each row in the dataset, scan_cell() for each non-empty 
+  matching cell, and end_scan() before invoking any of the validate_* 
+  methods.</p>
+  <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>True if the test requires a cached dataset.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="start"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">start</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.start">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Setup code to run before validating each dataset. This code should not
+  report errors, since it hasn't seen the data yet.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="end"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">end</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.end">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Code to run after validating each dataset. Will report errors via the 
+  test's \<i>callback</i>, if available.</p>
+  <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>True if there are no new validation errors</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="scan_row"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">scan_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>,
+        <span class="sig-arg">indices</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tag_pattern</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.scan_row">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Scan a row of the dataset to collect information.</p>
+  <p>Will be called for each row in the dataset, but only if needs_scan() 
+  returns True.</p>
+  <p>This method does not report any errors; it simply collects information
+  for the validate_*() methods to use later.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>row</code></strong> - the <a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> object to pre-scan.</li>
+        <li><strong class="pname"><code>indices</code></strong> - optional pre-compiled indices for the rule to look at (in lieu of
+          tag_pattern)</li>
+        <li><strong class="pname"><code>tag_pattern</code></strong> - optional tag pattern for the rule to use.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="scan_cell"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">scan_cell</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">value</span>,
+        <span class="sig-arg">row</span>,
+        <span class="sig-arg">column</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.scan_cell">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Pre-scan a single cell to collect information. Will be called for each
+  maching non-empty cell in each row, but only if needs_scan() returns 
+  True.</p>
+  <p>This method does not report any errors; it simply collects information
+  for the validate_*() methods to use later.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>value</code></strong> - the non-empty value to validate</li>
+        <li><strong class="pname"><code>row</code></strong> - a hxl.model.Row object for location</li>
+        <li><strong class="pname"><code>column</code></strong> - a hxl.model.Column object for location</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="end_scan"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">end_scan</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.end_scan">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Clean-up calculations after scanning and before validation. Will be 
+  called only if needs_scan() returned True Does not report any errors</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="validate_dataset"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate_dataset</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dataset</span>,
+        <span class="sig-arg">indices</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tag_pattern</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.validate_dataset">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Apply test at the dataset level Called before validate_row() or 
+  validate_value() Will report errors via the test's \<i>callback</i>, if 
+  available.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>dataset</code></strong> - a hxl.model.Dataset object to validate</li>
+        <li><strong class="pname"><code>indices</code></strong> - optional pre-compiled indices for columns matching tag_pattern</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if there are no new validation errors.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="validate_row"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>,
+        <span class="sig-arg">indices</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tag_pattern</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.validate_row">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Apply test at the row level Called for each row before validate_cell()
+  calls. Will report errors via the test's \<i>callback</i>, if 
+  available.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>row</code></strong> - a hxl.model.Row object to validate</li>
+        <li><strong class="pname"><code>indices</code></strong> - optional pre-compiled indices for columns matching tag_pattern</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if there are no new validation errors.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="validate_cell"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate_cell</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">value</span>,
+        <span class="sig-arg">row</span>,
+        <span class="sig-arg">column</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#AbstractRuleTest.validate_cell">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Apply test at the cell level Called for each matching non-empty value.
+  Will also report errors via the test's \<i>callback</i>, if 
+  available.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>value</code></strong> - the non-empty value to validate</li>
+        <li><strong class="pname"><code>row</code></strong> - a hxl.model.Row object for location</li>
+        <li><strong class="pname"><code>column</code></strong> - a hxl.model.Column object for location</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>True if there are no new validation errors.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="hxl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1
+    on Fri Jun  1 18:20:16 2018
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

@@ -50,10 +50,50 @@
 </table>
 <!-- ==================== MODULE DESCRIPTION ==================== -->
 <h1 class="epydoc">Module validation</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.validation-pysrc.html">source&nbsp;code</a></span></p>
-<p>Validation code for the Humanitarian Exchange Language (HXL) v1.0 
-  David Megginson Started October 2014</p>
-  <p>License: Public Domain Documentation: 
-  https://github.com/HXLStandard/libhxl-python/wiki</p>
+<pre class="literalblock">
+Validation code for the Humanitarian Exchange Language (HXL) v1.0
+David Megginson
+Started October 2014
+
+License: Public Domain
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+
+A \L{Schema} is the top-level class for validating a HXL dataset. The
+easiest way to create a schema is via the hxl.schema() method. The
+validate() function validates a dataset. Here is a simple validation
+example:
+
+    def callback(e):
+        print(&quot;Validation error:&quot;, e.message)
+
+    source = hxl.data(data_url)
+    if not hxl.schema(schema_url, callback=callback).validate(source):
+        print('Validation failed')
+
+Each schema contains one or more \L{SchemaRule} objects.
+
+Each schema rule contains one or more objects implementing
+\L{AbstractRuleTest}. To add a new test, create a class extending
+AbstractRuleTest, override the methods you need (validate_cell() is
+the most common), then add code to Schema.parse() method to parse and
+create your new test from the HXL schema.
+
+Validation tests go through the following workflow:
+
+- needs_scan() to check if the test needs multiple passes
+- start()
+- scan_row(\L{hxl.model.Row}) for each row in the dataset (only if needs_scan() returned True)
+- scan_cell(value, \L{hxl.model.Row}, L\{hxl.model.Column}) for each non-empty cell in each row (only if needs_scan() returned True)
+- end_scan() (only if needs_scan() returned True)
+- validate_dataset(\L{hxl.model.Dataset})
+- validate_row(\L{hxl.model.Row}) for each row (row-level validations only)
+- validate_cell(value, \L{hxl.model.Row}, \L{hxl.model.Column}) for each cell in each row
+- end()
+
+Any failure means that the entire test, rule, and schema fail
+validation, though error reporting will continue to the end.
+
+</pre>
 
 <!-- ==================== CLASSES ==================== -->
 <a name="section-Classes"></a>
@@ -75,8 +115,135 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a href="hxl.validation.AbstractRuleTest-class.html" class="summary-name">AbstractRuleTest</a><br />
+      Base class for a single test inside a validation rule.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.RequiredTest-class.html" class="summary-name">RequiredTest</a><br />
+      Test min/max occurrence HXL schema: #valid_required If the columns 
+      don't exist at all, report only a single error.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.DatatypeTest-class.html" class="summary-name">DatatypeTest</a><br />
+      Test for a specified datatype HXL schema: #valid_datatype-consistent 
+      See also \<code class="link">ConsistentDatatypeTest</code>, which 
+      infers the most-common datatype.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.RangeTest-class.html" class="summary-name">RangeTest</a><br />
+      Test for a range of numbers or strings HXL schema: #valid_value+min 
+      and #valid_value+max This class will try to determine whether to use 
+      date sorting, numeric sorting, or lexical sorting to determine what 
+      is within a range.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.WhitespaceTest-class.html" class="summary-name">WhitespaceTest</a><br />
+      Test for irregular whitespace in a cell HXL schema: 
+      #valid_value+whitespace Irregular whitespace is any leading or 
+      trailing space, or anything but a single space character inside a 
+      string
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.RegexTest-class.html" class="summary-name">RegexTest</a><br />
+      Test that non-empty values match a regular expression HXL schema: 
+      #valid_value+regex The regex is unanchored, so use '^' or '$' to 
+      anchor if needed Whitespace is not normalised before matching
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.UniqueValueTest-class.html" class="summary-name">UniqueValueTest</a><br />
+      Test that individual values are unique HXL schema: #valid_unique-key 
+      Every value in any column matching tag_pattern must be unique.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.UniqueRowTest-class.html" class="summary-name">UniqueRowTest</a><br />
+      Test for duplicate rows, optionally using a list of tag patterns as a
+      key HXL schema: #valid_unique+key If there are no tag patterns 
+      provided, uses the entire row to make the key Note that the target 
+      tag pattern (#valid_tag) is irrelevant for this test.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.EnumerationTest-class.html" class="summary-name">EnumerationTest</a><br />
+      Test against a list of enumerated values HXL schema: 
+      #valid_value+list #valid_value+url #valid_value+case This test can 
+      also hold an extra error to report if there was a problem e.g.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.CorrelationTest-class.html" class="summary-name">CorrelationTest</a><br />
+      Test for correlations with other values #valid_correlation Supply a 
+      list of tag patterns, and report any outliers that don't correlate 
+      with those columns.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.ConsistentDatatypesTest-class.html" class="summary-name">ConsistentDatatypesTest</a><br />
+      Check for consistent datatypes in a column.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.SpellingTest-class.html" class="summary-name">SpellingTest</a><br />
+      Detect spelling outliers in a column HXL schema: 
+      #valid_value+spelling Will treat numbers and dates as strings, so use
+      this only in columns where you expect text, and frequently-repeated 
+      values (e.g.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.validation.NumericOutlierTest-class.html" class="summary-name">NumericOutlierTest</a><br />
+      Detect outliers among matching values Will skip any tagset with a 
+      coefficient of variation &gt; 1.0
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="hxl.validation.SchemaRule-class.html" class="summary-name">SchemaRule</a><br />
-      Validation rule for a single HXL hashtag.
+      A single rule within a schema.
     </td>
   </tr>
 <tr>
@@ -102,9 +269,87 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.validation-module.html#schema" class="summary-sig-name">schema</a>(<span class="summary-sig-arg">origin</span>=<span class="summary-sig-default">None</span>,
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#get_column_indices" class="summary-sig-name">get_column_indices</a>(<span class="summary-sig-arg">tag_pattern</span>,
+        <span class="summary-sig-arg">columns</span>)</span><br />
+      Return a list of column indices matching tag_pattern</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#get_column_indices">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#find_closest_match" class="summary-sig-name">find_closest_match</a>(<span class="summary-sig-arg">s</span>,
+        <span class="summary-sig-arg">allowed_values</span>)</span><br />
+      Find the closest match for a value from a list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#find_closest_match">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#get_common_prefix_len" class="summary-sig-name">get_common_prefix_len</a>(<span class="summary-sig-arg">s1</span>,
+        <span class="summary-sig-arg">s2</span>)</span><br />
+      Return the longest common prefix of two strings Adopted from example 
+      in 
+      https://stackoverflow.com/questions/9114402/regexp-finding-longest-common-prefix-of-two-strings</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#get_common_prefix_len">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#get_edit_distance" class="summary-sig-name">get_edit_distance</a>(<span class="summary-sig-arg">s1</span>,
+        <span class="summary-sig-arg">s2</span>)</span><br />
+      Calculate the Levenshtein distance between two normalised strings 
+      Adopted from example in 
+      https://stackoverflow.com/questions/2460177/edit-distance-in-python 
+      See https://en.wikipedia.org/wiki/Edit_distance</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#get_edit_distance">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#schema" class="summary-sig-name">schema</a>(<span class="summary-sig-arg">source</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">callback</span>=<span class="summary-sig-default">None</span>)</span><br />
-      Convenience method for reading a HXL schema.</td>
+      Convenience function for making a schema Imported into __init__, and 
+      usually called as hxl.schema(source, callback).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#schema">source&nbsp;code</a></span>
             
@@ -120,17 +365,104 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.validation-module.html#parse_schema" class="summary-sig-name">parse_schema</a>(<span class="summary-sig-arg">source</span>,
-        <span class="summary-sig-arg">callback</span>)</span><br />
-      Load a HXL schema from the provided input stream, or load default 
-      schema.</td>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#validate" class="summary-sig-name">validate</a>(<span class="summary-sig-arg">data</span>,
+        <span class="summary-sig-arg">schema</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Convenience function for validating HXL data.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.validation-pysrc.html#parse_schema">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.validation-pysrc.html#validate">source&nbsp;code</a></span>
             
           </td>
         </tr>
       </table>
       
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#make_json_report" class="summary-sig-name">make_json_report</a>(<span class="summary-sig-arg">status</span>,
+        <span class="summary-sig-arg">issue_map</span>,
+        <span class="summary-sig-arg">schema_url</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">data_url</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Generate a JSON error report from a dict of errors</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#make_json_report">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation-module.html#make_json_issue" class="summary-sig-name">make_json_issue</a>(<span class="summary-sig-arg">rule_id</span>,
+        <span class="summary-sig-arg">locations</span>)</span><br />
+      Create an issue (with list of locations) for a JSON validation report...</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#make_json_issue">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="make_json_location"></a><span class="summary-sig-name">make_json_location</span>(<span class="summary-sig-arg">location</span>)</span><br />
+      Create a single location for a JSON validation report</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#make_json_location">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="make_rule_hash"></a><span class="summary-sig-name">make_rule_hash</span>(<span class="summary-sig-arg">rule</span>)</span><br />
+      Make a good-enough hash for a rule.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#make_rule_hash">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="logger"></a><span class="summary-name">logger</span> = <code title="logging.getLogger(__name__)">logging.getLogger(__name__)</code>
     </td>
   </tr>
 </table>
@@ -143,6 +475,123 @@
     <span class="table-header">Function Details</span></td>
 </tr>
 </table>
+<a name="get_column_indices"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_column_indices</span>(<span class="sig-arg">tag_pattern</span>,
+        <span class="sig-arg">columns</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#get_column_indices">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return a list of column indices matching tag_pattern</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>tag_pattern</code></strong> - the hxl.model.TagPattern to test</li>
+        <li><strong class="pname"><code>columns</code></strong> - a sequence of hxl.model.Column objects to test</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a possibly-empty sequence of integer indices into columns</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="find_closest_match"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">find_closest_match</span>(<span class="sig-arg">s</span>,
+        <span class="sig-arg">allowed_values</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#find_closest_match">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Find the closest match for a value from a list. This is not super 
+  efficient right now; look at https://en.wikipedia.org/wiki/Edit_distance 
+  for better algorithms. Uses a cutoff of len(s)/3 for candidate matches, 
+  and if two matches have the same edit distance, prefers the one with the 
+  longer common prefix.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s</code></strong> - the misspelled string to check</li>
+        <li><strong class="pname"><code>allowed_values</code></strong> - a list of allowed values</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the best match, or None if there was no candidate</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_common_prefix_len"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_common_prefix_len</span>(<span class="sig-arg">s1</span>,
+        <span class="sig-arg">s2</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#get_common_prefix_len">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return the longest common prefix of two strings Adopted from example 
+  in 
+  https://stackoverflow.com/questions/9114402/regexp-finding-longest-common-prefix-of-two-strings</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s1</code></strong> - the first string to compare</li>
+        <li><strong class="pname"><code>s2</code></strong> - the second string to compare</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the length of the longest common prefix of the two strings</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_edit_distance"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_edit_distance</span>(<span class="sig-arg">s1</span>,
+        <span class="sig-arg">s2</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#get_edit_distance">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculate the Levenshtein distance between two normalised strings 
+  Adopted from example in 
+  https://stackoverflow.com/questions/2460177/edit-distance-in-python See 
+  https://en.wikipedia.org/wiki/Edit_distance</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>s1</code></strong> - the first string to compare</li>
+        <li><strong class="pname"><code>s2</code></strong> - the second string to compare</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>an integer giving the edit distance</dd>
+  </dl>
+</td></tr></table>
+</div>
 <a name="schema"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -150,7 +599,7 @@
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">schema</span>(<span class="sig-arg">origin</span>=<span class="sig-default">None</span>,
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">schema</span>(<span class="sig-arg">source</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">callback</span>=<span class="sig-default">None</span>)</span>
   </h3>
   </td><td align="right" valign="top"
@@ -158,32 +607,107 @@
     </td>
   </tr></table>
   
-  <p>Convenience method for reading a HXL schema. If passed an existing 
-  Schema, simply returns it. @param origin a HXL data provider, file 
-  object, array, or string (representing a URL or file name).</p>
+  <p>Convenience function for making a schema Imported into __init__, and 
+  usually called as hxl.schema(source, callback). The callback, if 
+  provided, will receive a HXLValidationException object for each error</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>source</code></strong> - something that can be used as a HXL data source</li>
+        <li><strong class="pname"><code>callback</code></strong> - the validation callback function to use</li>
+    </ul></dd>
   </dl>
 </td></tr></table>
 </div>
-<a name="parse_schema"></a>
+<a name="validate"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_schema</span>(<span class="sig-arg">source</span>,
-        <span class="sig-arg">callback</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate</span>(<span class="sig-arg">data</span>,
+        <span class="sig-arg">schema</span>=<span class="sig-default">None</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.validation-pysrc.html#parse_schema">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#validate">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Load a HXL schema from the provided input stream, or load default 
-  schema. @param source HXL data source for the scheme (e.g. a HXLReader or
-  filter) @param callback a callback function for reporting errors 
-  (receives a HXLValidationException)</p>
+  <p>Convenience function for validating HXL data. The is_valid parameter 
+  in the report will be a True/False value for the result.</p>
+  <p>If you want to do anything tricky, you can pass pre-cooked hxl.data() 
+  parameters in, e.g.</p>
+  <p>result = hxl.validate(hxl.data('foo.csv', allow_local=True), 
+  hxl.data('schema.csv', allow_local=True))</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> - the data to validate (a URL or anything else accepted by \<a 
+          href="hxl.io-module.html#data" class="link">hxl.data</a>)</li>
+        <li><strong class="pname"><code>schema</code></strong> - the schema to validate against (anything accepted by <a 
+          href="hxl.io-module.html#data" class="link">hxl.data</a>), or 
+          None (default) to use the built-in schema.</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a JSON validation report as documented at 
+          https://github.com/HXLStandard/hxl-proxy/wiki/Validation-reports</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="make_json_report"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">make_json_report</span>(<span class="sig-arg">status</span>,
+        <span class="sig-arg">issue_map</span>,
+        <span class="sig-arg">schema_url</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">data_url</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#make_json_report">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Generate a JSON error report from a dict of errors</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>status</code></strong> - the validation status (boolean)</li>
+        <li><strong class="pname"><code>issue_map</code></strong> - a dict of lists of \<a 
+          href="hxl.validation.HXLValidationException-class.html" 
+          class="link">HXLValidationException</a> objects grouped by rule 
+          hash</li>
+        <li><strong class="pname"><code>data_url</code></strong> - the original URL of the data, if available</li>
+        <li><strong class="pname"><code>schema_url</code></strong> - the original URL of the schema, if available</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="make_json_issue"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">make_json_issue</span>(<span class="sig-arg">rule_id</span>,
+        <span class="sig-arg">locations</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#make_json_issue">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Create an issue (with list of locations) for a JSON validation report
+@param rule_id: the hash for the rule (used to group locations)
+@param locations: a list of \L{HXLValidation
+
+</pre>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -216,7 +740,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

@@ -77,7 +77,8 @@ object --+
           <td><span class="summary-sig"><a href="hxl.model.Row-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">columns</span>,
         <span class="summary-sig-arg">values</span>=<span class="summary-sig-default">[]</span>,
-        <span class="summary-sig-arg">row_number</span>=<span class="summary-sig-default">None</span>)</span><br />
+        <span class="summary-sig-arg">row_number</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">source_row_number</span>=<span class="summary-sig-default">None</span>)</span><br />
       Set up a new row.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Row.__init__">source&nbsp;code</a></span>
@@ -140,6 +141,25 @@ object --+
       a string value for a tag.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Row.get_all">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Row-class.html#key" class="summary-sig-name">key</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">patterns</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Generate a unique key tuple for the row, based on a list of tag 
+      patterns</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Row.key">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -252,7 +272,8 @@ object --+
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
         <span class="sig-arg">columns</span>,
         <span class="sig-arg">values</span>=<span class="sig-default">[]</span>,
-        <span class="sig-arg">row_number</span>=<span class="sig-default">None</span>)</span>
+        <span class="sig-arg">row_number</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">source_row_number</span>=<span class="sig-default">None</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -260,13 +281,16 @@ object --+
     </td>
   </tr></table>
   
-  <p>Set up a new row. @param columns The column definitions (array of 
-  Column objects).</p>
+  <p>Set up a new row.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>values</code></strong>, <strong class="pname"><code>(optional)</code></strong>, <strong class="pname"><code>The</code></strong>, <strong class="pname"><code>string</code></strong>, <strong class="pname"><code>values</code></strong>, <strong class="pname"><code>for</code></strong>, <strong class="pname"><code>the</code></strong>, <strong class="pname"><code>row</code></strong>, <strong class="pname"><code>(default</code></strong> - [])</li>
-        <li><strong class="pname"><code>row_number</code></strong>, <strong class="pname"><code>(optional)</code></strong>, <strong class="pname"><code>The</code></strong>, <strong class="pname"><code>logical</code></strong>, <strong class="pname"><code>row</code></strong>, <strong class="pname"><code>number</code></strong>, <strong class="pname"><code>in</code></strong>, <strong class="pname"><code>the</code></strong>, <strong class="pname"><code>input</code></strong>, <strong class="pname"><code>dataset</code></strong>, <strong class="pname"><code>(default</code></strong> - None)</li>
+        <li><strong class="pname"><code>columns</code></strong> - The column definitions (array of Column objects).</li>
+        <li><strong class="pname"><code>values</code></strong> - (optional) The string values for the row (default: [])</li>
+        <li><strong class="pname"><code>row_number</code></strong> - (optional) The zero-based logical row number in the input 
+          dataset, if available (default: None)</li>
+        <li><strong class="pname"><code>source_row_number</code></strong> - (optional) The zero-based source row number in the input dataset,
+          if available (default: None)</li>
     </ul></dd>
     <dt>Overrides:
         object.__init__
@@ -349,6 +373,34 @@ object --+
   a string value for a tag. @return An array of values for the HXL 
   hashtag.</p>
   <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="key"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">key</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">patterns</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Row.key">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Generate a unique key tuple for the row, based on a list of tag 
+  patterns</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>patterns</code></strong> - a list of <a href="hxl.model.TagPattern-class.html" 
+          class="link">TagPattern</a> objects, or a parseable string</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the key as a tuple (might be empty)</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -453,7 +505,7 @@ object --+
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

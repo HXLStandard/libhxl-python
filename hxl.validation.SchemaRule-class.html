@@ -58,7 +58,25 @@ object --+
 </pre>
 
 <hr />
-<p>Validation rule for a single HXL hashtag.</p>
+<pre class="literalblock">
+A single rule within a schema.
+A rule contains one or more tests, together with some common metadata
+(a tag pattern, severity level, and description). If any test fails, then
+the whole rule fails.
+
+Workflow (triggered by \L{Schema.validate}:
+
+- needs_scan()
+- start()
+- scan_row() for each row (if needs_scan() returned True)
+- scan_cell() for each maching non-empty cell (if needs_scan() returned True)
+- end_scan() (if needs_scan() returned True)
+- validate_dataset()
+- validate_row() for each row
+- validate_cell() for each matching non-empty cell in each row
+- end()
+
+</pre>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -75,20 +93,11 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.validation.SchemaRule-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">tag</span>,
-        <span class="summary-sig-arg">min_occur</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">max_occur</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">data_type</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">min_value</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">max_value</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">regex</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">enum</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">case_sensitive</span>=<span class="summary-sig-default">True</span>,
-        <span class="summary-sig-arg">callback</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tag_pattern</span>,
         <span class="summary-sig-arg">severity</span>=<span class="summary-sig-default">&quot;error&quot;</span>,
         <span class="summary-sig-arg">description</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">required</span>=<span class="summary-sig-default">False</span>)</span><br />
-      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+        <span class="summary-sig-arg">callback</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Constructor</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.__init__">source&nbsp;code</a></span>
             
@@ -104,11 +113,100 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="validate_columns"></a><span class="summary-sig-name">validate_columns</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">columns</span>)</span><br />
+          <td><span class="summary-sig"><a href="hxl.validation.SchemaRule-class.html#needs_scan" class="summary-sig-name">needs_scan</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Check if any test in this rule requires a pre-scan of the dataset.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.needs_scan">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="start"></a><span class="summary-sig-name">start</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Initialisation method Call after all values have been set, but before
+      use</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.start">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="end"></a><span class="summary-sig-name">end</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Call at end of parse to get post-parse errors</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.end">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.SchemaRule-class.html#scan_row" class="summary-sig-name">scan_row</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>)</span><br />
+      Pre-scan a row and its individual cells.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.scan_row">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="end_scan"></a><span class="summary-sig-name">end_scan</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Invoke end_scan() for all tests that need it</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.end_scan">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="validate_dataset"></a><span class="summary-sig-name">validate_dataset</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dataset</span>,
+        <span class="summary-sig-arg">indices</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">tag_pattern</span>=<span class="summary-sig-default">None</span>)</span><br />
       Test whether the columns are present to satisfy this rule.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.validate_columns">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.validate_dataset">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -128,26 +226,6 @@ object --+
       @return True if all matching values in the row are valid</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.validate_row">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.validation.SchemaRule-class.html#validate" class="summary-sig-name">validate</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">value</span>,
-        <span class="summary-sig-arg">row</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">column</span>=<span class="summary-sig-default">None</span>)</span><br />
-      Apply the rule to a single value.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.validate">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -202,7 +280,42 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="DATATYPES"></a><span class="summary-name">DATATYPES</span> = <code title="['text', 'number', 'url', 'email', 'phone', 'date']">['text', 'number', 'url', 'email', 'phone', 'date']</code>
+        <a name="SEVERITY"></a><span class="summary-name">SEVERITY</span> = <code title="'info', 'warning', 'error',">'info', 'warning', 'error',</code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="tests"></a><span class="summary-name">tests</span><br />
+      List of \<a href="hxl.validation.AbstractRuleTest-class.html" 
+      class="link">AbstractRuleTest</a> objects to apply as part of this 
+      rule
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="loading_errors"></a><span class="summary-name">loading_errors</span><br />
+      Errors setting up the rule, to be reported once during each run.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="saved_indices"></a><span class="summary-name">saved_indices</span><br />
+      List of saved column indices matching tag_pattern
     </td>
   </tr>
 </table>
@@ -239,19 +352,10 @@ object --+
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">tag</span>,
-        <span class="sig-arg">min_occur</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">max_occur</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">data_type</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">min_value</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">max_value</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">regex</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">enum</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">case_sensitive</span>=<span class="sig-default">True</span>,
-        <span class="sig-arg">callback</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">tag_pattern</span>,
         <span class="sig-arg">severity</span>=<span class="sig-default">&quot;error&quot;</span>,
         <span class="sig-arg">description</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">required</span>=<span class="sig-default">False</span>)</span>
+        <span class="sig-arg">callback</span>=<span class="sig-default">None</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -259,35 +363,61 @@ object --+
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <p>Constructor</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>tag_pattern</code></strong> - the tag pattern to match for the rule</li>
+        <li><strong class="pname"><code>severity</code></strong> - one of 'info', 'warning', or 'error' (default)</li>
+        <li><strong class="pname"><code>description</code></strong> - an optional error message to override the default from the tests</li>
+        <li><strong class="pname"><code>callback</code></strong> - an optional callback function to handle error reports</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
 </div>
-<a name="validate"></a>
+<a name="needs_scan"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">value</span>,
-        <span class="sig-arg">row</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">column</span>=<span class="sig-default">None</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">needs_scan</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.validate">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.needs_scan">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Apply the rule to a single value. @param value the value to validate 
-  @param row (optional) the Row being validated @param column (optional) 
-  the Column being validated @return True if valid; false otherwise</p>
+  <p>Check if any test in this rule requires a pre-scan of the dataset.</p>
+  <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>True if at least one test's needs_scan() method returns True</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="scan_row"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">scan_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#SchemaRule.scan_row">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Pre-scan a row and its individual cells. This method does not report 
+  errors or return a status. Will be invoked only if needs_scan() returned 
+  True Calls both scan_row() and scan_cell() for each test. @param row the 
+  Row to scan</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -343,7 +473,7 @@ object --+
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

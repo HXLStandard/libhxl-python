@@ -58,13 +58,19 @@ exceptions.BaseException --+
                            |        
         exceptions.Exception --+    
                                |    
-             <a href="hxl.common.HXLException-class.html">common.HXLException</a> --+
+                    <a href="hxl.HXLException-class.html">HXLException</a> --+
                                    |
                                   <strong class="uidshort">HXLValidationException</strong>
 </pre>
 
 <hr />
 <p>Data structure to hold a HXL validation error.</p>
+  <p>Normally, this exception isn't thrown, but is passed as a parameter to
+  callbacks via \<a href="hxl.validation.Schema-class.html" 
+  class="link">Schema</a>, \<a href="hxl.validation.SchemaRule-class.html" 
+  class="link">SchemaRule</a>, and classes extending \<a 
+  href="hxl.validation.AbstractRuleTest-class.html" 
+  class="link">AbstractRuleTest</a>.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -85,8 +91,10 @@ exceptions.BaseException --+
         <span class="summary-sig-arg">rule</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">value</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">row</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">column</span>=<span class="summary-sig-default">None</span>)</span><br />
-      Construct a new exception.</td>
+        <span class="summary-sig-arg">column</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">suggested_value</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">scope</span>=<span class="summary-sig-default">'cell'</span>)</span><br />
+      Construct a new validation error report.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#HXLValidationException.__init__">source&nbsp;code</a></span>
             
@@ -139,6 +147,23 @@ exceptions.BaseException --+
     </td>
   </tr>
 </table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Class Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SCOPES"></a><span class="summary-name">SCOPES</span> = <code title="'dataset', 'column', 'row', 'cell',">'dataset', 'column', 'row', 'cell',</code><br />
+      Allowed values for the error scope
+    </td>
+  </tr>
+</table>
 <!-- ==================== INSTANCE VARIABLES ==================== -->
 <a name="section-InstanceVariables"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -149,9 +174,9 @@ exceptions.BaseException --+
 </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.common.HXLException-class.html">common.HXLException</a></code></b>:
-      <code><a href="hxl.common.HXLException-class.html#data">data</a></code>,
-      <code><a href="hxl.common.HXLException-class.html#message">message</a></code>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.HXLException-class.html">HXLException</a></code></b>:
+      <code><a href="hxl.HXLException-class.html#data">data</a></code>,
+      <code><a href="hxl.HXLException-class.html#message">message</a></code>
       </p>
     </td>
   </tr>
@@ -196,7 +221,9 @@ exceptions.BaseException --+
         <span class="sig-arg">rule</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">value</span>=<span class="sig-default">None</span>,
         <span class="sig-arg">row</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">column</span>=<span class="sig-default">None</span>)</span>
+        <span class="sig-arg">column</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">suggested_value</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">scope</span>=<span class="sig-default">'cell'</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -204,12 +231,22 @@ exceptions.BaseException --+
     </td>
   </tr></table>
   
-  <p>Construct a new exception.</p>
+  <p>Construct a new validation error report.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>message</code></strong> - error message for the exception</li>
-        <li><strong class="pname"><code>data</code></strong> - dict of properties associated with the exception (default {})</li>
+        <li><strong class="pname"><code>message</code></strong> - the text message for the error</li>
+        <li><strong class="pname"><code>rule</code></strong> - the rule associated with the error (it may have a more-general 
+          descriptive message)</li>
+        <li><strong class="pname"><code>value</code></strong> - the value that triggered the error, if available</li>
+        <li><strong class="pname"><code>row</code></strong> - the \<a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> object associated with the error, 
+          if any</li>
+        <li><strong class="pname"><code>column</code></strong> - the \<a href="hxl.model.Column-class.html" 
+          class="link">hxl.model.Column</a> object associated with the 
+          error, if any</li>
+        <li><strong class="pname"><code>suggested_value</code></strong> - the suggested replacement value, if known</li>
+        <li><strong class="pname"><code>scope</code></strong> - the error scope (dataset, column, row, or cell)</li>
     </ul></dd>
     <dt>Overrides:
         object.__init__
@@ -268,7 +305,7 @@ exceptions.BaseException --+
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

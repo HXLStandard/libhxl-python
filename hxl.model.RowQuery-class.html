@@ -78,10 +78,30 @@ object --+
         <span class="summary-sig-arg">pattern</span>,
         <span class="summary-sig-arg">op</span>,
         <span class="summary-sig-arg">value</span>,
-        <span class="summary-sig-arg">is_quantitative</span>=<span class="summary-sig-default">True</span>)</span><br />
-      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+        <span class="summary-sig-arg">is_aggregate</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Constructor</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.RowQuery-class.html#calc_aggregate" class="summary-sig-name">calc_aggregate</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dataset</span>)</span><br />
+      Calculate the aggregate value that we need for the row query 
+      Substitute the special values &quot;min&quot; and &quot;max&quot; 
+      with aggregates.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.calc_aggregate">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -114,8 +134,9 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="match_value"></a><span class="summary-sig-name">match_value</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">value</span>)</span><br />
-      Try an operator as numeric first, then string</td>
+        <span class="summary-sig-arg">value</span>,
+        <span class="summary-sig-arg">op</span>)</span><br />
+      Try matching as dates, then as numbers, then as simple strings</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.match_value">source&nbsp;code</a></span>
             
@@ -249,7 +270,12 @@ object --+
         <tr>
           <td><span class="summary-sig"><a name="operator_is"></a><span class="summary-sig-name">operator_is</span>(<span class="summary-sig-arg">s</span>,
         <span class="summary-sig-arg">condition</span>)</span><br />
-      Advanced tests</td>
+      Advanced tests Note: this won't be called for aggregate values like 
+      &quot;is min&quot; or &quot;is not max&quot;; for these, the 
+      aggregate will already be calculated, and a simple comparison 
+      operator substituted by <a 
+      href="hxl.model.RowQuery-class.html#calc_aggregate" 
+      class="link">calc_aggregate</a>.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.operator_is">source&nbsp;code</a></span>
             
@@ -272,9 +298,25 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="hxl.model.RowQuery-class.html#OPERATOR_MAP" class="summary-name">OPERATOR_MAP</a> = <code title="{'=':(operator.eq, True), '!=':(operator.ne, True), '&lt;':(operator.lt, \
-True), '&lt;=':(operator.le, True), '&gt;':(operator.gt, True), '&gt;=':(operat\
-or.ge, True),}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="variable-ellipsis">...</code></code>
+        <a href="hxl.model.RowQuery-class.html#OPERATOR_MAP" class="summary-name">OPERATOR_MAP</a> = <code title="{'=': operator.eq, '!=': operator.ne, '&lt;': operator.lt, '&lt;=': operator\
+.le, '&gt;': operator.gt, '&gt;=': operator.ge,}">{'=': operator.eq, '!=': operator.ne, '&lt;': oper<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="needs_aggregate"></a><span class="summary-name">needs_aggregate</span><br />
+      Need to calculate an aggregate value
     </td>
   </tr>
 </table>
@@ -314,7 +356,7 @@ or.ge, True),}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="vari
         <span class="sig-arg">pattern</span>,
         <span class="sig-arg">op</span>,
         <span class="sig-arg">value</span>,
-        <span class="sig-arg">is_quantitative</span>=<span class="sig-default">True</span>)</span>
+        <span class="sig-arg">is_aggregate</span>=<span class="sig-default">False</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -322,12 +364,46 @@ or.ge, True),}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="vari
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <p>Constructor</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>pattern</code></strong> - the <a href="hxl.model.TagPattern-class.html" 
+          class="link">TagPattern</a> to match in the row</li>
+        <li><strong class="pname"><code>op</code></strong> - the operator function to use for comparison</li>
+        <li><strong class="pname"><code>value</code></strong> - the value to compare against</li>
+        <li><strong class="pname"><code>is_aggregate</code></strong> - if True, the value is a special placeholder like &quot;min&quot; 
+          or &quot;max&quot; that needs to be calculated</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="calc_aggregate"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">calc_aggregate</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dataset</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#RowQuery.calc_aggregate">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculate the aggregate value that we need for the row query 
+  Substitute the special values &quot;min&quot; and &quot;max&quot; with 
+  aggregates.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>dataset</code></strong> - the HXL dataset to use (must be cached)</li>
+    </ul></dd>
   </dl>
 </td></tr></table>
 </div>
@@ -353,9 +429,8 @@ or.ge, True),}">{'=':(operator.eq, True), '!=':(operator.ne, Tr<code class="vari
   <dl class="fields">
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
-{'=':(operator.eq, True), '!=':(operator.ne, True), '&lt;':(operator.lt, <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-True), '&lt;=':(operator.le, True), '&gt;':(operator.gt, True), '&gt;=':(operat<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-or.ge, True),}
+{'=': operator.eq, '!=': operator.ne, '&lt;': operator.lt, '&lt;=': operator<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+.le, '&gt;': operator.gt, '&gt;=': operator.ge,}
 </pre></td></tr></table>
 </dd>
   </dl>
@@ -389,7 +464,7 @@ or.ge, True),}
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

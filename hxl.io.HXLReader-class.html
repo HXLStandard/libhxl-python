@@ -60,12 +60,30 @@
 </pre>
 
 <hr />
-<p>Read HXL data from a file</p>
-  <p>This class acts as both an iterator and a context manager. If you're 
-  planning to pass a url or filename via the constructor's url parameter, 
-  it's best to use it in a Python with statement to make sure that the file
-  gets closed again.</p>
+<p>Read HXL data from a raw input source This class is an iterable.</p>
 
+<hr />
+<div class="fields">      <p><strong>See Also:</strong>
+        <a href="hxl.io.AbstractInput-class.html" 
+        class="link">hxl.io.AbstractInput</a>
+      </p>
+</div><!-- ==================== NESTED CLASSES ==================== -->
+<a name="section-NestedClasses"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Nested Classes</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.io.HXLReader.HXLIter-class.html" class="summary-name">HXLIter</a><br />
+      Internal iterator class
+    </td>
+  </tr>
+</table>
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -85,74 +103,6 @@
       Constructor</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__init__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#columns" class="summary-sig-name">columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Return a list of Column objects.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.columns">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Get the iterator over the rows.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__iter__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#__next__" class="summary-sig-name">__next__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Iterable function to return the next row of HXL values.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__next__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#next" class="summary-sig-name">next</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Iterable function to return the next row of HXL values.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__next__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -197,6 +147,57 @@
       
     </td>
   </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get the iterator over the rows.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__iter__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#is_cached" class="summary-sig-name">is_cached</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      If the low-level input is repeatable, then the data is cached.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.is_cached">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.io.HXLReader-class.html#columns" class="summary-sig-name">columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a list of Column objects.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.columns">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
   <tr>
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.model.Dataset-class.html">model.Dataset</a></code></b>:
@@ -215,8 +216,9 @@
       <code><a href="hxl.model.Dataset-class.html#get_value_set">get_value_set</a></code>,
       <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
       <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
-      <code><a href="hxl.model.Dataset-class.html#is_cached">is_cached</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#max">max</a></code>,
       <code><a href="hxl.model.Dataset-class.html#merge_data">merge_data</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#min">min</a></code>,
       <code><a href="hxl.model.Dataset-class.html#recipe">recipe</a></code>,
       <code><a href="hxl.model.Dataset-class.html#rename_columns">rename_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data">replace_data</a></code>,
@@ -333,42 +335,14 @@
   </tr></table>
   
   <p>Constructor</p>
-  <p>The order of preference is to use raw_data if supplied; then fall back
-  to input (an already-open file object); then fall back to opening the 
-  resource specified by url (URL or filename) if all else fails. In the 
-  last case, the object can serve as a context manager, and will close the 
-  opened file resource in its __exit__ method.</p>
-  <p>@param input a Python file object. @param raw_data an iterable over a 
-  series of string arrays. @param url the URL or filename to open.</p>
   <dl class="fields">
-    <dt>Overrides:
-        object.__init__
-    </dt>
-  </dl>
-</td></tr></table>
-</div>
-<a name="columns"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">columns</span>(<span class="sig-arg">self</span>)</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.columns">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>Return a list of Column objects.</p>
-  <dl class="fields">
-    <dt>Decorators:</dt>
+    <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@property</code></li>
+        <li><strong class="pname"><code>input</code></strong> - a child class of <a href="hxl.io.AbstractInput-class.html" 
+          class="link">hxl.io.AbstractInput</a></li>
     </ul></dd>
     <dt>Overrides:
-        <a href="hxl.model.Dataset-class.html#columns">model.Dataset.columns</a>
+        object.__init__
     </dt>
   </dl>
 </td></tr></table>
@@ -389,6 +363,9 @@
   
   <p>Get the iterator over the rows.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>an iterator that returns <a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> objects</dd>
     <dt>Overrides:
         <a href="hxl.model.Dataset-class.html#__iter__">model.Dataset.__iter__</a>
         <dd><em class="note">(inherited documentation)</em></dd>
@@ -396,43 +373,60 @@
   </dl>
 </td></tr></table>
 </div>
-<a name="__next__"></a>
+<a name="is_cached"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">__next__</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">is_cached</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__next__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.is_cached">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Iterable function to return the next row of HXL values. Returns a Row,
-  or raises StopIteration exception at end</p>
+  <p>If the low-level input is repeatable, then the data is cached.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd><code>True</code> if the input is cached (replayable); 
+          <code>False</code> otherwise.</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="hxl.model.Dataset-class.html#is_cached">model.Dataset.is_cached</a>
+    </dt>
   </dl>
 </td></tr></table>
 </div>
-<a name="next"></a>
+<a name="columns"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">next</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">columns</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.__next__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.io-pysrc.html#HXLReader.columns">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Iterable function to return the next row of HXL values. Returns a Row,
-  or raises StopIteration exception at end</p>
+  <p>Return a list of Column objects.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>a list of Column objects.</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="hxl.model.Dataset-class.html#columns">model.Dataset.columns</a>
+    </dt>
   </dl>
 </td></tr></table>
 </div>
@@ -464,7 +458,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

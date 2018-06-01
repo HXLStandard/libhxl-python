@@ -64,7 +64,7 @@ object --+
   package.  The contract of a Dataset is that it will provide a columns 
   property and a next() method to read through the rows.</p>
   <p>The child class must implement the columns() method as a property and 
-  the next() method to iterate through rows of data.</p>
+  the __iter__() method to make itself iterable.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -166,7 +166,7 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#tags" class="summary-sig-name">tags</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Return a list of tags.</td>
+      Get all hashtags (without attributes) as a list</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.tags">source&nbsp;code</a></span>
             
@@ -237,9 +237,48 @@ object --+
         <span class="summary-sig-arg">tag_pattern</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">normalise</span>=<span class="summary-sig-default">False</span>)</span><br />
       Return the set of all values in a dataset (optionally matching a tag 
-      pattern).</td>
+      pattern for a single column) Warning: this method can be highly 
+      inefficient for large datasets.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.get_value_set">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#min" class="summary-sig-name">min</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">pattern</span>)</span><br />
+      Calculate the minimum value for a tag pattern Will iterate through 
+      the dataset, and use values from multiple matching columns.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.min">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.model.Dataset-class.html#max" class="summary-sig-name">max</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">pattern</span>)</span><br />
+      Calculate the maximum value for a tag pattern Will iterate through 
+      the dataset, and use values from multiple matching columns.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.model-pysrc.html#Dataset.max">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -796,6 +835,9 @@ object --+
   
   <p>Get the iterator over the rows.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>an iterator that returns <a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> objects</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@abc.abstractmethod</code></li>
@@ -844,9 +886,10 @@ object --+
     </td>
   </tr></table>
   
-  <p>Get the column definitions for the dataset. @return a list of Column 
-  objects.</p>
+  <p>Get the column definitions for the dataset.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>a list of Column objects.</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@property</code></li>
@@ -892,8 +935,10 @@ object --+
     </td>
   </tr></table>
   
-  <p>Return a list of tags.</p>
+  <p>Get all hashtags (without attributes) as a list</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>a list of base hashtags for the dataset columns</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@property</code></li>
@@ -917,6 +962,9 @@ object --+
   
   <p>Return a list of display tags.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>a list of strings containing the hashtag and attributes for each 
+          column</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@property</code></li>
@@ -940,6 +988,9 @@ object --+
   
   <p>Report whether any non-empty header strings exist.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd><code>True</code> if there is at least one column with a 
+          non-empty header string</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@property</code></li>
@@ -964,6 +1015,8 @@ object --+
   <p>Get all values for the dataset at once, in an array of arrays. This 
   method can be highly inefficient for large datasets.</p>
   <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>an array of arrays of scalar values</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@property</code></li>
@@ -988,14 +1041,78 @@ object --+
   </tr></table>
   
   <p>Return the set of all values in a dataset (optionally matching a tag 
-  pattern). This method can be highly inefficient for large datasets. 
-  @param tag_pattern (optional) return values only for columns matching 
-  this tag pattern.</p>
+  pattern for a single column) Warning: this method can be highly 
+  inefficient for large datasets.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>normalise</code></strong>, <strong class="pname"><code>(optional)</code></strong>, <strong class="pname"><code>normalise</code></strong>, <strong class="pname"><code>the</code></strong>, <strong class="pname"><code>strings</code></strong>, <strong class="pname"><code>with</code></strong>, <strong class="pname"><code>hxl.common.normalise_string</code></strong>, <strong class="pname"><code>(default</code></strong> - False) @return a Python set of values</li>
+        <li><strong class="pname"><code>tag_pattern</code></strong> - (optional) return values only for columns matching this tag 
+          pattern.</li>
+        <li><strong class="pname"><code>normalise</code></strong> - (optional) normalise the strings with hxl.datatypes.normalise 
+          (default: False)</li>
     </ul></dd>
+    <dt>Returns:</dt>
+        <dd>a Python set of values</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="min"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">min</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">pattern</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.min">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculate the minimum value for a tag pattern Will iterate through the
+  dataset, and use values from multiple matching columns. Uses numbers, 
+  dates, or strings for comparison, based on the first non-empty value 
+  found.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>pattern</code></strong> - the <a href="hxl.model.TagPattern-class.html" 
+          class="link">hxl.model.TagPattern</a> to match</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the minimum value according to the '&lt;' operator, or None if no
+          values found</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="max"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">max</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">pattern</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.model-pysrc.html#Dataset.max">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculate the maximum value for a tag pattern Will iterate through the
+  dataset, and use values from multiple matching columns.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>pattern</code></strong> - the <a href="hxl.model.TagPattern-class.html" 
+          class="link">hxl.model.TagPattern</a> to match</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd>the minimum value according to the '&lt;' operator, or None if no
+          values found</dd>
   </dl>
 </td></tr></table>
 </div>
@@ -1195,7 +1312,7 @@ object --+
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

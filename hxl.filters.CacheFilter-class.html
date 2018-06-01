@@ -52,15 +52,13 @@
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class CacheFilter</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter">source&nbsp;code</a></span></p>
 <pre class="base-tree">
-    object --+            
-             |            
- <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+        
-                 |        
-<a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+    
-                     |    
- <a href="hxl.filters.AbstractCachingFilter-class.html">AbstractCachingFilter</a> --+
-                         |
-                        <strong class="uidshort">CacheFilter</strong>
+    object --+        
+             |        
+ <a href="hxl.model.Dataset-class.html">model.Dataset</a> --+    
+                 |    
+<a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a> --+
+                     |
+                    <strong class="uidshort">CacheFilter</strong>
 </pre>
 
 <hr />
@@ -69,6 +67,8 @@
   href="hxl.model.Dataset-class.html#cache" 
   class="link">hxl.model.Dataset.cache</a> method, and has no corresponding
   command-line script.</p>
+  <p>Does not extend AbstractCachingFilter, because it needs to preserve 
+  original row numbers (when they exist).</p>
   <p>While <a href="hxl.filters.AbstractStreamingFilter-class.html" 
   class="link">streaming filters</a> are more efficient, sometimes you need
   to keep a copy of your HXL data in memory, so that you can iterate over 
@@ -136,6 +136,23 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a href="hxl.filters.CacheFilter-class.html#is_cached" class="summary-sig-name">is_cached</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Test if the input is cached (can be replayed).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.is_cached">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a href="hxl.filters.CacheFilter-class.html#filter_columns" class="summary-sig-name">filter_columns</a>(<span class="summary-sig-arg">self</span>)</span><br />
       Returns:
       a deep copy of the source columns</td>
@@ -154,11 +171,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="hxl.filters.CacheFilter-class.html#filter_rows" class="summary-sig-name">filter_rows</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Returns:
-      a local copy of the row data</td>
+          <td><span class="summary-sig"><a href="hxl.filters.CacheFilter-class.html#__iter__" class="summary-sig-name">__iter__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get the iterator over the rows.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.filter_rows">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.__iter__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -168,10 +184,6 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractCachingFilter-class.html">AbstractCachingFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractCachingFilter-class.html#__iter__">__iter__</a></code>,
-      <code><a href="hxl.filters.AbstractCachingFilter-class.html#is_cached">is_cached</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
       <code><a href="hxl.filters.AbstractBaseFilter-class.html#columns">columns</a></code>
       </p>
@@ -191,7 +203,9 @@
       <code><a href="hxl.model.Dataset-class.html#get_value_set">get_value_set</a></code>,
       <code><a href="hxl.model.Dataset-class.html#has_headers">has_headers</a></code>,
       <code><a href="hxl.model.Dataset-class.html#headers">headers</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#max">max</a></code>,
       <code><a href="hxl.model.Dataset-class.html#merge_data">merge_data</a></code>,
+      <code><a href="hxl.model.Dataset-class.html#min">min</a></code>,
       <code><a href="hxl.model.Dataset-class.html#recipe">recipe</a></code>,
       <code><a href="hxl.model.Dataset-class.html#rename_columns">rename_columns</a></code>,
       <code><a href="hxl.model.Dataset-class.html#replace_data">replace_data</a></code>,
@@ -233,8 +247,8 @@
 </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractCachingFilter-class.html">AbstractCachingFilter</a></code></b>:
-      <code><a href="hxl.filters.AbstractCachingFilter-class.html#__metaclass__">__metaclass__</a></code>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="hxl.filters.AbstractBaseFilter-class.html">AbstractBaseFilter</a></code></b>:
+      <code><a href="hxl.filters.AbstractBaseFilter-class.html#__metaclass__">__metaclass__</a></code>
       </p>
     </td>
   </tr>
@@ -328,6 +342,36 @@
   </dl>
 </td></tr></table>
 </div>
+<a name="is_cached"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">is_cached</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.is_cached">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test if the input is cached (can be replayed). Subclasses that cache 
+  should override this.</p>
+  <dl class="fields">
+    <dt>Returns:</dt>
+        <dd><code>True</code> only if the source is cached.</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="hxl.model.Dataset-class.html#is_cached">model.Dataset.is_cached</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
 <a name="filter_columns"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -354,34 +398,28 @@
   </dl>
 </td></tr></table>
 </div>
-<a name="filter_rows"></a>
+<a name="__iter__"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">filter_rows</span>(<span class="sig-arg">self</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__iter__</span>(<span class="sig-arg">self</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.filter_rows">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="hxl.filters-pysrc.html#CacheFilter.__iter__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Filter all of the data together.</p>
-  <p>This method returns raw lists and strings, not objects from the <a 
-  href="hxl.model-module.html" class="link">hxl.model</a> module; for 
-  example, it could return the following for a three-row dataset:</p>
-<pre class="literalblock">
- [['UNICEF', '20'], ['UNHCR', '15'], ['OXFAM', '25']]
-</pre>
-  <p>The <i>AbstractCachingFilter</i> class will construct the appropriate 
-  objects around the data.</p>
+  <p>Get the iterator over the rows.</p>
   <dl class="fields">
     <dt>Returns:</dt>
-        <dd>a local copy of the row data</dd>
+        <dd>an iterator that returns <a href="hxl.model.Row-class.html" 
+          class="link">hxl.model.Row</a> objects</dd>
     <dt>Overrides:
-        <a href="hxl.filters.AbstractCachingFilter-class.html#filter_rows">AbstractCachingFilter.filter_rows</a>
+        <a href="hxl.model.Dataset-class.html#__iter__">model.Dataset.__iter__</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -414,7 +452,7 @@
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

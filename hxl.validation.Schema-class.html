@@ -58,7 +58,23 @@ object --+
 </pre>
 
 <hr />
-<p>Schema against which to validate a HXL document.</p>
+<pre class="literalblock">
+Schema against which to validate a HXL document.
+Consists of a sequence of L{SchemaRule} objects to apply to the data.
+
+The validate() method triggers the following:
+
+- start()
+- validate_dataset()
+- validate_row() for each row
+- validate_cell() for each matching non-empty cell in each row
+- end()
+
+Add new rules with
+
+    schema.rules.append(rule)
+
+</pre>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -75,9 +91,8 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="hxl.validation.Schema-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">rules</span>=<span class="summary-sig-default">[]</span>,
         <span class="summary-sig-arg">callback</span>=<span class="summary-sig-default">None</span>)</span><br />
-      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+      Constructor</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.__init__">source&nbsp;code</a></span>
             
@@ -93,8 +108,9 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="validate"></a><span class="summary-sig-name">validate</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">source</span>)</span></td>
+          <td><span class="summary-sig"><a href="hxl.validation.Schema-class.html#validate" class="summary-sig-name">validate</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>)</span><br />
+      Execute the main validation workflow.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate">source&nbsp;code</a></span>
             
@@ -110,10 +126,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="validate_columns"></a><span class="summary-sig-name">validate_columns</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">columns</span>)</span></td>
+          <td><span class="summary-sig"><a name="start"></a><span class="summary-sig-name">start</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Initialise the validation run</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate_columns">source&nbsp;code</a></span>
+            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.start">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -127,8 +143,79 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="validate_row"></a><span class="summary-sig-name">validate_row</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">row</span>)</span></td>
+          <td><span class="summary-sig"><a name="end"></a><span class="summary-sig-name">end</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Terminate the validation run</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.end">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="scan_row"></a><span class="summary-sig-name">scan_row</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>)</span><br />
+      Pre-scan a row, only for rules that require it.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.scan_row">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="end_scan"></a><span class="summary-sig-name">end_scan</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      End pre-scan, for rules that require it.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.end_scan">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.Schema-class.html#validate_dataset" class="summary-sig-name">validate_dataset</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dataset</span>)</span><br />
+      Validate just at the dataset level</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate_dataset">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.Schema-class.html#validate_row" class="summary-sig-name">validate_row</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">row</span>)</span><br />
+      Validate at the row and cell levels.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate_row">source&nbsp;code</a></span>
             
@@ -173,6 +260,59 @@ object --+
     </td>
   </tr>
 </table>
+<!-- ==================== STATIC METHODS ==================== -->
+<a name="section-StaticMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Static Methods</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.validation.Schema-class.html#parse" class="summary-sig-name">parse</a>(<span class="summary-sig-arg">source</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">callback</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Load a HXL schema from the provided input stream, or load default 
+      schema.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.validation-pysrc.html#Schema.parse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="rules"></a><span class="summary-name">rules</span><br />
+      Rules making up this schema
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="callback"></a><span class="summary-name">callback</span><br />
+      Callback function to receive error reports
+    </td>
+  </tr>
+</table>
 <!-- ==================== PROPERTIES ==================== -->
 <a name="section-Properties"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -206,7 +346,6 @@ object --+
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">rules</span>=<span class="sig-default">[]</span>,
         <span class="sig-arg">callback</span>=<span class="sig-default">None</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
@@ -215,12 +354,92 @@ object --+
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <p>Constructor</p>
   <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>callback</code></strong> - a callback function to receive \<a 
+          href="hxl.validation.HXLValidationException-class.html" 
+          class="link">HXLValidationException</a> objects as error reports</li>
+    </ul></dd>
     <dt>Overrides:
         object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="validate"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">source</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Execute the main validation workflow.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>source</code></strong> - the \<a href="hxl.model.Dataset-class.html" 
+          class="link">hxl.model.Dataset</a> to validate</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="validate_dataset"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate_dataset</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dataset</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate_dataset">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Validate just at the dataset level</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>dataset</code></strong> - the \<a href="hxl.model.Dataset-class.html" 
+          class="link">hxl.model.Dataset</a> object to validate</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="validate_row"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">validate_row</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">row</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#Schema.validate_row">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Validate at the row and cell levels. Each rule will handle cell-level 
+  validation on its own, because it knows what columns to look at.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>row</code></strong> - the row to validate</li>
+    </ul></dd>
   </dl>
 </td></tr></table>
 </div>
@@ -244,6 +463,35 @@ object --+
     <dt>Overrides:
         object.__str__
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse</span>(<span class="sig-arg">source</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">callback</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">Static Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.validation-pysrc.html#Schema.parse">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Load a HXL schema from the provided input stream, or load default 
+  schema.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>source</code></strong> - HXL data source for the scheme (e.g. a HXLReader or filter); 
+          defaults to the built-in schema</li>
+        <li><strong class="pname"><code>callback</code></strong> - a callback function for reporting errors (receives a 
+          HXLValidationException)</li>
+    </ul></dd>
   </dl>
 </td></tr></table>
 </div>
@@ -275,7 +523,7 @@ object --+
   <tr>
     <td align="left" class="footer">
     Generated by Epydoc 3.0.1
-    on Tue Apr  3 00:51:57 2018
+    on Fri Jun  1 18:20:16 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

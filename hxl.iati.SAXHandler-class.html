@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>hxl.iati.SAXHandler</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="hxl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="hxl-module.html">Package&nbsp;hxl</a> ::
+        <a href="hxl.iati-module.html">Module&nbsp;iati</a> ::
+        Class&nbsp;SAXHandler
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class SAXHandler</h1><p class="nomargin-top"><span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler">source&nbsp;code</a></span></p>
+<pre class="base-tree">
+xml.sax.handler.ContentHandler --+
+                                 |
+                                <strong class="uidshort">SAXHandler</strong>
+</pre>
+
+<hr />
+<p>SAX event handler to convert an IATI activity report to a series of 
+  CSV-style rows</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Methods</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.iati.SAXHandler-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Create a new SAX event handler for IATI-&gt;CSV conversion.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.iati.SAXHandler-class.html#startElement" class="summary-sig-name">startElement</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">atts</span>)</span><br />
+      Beginning of a nested XML element</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.startElement">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.iati.SAXHandler-class.html#endElement" class="summary-sig-name">endElement</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      End of a nested XML element</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.endElement">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="hxl.iati.SAXHandler-class.html#characters" class="summary-sig-name">characters</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">content</span>)</span><br />
+      Any chunk of character data (may not be complete)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.characters">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="add_prop"></a><span class="summary-sig-name">add_prop</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">hashtag</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Add a property to the current row (supports multiple values)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.add_prop">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="has_parent"></a><span class="summary-sig-name">has_parent</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      Check for a specific parent element</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.has_parent">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_parent_att"></a><span class="summary-sig-name">get_parent_att</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">att_name</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.get_parent_att">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="write_headers"></a><span class="summary-sig-name">write_headers</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Write the CSV header row</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.write_headers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="write_hashtags"></a><span class="summary-sig-name">write_hashtags</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Write the CSV hashtag row</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.write_hashtags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="write_data"></a><span class="summary-sig-name">write_data</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Write the current activity as a CSV data row</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.write_data">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>xml.sax.handler.ContentHandler</code></b>:
+      <code>endDocument</code>,
+      <code>endElementNS</code>,
+      <code>endPrefixMapping</code>,
+      <code>ignorableWhitespace</code>,
+      <code>processingInstruction</code>,
+      <code>setDocumentLocator</code>,
+      <code>skippedEntity</code>,
+      <code>startDocument</code>,
+      <code>startElementNS</code>,
+      <code>startPrefixMapping</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Class Variables</span></td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.iati.SAXHandler-class.html#OUTPUT_SPEC" class="summary-name">OUTPUT_SPEC</a> = <code title="[['IATI id', '#activity+id+v_iati_activities', 1], ['Last updated', '#\
+date+updated', 1], ['Activity status', '#status', 1], ['Funding org', \
+'#org+name+funder', 1], ['Programming org', '#org+name+prog', 1], ['Im\
+plementing partner', '#org+name+impl', 1], ['Activity', '#activity+nam\
+e', 1], ['DAC sector', '#sector+name', 3], ['Country code', '#country+\
+code+recipient', 3], ['Planned start date', '#date+planned+start', 1],\
+ ['Actual start date', '#date+actual+start', 1], ['Planned end date', \
+'#date+planned+end', 1], ['Actual end date', '#date+actual+end', 1],]">[['IATI id', '#activity+id+v_iati_activities', 1<code class="variable-ellipsis">...</code></code><br />
+      Specification for what data should appear in the CSV
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.iati.SAXHandler-class.html#STATUS_CODES" class="summary-name">STATUS_CODES</a> = <code title="{'1': 'Pipeline/Identification', '2': 'Implementation', '3': 'Completi\
+on', '4': 'Post-completion', '5': 'Cancelled', '6': 'Suspended'}">{'1': 'Pipeline/Identification', '2': 'Implemen<code class="variable-ellipsis">...</code></code><br />
+      Lookup table for IATI status codes
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="hxl.iati.SAXHandler-class.html#DAC_SECTOR_CODES" class="summary-name">DAC_SECTOR_CODES</a> = <code title="{&quot;110&quot;: &quot;Education&quot;, &quot;111&quot;: &quot;Education, Level Unspecified&quot;, &quot;112&quot;: &quot;Ba\
+sic Education&quot;, &quot;113&quot;: &quot;Secondary Education&quot;, &quot;114&quot;: &quot;Post-Secondary E\
+ducation&quot;, &quot;120&quot;: &quot;Health&quot;, &quot;121&quot;: &quot;Health, General&quot;, &quot;122&quot;: &quot;Basic He\
+alth&quot;, &quot;130&quot;: &quot;Population Policies/Programmes &amp; Reproductive Health&quot;, \
+&quot;140&quot;: &quot;Water Supply &amp; Sanitation&quot;, &quot;150&quot;: &quot;Government &amp; Civil Society\
+&quot;, &quot;151&quot;: &quot;Government &amp; Civil Society-general&quot;, &quot;152&quot;: &quot;Conflict, Peac\
+e &amp; Security&quot;, &quot;160&quot;: &quot;Other Social Infrastructure &amp; Services&quot;, &quot;210&quot;:\
+ &quot;Transport &amp; Storage&quot;, &quot;220&quot;: &quot;Communications&quot;, &quot;230&quot;: &quot;Energy&quot;, &quot;231\
+...">{&quot;110&quot;: &quot;Education&quot;, &quot;111&quot;: &quot;Education, Lev<code class="variable-ellipsis">...</code></code><br />
+      OECD DAC high-level sector codes
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Method Details</span></td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Create a new SAX event handler for IATI-&gt;CSV conversion.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        xml.sax.handler.ContentHandler.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="startElement"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">startElement</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">atts</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.startElement">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Beginning of a nested XML element</p>
+  <dl class="fields">
+    <dt>Overrides:
+        xml.sax.handler.ContentHandler.startElement
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="endElement"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">endElement</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.endElement">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>End of a nested XML element</p>
+  <dl class="fields">
+    <dt>Overrides:
+        xml.sax.handler.ContentHandler.endElement
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="characters"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">characters</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">content</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="hxl.iati-pysrc.html#SAXHandler.characters">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Any chunk of character data (may not be complete)</p>
+  <dl class="fields">
+    <dt>Overrides:
+        xml.sax.handler.ContentHandler.characters
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
+<a name="section-ClassVariableDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Class Variable Details</span></td>
+</tr>
+</table>
+<a name="OUTPUT_SPEC"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">OUTPUT_SPEC</h3>
+  <p>Specification for what data should appear in the CSV</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+[['IATI id', '#activity+id+v_iati_activities', 1], ['Last updated', '#<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+date+updated', 1], ['Activity status', '#status', 1], ['Funding org', <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+'#org+name+funder', 1], ['Programming org', '#org+name+prog', 1], ['Im<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+plementing partner', '#org+name+impl', 1], ['Activity', '#activity+nam<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+e', 1], ['DAC sector', '#sector+name', 3], ['Country code', '#country+<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+code+recipient', 3], ['Planned start date', '#date+planned+start', 1],<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ ['Actual start date', '#date+actual+start', 1], ['Planned end date', <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+'#date+planned+end', 1], ['Actual end date', '#date+actual+end', 1],]
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="STATUS_CODES"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">STATUS_CODES</h3>
+  <p>Lookup table for IATI status codes</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{'1': 'Pipeline/Identification', '2': 'Implementation', '3': 'Completi<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+on', '4': 'Post-completion', '5': 'Cancelled', '6': 'Suspended'}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="DAC_SECTOR_CODES"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">DAC_SECTOR_CODES</h3>
+  <p>OECD DAC high-level sector codes</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{&quot;110&quot;: &quot;Education&quot;, &quot;111&quot;: &quot;Education, Level Unspecified&quot;, &quot;112&quot;: &quot;Ba<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+sic Education&quot;, &quot;113&quot;: &quot;Secondary Education&quot;, &quot;114&quot;: &quot;Post-Secondary E<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ducation&quot;, &quot;120&quot;: &quot;Health&quot;, &quot;121&quot;: &quot;Health, General&quot;, &quot;122&quot;: &quot;Basic He<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+alth&quot;, &quot;130&quot;: &quot;Population Policies/Programmes &amp; Reproductive Health&quot;, <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+&quot;140&quot;: &quot;Water Supply &amp; Sanitation&quot;, &quot;150&quot;: &quot;Government &amp; Civil Society<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+&quot;, &quot;151&quot;: &quot;Government &amp; Civil Society-general&quot;, &quot;152&quot;: &quot;Conflict, Peac<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+e &amp; Security&quot;, &quot;160&quot;: &quot;Other Social Infrastructure &amp; Services&quot;, &quot;210&quot;:<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ &quot;Transport &amp; Storage&quot;, &quot;220&quot;: &quot;Communications&quot;, &quot;230&quot;: &quot;Energy&quot;, &quot;231<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-ellipsis">...</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="hxl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1
+    on Fri Jun  1 18:20:16 2018
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
