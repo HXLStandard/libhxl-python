@@ -47,9 +47,12 @@ FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
 URL_EXCEL = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
 URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.json'
-URL_GOOGLE_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
-URL_GOOGLE_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
-URL_GOOGLE_OPEN = 'https://drive.google.com/open?id=1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg'
+URL_GOOGLE_SHEET_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
+URL_GOOGLE_SHEET_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
+URL_GOOGLE_FILE = 'https://drive.google.com/file/d/1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb/view'
+URL_GOOGLE_OPEN_SHEET = 'https://drive.google.com/open?id=1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg'
+URL_GOOGLE_OPEN_FILE = 'https://drive.google.com/open?id=1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb'
+
 
 class TestInput(unittest.TestCase):
 
@@ -279,19 +282,29 @@ class TestParser(unittest.TestCase):
         with hxl.data(URL_JSON) as source:
             self.compare_input(source)
 
-    def test_google_urls(self):
-        """Test reading from a Google Sheet (will fail without connectivity)."""
-
-        # default tab
-        with hxl.data(URL_GOOGLE_NOHASH, timeout=5) as source:
+    def test_google_sheet_nohash(self):
+        # Google Sheet, default tab
+        with hxl.data(URL_GOOGLE_SHEET_NOHASH, timeout=5) as source:
             self.compare_input(source)
 
-        # specific tab
-        with hxl.data(URL_GOOGLE_HASH, timeout=5) as source:
+    def test_google_sheet_hash(self):
+        # Google Sheet, specific tab
+        with hxl.data(URL_GOOGLE_SHEET_HASH, timeout=5) as source:
             self.compare_input(source)
 
-        # drive "open" URL
-        with hxl.data(URL_GOOGLE_OPEN, timeout=5) as source:
+    def test_google_file(self):
+        # Google Sheet, specific tab
+        with hxl.data(URL_GOOGLE_FILE, timeout=5) as source:
+            self.compare_input(source)
+
+    def test_google_drive_sheet(self):
+        # Google Drive, "open" link for sheet
+        with hxl.data(URL_GOOGLE_OPEN_SHEET, timeout=5) as source:
+            self.compare_input(source)
+
+    def test_google_drive_file(self):
+        # Google Drive, "open" link for file
+        with hxl.data(URL_GOOGLE_OPEN_FILE, timeout=5) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):
