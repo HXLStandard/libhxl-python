@@ -586,6 +586,19 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
 
+    def test_whitespace_normalisation(self):
+        data = [
+            ['#org'],
+            ['XXX'],
+            ['XXX '],
+            ['YYY']
+        ]
+        expected_values = [
+            ['XXX', 2],
+            ['YYY', 1]
+        ]
+        self.assertEqual(expected_values, hxl.data(data).count('#org').values)
+
     def test_multiple_aggregators(self):
         expected = [
             ['Organisation', 'Minimum affected', 'Maximum affected'],

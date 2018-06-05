@@ -1365,7 +1365,7 @@ class CountFilter(AbstractCachingFilter):
             # will always match if there are no queries
             if hxl.model.RowQuery.match_list(row, self.queries):
                 # get the values in the order we need them
-                values = [str(row.get(pattern, default='')) for pattern in self.patterns]
+                values = [hxl.datatypes.normalise_space(row.get(pattern, default='')) for pattern in self.patterns]
                 # make a dict key for the aggregator
                 key = tuple(values)
                 if not key in aggregators:
