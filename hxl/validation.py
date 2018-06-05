@@ -462,7 +462,7 @@ class WhitespaceTest(AbstractRuleTest):
     or anything but a single space character inside a string
     """
 
-    PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|\s+)$'
+    PATTERN = r'^(\s+.*|.*(\s\s|[\t\r\n]).*|.*\s+)$'
     """Regular expression to detect irregular whitespace"""
 
     def validate_cell(self, value, row, column):

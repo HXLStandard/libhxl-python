@@ -119,7 +119,7 @@ class TestTests(unittest.TestCase):
         self.assertTrue(t().validate_cell('xxx yyy', None, None))
 
         self.assertFalse(t().validate_cell(' xxx', None, None)) # leading space not allowed
-        self.assertFalse(t().validate_cell('xxx  ', None, None)) # trailing space not allowed
+        self.assertFalse(t().validate_cell('xxx ', None, None)) # trailing space not allowed
         self.assertFalse(t().validate_cell('xxx  yyy', None, None)) # multiple internal spaces not allowed
         self.assertFalse(t().validate_cell("xxx\tyyy", None, None)) # tabs not allowed
 

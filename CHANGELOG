@@ -1,3 +1,9 @@
+2018-05-05 Release 4.8.3
+	- handle Google Drive "open" and "file" URLs
+	- normalise whitespace for the count filter (so that "Guinea" and
+	  "Guinea " won't count separately)
+	- fix validation test for trailing whitespace
+
 2018-05-31 Releases 4.8.1, 4.8.2
 	- hotfixes for installation problem with 4.8 (in a clean install)
 
