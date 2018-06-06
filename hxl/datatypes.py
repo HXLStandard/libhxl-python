@@ -8,7 +8,7 @@ Utility functions for testing and normalising scalar-ish data types
 @see: U{http://hxlstandard.org}
 """
 
-import collections, datetime, dateutil.parser, re, six, unidecode
+import collections, datetime, dateutil.parser, json, re, six, unidecode
 
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
@@ -51,6 +51,8 @@ def flatten(value, is_subitem=False):
     # keep it simple for now
     if value is None:
         return ''
+    elif is_list(value) or is_dict(value):
+        return json.dumps(value)
     else:
         return str(value)
 
@@ -78,7 +80,7 @@ def is_string(v):
     @returns: True if the value is a string
     """
     return isinstance(v, six.string_types)
-    
+
 def normalise_space(s):
     """Normalise whitespace only
     @param v: value to normalise
@@ -221,14 +223,18 @@ def normalise_date(v):
         month=(date1.month if date1.month==date2.month else None),
         day=(date1.day if date1.day==date2.day else None)
     )
-    
+
+def is_dict(e):
+    """Test if a value is a Python dict.
+    @param e: the value to test
+    @return: True if the value is a dict; False otherwise
+    """
+    return isinstance(e, collections.Mapping)
 
 def is_list(e):
     """Test if a value is a Python sequence (other than a string)
     @param e: the value to test
-    @return: True if the value is a sequence; False otherwise"""
-    if not isinstance(e, collections.Sequence) or isinstance(e, six.string_types):
-        return False
-    else:
-        return True
+    @return: True if the value is a sequence; False otherwise
+    """
+    return isinstance(e, collections.Sequence) and not isinstance(e, six.string_types)
 

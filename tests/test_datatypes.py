@@ -111,3 +111,24 @@ class TestDates(unittest.TestCase):
 
         # test no exception
         hxl.datatypes.normalise_date('30')
+
+class TestFlatten(unittest.TestCase):
+
+    def test_none(self):
+        self.assertEqual('', hxl.datatypes.flatten(None))
+
+    def test_number(self):
+        self.assertEqual("3", hxl.datatypes.flatten(3))
+
+    def test_string(self):
+        self.assertEqual("xxx", hxl.datatypes.flatten("xxx"))
+
+    def test_list(self):
+        input = ['a', 'b', ['c', 'd'], 'e']
+        output = '["a", "b", ["c", "d"], "e"]'
+        self.assertEqual(output, hxl.datatypes.flatten(input))
+
+    def test_dict(self):
+        input = {'a': 'b', 'c': ['d', 'e']}
+        output = '{"a": "b", "c": ["d", "e"]}'
+        self.assertEqual(output, hxl.datatypes.flatten(input))
