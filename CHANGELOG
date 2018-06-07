@@ -1,3 +1,8 @@
+2018-06-29 Release 4.9
+	- when reading JSON, flatten any non-scalar values into JSON
+	  strings
+	- add a filter for extracting values from JSON strings using JSONPath
+
 2018-05-05 Release 4.8.3
 	- handle Google Drive "open" and "file" URLs
 	- normalise whitespace for the count filter (so that "Guinea" and

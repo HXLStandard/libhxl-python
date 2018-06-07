@@ -38,7 +38,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 """
 
 import hxl
-import abc, copy, dateutil.parser, json, logging, re, six, sys
+import abc, copy, dateutil.parser, json, jsonpath_rw, logging, re, six, sys
 
 
 logger = logging.getLogger(__name__)
@@ -157,6 +157,18 @@ class AbstractBaseFilter(hxl.model.Dataset):
                 query.calc_aggregate(self.source)
 
         return queries
+
+    def _get_indices(self, pattern):
+        """Get indices of columns to fill.
+        If there's no column pattern, then fill all columns.
+        @param: tag pattern for matching columns (if None, all columns match)
+        @returns: a set of indices for filling.
+        """
+        indices = set()
+        for i, column in enumerate(self.source.columns):
+            if not pattern or pattern.match(column):
+                    indices.add(i)
+        return indices
 
     @staticmethod
     def _load (source, spec):
@@ -1816,6 +1828,54 @@ class RenameFilter(AbstractStreamingFilter):
         )
 
     
+class JSONPathFilter(AbstractStreamingFilter):
+    """Extract values from a JSON string expression using JSONPath
+    See http://goessner.net/articles/JsonPath/
+    Optionally restrict to specific columns and/or rows
+    """
+
+    def __init__(self, source, path, pattern=None, queries=[]):
+        """Constructor
+        @param source: the upstream data source
+        @param path: a JSONPath expression for extracting data
+        @param pattern: a tag pattern or list of patterns for the columns to use (default to all)
+        @param queries: a predicate or list of predicates for the rows to consider.
+        """
+        super().__init__(source)
+        self.path = jsonpath_rw.parse(path)
+        if pattern:
+            self.pattern = hxl.model.TagPattern.parse(pattern)
+        else:
+            self.pattern = None
+        self.queries = self._setup_queries(queries)
+        self._indices = None
+
+    def filter_row(self, row):
+        if self._indices is None:
+            self._indices = self._get_indices(self.pattern)
+
+        values = list(row.values)
+
+        if hxl.model.RowQuery.match_list(row, self.queries):
+        
+            if self._indices is None:
+                self._indices = self._get_indices(self.pattern)
+
+            for i in self._indices:
+                try:
+                    expr = json.loads(values[i])
+                    results = [match.value for match in self.path.find(expr)]
+                    if len(results) == 0:
+                        values[i] = ''
+                    elif len(results) == 1:
+                        values[i] = hxl.datatypes.flatten(results[0])
+                    else:
+                        values[i] = hxl.datatypes.flatten(results)
+                except ValueError as e:
+                    logger.warning("Skipping invalid JSON expression '%s'", values[i])
+
+        return values
+    
 class FillDataFilter(AbstractStreamingFilter):
     """Fill empty cells in a dataset.
     By default, fill all empty cells with the closest non-empty value in a previous row.
@@ -1842,29 +1902,15 @@ class FillDataFilter(AbstractStreamingFilter):
         values = list(row.values)
 
         # Fill if there are no row queries, or this row matches one
-        indices = self._get_indices()
-        for i in indices:
+        if self._indices is None:
+            self._indices = self._get_indices(self.pattern)
+        for i in self._indices:
             if values[i]:
                 self._saved[i] = values[i]
             elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
                 values[i] = self._saved[i] if self._saved.get(i) else ''
                     
         return values
-
-    def _get_indices(self):
-        """Get indices of columns to fill.
-        If there's no column pattern, then fill all columns.
-        @returns: a set of indices for filling.
-        """
-        if not self._indices:
-            self._indices = set()
-            for i, column in enumerate(self.source.columns):
-                if self.pattern:
-                    if self.pattern.match(column):
-                        self._indices.add(i)
-                else:
-                    self._indices.add(i)
-        return self._indices
 
     @staticmethod
     def _load(source, spec):

@@ -880,7 +880,32 @@ class TestRowCountFilter(AbstractBaseFilterTest):
             pass
         self.assertEqual(2, counter.row_count)
 
-        
+class TestJSONPathFilter(unittest.TestCase):
+
+    DATA = [
+        ['#xxx'],
+        ['{"a": {"x": 1, "y": 2}, "b": [1, 2, 3]}'],
+        ['bad json']
+    ]
+
+    def test_bad_path(self):
+        with self.assertRaises(Exception):
+            hxl.data(self.DATA).jsonpath("a b c")
+
+    def test_object(self):
+        self.assertEqual('1', hxl.data(self.DATA).jsonpath("a.x").values[0][0])
+
+    def test_list(self):
+        self.assertEqual('2', hxl.data(self.DATA).jsonpath("b[1]").values[0][0])
+
+    def test_no_match(self):
+        self.assertEqual('', hxl.data(self.DATA).jsonpath('no.match').values[0][0])
+
+    def test_bad_json(self):
+        # shouldn't raise an exception (but will log a warning)
+        self.assertEqual('bad json', hxl.data(self.DATA).jsonpath("a.x").values[1][0])
+
+
 class TestRowFilter(unittest.TestCase):
 
     DATA = [
