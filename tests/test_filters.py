@@ -169,6 +169,11 @@ class TestRecipe(AbstractBaseFilterTest):
         })
         self.assertEqual(type(filtered).__name__, 'ReplaceDataFilter')
 
+
+    def test_jsonpath(self):
+        filtered = self.source.recipe({'filter': 'jsonpath', 'path': 'a.b'})
+        self.assertEqual(type(filtered).__name__, 'JSONPathFilter')
+
     def test_sort(self):
         filtered = self.source.recipe({'filter': 'sort'})
         self.assertEqual(type(filtered).__name__, 'SortFilter')

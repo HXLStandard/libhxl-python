@@ -1876,6 +1876,21 @@ class JSONPathFilter(AbstractStreamingFilter):
 
         return values
     
+    @staticmethod
+    def _load(source, spec):
+        """Create a JSONPath filter from a dict spec.
+        @param source: the upstream data source
+        @param spec: the JSON-like filter specification
+        @returns: a L{RenameFilter} object
+        """
+        return JSONPathFilter(
+            source=source,
+            path=req_arg(spec, 'path'),
+            pattern=opt_arg(spec, 'pattern'),
+            queries=opt_arg(spec, 'queries')
+        )
+
+    
 class FillDataFilter(AbstractStreamingFilter):
     """Fill empty cells in a dataset.
     By default, fill all empty cells with the closest non-empty value in a previous row.
@@ -2245,6 +2260,7 @@ LOAD_MAP = {
     'dedup': DeduplicationFilter._load,
     'explode': ExplodeFilter._load,
     'fill_data': FillDataFilter._load,
+    'jsonpath': JSONPathFilter._load,
     'merge_data': MergeDataFilter._load,
     'rename_columns': RenameFilter._load,
     'replace_data': ReplaceDataFilter._load,
