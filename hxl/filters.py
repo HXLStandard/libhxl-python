@@ -158,16 +158,16 @@ class AbstractBaseFilter(hxl.model.Dataset):
 
         return queries
 
-    def _get_indices(self, pattern):
+    def _get_indices(self, patterns):
         """Get indices of columns to fill.
         If there's no column pattern, then fill all columns.
-        @param: tag pattern for matching columns (if None, all columns match)
+        @param patterns: list of tag patterns for matching columns (if empty, all columns match)
         @returns: a set of indices for filling.
         """
         indices = set()
         for i, column in enumerate(self.source.columns):
-            if not pattern or pattern.match(column):
-                    indices.add(i)
+            if len(patterns) == 0 or hxl.model.TagPattern.match_list(column, patterns):
+                indices.add(i)
         return indices
 
     @staticmethod
@@ -1834,33 +1834,27 @@ class JSONPathFilter(AbstractStreamingFilter):
     Optionally restrict to specific columns and/or rows
     """
 
-    def __init__(self, source, path, pattern=None, queries=[]):
+    def __init__(self, source, path, patterns=None, queries=[]):
         """Constructor
         @param source: the upstream data source
         @param path: a JSONPath expression for extracting data
-        @param pattern: a tag pattern or list of patterns for the columns to use (default to all)
+        @param patterns: a tag pattern or list of patterns for the columns to use (default to all)
         @param queries: a predicate or list of predicates for the rows to consider.
         """
         super().__init__(source)
         self.path = jsonpath_rw.parse(path)
-        if pattern:
-            self.pattern = hxl.model.TagPattern.parse(pattern)
-        else:
-            self.pattern = None
+        self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.queries = self._setup_queries(queries)
         self._indices = None
 
     def filter_row(self, row):
         if self._indices is None:
-            self._indices = self._get_indices(self.pattern)
+            self._indices = self._get_indices(self.patterns)
 
         values = list(row.values)
 
         if hxl.model.RowQuery.match_list(row, self.queries):
         
-            if self._indices is None:
-                self._indices = self._get_indices(self.pattern)
-
             for i in self._indices:
                 try:
                     expr = json.loads(values[i])
@@ -1886,7 +1880,7 @@ class JSONPathFilter(AbstractStreamingFilter):
         return JSONPathFilter(
             source=source,
             path=req_arg(spec, 'path'),
-            pattern=opt_arg(spec, 'pattern'),
+            patterns=opt_arg(spec, 'patterns'),
             queries=opt_arg(spec, 'queries')
         )
 
@@ -1897,17 +1891,14 @@ class FillDataFilter(AbstractStreamingFilter):
     Optionally restrict to specific columns and/or rows.
     """
 
-    def __init__(self, source, pattern=None, queries=[]):
+    def __init__(self, source, patterns=None, queries=[]):
         """Constructor
         @param source: the source dataset
-        @param pattern: restrict filling to columns matching this tag pattern (default: fill all columns).
+        @param patterns: a tag pattern or list of patterns for the columns to fill (default to all)
         @param queries: restrict filling to rows matching one of these queries (default: fill all rows).
         """
         super().__init__(source)
-        if pattern:
-            self.pattern = hxl.model.TagPattern.parse(pattern)
-        else:
-            self.pattern = None
+        self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.queries = self._setup_queries(queries)
         self._saved = {}
         self._indices = None
@@ -1918,7 +1909,7 @@ class FillDataFilter(AbstractStreamingFilter):
 
         # Fill if there are no row queries, or this row matches one
         if self._indices is None:
-            self._indices = self._get_indices(self.pattern)
+            self._indices = self._get_indices(self.patterns)
         for i in self._indices:
             if values[i]:
                 self._saved[i] = values[i]
@@ -1936,7 +1927,7 @@ class FillDataFilter(AbstractStreamingFilter):
         """
         return FillDataFilter(
             source=source,
-            pattern=opt_arg(spec, 'pattern'),
+            patterns=opt_arg(spec, 'patterns'),
             queries=opt_arg(spec, 'queries'),
         )
 
