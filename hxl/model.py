@@ -455,27 +455,27 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
 
-    def jsonpath(self, path, pattern=None, queries=[]):
+    def jsonpath(self, path, patterns=[], queries=[]):
         """Parse the value as a JSON expression and extract data from it.
         See http://goessner.net/articles/JsonPath/
         @param path: a JSONPath expression for extracting data
-        @param pattern: a tag pattern for the columns to use (default to all)
+        @param patterns: a tag pattern or list of patterns for the columns to use (default to all)
         @param queries: a predicate or list of predicates for the rows to consider.
         @returns: filtered dataset
         @see: hxl.filters.JSONPathFilter
         """
         import hxl.filters
-        return hxl.filters.JSONPathFilter(self, path, pattern, queries)
+        return hxl.filters.JSONPathFilter(self, path, patterns=patterns, queries=queries)
 
-    def fill_data(self, pattern=None, queries=[]):
+    def fill_data(self, patterns=[], queries=[]):
         """Fills empty cells in a column using the last non-empty value.
-        @param pattern: Fill only in columns matching the pattern.
+        @param patterns: a tag pattern or list of patterns for the columns to fill (default to all)
         @param queries: a predicate or list of predicates for rows to fill (leave any blank that don't match).
         @return filtered dataset
         @see hxl.filters.FillFilter
         """
         import hxl.filters
-        return hxl.filters.FillDataFilter(self, pattern, queries)
+        return hxl.filters.FillDataFilter(self, patterns=patterns, queries=queries)
 
     #
     # Generators
