@@ -1078,7 +1078,7 @@ class TestFillDataFilter(AbstractBaseFilterTest):
     def test_fill_pattern(self):
         """Fill only in selected columns."""
         self.assertEqual(
-            hxl.data(self.DATA_IN).fill_data(pattern='#sector').values,
+            hxl.data(self.DATA_IN).fill_data(patterns='#sector').values,
             self.VALUES_OUT_PATTERN
         )
 
