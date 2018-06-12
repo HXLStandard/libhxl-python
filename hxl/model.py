@@ -23,17 +23,25 @@ class TagPattern(object):
     """
 
     # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
-    PATTERN = r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    PATTERN = r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*(!)?\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
 
-    def __init__(self, tag, include_attributes=[], exclude_attributes=[]):
+    def __init__(self, tag, include_attributes=[], exclude_attributes=[], is_absolute=False):
         """Like a column, but has a whitelist and a blacklist.
         @param tag: the basic hashtag (without attributes)
         @param include_attributes: a list of attributes that must be present
         @param exclude_attributes: a list of attributes that must not be present
         """
-        self.tag = tag.lower()
-        self.include_attributes = [a.lower() for a in include_attributes]
-        self.exclude_attributes = [a.lower() for a in exclude_attributes]
+        self.tag = tag
+        """HXL hashtag, or "#*" for a wildcard"""
+
+        self.include_attributes = set(include_attributes)
+        """Set of all attributes that must be present"""
+        
+        self.exclude_attributes = set(exclude_attributes)
+        """Set of all attributes that must not be present"""
+        
+        self.is_absolute = is_absolute
+        """True if this pattern is absolute (no extra attributes allowed)"""
 
     def is_wildcard(self):
         return self.tag == '#*'
@@ -53,6 +61,11 @@ class TagPattern(object):
             if self.exclude_attributes:
                 for attribute in self.exclude_attributes:
                     if attribute in column.attributes:
+                        return False
+            # if absolute, then only specified attributes may be present
+            if self.is_absolute:
+                for attribute in column.attributes:
+                    if attribute not in self.include_attributes:
                         return False
             return True
         else:
@@ -111,16 +124,27 @@ class TagPattern(object):
 
         result = re.match(TagPattern.PATTERN, s)
         if result:
-            tag = '#' + result.group(1)
-            include_attributes = []
-            exclude_attributes = []
+            tag = '#' + result.group(1).lower()
+            include_attributes = set()
+            exclude_attributes = set()
             attribute_specs = re.split(r'\s*([+-])', result.group(2))
             for i in range(1, len(attribute_specs), 2):
                 if attribute_specs[i] == '+':
-                    include_attributes.append(attribute_specs[i + 1])
+                    include_attributes.add(attribute_specs[i + 1].lower())
                 else:
-                    exclude_attributes.append(attribute_specs[i + 1])
-            return TagPattern(tag, include_attributes=include_attributes, exclude_attributes=exclude_attributes)
+                    exclude_attributes.add(attribute_specs[i + 1].lower())
+            if result.group(3) == '!':
+                is_absolute = True
+                if exclude_attributes:
+                    raise ValueError('Exclusions not allowed in absolute patterns')
+            else:
+                is_absolute = False
+            return TagPattern(
+                tag,
+                include_attributes=include_attributes,
+                exclude_attributes=exclude_attributes,
+                is_absolute=is_absolute
+            )
         else:
             raise hxl.HXLException('Malformed tag: ' + s)
 

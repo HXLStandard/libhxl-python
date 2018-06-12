@@ -9,7 +9,7 @@ License: Public Domain
 import io, unittest
 import hxl
 from hxl.datatypes import normalise_string
-from hxl.model import TagPattern, Column, Row, RowQuery
+from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
 
 DATA = [
     ['Organisation', 'Cluster', 'District', 'Affected'],
@@ -55,9 +55,9 @@ class TestPattern(unittest.TestCase):
         self.assertFalse(pattern.match(self.column))
 
     def test_caseinsensitive(self):
-        pattern = TagPattern('#Tag')
+        pattern = TagPattern.parse('#Tag')
         self.assertTrue(pattern.match(self.column))
-        pattern = TagPattern('#tag', include_attributes=['fOO'])
+        pattern = TagPattern.parse('#tag+fOO')
         self.assertTrue(pattern.match(self.column))
 
     def test_simple_wildcard(self):
@@ -67,7 +67,7 @@ class TestPattern(unittest.TestCase):
 
     def test_wildcard_empty_column(self):
         pattern = TagPattern.parse('*')
-        untagged_column = hxl.model.Column(header="Foo", column_number=1)
+        untagged_column = Column(header="Foo", column_number=1)
         self.assertFalse(pattern.match(untagged_column))
 
     def test_attributes_wildcard(self):
@@ -83,6 +83,17 @@ class TestPattern(unittest.TestCase):
         self.assertTrue(pattern.is_wildcard())
         self.assertFalse(pattern.match(self.column))
 
+    def test_absolute(self):
+        # don't allow exclusions in an absolute pattern
+        with self.assertRaises(ValueError):
+            pattern = TagPattern.parse('#foo+a-b!')
+
+        pattern = TagPattern.parse('#foo+a!')
+        self.assertTrue(pattern.is_absolute)
+        self.assertTrue(pattern.match(Column.parse('#foo+a')))
+        self.assertFalse(pattern.match(Column.parse('#foo')))
+        self.assertFalse(pattern.match(Column.parse('#foo+a+b')))
+        
     def test_parse(self):
         pattern = TagPattern.parse('#tag+foo-xxx')
         self.assertEqual(pattern.tag, '#tag')
@@ -93,8 +104,8 @@ class TestPattern(unittest.TestCase):
 
         pattern = TagPattern.parse('   tag +foo  -xxx  ')
         self.assertEqual(pattern.tag, '#tag')
-        self.assertEqual(['foo'], pattern.include_attributes)
-        self.assertEqual(['xxx'], pattern.exclude_attributes)
+        self.assertEqual({'foo'}, pattern.include_attributes)
+        self.assertEqual({'xxx'}, pattern.exclude_attributes)
 
     def test_parse_list(self):
         patterns = TagPattern.parse_list('tag+foo,tag-xxx')
@@ -103,6 +114,7 @@ class TestPattern(unittest.TestCase):
         patterns = TagPattern.parse_list('tag-foo,tag+xxx')
         for pattern in patterns:
             self.assertFalse(pattern.match(self.column))
+
 
 
 class TestDataset(unittest.TestCase):
@@ -133,7 +145,7 @@ class TestDataset(unittest.TestCase):
         self.assertEquals(300, self.source.max('#affected'))
 
     def test_cached(self):
-        dataset = hxl.model.Dataset()
+        dataset = Dataset()
         self.assertFalse(dataset.is_cached)
 
     def test_headers(self):
