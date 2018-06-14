@@ -1,12 +1,13 @@
 2018-06-29 Release 4.9
 	- support additional separators besides comma for CSV-like files
 	  (including tab, semicolon, colon, and vertical bar)
-	- when reading JSON, flatten any non-scalar values into JSON
-	  strings
-	- add a filter for extracting values from JSON strings using
-	  JSONPath
 	- allow absolute tag patterns ending in "!" (does not ignore extra
 	  attributes)
+
+2018-06-14 Release 4.8.4
+	- when reading JSON, flatten any non-scalar values into JSON
+	  strings
+	- add a filter for extracting values from JSON strings using JSONPath
 
 2018-05-05 Release 4.8.3
 	- handle Google Drive "open" and "file" URLs
