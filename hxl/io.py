@@ -435,10 +435,17 @@ class AbstractInput(object):
 class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
+    DELIMITERS = {",", "\t", ";", ":", "|"}
+    """Field delimiters allowed"""
+
     def __init__(self, input, encoding='utf-8'):
         super().__init__()
+
+        # guess the delimiter
+        delimiter = CSVInput.detect_delimiter(input, encoding)
+        
         self._input = io.TextIOWrapper(input, encoding=encoding)
-        self._reader = csv.reader(self._input)
+        self._reader = csv.reader(self._input, delimiter=delimiter)
 
     def __exit__(self, value, type, traceback):
         self._input.close()
@@ -446,7 +453,29 @@ class CSVInput(AbstractInput):
     def __iter__(self):
         return self._reader
 
+    @staticmethod
+    def detect_delimiter(input, encoding):
+        """Detect the CSV delimiter in use
+        @param input: the input byte stream (with a peek() method)
+        @param encoding: the character encoding to use
+        @returns a \L{csv.Dialect} object or string.
+        """
+        delimiter = ","
+        counts = dict()
+        max_count = -1
+        sample = input.peek(1024).decode(encoding)
+        for c in sample:
+            if c in CSVInput.DELIMITERS:
+                counts[c] = counts.setdefault(c, 0) + 1
+                if counts[c] > max_count:
+                    max_count = counts[c]
+        for c, count in counts.items():
+            if count == max_count:
+                delimiter = c
+        print("Delimiter is '{}'".format(delimiter))
+        return delimiter
 
+    
 class JSONInput(AbstractInput):
     """Iterable: Read raw CSV input from an input stream.
     The iterable values will be arrays usable as raw input for HXL.

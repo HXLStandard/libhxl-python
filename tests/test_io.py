@@ -63,37 +63,38 @@ class TestInput(unittest.TestCase):
         self.assertTrue('#sector' in hxl.data(DATA).tags)
 
     def test_csv_comma_separated(self):
-        input = make_input(FILE_CSV, True)
-        self.assertFalse(input.is_repeatable)
-        self.assertTrue('#sector' in hxl.data(input).tags)
+        with make_input(FILE_CSV, True) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_csv_tab_separated(self):
-        input = make_input(FILE_TSV, True)
-        self.assertFalse(input.is_repeatable)
-        self.assertTrue('#sector' in hxl.data(input).tags)
+        with make_input(FILE_TSV, True) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_csv_semicolon_separated(self):
-        input = make_input(FILE_SSV, True)
-        self.assertFalse(input.is_repeatable)
-        self.assertTrue('#sector' in hxl.data(input).tags)
+        with make_input(FILE_SSV, True) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_lists(self):
-        input = make_input(FILE_JSON, True)
-        self.assertFalse(input.is_repeatable)
-        self.assertTrue('#sector' in hxl.data(input).tags)
+        with make_input(FILE_JSON, True) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_objects(self):
-        input = make_input(FILE_JSON_OBJECTS, True)
-        self.assertFalse(input.is_repeatable)
-        self.assertTrue('#sector' in hxl.data(input).tags)
+        with make_input(FILE_JSON_OBJECTS, True) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_selector(self):
-        input = make_input(FILE_JSON_SELECTOR, True, selector="sel1")
-        pass
+        with make_input(FILE_JSON_SELECTOR, True, selector="sel1") as input:
+            # TODO
+            pass
 
     def test_excel(self):
-        input = make_input(FILE_EXCEL, True)
-        self.assertTrue(input.is_repeatable)
+        with make_input(FILE_EXCEL, True) as input:
+            self.assertTrue(input.is_repeatable)
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
