@@ -30,6 +30,8 @@ DATA = [
 ]
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
+FILE_TSV = _resolve_file('./files/test_io/input-valid.tsv')
+FILE_SSV = _resolve_file('./files/test_io/input-valid.ssv')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
@@ -60,8 +62,18 @@ class TestInput(unittest.TestCase):
         self.assertTrue(make_input(DATA).is_repeatable)
         self.assertTrue('#sector' in hxl.data(DATA).tags)
 
-    def test_csv(self):
+    def test_csv_comma_separated(self):
         input = make_input(FILE_CSV, True)
+        self.assertFalse(input.is_repeatable)
+        self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_csv_tab_separated(self):
+        input = make_input(FILE_TSV, True)
+        self.assertFalse(input.is_repeatable)
+        self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_csv_semicolon_separated(self):
+        input = make_input(FILE_SSV, True)
         self.assertFalse(input.is_repeatable)
         self.assertTrue('#sector' in hxl.data(input).tags)
 
