@@ -1,4 +1,6 @@
 2018-06-29 Release 4.9
+	- support additional separators besides comma for CSV-like files
+	  (including tab, semicolon, colon, and vertical bar)
 	- when reading JSON, flatten any non-scalar values into JSON
 	  strings
 	- add a filter for extracting values from JSON strings using
