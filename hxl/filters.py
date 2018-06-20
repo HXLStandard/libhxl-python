@@ -1982,7 +1982,10 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             @param is_regex: (optional) True to use regular-expression processing (defaults to False)
             """
             self.original = original
-            self.replacement = replacement
+            if replacement is None:
+                self.replacement = ''
+            else:
+                self.replacement = replacement
             if patterns:
                 self.patterns = hxl.model.TagPattern.parse_list(patterns)
             else:
