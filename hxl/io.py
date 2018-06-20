@@ -472,7 +472,6 @@ class CSVInput(AbstractInput):
         for c, count in counts.items():
             if count == max_count:
                 delimiter = c
-        print("Delimiter is '{}'".format(delimiter))
         return delimiter
 
     
