@@ -8,8 +8,8 @@ License: Public Domain
 """
 
 import unittest
-
 import hxl
+from . import resolve_path
 
 
 class TaggerTest(unittest.TestCase):
@@ -64,4 +64,14 @@ class TaggerTest(unittest.TestCase):
         tagging_specs = [('Country Name', '#country+name'), ('Country Code', '#country+code')]
         source = hxl.data(hxl.converters.Tagger(self.UNTAGGED, tagging_specs, default_tag='#targeted'))
         self.assertEqual(self.EXPECTED_TAGS_DEFAULT, source.display_tags)
-        
+
+    def test_wide_data(self):
+        """Test for very wide data"""
+        tagging_specs = [
+            ('cod_wardsr', '#adm3+code',),
+            ('food_monthly', '#value+expenditure+food_monthly',),
+        ]
+        filename = resolve_path("files/test_converters/wide-tagging-test.csv")
+        source = hxl.data(hxl.converters.Tagger(hxl.io.make_input(filename, allow_local=True), tagging_specs)).cache()
+        self.assertTrue('#value+expenditure+food_monthly' in source.display_tags)
+                     
