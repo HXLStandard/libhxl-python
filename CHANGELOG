@@ -3,7 +3,7 @@
 	  (including tab, semicolon, colon, and vertical bar)
 	- allow absolute tag patterns ending in "!" (does not ignore extra
 	  attributes)
-	- fix error in ReplaceDataFilter that raised an error when the
+	- fix bug in ReplaceDataFilter that raised an error when the
 	  replacement was empty/None
 
 2018-06-14 Release 4.8.4
