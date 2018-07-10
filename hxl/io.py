@@ -456,24 +456,36 @@ class CSVInput(AbstractInput):
     @staticmethod
     def detect_delimiter(input, encoding):
         """Detect the CSV delimiter in use
+        Grab the first 16K bytes, split into lines, then try splitting
+        each line with each delimiter. The first one that yields a well-formed
+        HXL hashtag row wins. If there is no winner, then choose the delimiter
+        that appeared most often in the sample.
         @param input: the input byte stream (with a peek() method)
         @param encoding: the character encoding to use
         @returns a \L{csv.Dialect} object or string.
         """
-        delimiter = ","
-        counts = dict()
-        max_count = -1
-        sample = input.peek(1024).decode(encoding)
-        for c in sample:
-            if c in CSVInput.DELIMITERS:
-                counts[c] = counts.setdefault(c, 0) + 1
-                if counts[c] > max_count:
-                    max_count = counts[c]
-        for c, count in counts.items():
-            if count == max_count:
-                delimiter = c
-        return delimiter
+        
+        sample = input.peek(16384).decode(encoding)
+        lines = re.split(r'\r?\n', sample)
 
+        # first, try for a hashtag row
+        for line in lines:
+            if '#' in line:
+                for delim in CSVInput.DELIMITERS:
+                    fields = next(csv.reader([line], delimiter=delim))
+                    if HXLReader.parse_tags(fields):
+                        return delim
+
+        # if that fails, return the delimiter that appears most often
+        most_common_delim = ','
+        max_count = -1
+        for delim in CSVInput.DELIMITERS:
+            count = sample.count(delim)
+            if count > max_count:
+                max_count = count
+                most_common_delim = delim
+                    
+        return most_common_delim
     
 class JSONInput(AbstractInput):
     """Iterable: Read raw CSV input from an input stream.
