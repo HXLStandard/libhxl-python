@@ -151,6 +151,13 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default=[]
         )
     parser.add_argument(
+        '-l',
+        '--list',
+        help='URL or filename of list of URLs (may repeat option). Will appear after sources in -a options.',
+        action='append',
+        default=[]
+        )
+    parser.add_argument(
         '-x',
         '--exclude-extra-columns',
         help='Don not add extra columns not in the original dataset.',
@@ -162,10 +169,17 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
+    append_sources = []
+    for append_source in args.append:
+        append_sources.append(hxl.data(append_source, True))
+    for list_source in args.list:
+        for append_source in hxl.filters.AppendFilter.parse_external_source_list(hxl.data(list_source, True)):
+            append_sources.append(hxl.data(append_source, True))
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.AppendFilter(
             source,
-            append_sources=[hxl.data(url, True) for url in args.append],
+            append_sources=append_sources,
             add_columns=(not args.exclude_extra_columns),
             queries=args.query
         )

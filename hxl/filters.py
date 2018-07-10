@@ -847,9 +847,8 @@ class AppendFilter(AbstractBaseFilter):
     @staticmethod
     def parse_external_source_list(source):
         append_sources = []
-        for row in source:
+        for row in hxl.data(source):
             append_source = row.get('#x_source')
-            print('***', append_source)
             if append_source:
                 append_sources.append(append_source)
         return append_sources

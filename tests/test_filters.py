@@ -314,6 +314,21 @@ class TestAppendFilter(AbstractBaseFilterTest):
     def test_values(self):
         self.assertEqual(self.COMBINED_DATA[2:], self.source.append(self.append_source).values)
 
+    @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
+    def test_external(self):
+        EXPECTED_VALUES = [
+            ['NGO A', 'WASH', 'Coast', '200', '', ''],
+            ['NGO B', 'Education', 'Plains', '100', '', ''],
+            ['NGO B', 'Education', 'Coast', '300', '', ''],
+            ['NGO A', 'Education, Protection', 'Plains', '150', '', ''],
+            ['NGO A', ' WASH', '', '', ' 200', ' '],
+            ['NGO C', ' Health', '', '', ' 500', ' Food'],
+            ['NGO A', ' Education', '', '', ' 300', ' '],
+            ['NGO C', ' Protection', '', '', ' 100', ' Food']
+        ]
+        filtered = self.source.append_external_list('http://example.org/append-source-list.csv')
+        self.assertEqual(EXPECTED_VALUES, filtered.values)
+
     def test_queries(self):
         #self.assertEqual(self.COMBINED_DATA_FILTERED[2:], self.source.append(self.append_source, queries='').values)
         pass # need a new query

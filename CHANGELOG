@@ -1,5 +1,7 @@
 2018-07-31 Release 4.10
 	- refine delimiter detection for CSV
+	- added append_external_list() method (and filter support) for an
+	  external list of files to append
 
 2018-06-29 Release 4.9
 	- support additional separators besides comma for CSV-like files
