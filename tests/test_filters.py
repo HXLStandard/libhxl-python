@@ -11,6 +11,10 @@ import unittest
 
 import hxl
 
+# Mock URL access so that tests work offline
+from . import URL_MOCK_TARGET, URL_MOCK_OBJECT
+from unittest.mock import patch
+
 #
 # Base data for tests
 #
@@ -100,6 +104,14 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = self.source.recipe({
             'filter': 'append',
             'append_sources': DATA
+        })
+        self.assertEqual(type(filtered).__name__, 'AppendFilter')
+
+    @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
+    def test_append_external(self):
+        filtered = self.source.recipe({
+            'filter': 'append_external_list',
+            'source_list_url': 'http://example.org/append-source-list.csv'
         })
         self.assertEqual(type(filtered).__name__, 'AppendFilter')
 

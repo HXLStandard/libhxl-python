@@ -17,6 +17,7 @@ setup(name='libhxl',
       package_data={'hxl': ['*.json']},
       include_package_data=True,
       test_suite='tests',
+      tests_require = ['mock'],
       entry_points={
           'console_scripts': [
               'hxladd = hxl.scripts:hxladd',

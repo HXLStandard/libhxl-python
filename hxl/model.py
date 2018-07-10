@@ -364,8 +364,24 @@ class Dataset(object):
     #
 
     def append(self, append_sources, add_columns=True, queries=[]):
-        """Append a second dataset."""
+        """Append additional datasets.
+        @param append_sources: a list of sources to append
+        @param add_columns: if True (default), include any extra columns in the append sources
+        @param queries: a list of row queries to select rows for inclusion from the append sources.
+        @returns: a new HXL source for chaining
+        """
         import hxl.filters
+        return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)
+
+    def append_external_list(self, source_list_url, add_columns=True, queries=[]):
+        """Append additional datasets from an external list
+        @param source_list_url: URL of a HXL dataset containing a list of sources to append.
+        @param add_columns: if True (default), include any extra columns in the append sources.
+        @param queries: a list of row queries to select rows for inclusion from the append sources.
+        @returns: a new HXL source for chaining
+        """
+        import hxl.filters
+        append_sources = hxl.filters.AppendFilter.parse_external_source_list(source_list_url)
         return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)
 
     def cache(self):

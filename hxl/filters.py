@@ -843,15 +843,33 @@ class AppendFilter(AbstractBaseFilter):
                         self._iterator = None
 
             raise StopIteration()
+
+    @staticmethod
+    def parse_external_source_list(source):
+        append_sources = []
+        for row in source:
+            append_source = row.get('#x_source')
+            print('***', append_source)
+            if append_source:
+                append_sources.append(append_source)
+        return append_sources
         
     @staticmethod
     def _load(source, spec):
         """Create an AppendFilter from a dict spec.
         @param spec: the string specification
         """
+
+        if spec.get('filter') == 'append_external_list':
+            append_sources = AppendFilter.parse_external_source_list(
+                hxl.data(req_arg(spec, 'source_list_url'))
+            )
+        else:
+            append_sources = req_arg(spec, 'append_sources')
+            
         return AppendFilter(
             source=source,
-            append_sources=req_arg(spec, 'append_sources'),
+            append_sources=append_sources,
             add_columns=opt_arg(spec, 'add_columns', True),
             queries=opt_arg(spec, 'queries', [])
         )
@@ -2248,6 +2266,7 @@ class SortFilter(AbstractCachingFilter):
 LOAD_MAP = {
     'add_columns': AddColumnsFilter._load,
     'append': AppendFilter._load,
+    'append_external_list': AppendFilter._load,
     'cache': CacheFilter._load,
     'clean_data': CleanDataFilter._load,
     'count': CountFilter._load,
