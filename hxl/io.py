@@ -468,13 +468,24 @@ class CSVInput(AbstractInput):
         sample = input.peek(16384).decode(encoding)
         lines = re.split(r'\r?\n', sample)
 
+        # first, try for a hashtag row
         for line in lines:
             if '#' in line:
                 for delim in CSVInput.DELIMITERS:
                     fields = next(csv.reader([line], delimiter=delim))
                     if HXLReader.parse_tags(fields):
                         return delim
-        return ','
+
+        # if that fails, return the delimiter that appears most often
+        most_common_delim = ','
+        max_count = -1
+        for delim in CSVInput.DELIMITERS:
+            count = sample.count(delim)
+            if count > max_count:
+                max_count = count
+                most_common_delim = delim
+                    
+        return most_common_delim
     
 class JSONInput(AbstractInput):
     """Iterable: Read raw CSV input from an input stream.
