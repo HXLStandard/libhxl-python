@@ -1,3 +1,6 @@
+2018-07-31 Release 4.10
+	- refine delimiter detection for CSV
+
 2018-06-29 Release 4.9
 	- support additional separators besides comma for CSV-like files
 	  (including tab, semicolon, colon, and vertical bar)
