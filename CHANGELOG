@@ -2,6 +2,7 @@
 	- refine delimiter detection for CSV
 	- added append_external_list() method (and filter support) for an
 	  external list of files to append
+	- count filter now supports dates and strings for min() and max() aggregators
 
 2018-06-29 Release 4.9
 	- support additional separators besides comma for CSV-like files

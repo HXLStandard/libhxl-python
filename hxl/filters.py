@@ -429,8 +429,12 @@ class Aggregator(object):
 
         self.total = 0
         """Total number of rows used."""
+
         self.value = None
         """Resulting aggregation value."""
+
+        self.normalised = None
+        """Normalised value to use for internal comparison"""
 
     def evaluate_row(self, row):
         """Evaluate a single row of HXL data against this aggregator.
@@ -438,33 +442,53 @@ class Aggregator(object):
         @exception HXLFilterException: for an unrecognised aggregator type
         """
 
+        #
+        # Shortcut: just counting rows
+        #
         if self.type == 'count':
-            if self.value is None: self.value = 0
+            if self.value is None:
+                self.value = 0
             self.value += 1
             return
 
+        #
+        # Aggregating values
+        #
         value = row.get(self.pattern)
-        if value is not '' and value is not None:
-            try:
-                # try to force to a number for aggregation
-                n = float(value)
-                self.total += 1
-                if self.type == 'sum':
-                    if not self.value: self.value = 0
-                    self.value += n
-                elif self.type == 'average':
-                    if not self.value: self.value = 0
-                    self.value = ((self.value * (self.total - 1)) + n) / self.total
-                elif self.type == 'min':
-                    if self.value is None or self.value > n:
-                        self.value = n
-                elif self.type == 'max':
-                    if self.value is None or self.value < n:
-                        self.value = n
-                else:
-                    raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
-            except:
-                logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
+
+        # Skip empty values
+        if value is '' or value is None:
+            return
+
+        # Numbers only for sum and average
+        datatype = hxl.datatypes.typeof(value, self.pattern)
+        if self.type in ['sum', 'average'] and datatype != 'number':
+            logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
+            return
+
+        normalised = hxl.datatypes.normalise(value, self.pattern)
+        self.total += 1
+
+        # aggregate as appropriate
+        # note that we track a separate normalised value for strings and dates
+        if self.type == 'sum':
+            if self.value is None:
+                self.value = 0
+            self.value += normalised
+        elif self.type == 'average':
+            if self.value is None:
+                self.value = 0
+            self.value = ((self.value * (self.total - 1)) + normalised) / self.total
+        elif self.type == 'min':
+            if self.normalised is None or self.normalised > normalised:
+                self.value = value
+                self.normalised = normalised
+        elif self.type == 'max':
+            if self.normalised is None or self.normalised < normalised:
+                self.value = value
+                self.normalised = normalised
+        else:
+            raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
 
     TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for a tag pattern"""
@@ -1378,7 +1402,7 @@ class CountFilter(AbstractCachingFilter):
         # each item is a sequence containing a tuple of key values and an _Aggregator object
         for aggregate in self._aggregate_data():
             raw_data.append(
-                list(aggregate[0]) + [hxl.datatypes.normalise_number(aggregator.value) if aggregator.value is not None else '' for aggregator in aggregate[1]]
+                list(aggregate[0]) + [aggregator.value if aggregator.value is not None else '' for aggregator in aggregate[1]]
             )
             
         return raw_data

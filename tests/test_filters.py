@@ -598,8 +598,8 @@ class TestCountFilter(AbstractBaseFilterTest):
         expected = [
             ['Organisation', 'Minimum affected'],
             ['#org', '#affected+min'],
-            ['NGO A', 150],
-            ['NGO B', 100]
+            ['NGO A', '150'],
+            ['NGO B', '100']
         ]
         filtered = self.source.count('org', 'min(#affected) as Minimum affected#affected+min')
         self.assertEqual(expected[0], filtered.headers)
@@ -610,8 +610,8 @@ class TestCountFilter(AbstractBaseFilterTest):
         expected = [
             ['Organisation', 'Maximum affected'],
             ['#org', '#affected+max'],
-            ['NGO A', 200],
-            ['NGO B', 300]
+            ['NGO A', '200'],
+            ['NGO B', '300']
         ]
         filtered = self.source.count('org', 'max(#affected) as Maximum affected#affected+max')
         self.assertEqual(expected[0], filtered.headers)
@@ -675,8 +675,8 @@ class TestCountFilter(AbstractBaseFilterTest):
         expected = [
             ['Organisation', 'Minimum affected', 'Maximum affected'],
             ['#org', '#affected+min', '#affected+max'],
-            ['NGO A', 150, 200],
-            ['NGO B', 100, 300]
+            ['NGO A', '150', '200'],
+            ['NGO B', '100', '300']
         ]
         filtered = self.source.count('org', [
             'min(#affected) as Minimum affected#affected+min',
