@@ -605,7 +605,7 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[0], filtered.headers)
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
-        
+
     def test_max_aggregator(self):
         expected = [
             ['Organisation', 'Maximum affected'],
@@ -617,6 +617,26 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[0], filtered.headers)
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
+
+    def test_aggregator_dates(self):
+        DATA_IN = [
+            ['#event', '#date'],
+            ['Flood', '2017-01-01'],
+            ['Flood', '1 Jan 2018'],
+            ['Flood', '06/30/2018']
+        ]
+
+        # minimum date
+        self.assertEqual(
+            [['Flood', '2017-01-01']],
+            hxl.data(DATA_IN).count('event', 'min(#date)').values
+        )
+
+        # maximum date
+        self.assertEqual(
+            [['Flood', '06/30/2018']],
+            hxl.data(DATA_IN).count('event', 'min(#date)').values
+        )
 
     def test_whitespace_normalisation(self):
         data = [
