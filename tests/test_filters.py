@@ -635,7 +635,27 @@ class TestCountFilter(AbstractBaseFilterTest):
         # maximum date
         self.assertEqual(
             [['Flood', '06/30/2018']],
-            hxl.data(DATA_IN).count('event', 'min(#date)').values
+            hxl.data(DATA_IN).count('event', 'max(#date)').values
+        )
+
+    def test_aggregator_strings(self):
+        DATA_IN = [
+            ['#event', '#sector'],
+            ['Flood', 'Food'],
+            ['Flood', 'Health'],
+            ['Flood', 'Education']
+        ]
+
+        # minimum date
+        self.assertEqual(
+            [['Flood', 'Education']],
+            hxl.data(DATA_IN).count('event', 'min(#sector)').values
+        )
+
+        # maximum date
+        self.assertEqual(
+            [['Flood', 'Health']],
+            hxl.data(DATA_IN).count('event', 'max(#sector)').values
         )
 
     def test_whitespace_normalisation(self):
