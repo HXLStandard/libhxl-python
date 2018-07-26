@@ -24,11 +24,11 @@ DEFAULT_DATE_1 = datetime.datetime(2015, 1, 1)
 
 DEFAULT_DATE_2 = datetime.datetime(2016, 3, 3)
 
-def normalise(s, col=None):
+def normalise(s, col=None, dayfirst=True):
     """Intelligently normalise a value, optionally using the HXL hashtag for hints"""
     # TODO add lat/lon
     if col and col.tag == '#date' and is_date(s):
-        return normalise_date(s)
+        return normalise_date(s, dayfirst=dayfirst)
     elif is_number(s):
         return normalise_number(s)
     else:
@@ -179,7 +179,7 @@ def is_date(v):
     except ValueError as e:
         return False
 
-def normalise_date(v):
+def normalise_date(v, dayfirst=True):
     """Normalise a string as a date.
     @param s: the string to normalise as a date
     @returns: the date in ISO 8601 format or quarters (extension)
@@ -216,8 +216,8 @@ def normalise_date(v):
 
     # revert to full date parsing
     # we parse the date twice, to detect any default values Python might have filled in
-    date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1)
-    date2 = dateutil.parser.parse(v, default=DEFAULT_DATE_2)
+    date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1, dayfirst=dayfirst)
+    date2 = dateutil.parser.parse(v, default=DEFAULT_DATE_2, dayfirst=dayfirst)
     return make_date(
         date1.year,
         month=(date1.month if date1.month==date2.month else None),

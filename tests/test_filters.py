@@ -460,7 +460,43 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
         ]
         self.assertEqual(DATA_OUT_Y, hxl.data(DATA_IN).clean_data(date='date', date_format='%Y').values)
         self.assertEqual(DATA_OUT_Y_M, hxl.data(DATA_IN).clean_data(date='date', date_format='%Y-%m').values)
-        
+
+    def test_date_ddmm(self):
+        DATA_IN = [
+            ['#date'],
+            ['11-14-15'],
+            ['13-11-15'],
+            ['11-17-15'],
+            ['09-11-15'] # ambiguous
+        ]
+        EXPECTED = [
+            ['#date'],
+            ['2015-11-14'],
+            ['2015-11-13'],
+            ['2015-11-17'],
+            ['2015-09-11'] # this is the one that is has to get right
+        ]
+        source = hxl.data(DATA_IN)
+        self.assertEqual(EXPECTED[1:], source.clean_data(date='date').values)
+
+    def test_date_mmdd(self):
+        DATA_IN = [
+            ['#date'],
+            ['14-11-15'],
+            ['11-13-15'],
+            ['17-11-15'],
+            ['09-11-15'] # ambiguous
+        ]
+        EXPECTED = [
+            ['#date'],
+            ['2015-11-14'],
+            ['2015-11-13'],
+            ['2015-11-17'],
+            ['2015-11-09'] # this is the one that is has to get right
+        ]
+        source = hxl.data(DATA_IN)
+        self.assertEqual(EXPECTED[1:], source.clean_data(date='date').values)
+
     def test_upper_case(self):
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],

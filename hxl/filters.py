@@ -1080,6 +1080,11 @@ class CleanDataFilter(AbstractStreamingFilter):
         self.purge = purge
         self.queries = self._setup_queries(queries)
 
+        # We need to prescan for dates
+        if date:
+            self.source = self.source.cache();
+            self.date_dayfirst = self._guess_dayfirst()
+
     def filter_row(self, row):
         """@returns: cleaned row data"""
         if hxl.model.RowQuery.match_list(row, self.queries):
@@ -1093,6 +1098,35 @@ class CleanDataFilter(AbstractStreamingFilter):
             # otherwise, leave as-is
             return row.values
 
+    def _guess_dayfirst(self):
+        """Guess whether the default should be DD-MM-YYYY or MM-DD-YYYY
+        @returns: true if we should default to dayfirst format
+        """
+        ddmm_count = 0
+        mmdd_count = 0
+        
+        # prescan columns to speed things up
+        indices = []
+        for i, column in enumerate(self.source.columns):
+            if hxl.TagPattern.match_list(column, self.date):
+                indices.append(i)
+
+        # if there are any matching columns, then prescan values
+        if indices:
+            for row in self.source:
+                for i in indices:
+                    value = row.values[i]
+                    if value:
+                        result = re.match(r'^[^\d]*(\d\d?)[^\d]+(\d\d?)[^\d].*$', value)
+                        if result:
+                            if int(result.group(1)) > 12:
+                                ddmm_count += 1
+                            elif int(result.group(2)) > 12:
+                                mmdd_count += 1
+
+        return (ddmm_count >= mmdd_count)
+
+    
     def _clean_value(self, value, column):
         """Clean a single value, using the column def for guidance.
         @returns: a single cleaned value
@@ -1120,7 +1154,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                     if self.date_format is not None:
                         value = dateutil.parser.parse(value).strftime(self.date_format)
                     else:
-                        value = hxl.datatypes.normalise_date(value)
+                        value = hxl.datatypes.normalise_date(value, self.date_dayfirst)
                 else:
                     logger.warning('Cannot parse %s as a date', str(value))
                     if self.purge:

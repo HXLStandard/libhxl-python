@@ -80,6 +80,10 @@ class TestDates(unittest.TestCase):
         self.assertTrue(hxl.datatypes.is_date("Thu, 30 May 2018 02:57:50 GMT"))
         self.assertEqual('2018-05-30', hxl.datatypes.normalise_date("Thu, 30 May 2018 02:57:50 GMT"))
 
+    def test_normalise_date_dayfirst(self):
+        self.assertEqual('2018-11-10', hxl.datatypes.normalise_date('10-11-18', dayfirst=True))
+        self.assertEqual('2018-10-11', hxl.datatypes.normalise_date('10-11-18', dayfirst=False))
+
     def test_is_quarter(self):
         self.assertTrue(hxl.datatypes.is_date('2018Q2'))
         self.assertFalse(hxl.datatypes.is_date('2018Q5'))
