@@ -352,7 +352,7 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.DeduplicationFilter(source, args.tags, filter=args.filter)
+        filter = hxl.filters.DeduplicationFilter(source, args.tags, args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
