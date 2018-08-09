@@ -1,3 +1,6 @@
+2018-08-31 Release 4.11
+	- fixed date-cleaning bug when reading a filter definition from JSON
+
 2018-07-31 Release 4.10
 	- refine delimiter detection for CSV
 	- added append_external_list() method (and filter support) for an
