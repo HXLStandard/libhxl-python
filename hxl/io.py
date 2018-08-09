@@ -9,7 +9,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 import abc, collections, csv, io, io_wrapper, json, logging, re, requests, six, sys, xlrd, xml.sax
 
-import hxl
+import hxl, hxl.filters
 
 logger = logging.getLogger(__name__)
 
