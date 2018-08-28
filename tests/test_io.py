@@ -109,6 +109,12 @@ class TestInput(unittest.TestCase):
         source = hxl.data(io.BytesIO("#org\nOrg A".encode('utf-8')))
         self.assertTrue('#org' in source.tags)
 
+    def test_optional_params(self):
+        url = 'https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832'
+        hxl.io.make_input(url, verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'})
+        hxl.data(url, verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'})
+        
+
 class TestUntaggedInput(unittest.TestCase):
 
     def test_untagged_json(self):
