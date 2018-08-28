@@ -77,7 +77,7 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, selector=None):
+def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
@@ -86,6 +86,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
     @param sheet_index: if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
     @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
     @param verify_ssl: if False, don't verify SSL certificates (e.g. for self-signed certs).
+    @param http_headers: optional dict of HTTP headers to add to a request.
     @param selector: selector property for a JSON file (will later also cover tabs, etc.)
     """
 
@@ -98,15 +99,30 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
         return hxl.io.from_spec(data)
 
     else:
-        return HXLReader(make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify_ssl=True, selector=selector))
+        return HXLReader(make_input(
+            data,
+            allow_local=allow_local,
+            sheet_index=sheet_index,
+            timeout=timeout,
+            verify_ssl=verify_ssl,
+            http_headers=http_headers,
+            selector=selector
+        ))
 
     
-def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True):
+def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None):
     """Open an untagged data source and add hashtags."""
     import hxl.converters
     return hxl.data(
         hxl.converters.Tagger(
-            input=make_input(data, allow_local=allow_local, sheet_index=sheet_index, timeout=timeout, verify_ssl=verify_ssl),
+            input=make_input(
+                data,
+                allow_local=allow_local,
+                sheet_index=sheet_index,
+                timeout=timeout,
+                verify_ssl=verify_ssl,
+                http_headers=http_headers
+            ),
             specs=specs,
             default_tag=default_tag,
             match_all=match_all
@@ -126,7 +142,7 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
         output.write(line)
 
 
-def munge_url(url, verify_ssl=True):
+def munge_url(url, verify_ssl=True, http_headers=None):
     """Munge a URL to get at underlying data for well-known types."""
 
     #
@@ -139,12 +155,12 @@ def munge_url(url, verify_ssl=True):
         if result.group(3):
             # CKAN resource URL
             ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
-            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl).json()
+            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
             url = ckan_api_result['result']['url']
         else:
             # CKAN dataset (package) URL
             ckan_api_query = '{}/api/3/action/package_show?id={}'.format(result.group(1), result.group(2))
-            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl).json()
+            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
             url = ckan_api_result['result']['resources'][0]['url']
 
     # Is it a Google Drive "open" URL?
@@ -180,7 +196,7 @@ def munge_url(url, verify_ssl=True):
     return url
 
 
-def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, selector=None):
+def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None):
     """Figure out what kind of input to create.
 
     Can detect a URL or filename, an input stream, or an array.
@@ -192,6 +208,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     @param sheet_index: if a number, read that sheet from an Excel workbook (default: None).
     @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
     @param verify_ssl: if False, don't try to verify SSL certificates (e.g. for self-signed certs).
+    @param http_headers: an optional dict of HTTP headers to send with a request.
     @param selector: a property to select the data in a JSON record (may later extend to spreadsheet tabs).
     @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
     """
@@ -231,7 +248,13 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         else:
             # assume a URL or filename
             logger.debug('Opening source %s as a URL or file', raw_source)
-            (input, mime_type, file_ext, encoding) = open_url_or_file(raw_source, allow_local=allow_local, timeout=timeout, verify_ssl=verify_ssl)
+            (input, mime_type, file_ext, encoding) = open_url_or_file(
+                raw_source,
+                allow_local=allow_local,
+                timeout=timeout,
+                verify_ssl=verify_ssl,
+                http_headers=http_headers
+            )
             input = wrap_stream(input)
 
         sig = input.peek(4)[:4]
@@ -259,12 +282,14 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         return CSVInput(input)
 
 
-def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True):
+def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True, http_headers=None):
     """Try opening a local or remote resource.
     Allows only HTTP(S) and (S)FTP URLs.
     @param url_or_filename: the string to try openining.
     @param allow_local: if True, OK to open local files; otherwise, only remote URLs allowed (default: False).
     @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+    @param verify_ssl: if True, then fail on an SSL error.
+    @param http_headers: dictionary of headers to add to the request.
     @return: an io stream.
     """
     mime_type = None
@@ -279,7 +304,13 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
         try:
-            response = requests.get(munge_url(url_or_filename, verify_ssl), stream=True, verify=verify_ssl, timeout=timeout)
+            response = requests.get(
+                munge_url(url_or_filename, verify_ssl),
+                stream=True,
+                verify=verify_ssl,
+                timeout=timeout,
+                headers=http_headers
+            )
             response.raise_for_status()
         except Exception as e:
             logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
@@ -838,6 +869,7 @@ def from_spec(spec):
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
     verify_ssl = spec.get('verify_ssl', True)
+    http_headers = spec.get('http_headers', None)
 
     # recipe
     tagger_spec = spec.get('tagger', None)
@@ -852,7 +884,8 @@ def from_spec(spec):
         allow_local=allow_local,
         sheet_index=sheet_index,
         timeout=timeout,
-        verify_ssl=verify_ssl
+        verify_ssl=verify_ssl,
+        http_headers=http_headers
     )
 
     # autotag if requested

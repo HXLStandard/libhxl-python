@@ -6,7 +6,7 @@ import unittest.mock
 # Default to turning off all but critical logging messages
 logging.basicConfig(level=logging.CRITICAL)
 
-def mock_open_url(url, allow_local=False, timeout=None, verify_ssl=True):
+def mock_open_url(url, allow_local=False, timeout=None, verify_ssl=True, http_headers=None):
     """Open local files instead of URLs.
     If it's a local file path, leave it alone; otherwise,
     open as a file under ./files/
