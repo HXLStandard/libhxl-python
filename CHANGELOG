@@ -1,5 +1,8 @@
 2018-08-31 Release 4.11
-	- fixed date-cleaning bug when reading a filter definition from JSON
+	- fixed date-cleaning bug when reading a filter definition from
+	  JSON
+	- added an option to send custom HTTP headers with a request for a
+	  remote HXL file (e.g. a custom user agent)
 
 2018-07-31 Release 4.10
 	- refine delimiter detection for CSV
