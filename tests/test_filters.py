@@ -654,6 +654,18 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
 
+    def test_concat_aggregator(self):
+        expected = [
+            ['Organisation', 'Districts'],
+            ['#org', '#adm1+list'],
+            ['NGO A', 'Coast|Plains'],
+            ['NGO B', 'Coast|Plains'],
+        ]
+        filtered = self.source.count('org', 'concat(#adm1) as Districts#adm1+list')
+        self.assertEqual(expected[0], filtered.headers)
+        self.assertEqual(expected[1], filtered.display_tags)
+        self.assertEqual(expected[2:], filtered.values)
+
     def test_aggregator_dates(self):
         DATA_IN = [
             ['#event', '#date'],
