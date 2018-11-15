@@ -436,6 +436,9 @@ class Aggregator(object):
         self.normalised = None
         """Normalised value to use for internal comparison"""
 
+        self.values = set()
+        """Unique values seen (for concat)"""
+
     def evaluate_row(self, row):
         """Evaluate a single row of HXL data against this aggregator.
         @param row: the input row to read
@@ -487,6 +490,13 @@ class Aggregator(object):
             if self.normalised is None or self.normalised < normalised:
                 self.value = value
                 self.normalised = normalised
+        elif self.type == 'concat':
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_space(value)
+                if value not in self.values:
+                    # regenerate the list if it's a new value
+                    self.values.add(value)
+                    self.value = "|".join(sorted(self.values))
         else:
             raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
 
