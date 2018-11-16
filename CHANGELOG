@@ -1,3 +1,6 @@
+Release 4.12
+	- added concat() aggregator for CountFilter
+
 2018-08-31 Release 4.11
 	- fixed date-cleaning bug when reading a filter definition from
 	  JSON

@@ -1465,7 +1465,7 @@ class CountFilter(AbstractCachingFilter):
                 # make a dict key for the aggregator
                 key = tuple(values)
                 if not key in aggregators:
-                    aggregators[key] = [copy.copy(aggregator) for aggregator in self.aggregators]
+                    aggregators[key] = [copy.deepcopy(aggregator) for aggregator in self.aggregators]
                 for aggregator in aggregators[key]:
                     aggregator.evaluate_row(row)
 
