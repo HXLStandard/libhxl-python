@@ -184,7 +184,11 @@ class TestDataset(unittest.TestCase):
 
     def test_hash_columns(self):
         self.assertTrue(self.source.columns_hash is not None)
-        self.assertEqual(32, len(self.source.columns_hash))
+        self.assertEqual(32, len(self.source.data_hash))
+
+    def test_hash_dataset(self):
+        self.assertTrue(self.source.data_hash is not None)
+        self.assertEqual(32, len(self.source.data_hash))
 
     # TODO test generators
 

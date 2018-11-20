@@ -242,6 +242,32 @@ class Dataset(object):
         for column in self.columns:
             md5.update(hxl.datatypes.normalise_space(column.display_tag).encode('utf-8'))
         return md5.hexdigest()
+
+    @property
+    def data_hash(self):
+        """Generate a hash for the entire dataset.
+
+        This function allows checking if two HXL datasets are
+        functionally identical. It takes into account text headers,
+        hashtags, the order of attributes, and the order of
+        columns. Whitespace is normalised, and null values are treated
+        as empty strings. The MD5 hash digest is generated from a
+        UTF-8 encoded version of each header and data cell.
+
+        @returns: a 32-character hex-formatted MD5 hash string
+        """
+        md5 = hashlib.md5()
+        # text header row
+        for column in self.columns:
+            md5.update(hxl.datatypes.normalise_space(column.header).encode('utf-8'))
+        # hashtag row
+        for column in self.columns:
+            md5.update(hxl.datatypes.normalise_space(column.display_tag).encode('utf-8'))
+        # data rows
+        for row in self:
+            for value in row:
+                md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
+        return md5.hexdigest()
     
     @property
     def headers(self):

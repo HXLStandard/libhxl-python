@@ -363,7 +363,10 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
-    parser = make_args('Generate an MD5 hash for a HXL dataset (or just its header rows).')
+    parser = make_args(
+        'Generate an MD5 hash for a HXL dataset (or just its header rows).',
+        hxl_output=False
+    )
     parser.add_argument(
         '-H',
         '--headers-only',
@@ -376,7 +379,10 @@ def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source:
-        print(source.columns_hash)
+        if args.headers_only:
+            print(source.columns_hash)
+        else:
+            print(source.data_hash)
 
     return EXIT_OK
 
@@ -800,18 +806,23 @@ def run_script(func):
         print("Error: {}".format(message), file=sys.stderr)
         sys.exit(EXIT_ERROR)
 
-def make_args(description):
-    """Set up parser with default arguments."""
+def make_args(description, hxl_output=True):
+    """Set up parser with default arguments.
+    @param description: usage description to show
+    @param hxl_output: if True (default), include options for HXL output.
+    @returns: an argument parser, partly set up.
+    """
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         'infile',
         help='HXL file to read (if omitted, use standard input).',
         nargs='?'
         )
-    parser.add_argument(
-        'outfile',
-        help='HXL file to write (if omitted, use standard output).',
-        nargs='?'
+    if hxl_output:
+        parser.add_argument(
+            'outfile',
+            help='HXL file to write (if omitted, use standard output).',
+            nargs='?'
         )
     parser.add_argument(
         '--sheet',
@@ -820,20 +831,21 @@ def make_args(description):
         type=int,
         nargs='?'
         )
-    parser.add_argument(
-        '--remove-headers',
-        help='Strip text headers from the CSV output',
-        action='store_const',
-        const=True,
-        default=False
+    if hxl_output:
+        parser.add_argument(
+            '--remove-headers',
+            help='Strip text headers from the CSV output',
+            action='store_const',
+            const=True,
+            default=False
         )
-    parser.add_argument(
-        '--strip-tags',
-        help='Strip HXL tags from the CSV output',
-        action='store_const',
-        const=True,
-        default=False
-    )
+        parser.add_argument(
+            '--strip-tags',
+            help='Strip HXL tags from the CSV output',
+            action='store_const',
+            const=True,
+            default=False
+        )
     parser.add_argument(
         '--log',
         help='Set minimum logging level',
