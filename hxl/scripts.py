@@ -58,6 +58,10 @@ def hxldedup():
     """Console script for hxldedup."""
     run_script(hxldedup_main)
 
+def hxlhash():
+    """Console script for hxlhash."""
+    run_script(hxlhash_main)
+
 def hxlmerge():
     """Console script for hxlmerge."""
     run_script(hxlmerge_main)
@@ -354,6 +358,25 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.DeduplicationFilter(source, args.tags, args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args('Generate an MD5 hash for a HXL dataset (or just its header rows).')
+    parser.add_argument(
+        '-H',
+        '--headers-only',
+        help='Hash only the header and hashtag rows.',
+        action='store_const',
+        const=True,
+        default=False
+        )
+
+    args = parser.parse_args(args)
+
+    with make_source(args, stdin) as source:
+        print(source.columns_hash)
 
     return EXIT_OK
 
