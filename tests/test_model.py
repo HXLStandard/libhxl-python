@@ -182,6 +182,10 @@ class TestDataset(unittest.TestCase):
         self.assertTrue(self.source.validate(SCHEMA_GOOD))
         self.assertFalse(self.source.validate(SCHEMA_BAD))
 
+    def test_hash_columns(self):
+        self.assertTrue(self.source.columns_hash is not None)
+        self.assertEqual(32, len(self.source.columns_hash))
+
     # TODO test generators
 
 

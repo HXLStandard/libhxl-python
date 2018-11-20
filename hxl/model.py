@@ -7,7 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc, copy, csv, dateutil, json, logging, operator, re, six
+import abc, copy, csv, dateutil, hashlib, json, logging, operator, re, six
 
 import hxl
 
@@ -218,6 +218,31 @@ class Dataset(object):
         """
         raise RuntimeException("child class must implement columns property method")
 
+    @property
+    def columns_hash(self):
+        """Generate a hash across all of the columns in the dataset.
+
+        This function helps detect whether two HXL documents are of
+        the same type, even if they contain different data (e.g. the
+        HXL API output for the same humanitarian dataset in two
+        different months or two different countries).
+
+        It takes into account text headers, hashtags, the order of
+        attributes, and the order of columns. Whitespace is
+        normalised, and null values are treated as empty strings. The
+        MD5 hash digest is generated from a UTF-8 encoded version of
+        each header.
+
+        @returns: a 32-character hex-formatted MD5 hash string
+
+        """
+        md5 = hashlib.md5()
+        for column in self.columns:
+            md5.update(hxl.datatypes.normalise_space(column.header).encode('utf-8'))
+        for column in self.columns:
+            md5.update(hxl.datatypes.normalise_space(column.display_tag).encode('utf-8'))
+        return md5.hexdigest()
+    
     @property
     def headers(self):
         """Return a list of header strings (for a spreadsheet row).

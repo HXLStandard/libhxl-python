@@ -1,5 +1,7 @@
 Release 4.12
 	- added concat() aggregator for CountFilter
+	- added columns_hash property for hxl.model.Dataset, to detect similar
+	  data types (produces an MD5 hash of headers and hashtag specs)
 
 2018-08-31 Release 4.11
 	- fixed date-cleaning bug when reading a filter definition from
