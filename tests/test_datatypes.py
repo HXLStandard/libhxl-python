@@ -75,6 +75,10 @@ class TestDates(unittest.TestCase):
         self.assertTrue(hxl.datatypes.is_date("2011-01-01T00:00:00.000Z"))
         self.assertEqual('2011-01-01', hxl.datatypes.normalise_date("2011-01-01T00:00:00.000Z"))
 
+    def test_sql_datetime(self):
+        self.assertTrue(hxl.datatypes.is_date('2017-12-01 00:00:00'))
+        self.assertEqual('2017-12-01', hxl.datatypes.normalise_date('2017-12-01 00:00:00'))
+
     def test_rfc822_datetime(self):
         self.assertTrue(hxl.datatypes.is_date("30 May 2018 02:57:50 GMT"))
         self.assertTrue(hxl.datatypes.is_date("Thu, 30 May 2018 02:57:50 GMT"))

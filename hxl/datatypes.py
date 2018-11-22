@@ -17,8 +17,18 @@ TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 WHITESPACE_PATTERN = re.compile('\s+', re.MULTILINE)
 """Regular-expression pattern for multi-line whitespace."""
 
-ISO_DATE_PATTERN = re.compile('^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$', re.IGNORECASE)
+ISO_DATE_PATTERN = re.compile(
+    '^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$',
+    re.IGNORECASE
+)
 """Regular expression for basic ISO 8601 dates, plus extension to recognise quarters."""
+
+SQL_DATETIME_PATTERN = re.compile(
+    '^(?P<year>[12]\d\d\d)-(?P<month>\d\d?)-(?P<day>\d\d?) \d\d?:\d\d?:\d\d?(?P<week>)?(?P<quarter>)?$'
+)
+"""Regular expression for SQL datetime.
+Added dummy week and quarter params for compatibility with ISO_DATE_PATTERN.
+"""
 
 DEFAULT_DATE_1 = datetime.datetime(2015, 1, 1)
 
@@ -144,12 +154,14 @@ def is_date(v):
     """
     v = normalise_space(v)
     result = ISO_DATE_PATTERN.match(v)
+    if (not result):
+        result = SQL_DATETIME_PATTERN.match(v)
     if result:
         # lots of ugly ISO date hackery
         # TODO not distinguishing non-leap-years yet
 
         def in_range(n, min, max):
-            if n is None:
+            if n is '' or n is None:
                 return True
             else:
                 n = int(n)
@@ -205,6 +217,8 @@ def normalise_date(v, dayfirst=True):
     # First, try our quick ISO date pattern, extended to support quarter notation
     v = normalise_space(v)
     result = ISO_DATE_PATTERN.match(v)
+    if not result:
+        result = SQL_DATETIME_PATTERN.match(v)
     if result:
         return make_date(
             result.group('year'),
@@ -219,7 +233,7 @@ def normalise_date(v, dayfirst=True):
     date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1, dayfirst=dayfirst)
     date2 = dateutil.parser.parse(v, default=DEFAULT_DATE_2, dayfirst=dayfirst)
     return make_date(
-        date1.year,
+        year=date1.year,
         month=(date1.month if date1.month==date2.month else None),
         day=(date1.day if date1.day==date2.day else None)
     )
