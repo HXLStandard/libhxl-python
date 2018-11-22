@@ -669,14 +669,14 @@ class TestCountFilter(AbstractBaseFilterTest):
     def test_aggregator_dates(self):
         DATA_IN = [
             ['#event', '#date'],
-            ['Flood', '2017-01-01'],
+            ['Flood', '2017-01-10 00:00:00'],
             ['Flood', '1 Jan 2018'],
             ['Flood', '06/30/2018']
         ]
 
         # minimum date
         self.assertEqual(
-            [['Flood', '2017-01-01']],
+            [['Flood', '2017-01-10 00:00:00']],
             hxl.data(DATA_IN).count('event', 'min(#date)').values
         )
 
