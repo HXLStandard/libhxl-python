@@ -3,6 +3,7 @@ Release 4.12
 	- added data_hash and columns_hash properties for
 	  hxl.model.Dataset, together with hxlhash command-line script
 	- fixed parsing of YYYY-MM-DD hh:mm:ss SQL dates
+	- support opening zipped CSV files (thanks to Orest Dubay)
 
 2018-08-31 Release 4.11
 	- fixed date-cleaning bug when reading a filter definition from
