@@ -10,6 +10,8 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import abc, collections, csv, io, io_wrapper, json, logging, re, requests, six, sys, xlrd, xml.sax
 
 import hxl, hxl.filters
+import zipfile
+import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,10 @@ JSON_SIGS = [
     b' [',
     b'{',
     b' {'
+]
+
+ZIP_FILE_EXTS = [
+    'zip'
 ]
 
 EXCEL_MIME_TYPES = [
@@ -268,6 +274,12 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                     'munged': munge_url(raw_source) if str(raw_source).startswith('http') else None
                 }
             ))
+
+        elif  file_ext in ZIP_FILE_EXTS:
+            zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
+            for name in zf.namelist():
+                if os.path.splitext(name)[1].lower()==".csv":
+                    return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
 
         elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
             logger.debug('Making input from an Excel file')
