@@ -167,12 +167,22 @@ def munge_url(url, verify_ssl=True, http_headers=None):
             # CKAN resource URL
             ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
             ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
-            url = ckan_api_result['result']['url']
+            if ckan_api_result['success']:
+                url = ckan_api_result['result']['url']
+            else:
+                raise IOError("Unable to read HDX resource (is the dataset public?): {}".format(
+                    ckan_api_result['error']['message']
+                ))
         else:
             # CKAN dataset (package) URL
             ckan_api_query = '{}/api/3/action/package_show?id={}'.format(result.group(1), result.group(2))
             ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
-            url = ckan_api_result['result']['resources'][0]['url']
+            if ckan_api_result['success']:
+                url = ckan_api_result['result']['resources'][0]['url']
+            else:
+                raise IOError("Unable to read resources from HDX dataset (is it public?): {}".format(
+                    ckan_api_result['error']['message']
+                ))
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
