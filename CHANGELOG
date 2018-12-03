@@ -1,4 +1,4 @@
-Release 4.12
+2018-12-03 Release 4.12
 	- added concat() aggregator for CountFilter
 	- added data_hash and columns_hash properties for
 	  hxl.model.Dataset, together with hxlhash command-line script
