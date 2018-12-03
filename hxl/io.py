@@ -10,6 +10,9 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 import abc, collections, csv, io, io_wrapper, json, logging, re, requests, six, sys, xlrd, xml.sax
 
 import hxl, hxl.filters
+import zipfile
+import os.path
+import urllib.parse
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +47,14 @@ JSON_SIGS = [
     b' [',
     b'{',
     b' {'
+]
+
+ZIP_FILE_EXTS = [
+    'zip'
+]
+
+ZIP_MIME_TYPES = [
+    'application/zip'
 ]
 
 EXCEL_MIME_TYPES = [
@@ -269,7 +280,13 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             ))
 
-        elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
+        elif (mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS):
+            zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
+            for name in zf.namelist():
+                if os.path.splitext(name)[1].lower()==".csv":
+                    return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
+
+        if (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
             logger.debug('Making input from an Excel file')
             return ExcelInput(input, sheet_index=sheet_index)
 
@@ -303,6 +320,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     
     if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
         # It looks like a URL
+        file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
             response = requests.get(
                 munge_url(url_or_filename, verify_ssl),
