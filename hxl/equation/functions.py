@@ -39,7 +39,7 @@ def divide(row, args, multiple=False):
             result = result / v
     return result
 
-def mod(row, args, multiple=False):
+def modulo(row, args, multiple=False):
     args = _deref(row, args, multiple)
     result = _num(args[0])
     for arg in args[1:]:
@@ -80,7 +80,7 @@ def _deref(row, args, multiple=False):
     for arg in args:
         if isinstance(arg, hxl.model.TagPattern):
             if multiple:
-                result += row.getAll(arg)
+                result += row.get_all(arg)
             else:
                 result.append(row.get(arg))
         else:
