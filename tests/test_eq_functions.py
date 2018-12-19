@@ -176,3 +176,10 @@ class TestOperators(unittest.TestCase):
         )
         self.assertEqual(1100, result)
 
+    def test_embedded(self):
+
+        result = hxl.equation.functions.multiply(self.row, [
+            [hxl.equation.functions.add, ['1', '2']],
+            '3'
+        ])
+        self.assertEqual(9, result)

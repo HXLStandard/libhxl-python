@@ -1,7 +1,7 @@
 """ Functions that can run inside an equation
 """
 
-import logging
+import logging, collections
 import hxl.datatypes
 
 logger = logging.getLogger(__name__)
@@ -18,21 +18,21 @@ def add(row, args, multiple=False):
 
 def subtract(row, args, multiple=False):
     args = _deref(row, args, multiple)
-    result = _num(args[0])
+    result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
         result -= _num(arg)
     return result
 
 def multiply(row, args, multiple=False):
     args = _deref(row, args, multiple)
-    result = _num(args[0])
+    result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
         result *= _num(arg)
     return result
 
 def divide(row, args, multiple=False):
     args = _deref(row, args, multiple)
-    result = _num(args[0])
+    result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
         v = _num(arg) # avoid DIV0
         if v:
@@ -41,7 +41,7 @@ def divide(row, args, multiple=False):
 
 def modulo(row, args, multiple=False):
     args = _deref(row, args, multiple)
-    result = _num(args[0])
+    result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
         v = _num(arg) # avoid DIV0
         if v:
@@ -68,8 +68,9 @@ def sum(row, args):
 
 def _deref(row, args, multiple=False):
     """Dereference a term.
+    If it's a two-element list with a function and a list, recurse.
+    If it's a tag pattern, look it up in the row and replace with value(s)
     If it's already a literal (number or string), leave it alone.
-    Otherwise, look it up in the row.
     @param row: a hxl.model.Row object
     @param args: a list of arguments to dereference (may be tag patterns or literals)
     @param multiple: if true, return all matches for a tag pattern
@@ -78,12 +79,17 @@ def _deref(row, args, multiple=False):
     result = []
 
     for arg in args:
-        if isinstance(arg, hxl.model.TagPattern):
+        if isinstance(arg, collections.Sequence) and callable(arg[0]):
+            # it's a function and args: recurse
+            result.append(arg[0](row, arg[1]))
+        elif isinstance(arg, hxl.model.TagPattern):
+            # it's a tag pattern: look up matching values in the row
             if multiple:
                 result += row.get_all(arg)
             else:
                 result.append(row.get(arg))
         else:
+            # it's a literal: leave it alone
             result.append(arg)
 
     return result
@@ -94,6 +100,6 @@ def _num(arg):
     """
     try:
         return hxl.datatypes.normalise_number(arg)
-    except ValueError:
+    except (ValueError, TypeError):
         logger.warn("Cannot convert %s to a number for calculated field", arg)
         return 0
