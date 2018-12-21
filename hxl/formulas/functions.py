@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 def ref(row, args):
     """A single tag pattern standing alone."""
-    args = _deref(row, args)
-    return args[0]
+    print('***', row, args)
+    return row.get(args[0])
 
 def add(row, args, multiple=False):
     result = 0

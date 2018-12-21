@@ -1,4 +1,5 @@
 Release 4.13
+	- added spreadsheet-style formulas calculated from a row's contents
 	- improve error reporting for private HDX resources
 
 2018-12-03 Release 4.12

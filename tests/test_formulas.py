@@ -5,6 +5,7 @@ import unittest
 import hxl.model
 import hxl.formulas.functions as f
 from hxl.formulas.parser import parser
+import hxl.formulas.eval as e
 
 
 class TestFunctions(unittest.TestCase):
@@ -213,3 +214,18 @@ class TestParser(unittest.TestCase):
             (f.function, ['sum', 1, 2, 3]),
             parser.parse("sum(1, 2, 3)")
         )
+
+class TestEval(unittest.TestCase):
+
+    TAGS = ["#org", "#adm1", "#affected+f+children", "#affected+m+children", "#affected+f+adults", "#affected+m+adults"]
+    DATA = ["Org A", "Coast Region", "100", "200", "300", "400"]
+
+    def setUp(self):
+        columns = [hxl.model.Column.parse(tag) for tag in self.TAGS]
+        self.row = hxl.model.Row(columns=columns, values=self.DATA)
+
+    def test_simple(self):
+        self.assertEqual(2, e.eval(self.row, '1 + 1'))
+
+    def test_tagpatterns(self):
+        self.assertEqual(300, e.eval(self.row, '#affected+f+children + #affected+m+children'))

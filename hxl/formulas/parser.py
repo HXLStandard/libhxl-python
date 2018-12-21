@@ -1,5 +1,6 @@
 import logging
 import ply.yacc as yacc
+import hxl.model
 import hxl.formulas.functions as f
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ def p_factor_float(p):
 
 def p_factor_tagpattern(p):
     'factor : TAGPATTERN'
-    p[0] = (f.ref, (p[1]))
+    p[0] = (f.ref, [hxl.model.TagPattern.parse(p[1])])
 
 def p_factor_uminus(p):
     'factor : MINUS factor'
