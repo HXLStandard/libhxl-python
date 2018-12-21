@@ -1,4 +1,4 @@
-""" Functions that can run inside an equation
+""" Functions that can run inside a formula
 """
 
 import logging, collections
