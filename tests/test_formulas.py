@@ -2,9 +2,13 @@
 """
 
 import unittest
-import hxl.formulas.functions
+import hxl.model
+import hxl.formulas.functions as f
+from hxl.formulas.parser import parser
 
-class TestOperators(unittest.TestCase):
+
+class TestFunctions(unittest.TestCase):
+    """Test the hxl.formulas.functions class"""
 
     TAGS = ["#org", "#adm1", "#affected+f+children", "#affected+m+children", "#affected+f+adults", "#affected+m+adults"]
     DATA = ["Org A", "Coast Region", "100", "200", "300", "400"]
@@ -16,30 +20,30 @@ class TestOperators(unittest.TestCase):
     def test_add(self):
 
         # integers
-        result = hxl.formulas.functions.add(self.row, ['2', '3'])
+        result = f.add(self.row, ['2', '3'])
         self.assertEqual(5, result)
 
         # float and integer
-        result = hxl.formulas.functions.add(self.row, ['2', '3.5'])
+        result = f.add(self.row, ['2', '3.5'])
         self.assertEqual(5.5, result)
 
         # two tag patterns
         # should take only first match for each tag pattern
-        result = hxl.formulas.functions.add(
+        result = f.add(
             self.row,
             map(hxl.model.TagPattern.parse, ['#affected+f', '#affected+m'])
         )
         self.assertEqual(300, result)
 
         # tag pattern and integer
-        result = hxl.formulas.functions.add(self.row, [
+        result = f.add(self.row, [
             hxl.model.TagPattern.parse('#affected+f'),
             '150'
         ])
         self.assertEqual(250, result)
 
         # ignore strings
-        result = hxl.formulas.functions.add(self.row, [
+        result = f.add(self.row, [
             hxl.model.TagPattern.parse('#org'),
             '150'
         ])
@@ -48,23 +52,23 @@ class TestOperators(unittest.TestCase):
     def test_subtract(self):
 
         # integers
-        result = hxl.formulas.functions.subtract(self.row, ['2', '3'])
+        result = f.subtract(self.row, ['2', '3'])
         self.assertEqual(-1, result)
 
         # float and integer
-        result = hxl.formulas.functions.subtract(self.row, ['4', '3.5'])
+        result = f.subtract(self.row, ['4', '3.5'])
         self.assertEqual(0.5, result)
 
         # two tag patterns
         # should take only first match for each tag pattern
-        result = hxl.formulas.functions.subtract(
+        result = f.subtract(
             self.row,
             map(hxl.model.TagPattern.parse, ['#affected+m', '#affected+f'])
         )
         self.assertEqual(100, result)
 
         # tag pattern and integer
-        result = hxl.formulas.functions.subtract(self.row, [
+        result = f.subtract(self.row, [
             hxl.model.TagPattern.parse('#affected+f'),
             '50'
         ])
@@ -73,23 +77,23 @@ class TestOperators(unittest.TestCase):
     def test_multiply(self):
 
         # integers
-        result = hxl.formulas.functions.multiply(self.row, ['2', '3'])
+        result = f.multiply(self.row, ['2', '3'])
         self.assertEqual(6, result)
 
         # float and integer
-        result = hxl.formulas.functions.multiply(self.row, ['4', '3.5'])
+        result = f.multiply(self.row, ['4', '3.5'])
         self.assertEqual(14, result)
 
         # two tag patterns
         # should take only first match for each tag pattern
-        result = hxl.formulas.functions.multiply(
+        result = f.multiply(
             self.row,
             map(hxl.model.TagPattern.parse, ['#affected+m', '#affected+f'])
         )
         self.assertEqual(20000, result)
 
         # tag pattern and integer
-        result = hxl.formulas.functions.multiply(self.row, [
+        result = f.multiply(self.row, [
             hxl.model.TagPattern.parse('#affected+f'),
             '50'
         ])
@@ -98,34 +102,34 @@ class TestOperators(unittest.TestCase):
     def test_divide(self):
 
         # integers
-        result = hxl.formulas.functions.divide(self.row, ['4', '2'])
+        result = f.divide(self.row, ['4', '2'])
         self.assertEqual(2, result)
 
         # float and integer
-        result = hxl.formulas.functions.divide(self.row, ['6', '1.5'])
+        result = f.divide(self.row, ['6', '1.5'])
         self.assertEqual(4, result)
 
         # two tag patterns
         # should take only first match for each tag pattern
-        result = hxl.formulas.functions.divide(
+        result = f.divide(
             self.row,
             map(hxl.model.TagPattern.parse, ['#affected+m', '#affected+f'])
         )
         self.assertEqual(2, result)
 
         # tag pattern and integer
-        result = hxl.formulas.functions.divide(self.row, [
+        result = f.divide(self.row, [
             hxl.model.TagPattern.parse('#affected+f'),
             '50'
         ])
         self.assertEqual(2, result)
 
         # avoid DIV0
-        result = hxl.formulas.functions.divide(self.row, ['100', '0'])
+        result = f.divide(self.row, ['100', '0'])
         self.assertEqual(100, result)
 
         # ignore strings
-        result = hxl.formulas.functions.divide(self.row, [
+        result = f.divide(self.row, [
             '150',
             hxl.model.TagPattern.parse('#org')
         ])
@@ -134,34 +138,34 @@ class TestOperators(unittest.TestCase):
     def test_modulo(self):
 
         # integers
-        result = hxl.formulas.functions.modulo(self.row, ['4', '2'])
+        result = f.modulo(self.row, ['4', '2'])
         self.assertEqual(0, result)
 
         # float and integer
-        result = hxl.formulas.functions.modulo(self.row, ['5', '1.5'])
+        result = f.modulo(self.row, ['5', '1.5'])
         self.assertEqual(0.5, result)
 
         # two tag patterns
         # should take only first match for each tag pattern
-        result = hxl.formulas.functions.modulo(
+        result = f.modulo(
             self.row,
             map(hxl.model.TagPattern.parse, ['#affected+adults', '#affected+m'])
         )
         self.assertEqual(100, result) # 300 % 200
 
         # tag pattern and integer
-        result = hxl.formulas.functions.modulo(self.row, [
+        result = f.modulo(self.row, [
             hxl.model.TagPattern.parse('#affected+f'),
             '70'
         ])
         self.assertEqual(30, result) # 100 % 70
 
         # avoid DIV0
-        result = hxl.formulas.functions.modulo(self.row, ['100', '0'])
+        result = f.modulo(self.row, ['100', '0'])
         self.assertEqual(100, result) # 100 % 0 - ignore the 0
 
         # ignore strings
-        result = hxl.formulas.functions.modulo(self.row, [
+        result = f.modulo(self.row, [
             '150',
             hxl.model.TagPattern.parse('#org')
         ])
@@ -170,7 +174,7 @@ class TestOperators(unittest.TestCase):
     def test_sum(self):
         
         # should take all matches for each tag pattern
-        result = hxl.formulas.functions.sum(
+        result = f.sum(
             self.row,
             [hxl.model.TagPattern.parse('#affected'), '100']
         )
@@ -178,8 +182,34 @@ class TestOperators(unittest.TestCase):
 
     def test_embedded(self):
 
-        result = hxl.formulas.functions.multiply(self.row, [
-            [hxl.formulas.functions.add, ['1', '2']],
+        result = f.multiply(self.row, [
+            [f.add, ['1', '2']],
             '3'
         ])
         self.assertEqual(9, result)
+
+        
+class TestParser(unittest.TestCase):
+    """Test the hxl.formulas.lexer class"""
+
+    def setUp(self):
+        pass
+
+    def test_primitives(self):
+        self.assertEquals(1, parser.parse("1"))
+        self.assertEquals(1.1, parser.parse("1.1"))
+
+    def test_simple_math(self):
+        self.assertEquals((f.add, (1,1)), parser.parse("1 + 1"))
+
+    def test_groups(self):
+        self.assertEquals(
+            (f.multiply, (2, (f.add, (1,1)))),
+            parser.parse("2 * (1 + 1)")
+        )
+
+    def test_functions(self):
+        self.assertEquals(
+            (f.function, ['sum', 1, 2, 3]),
+            parser.parse("sum(1, 2, 3)")
+        )

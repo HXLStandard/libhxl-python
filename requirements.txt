@@ -4,3 +4,4 @@ requests
 unidecode
 python-io-wrapper
 jsonpath_rw
+ply

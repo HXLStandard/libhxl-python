@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 # Operators (not callable as functions)
 #
 
+def ref(row, args):
+    """A single tag pattern standing alone."""
+    args = _deref(row, args)
+    return args[0]
+
 def add(row, args, multiple=False):
     result = 0
     for arg in _deref(row, args, multiple):
@@ -57,6 +62,14 @@ functions = {
     'sum': sum
 }
 """Master table of user-callable functions"""
+
+def function(row, name, args):
+    f = functions.get(name)
+    if f:
+        return f(row, _deref(row, args))
+    else:
+        logger.error("Unknown function %s", args[0])
+        return None
 
 def sum(row, args):
     return add(row, args, True)
