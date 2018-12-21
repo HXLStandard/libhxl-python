@@ -23,7 +23,7 @@ t_ignore = " \t\r\n"
 
 # Regular expression rules for simple tokens
 t_NAME = r'[A-Za-z][A-Za-z0-9_]*'
-t_TAGPATTERN = r'\#[A-Za-z][A-Za-z0-9_]*(\s*[+-][A-Za-z][A-Za-z0-9_]*)*'
+t_TAGPATTERN = r'\#[A-Za-z][A-Za-z0-9_]*(\s*[+-][A-Za-z][A-Za-z0-9_]*)*[!]?'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
