@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # Operators (not callable as functions)
 #
 
-def ref(row, args):
+def tagref(row, args):
     """A single tag pattern standing alone."""
     print('***', row, args)
     return row.get(args[0])
@@ -63,10 +63,10 @@ functions = {
 }
 """Master table of user-callable functions"""
 
-def function(row, name, args):
-    f = functions.get(name)
+def function(row, args):
+    f = functions.get(args[0])
     if f:
-        return f(row, _deref(row, args))
+        return f(row, _deref(row, args[1:]))
     else:
         logger.error("Unknown function %s", args[0])
         return None

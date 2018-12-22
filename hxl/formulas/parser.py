@@ -45,7 +45,7 @@ def p_factor_float(p):
 
 def p_factor_tagpattern(p):
     'factor : TAGPATTERN'
-    p[0] = (f.ref, [hxl.model.TagPattern.parse(p[1])])
+    p[0] = (f.tagref, [hxl.model.TagPattern.parse(p[1])])
 
 def p_factor_uminus(p):
     'factor : MINUS factor'
