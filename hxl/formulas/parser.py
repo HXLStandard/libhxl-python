@@ -43,6 +43,10 @@ def p_factor_float(p):
     'factor : FLOAT'
     p[0] = p[1]
 
+def p_factor_string(p):
+    'factor : STRING'
+    p[0] = p[1]
+
 def p_factor_tagpattern(p):
     'factor : TAGPATTERN'
     p[0] = (f.tagref, [hxl.model.TagPattern.parse(p[1])])

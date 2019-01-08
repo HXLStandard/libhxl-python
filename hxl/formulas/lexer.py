@@ -1,6 +1,6 @@
 
 import logging
-import ply.lex as lex
+import ply.lex as lex, json
 
 logger = logging.getLogger(__name__)
 
@@ -9,6 +9,7 @@ tokens = (
     'TAGPATTERN',
     'INT',
     'FLOAT',
+    'STRING',
     'PLUS',
     'MINUS',
     'TIMES',
@@ -32,6 +33,11 @@ t_MODULO = r'%'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_COMMA = r','
+
+def t_STRING(t):
+    r'"([^"]|\\.)*"'
+    t.value = json.loads(t.value)
+    return t
 
 def t_FLOAT(t):
     r'\d+\.\d+'

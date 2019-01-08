@@ -238,6 +238,8 @@ class TestParser(unittest.TestCase):
     def test_primitives(self):
         self.assertEquals(1, parser.parse("1"))
         self.assertEquals(1.1, parser.parse("1.1"))
+        self.assertEquals('foo', parser.parse('"foo"'))
+        self.assertEquals("foo\tfoo", parser.parse('"foo\\tfoo"'))
 
     def test_simple_math(self):
         self.assertEquals((f.add, (1,1)), parser.parse("1 + 1"))
