@@ -15,7 +15,6 @@ def tagref(row, args):
     @param row: the HXL data row
     @param args: the arguments parsed
     """
-    print('***', row, args)
     return row.get(args[0])
 
 def add(row, args, multiple=False):
@@ -105,70 +104,93 @@ def function(row, args):
     """
     f = FUNCTIONS.get(args[0])
     if f:
-        return f(row, _deref(row, args[1:]))
+        return f(row, args[1:], True)
     else:
         logger.error("Unknown function %s", args[0])
         return None
 
-def do_min(row, args):
+def do_min(row, args, multiple=True):
     """Find the minimum value in the list.
     If they're all numbers (or empty), use numeric comparison.
-    Otherwise, use lexical comparison.
+    Otherwise, use lexical comparison (case- and space-insensitive)
     @param row: the HXL data row
-    @param args: the arguments parsed (function name removed)
+    @param args: the function arguments (name removed from start)
     @returns: the minimum value
     """
-    items = _deref(row, args, True)
+
+    values = _deref(row, args, multiple)
 
     # first, try a numbery comparison
     try:
         min_value = None
-        for item in items:
-            item = hxl.datatypes.normalise_number(item)
-            if min_value is None or min_value > item:
-                min_value = item
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_number(value)
+                if min_value is None or min_value > value:
+                    min_value = value
         return min_value
     # if that fails, revert to lexical
     except:
-        return min(items)
+        min_value = None
+        min_value_norm = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                norm = hxl.datatypes.normalise_string(value)
+                if min_value_norm is None or norm < min_value_norm:
+                    min_value_norm = norm
+                    min_value = value
+        return min_value
 
-def do_max(row, args):
+def do_max(row, args, multiple=True):
     """Find the maximum value in the list.
     If they're all numbers (or empty), use numeric comparison.
-    Otherwise, use lexical comparison.
+    Otherwise, use lexical comparison (case- and space-insensitive)
     @param row: the HXL data row
-    @param args: the arguments parsed (function name removed)
+    @param args: the function arguments (name removed from start)
     @returns: the maximum value
     """
-    items = _deref(row, args, True)
+
+    values = _deref(row, args, multiple)
+    print('***', row, args, multiple,
+          values)
 
     # first, try a numbery comparison
     try:
         max_value = None
-        for item in items:
-            item = hxl.datatypes.normalise_number(item)
-            if max_value is None or max_value < item:
-                max_value = item
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_number(value)
+                if max_value is None or max_value < value:
+                    max_value = value
         return max_value
     # if that fails, revert to lexical
     except:
-        return max(items)
+        max_value = None
+        max_value_norm = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                norm = hxl.datatypes.normalise_string(value)
+                if max_value_norm is None or norm > max_value_norm:
+                    max_value_norm = norm
+                    max_value = value
+        return max_value
 
-def do_average(row, args):
+def do_average(row, args, multiple=True):
     """Calculate the average (mean) of the arguments
     Ignores any cell that does not contain a number.
     @param row: the HXL data row
-    @param args: the arguments parsed (function name removed)
+    @param args: the function arguments (name removed from start)
     @returns: the mean of all numeric arguments, or empty string if none found
     """
-    items = _deref(row, args, True)
+    values = _deref(row, args, multiple)
+
     total = 0
     count = 0
 
     # look for numbers
-    for item in items:
+    for value in values:
         try:
-            total += hxl.datatypes.normalise_number(item)
+            total += hxl.datatypes.normalise_number(value)
             count += 1
         except:
             pass # not a number
@@ -180,20 +202,21 @@ def do_average(row, args):
         return ''
 
     
-def do_join(row, args):
+def do_join(row, args, multiple=True):
     """Join values with the separator provided.
+    Also joins empty values (for consistency)
     @param row: the HXL data row
-    @param args: the arguments parsed (function name removed)
+    @param args: the function arguments (name removed from start)
     @returns: all of the arguments, joined together
     """
-    items = _deref(row, args, True)
-    separator = items[0]
-    return separator.join(items[1:])
+    values = _deref(row, args, multiple)
+    separator = values[0]
+    return separator.join(values[1:])
 
 
 FUNCTIONS = {
-    'sum': lambda row, args: add(row, args, True),
-    'product': lambda row, args: multiply(row, args, True),
+    'sum': lambda row, args, multiple: add(row, args, multiple),
+    'product': lambda row, args, multiple: multiply(row, args, multiple),
     'min': do_min,
     'max': do_max,
     'average': do_average,
