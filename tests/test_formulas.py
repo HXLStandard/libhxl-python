@@ -175,11 +175,48 @@ class TestFunctions(unittest.TestCase):
     def test_sum(self):
         
         # should take all matches for each tag pattern
-        result = f.sum(
+        result = f.FUNCTIONS['sum'](
             self.row,
             [hxl.model.TagPattern.parse('#affected'), '100']
         )
         self.assertEqual(1100, result)
+
+    def test_product(self):
+        
+        # should take all matches for each tag pattern
+        result = f.FUNCTIONS['product'](
+            self.row,
+            [hxl.model.TagPattern.parse('#affected'), '100']
+        )
+        self.assertEqual(240000000000, result)
+
+    def test_min(self):
+        result = f.FUNCTIONS['min'](
+            self.row,
+            [hxl.model.TagPattern.parse('#affected')]
+        )
+        self.assertEqual(100, result)
+
+    def test_max(self):
+        result = f.FUNCTIONS['max'](
+            self.row,
+            [hxl.model.TagPattern.parse('#affected')]
+        )
+        self.assertEqual(400, result)
+
+    def test_average(self):
+        result = f.FUNCTIONS['average'](
+            self.row,
+            [hxl.model.TagPattern.parse('#affected')]
+        )
+        self.assertEqual(250, result)
+
+    def test_join(self):
+        result = f.FUNCTIONS['join'](
+            self.row,
+            ['|', hxl.model.TagPattern.parse('#affected')]
+        )
+        self.assertEqual('100|200|300|400', result)
 
     def test_embedded(self):
 

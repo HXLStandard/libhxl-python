@@ -1,4 +1,4 @@
-""" Functions that can run inside a formula
+"""Functions that can run inside a formula
 """
 
 import logging, collections
@@ -7,21 +7,38 @@ import hxl.datatypes
 logger = logging.getLogger(__name__)
 
 #
-# Operators (not callable as functions)
+# Operators (not directly callable as functions, but see below)
 #
 
 def tagref(row, args):
-    """A single tag pattern standing alone."""
+    """A single tag pattern standing alone.
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    """
     print('***', row, args)
     return row.get(args[0])
 
 def add(row, args, multiple=False):
+    """An addition statement
+    X + Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the sum of the arguments
+    """
     result = 0
     for arg in _deref(row, args, multiple):
         result += _num(arg)
     return result
 
 def subtract(row, args, multiple=False):
+    """A subtraction statement
+    X - Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the result of subtracting all of the following arguments from the first one
+    """
     args = _deref(row, args, multiple)
     result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
@@ -29,6 +46,13 @@ def subtract(row, args, multiple=False):
     return result
 
 def multiply(row, args, multiple=False):
+    """A multiplication statement
+    X * Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the product of the arguments
+    """
     args = _deref(row, args, multiple)
     result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
@@ -36,6 +60,13 @@ def multiply(row, args, multiple=False):
     return result
 
 def divide(row, args, multiple=False):
+    """A division statement
+    X / Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the result of dividing the first argument by all of the following ones, in order.
+    """
     args = _deref(row, args, multiple)
     result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
@@ -45,6 +76,13 @@ def divide(row, args, multiple=False):
     return result
 
 def modulo(row, args, multiple=False):
+    """A modulo division statement
+    X / Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the remainder from dividing the first argument by all of the following ones, in order.
+    """
     args = _deref(row, args, multiple)
     result = _num(args[0]) if len(args) > 0 else 0
     for arg in args[1:]:
@@ -58,21 +96,110 @@ def modulo(row, args, multiple=False):
 # User-callable functions
 #
 
-functions = {
-    'sum': sum
-}
-"""Master table of user-callable functions"""
-
 def function(row, args):
-    f = functions.get(args[0])
+    """Execute a named function
+    function(arg, arg...)
+    @param row: the HXL data row
+    @param args: the arguments parsed (the first one is the function name)
+    @returns: the result of executing the function on the arguments
+    """
+    f = FUNCTIONS.get(args[0])
     if f:
         return f(row, _deref(row, args[1:]))
     else:
         logger.error("Unknown function %s", args[0])
         return None
 
-def sum(row, args):
-    return add(row, args, True)
+def do_min(row, args):
+    """Find the minimum value in the list.
+    If they're all numbers (or empty), use numeric comparison.
+    Otherwise, use lexical comparison.
+    @param row: the HXL data row
+    @param args: the arguments parsed (function name removed)
+    @returns: the minimum value
+    """
+    items = _deref(row, args, True)
+
+    # first, try a numbery comparison
+    try:
+        min_value = None
+        for item in items:
+            item = hxl.datatypes.normalise_number(item)
+            if min_value is None or min_value > item:
+                min_value = item
+        return min_value
+    # if that fails, revert to lexical
+    except:
+        return min(items)
+
+def do_max(row, args):
+    """Find the maximum value in the list.
+    If they're all numbers (or empty), use numeric comparison.
+    Otherwise, use lexical comparison.
+    @param row: the HXL data row
+    @param args: the arguments parsed (function name removed)
+    @returns: the maximum value
+    """
+    items = _deref(row, args, True)
+
+    # first, try a numbery comparison
+    try:
+        max_value = None
+        for item in items:
+            item = hxl.datatypes.normalise_number(item)
+            if max_value is None or max_value < item:
+                max_value = item
+        return max_value
+    # if that fails, revert to lexical
+    except:
+        return max(items)
+
+def do_average(row, args):
+    """Calculate the average (mean) of the arguments
+    Ignores any cell that does not contain a number.
+    @param row: the HXL data row
+    @param args: the arguments parsed (function name removed)
+    @returns: the mean of all numeric arguments, or empty string if none found
+    """
+    items = _deref(row, args, True)
+    total = 0
+    count = 0
+
+    # look for numbers
+    for item in items:
+        try:
+            total += hxl.datatypes.normalise_number(item)
+            count += 1
+        except:
+            pass # not a number
+
+    # if there were no numbers, don't return a result
+    if count > 0:
+        return total / count
+    else:
+        return ''
+
+    
+def do_join(row, args):
+    """Join values with the separator provided.
+    @param row: the HXL data row
+    @param args: the arguments parsed (function name removed)
+    @returns: all of the arguments, joined together
+    """
+    items = _deref(row, args, True)
+    separator = items[0]
+    return separator.join(items[1:])
+
+
+FUNCTIONS = {
+    'sum': lambda row, args: add(row, args, True),
+    'product': lambda row, args: multiply(row, args, True),
+    'min': do_min,
+    'max': do_max,
+    'average': do_average,
+    'join': do_join,
+}
+"""Master table of user-callable functions"""
 
 
 #
