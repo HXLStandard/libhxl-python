@@ -259,6 +259,12 @@ class TestAddColumnsFilter(AbstractBaseFilterTest):
             self.source.add_columns('Country#country={{#sector}}').values
         )
 
+    def test_formula(self):
+        self.assertEqual(
+            [values + [values[3]] for values in DATA[2:]],
+            self.source.add_columns('#affected+total={{sum(#affected)}}').values
+        )
+
 
 class TestAppendFilter(AbstractBaseFilterTest):
 

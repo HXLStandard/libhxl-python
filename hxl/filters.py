@@ -37,7 +37,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 
 """
 
-import hxl
+import hxl, hxl.formulas.eval as feval
 import abc, copy, dateutil.parser, json, jsonpath_rw, logging, re, six, sys
 
 
@@ -639,7 +639,7 @@ class AddColumnsFilter(AbstractStreamingFilter):
         else:
             return values + self._subst(row, self.const_values)
 
-    _SUBST_PATTERN = '{{(#' + hxl.datatypes.TOKEN_PATTERN + '(?:[+-]' + hxl.datatypes.TOKEN_PATTERN + ')*)}}';
+    _SUBST_PATTERN = r'{{(.+?)}}' # non-greedy expression
     """Regular expression to parse a substitution pattern in the fixed contents for the new cell"""
 
     def _subst(self, row, const_values):
@@ -650,13 +650,16 @@ class AddColumnsFilter(AbstractStreamingFilter):
         @returns: the constant values (only) with substitutions executed
         """
         def do_sub(match_object):
-            return row.get(match_object.group(1))
+            # FIXME don't want to reparse the formula for every row
+            # Need to pre-parse and pre-chunk the replacement string
+            result = feval.eval(row, match_object.group(1))
+            return str(result)
         values = []
         for value in const_values:
             values.append(re.sub(AddColumnsFilter._SUBST_PATTERN, do_sub, value))
         return values
 
-    SPEC_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    SPEC_PATTERN = r'^\s*(?:([^#]*?)#)?({token}(?:\s*\+{token})*)=(.*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Pattern for a string specification for a new column"""
 
     @staticmethod
