@@ -151,8 +151,6 @@ def do_max(row, args, multiple=True):
     """
 
     values = _deref(row, args, multiple)
-    print('***', row, args, multiple,
-          values)
 
     # first, try a numbery comparison
     try:
@@ -244,7 +242,10 @@ def _deref(row, args, multiple=False):
     for arg in args:
         if isinstance(arg, collections.Sequence) and callable(arg[0]):
             # it's a function and args: recurse
-            result.append(arg[0](row, arg[1]))
+            if arg[0] == tagref:
+                result += _deref(row, arg[1], True)
+            else:
+                result.append(arg[0](row, arg[1]))
         elif isinstance(arg, hxl.model.TagPattern):
             # it's a tag pattern: look up matching values in the row
             if multiple:

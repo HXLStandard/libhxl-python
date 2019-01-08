@@ -269,9 +269,6 @@ class TestEval(unittest.TestCase):
     def test_tagpatterns(self):
         self.assertEqual(300, e.eval(self.row, '#affected+f+children + #affected+m+children'))
 
-    def test_multiple_matches(self):
-        self.assertEqual(300, e.eval(self.row, 'sum(#affected+f,#affected+m)'))
-
     def test_min(self):
         self.assertEqual(100, e.eval(self.row, 'min(#affected)'))
 
