@@ -1102,6 +1102,17 @@ class TestRowFilter(unittest.TestCase):
         self.assertEqual(self.DATA[4:5], self.source.with_rows('#affected is max').values)
         self.assertEqual(self.DATA[3:4], self.source.with_rows('#affected is min').values)
 
+    def test_aggregates_mixed_types(self):
+        """Test selecting on rows with mixed datatypes"""
+        DATA = [
+            ["#affected"],
+            ["1"],
+            [2],
+            ["N/A"],
+        ]
+        self.assertEqual([["1"]], hxl.data(DATA).with_rows('#affected is min').values)
+        self.assertEqual([["N/A"]], hxl.data(DATA).with_rows('#affected is max').values)
+
     def test_masked(self):
         self.assertEqual(self.DATA[2:6], self.source.with_rows('sector=education', mask='org=ngo b').values)
 

@@ -123,7 +123,7 @@ class TestDataset(unittest.TestCase):
         self.source = hxl.data(DATA)
 
     def test_min(self):
-        self.assertEquals(100, self.source.min('#affected'))
+        self.assertEquals('100', self.source.min('#affected'))
 
     def test_min_date(self):
         DATA = [
@@ -142,7 +142,7 @@ class TestDataset(unittest.TestCase):
         self.assertEquals('2017', hxl.data(DATA).min('#date'))
 
     def test_max(self):
-        self.assertEquals(300, self.source.max('#affected'))
+        self.assertEquals('300', self.source.max('#affected'))
 
     def test_cached(self):
         dataset = Dataset()
@@ -442,7 +442,7 @@ class TestRowQuery(unittest.TestCase):
         query = RowQuery.parse('#affected is min')
         self.assertTrue(query.needs_aggregate)
         query.calc_aggregate(source)
-        self.assertEquals(100, query.value)
+        self.assertEquals('100', query.value)
         for row in source:
             if query.match_row(row):
                 self.assertEqual(100, float(row.get('#affected')))
@@ -454,7 +454,7 @@ class TestRowQuery(unittest.TestCase):
         query = RowQuery.parse('#affected is max')
         self.assertTrue(query.needs_aggregate)
         query.calc_aggregate(source)
-        self.assertEquals(300, query.value)
+        self.assertEquals('300', query.value)
         for row in source:
             if query.match_row(row):
                 self.assertEqual(300, float(row.get('#affected')))

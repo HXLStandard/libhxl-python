@@ -339,39 +339,39 @@ class Dataset(object):
         Uses numbers, dates, or strings for comparison, based on the first non-empty value found.
         @param pattern: the L{hxl.model.TagPattern} to match
         @param op: operator_lt or operator_gt
-        @returns: the minimum value according to the '<' operator, or None if no values found
+        @returns: the extreme value according to operator supplied, or None if no values found
         """
         pattern = TagPattern.parse(pattern)
-        target_value = None
-        type = None
+        result_raw = None # what's actually in the dataset
+        result_normalised = None # normalised version for comparison
+
+        # Look at every row
         for row in self:
-            for value in row.get_all(pattern):
-                value = hxl.datatypes.normalise_string(value)
+            # Look at every matching value in every row
+            for i, value in enumerate(row.get_all(pattern)):
+                # ignore empty values
                 if hxl.datatypes.is_empty(value):
-                    continue # don't care about empty cells
-                if pattern.tag == '#date' or type == 'date':
-                    if re.match(r'^\d\d\d\d$', value):
-                        # special case for year
-                        type = 'date'
-                    else:
-                        if hxl.datatypes.is_date(value):
-                            value = hxl.datatypes.normalise_date(value)
-                            type = 'date'
-                if type is None or type == 'number':
+                    continue
+
+                # make a normalised value for comparison
+                normalised = hxl.datatypes.normalise(value, row.columns[i])
+
+                # first non-empty value is always a match
+                if result_normalised is None:
+                    result_raw = value
+                    result_normalised = normalised
+                else:
+                    # try comparing the normalised types first, then strings on failure
                     try:
-                        value = float(value)
-                        type = 'number'
-                    except ValueError:
-                        if type == 'number': # not a number
-                            value = None
-                if type is None:
-                    type = 'string'
-                    value = str(value)
-                if value is not None:
-                    if target_value is None or op(value, target_value):
-                        target_value = value
-        return target_value
-        
+                        if op(normalised, result_normalised):
+                            result_raw = value
+                            result_normalised = normalised
+                    except TypeError:
+                        if op(str(normalised), str(result_normalised)):
+                            result_raw = value
+                            result_normalised = normalised
+
+        return result_raw
 
     def min(self, pattern):
         """Calculate the minimum value for a tag pattern
