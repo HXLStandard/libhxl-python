@@ -4,6 +4,8 @@ Release 4.13
 	- update add-column filter to support formula substitutions
 	- improve error reporting for private HDX resources
 	- fix bug with is min/is max aggregator and mixed datatypes
+	- fix date normalisation to preserve original value (and log an
+	  error) if parsing fails
 
 2018-12-03 Release 4.12
 	- added concat() aggregator for CountFilter

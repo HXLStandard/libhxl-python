@@ -8,8 +8,9 @@ Utility functions for testing and normalising scalar-ish data types
 @see: U{http://hxlstandard.org}
 """
 
-import collections, datetime, dateutil.parser, json, re, six, unidecode
+import collections, datetime, dateutil.parser, json, logging, re, six, unidecode
 
+logger = logging.getLogger(__name__)
 
 TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """Regular-expression pattern for a single token."""
@@ -210,8 +211,11 @@ def normalise_date(v, dayfirst=True):
                 return '{:04d}-{:02d}-{:02d}'.format(int(year), int(month), int(day))
             else:
                 return '{:04d}-{:02d}'.format(int(year), int(month))
-        else:
+        elif year:
             return '{:04d}'.format(int(year))
+        else:
+            logger.error("Cannot format %s as a date", v)
+            return v
         
 
     # First, try our quick ISO date pattern, extended to support quarter notation
@@ -233,7 +237,7 @@ def normalise_date(v, dayfirst=True):
     date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1, dayfirst=dayfirst)
     date2 = dateutil.parser.parse(v, default=DEFAULT_DATE_2, dayfirst=dayfirst)
     return make_date(
-        year=date1.year,
+        year=(date1.year if date1.year==date2.year else None),
         month=(date1.month if date1.month==date2.month else None),
         day=(date1.day if date1.day==date2.day else None)
     )
