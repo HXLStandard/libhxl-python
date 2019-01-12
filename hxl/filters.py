@@ -483,11 +483,21 @@ class Aggregator(object):
                 self.value = 0
             self.value = ((self.value * (self.total - 1)) + normalised) / self.total
         elif self.type == 'min':
-            if self.normalised is None or self.normalised > normalised:
+            def gt(a, b):
+                try:
+                    return a > b
+                except TypeError:
+                    return str(a) > str(b)
+            if self.normalised is None or gt(self.normalised, normalised):
                 self.value = value
                 self.normalised = normalised
         elif self.type == 'max':
-            if self.normalised is None or self.normalised < normalised:
+            def lt(a, b):
+                try:
+                    return a < b
+                except TypeError:
+                    return str(a) < str(b)
+            if self.normalised is None or lt(self.normalised, normalised):
                 self.value = value
                 self.normalised = normalised
         elif self.type == 'concat':

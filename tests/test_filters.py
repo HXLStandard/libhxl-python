@@ -648,6 +648,20 @@ class TestCountFilter(AbstractBaseFilterTest):
         self.assertEqual(expected[1], filtered.display_tags)
         self.assertEqual(expected[2:], filtered.values)
 
+    def test_min_aggregator_mixed(self):
+        """is min aggregator with mixed types"""
+        DATA = [
+            ["#affected"],
+            ["1"],
+            [2],
+            ["N/A"],
+        ]
+        EXPECTED_VALUES = [
+            ["1"],
+        ]
+        filtered = hxl.data(DATA).count(aggregators='min(#affected)')
+        self.assertEqual(EXPECTED_VALUES, filtered.values)
+
     def test_max_aggregator(self):
         expected = [
             ['Organisation', 'Maximum affected'],
