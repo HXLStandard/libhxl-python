@@ -6,6 +6,7 @@ Release 4.13
 	- fix bug with is min/is max aggregator and mixed datatypes
 	- fix date normalisation to preserve original value (and log an
 	  error) if parsing fails
+	- bugfix for validation error when no row and/or column present
 
 2018-12-03 Release 4.12
 	- added concat() aggregator for CountFilter

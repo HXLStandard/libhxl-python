@@ -1581,7 +1581,9 @@ def make_json_issue(rule_id, locations):
     location_keys = set()
     json_locations = []
     for location in locations:
-        location_key = (location.row.row_number, location.column.column_number, location.value, location.suggested_value,)
+        row_number = location.row.row_number if location.row else None
+        column_number = location.column.column_number if location.column else None
+        location_key = (row_number, column_number, location.value, location.suggested_value,)
         if not location_key in location_keys:
             json_locations.append(make_json_location(location))
             location_keys.add(location_key)
