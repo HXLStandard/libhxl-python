@@ -3,6 +3,7 @@
 
 import logging, collections
 import hxl.datatypes
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ def function(row, args):
         return f(row, args[1:], True)
     else:
         logger.error("Unknown function %s", args[0])
-        return None
+        return ''
 
 def do_min(row, args, multiple=True):
     """Find the minimum value in the list.
@@ -203,6 +204,7 @@ def do_average(row, args, multiple=True):
 def do_join(row, args, multiple=True):
     """Join values with the separator provided.
     Also joins empty values (for consistency)
+    USAGE: join(sep, value1[, ...])
     @param row: the HXL data row
     @param args: the function arguments (name removed from start)
     @returns: all of the arguments, joined together
@@ -212,6 +214,46 @@ def do_join(row, args, multiple=True):
     return separator.join(values[1:])
 
 
+def do_datedif(row, args, multiple=False):
+    """Calculate the difference between the first date and the second.
+    The optional internal units arg determines the unit of measurement.
+    USAGE: datedif(date1, date2[, unit])
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the difference between the dates as an integer.
+    """
+    values = _deref(row, args, multiple)
+    if len(values) == 2:
+        unit = 'D'
+    elif len(values) == 3:
+        unit = str(values[2]).upper()
+    else:
+        logger.error("Wrong number of arguments to datedif()")
+        return ''
+    try:
+        date1 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[0]), '%Y-%m-%d')
+    except:
+        logger.error("Can't parse date: %s", values[0])
+        return ''
+    try:
+        date2 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[1]), '%Y-%m-%d')
+    except:
+        logger.error("Can't parse date: %s", values[1])
+        return ''
+    diff = date2-date1
+    if unit == 'Y':
+        return int(abs(diff.days/365))
+    elif unit == 'M':
+        return abs(int(round(diff.days/30)))
+    elif unit == 'W':
+        return abs(int(round(diff.days/7)))
+    elif unit == 'D':
+        return abs(diff.days)
+    else:
+        logger.error("Unrecognised unit % for datediff()", unit)
+        return ''
+    
+
 FUNCTIONS = {
     'sum': lambda row, args, multiple: add(row, args, multiple),
     'product': lambda row, args, multiple: multiply(row, args, multiple),
@@ -219,6 +261,7 @@ FUNCTIONS = {
     'max': do_max,
     'average': do_average,
     'join': do_join,
+    'datedif': do_datedif,
 }
 """Master table of user-callable functions"""
 

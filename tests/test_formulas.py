@@ -220,6 +220,25 @@ class TestFunctions(unittest.TestCase):
         )
         self.assertEqual('100|200|300|400', result)
 
+    def test_datedif(self):
+        F = f.FUNCTIONS['datedif']
+        self.assertEqual(1, F(
+            self.row,
+            ['2018-01-01', '2019-03-01', 'Y']
+        ))
+        self.assertEqual(2, F(
+            self.row,
+            ['2018-01-01', '2018-03-01', 'M']
+        ))
+        self.assertEqual(5, F(
+            self.row,
+            ['2018-01-01', '2018-02-05', 'W']
+        ))
+        self.assertEqual(31, F(
+            self.row,
+            ['2018-01-01', '2018-02-01', 'D']
+        ))
+
     def test_embedded(self):
 
         result = f.multiply(self.row, [
@@ -276,5 +295,10 @@ class TestEval(unittest.TestCase):
 
     def test_max(self):
         self.assertEqual(400, e.eval(self.row, 'max(#affected)'))
+
+    def test_datedif(self):
+        columns = [hxl.model.Column.parse(tag) for tag in ['#date+start', '#date+end']]
+        row = hxl.model.Row(columns=columns, values=['2018-01-01', '2018-02-03'])
+        self.assertEqual(5, e.eval(row, 'datedif(#date+start, #date+end, "W")'))
 
 
