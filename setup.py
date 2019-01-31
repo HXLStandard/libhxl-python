@@ -7,10 +7,10 @@ if sys.version_info < (3,):
     raise RuntimeError("libhxl requires Python 3 or higher")
 
 setup(name='libhxl',
-      version="4.12",
-      description='Python support for the Humanitarian Exchange Language (HXL).',
+      version="4.13",
+      description='Python support library for the Humanitarian Exchange Language (HXL). See http://hxlstandard.org and https://github.com/HXLStandard/libhxl-python',
       author='David Megginson',
-      author_email='contact@megginson.com',
+      author_email='megginson@un.org',
       url='http://hxlproject.org',
       install_requires=['python-dateutil', 'xlrd', 'requests', 'unidecode', 'python-io-wrapper', 'jsonpath_rw', 'ply'],
       packages=['hxl'],
