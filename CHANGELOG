@@ -1,6 +1,6 @@
-Release 4.13
-	- added spreadsheet-style formulas calculated from a row's
-	  contents
+2019-01-31 Release 4.13
+	- add spreadsheet-style formulas calculated from a row's
+	  contents: https://github.com/HXLStandard/hxl-proxy/wiki/Row-formulas
 	- update add-column filter to support formula substitutions
 	- improve error reporting for private HDX resources
 	- fix bug with is min/is max aggregator and mixed datatypes
