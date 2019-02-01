@@ -287,6 +287,12 @@ class TestEval(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(2, e.eval(self.row, '1 + 1'))
 
+    def test_order_of_operations(self):
+        self.assertEqual(7, e.eval(self.row, '1 + 2 * 3'))
+
+    def test_complex_results(self):
+        self.assertEqual(50, e.eval(self.row, '#affected+m+children / #affected+m+adults * 100'))
+
     def test_tagpatterns(self):
         self.assertEqual(300, e.eval(self.row, '#affected+f+children + #affected+m+children'))
 
