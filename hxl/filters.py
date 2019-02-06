@@ -789,7 +789,7 @@ class AppendFilter(AbstractBaseFilter):
             append_sources = [append_sources]
         self.append_sources = [hxl.data(src) for src in append_sources] # so that we can take a plain URL
         """The sources to append to this source"""
-        self.add_columns = add_columns
+        self.add_extra_columns = add_columns
         """If true, always add new columns instead of replacing existing ones"""
         self.queries = self._setup_queries(queries)
         """The row queries to limit where we choose append candidates"""
@@ -823,7 +823,7 @@ class AppendFilter(AbstractBaseFilter):
                         break
                 if self._column_positions[i].get(j) is None:
                     # no -- we need to add a new column
-                    if self.add_columns:
+                    if self.add_extra_columns:
                         self._column_positions[i][j] = len(columns_out)
                         columns_out.append(copy.deepcopy(column))
                     else:
