@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 # Operators (not directly callable as functions, but see below)
 #
 
+def const(row, args, multiple=False):
+    """A constant value (returns itself).
+    """
+    return args[0]
+
 def tagref(row, args):
     """A single tag pattern standing alone.
     @param row: the HXL data row

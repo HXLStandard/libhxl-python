@@ -254,24 +254,24 @@ class TestParser(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_primitives(self):
-        self.assertEquals(1, parser.parse("1"))
-        self.assertEquals(1.1, parser.parse("1.1"))
-        self.assertEquals('foo', parser.parse('"foo"'))
-        self.assertEquals("foo\tfoo", parser.parse('"foo\\tfoo"'))
+    def test_constants(self):
+        self.assertEquals([f.const, [1]], parser.parse("1"))
+        self.assertEquals([f.const, [1.1]], parser.parse("1.1"))
+        self.assertEquals([f.const, ['foo']], parser.parse('"foo"'))
+        self.assertEquals([f.const, ["foo\tfoo"]], parser.parse('"foo\\tfoo"'))
 
     def test_simple_math(self):
-        self.assertEquals((f.add, (1,1)), parser.parse("1 + 1"))
+        self.assertEquals([f.add, [[f.const, [1]], [f.const, [1]]]], parser.parse("1 + 1"))
 
     def test_groups(self):
         self.assertEquals(
-            (f.multiply, (2, (f.add, (1,1)))),
+            [f.multiply, [[f.const, [2]], [f.add, [[f.const, [1]], [f.const, [1]]]]]],
             parser.parse("2 * (1 + 1)")
         )
 
     def test_functions(self):
         self.assertEquals(
-            (f.function, ['sum', 1, 2, 3]),
+            [f.function, ['sum', [f.const, [1]], [f.const, [2]], [f.const, [3]]]],
             parser.parse("sum(1, 2, 3)")
         )
 
@@ -283,6 +283,9 @@ class TestEval(unittest.TestCase):
     def setUp(self):
         columns = [hxl.model.Column.parse(tag) for tag in self.TAGS]
         self.row = hxl.model.Row(columns=columns, values=self.DATA)
+
+    def test_constant(self):
+        self.assertEqual(10, e.eval(self.row, '10'))
 
     def test_simple(self):
         self.assertEqual(2, e.eval(self.row, '1 + 1'))
