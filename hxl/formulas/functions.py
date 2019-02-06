@@ -205,6 +205,20 @@ def do_average(row, args, multiple=True):
     else:
         return ''
 
+def do_round(row, args, multiple=False):
+    """Round a single value to the nearest integer.
+    @param row: the HXL data row
+    @param args: the function argument (name removed from start)
+    @returns: the first argument, rounded if it's a number, or unchanged otherwise
+    """
+    values = _deref(row, args, False)
+    if len(values) > 1:
+        logger.warn("Ignoring extra arguments to round(): %s", str(values[1:]))
+    try:
+        return round(values[0])
+    except:
+        logger.warn("Trying to round non-numeric value %s", values[0])
+        return values[0]
     
 def do_join(row, args, multiple=True):
     """Join values with the separator provided.
@@ -265,6 +279,7 @@ FUNCTIONS = {
     'min': do_min,
     'max': do_max,
     'average': do_average,
+    'round': do_round,
     'join': do_join,
     'datedif': do_datedif,
 }

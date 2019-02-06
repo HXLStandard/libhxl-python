@@ -299,15 +299,21 @@ class TestEval(unittest.TestCase):
     def test_tagpatterns(self):
         self.assertEqual(300, e.eval(self.row, '#affected+f+children + #affected+m+children'))
 
-    def test_min(self):
+    def test_min_function(self):
         self.assertEqual(100, e.eval(self.row, 'min(#affected)'))
 
-    def test_max(self):
+    def test_max_function(self):
         self.assertEqual(400, e.eval(self.row, 'max(#affected)'))
 
-    def test_datedif(self):
+    def test_round_function(self):
+        self.assertEqual(3, e.eval(self.row, 'round(3.4)'))
+
+    def test_datedif_function(self):
         columns = [hxl.model.Column.parse(tag) for tag in ['#date+start', '#date+end']]
         row = hxl.model.Row(columns=columns, values=['2018-01-01', '2018-02-03'])
         self.assertEqual(5, e.eval(row, 'datedif(#date+start, #date+end, "W")'))
+
+    def test_nested_functions(self):
+        self.assertEqual(5, e.eval(self.row, 'round(round(3.4) + round(1.9))'))
 
 

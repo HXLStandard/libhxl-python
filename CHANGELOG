@@ -1,6 +1,7 @@
 2019-02-06 Release 4.13.2
 	- rewrite, correct, and simplify formula parsing
 	- fix bug in add_column filter
+	- add round() function to formulas
 
 2019-01-31 Release 4.13.1
 	- fix setup.py to include new hxl.formulas package in the dist files (oops!)
