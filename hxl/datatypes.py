@@ -178,32 +178,30 @@ def normalise_date(v, dayfirst=True):
     """
 
     def make_date(year, quarter=None, month=None, week=None, day=None):
-        if year:
-            if quarter:
-                # *not* real ISO 8601
-                quarter = int(quarter)
-                if quarter < 1 or quarter > 4:
-                    raise ValueError("Illegal Quarter number: {}".format(quarter))
-                return '{:04d}Q{:01d}'.format(int(year), int(quarter))
-            elif week:
-                week = int(week)
-                if week < 1 or week > 53:
-                    raise ValueError("Illegal week number: {}".format(week))
-                return '{:04d}W{:02d}'.format(int(year), int(week))
-            elif month:
-                month = int(month)
-                if month < 1 or month > 12:
-                    raise ValueError("Illegal month number: {}".format(month))
-                if day:
-                    day = int(day)
-                    if day < 1 or day > 31 or (month in [4, 6, 9, 11] and day > 30) or (month==2 and day>29):
-                        raise ValueError("Illegal day {} for month {}".format(day, month))
-                    return '{:04d}-{:02d}-{:02d}'.format(int(year), int(month), int(day))
-                else:
-                    return '{:04d}-{:02d}'.format(int(year), int(month))
+        if quarter:
+            # *not* real ISO 8601
+            quarter = int(quarter)
+            if quarter < 1 or quarter > 4:
+                raise ValueError("Illegal Quarter number: {}".format(quarter))
+            return '{:04d}Q{:01d}'.format(int(year), int(quarter))
+        elif week:
+            week = int(week)
+            if week < 1 or week > 53:
+                raise ValueError("Illegal week number: {}".format(week))
+            return '{:04d}W{:02d}'.format(int(year), int(week))
+        elif month:
+            month = int(month)
+            if month < 1 or month > 12:
+                raise ValueError("Illegal month number: {}".format(month))
+            if day:
+                day = int(day)
+                if day < 1 or day > 31 or (month in [4, 6, 9, 11] and day > 30) or (month==2 and day>29):
+                    raise ValueError("Illegal day {} for month {}".format(day, month))
+                return '{:04d}-{:02d}-{:02d}'.format(int(year), int(month), int(day))
             else:
-                return '{:04d}'.format(int(year))
-        raise ValueError("Cannot format {} as a date".format(v))
+                return '{:04d}-{:02d}'.format(int(year), int(month))
+        else:
+            return '{:04d}'.format(int(year))
 
     # First, try our quick ISO date pattern, extended to support quarter notation
     v = normalise_space(v)
@@ -223,11 +221,20 @@ def normalise_date(v, dayfirst=True):
     # we parse the date twice, to detect any default values Python might have filled in
     date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1, dayfirst=dayfirst)
     date2 = dateutil.parser.parse(v, default=DEFAULT_DATE_2, dayfirst=dayfirst)
-    return make_date(
-        year=(date1.year if date1.year==date2.year else None),
-        month=(date1.month if date1.month==date2.month else None),
-        day=(date1.day if date1.day==date2.day else None)
-    )
+    day = date1.day if date1.day==date2.day else None
+    month = date1.month if date1.month==date2.month else None
+    year = date1.year if date1.year==date2.year else None
+
+    # do some quick validation
+    if year is None:
+        if month is not None:
+            year = datetime.datetime.now().year
+        else:
+            raise ValueError("Will not provide default year unless month is present: {}".format(v))
+    if month is None and day is not None:
+        raise ValueError("Will not provide default month: {}", v)
+
+    return make_date(year=year, month=month, day=day)
 
 def is_dict(e):
     """Test if a value is a Python dict.

@@ -117,9 +117,14 @@ class TestDates(unittest.TestCase):
         self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('20-01-2008'))
         self.assertEqual('2008-01', hxl.datatypes.normalise_date('Jan 2008'))
 
-    def test_bad_dates(self):
-        with self.assertRaises(ValueError):
-            self.assertEqual('July', hxl.datatypes.normalise_date('July'))
+    def test_partial_dates(self):
+        # Year alone is OK
+        self.assertTrue(hxl.datatypes.normalise_date('2018'))
+        
+        # Month alone is OK (supply current year)
+        self.assertTrue(hxl.datatypes.normalise_date('July'))
+
+        # Day alone is not OK
         with self.assertRaises(ValueError):
             hxl.datatypes.normalise_date('30')
 
