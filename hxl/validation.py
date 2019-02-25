@@ -394,18 +394,25 @@ class RangeTest(AbstractRuleTest):
             self.max_value = None
 
         # precompile numbers and dates for efficiency
-        self.min_num = None
-        self.max_num = None
-        self.min_date = None
-        self.max_date = None
-        if hxl.datatypes.is_number(min_value):
+        try:
             self.min_num = hxl.datatypes.normalise_number(min_value)
-        if hxl.datatypes.is_number(max_value):
+        except ValueError:
+            self.min_num = None
+
+        try:
             self.max_num = hxl.datatypes.normalise_number(max_value)
-        if hxl.datatypes.is_date(min_value):
+        except ValueError:
+            self.max_num = None
+
+        try:
             self.min_date = hxl.datatypes.normalise_date(min_value)
-        if hxl.datatypes.is_date(max_value):
+        except ValueError:
+            self.min_date = None
+
+        try:
             self.max_date = hxl.datatypes.normalise_date(max_value)
+        except ValueError:
+            self.max_date = None
 
     def validate_cell(self, value, row, column):
         """Test that a value is >= min_value and/or <= max_value

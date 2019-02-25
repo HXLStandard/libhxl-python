@@ -1173,11 +1173,11 @@ class CleanDataFilter(AbstractStreamingFilter):
         # Date
         if self._match_patterns(self.date, column):
             if value:
-                if hxl.datatypes.is_date(value):
+                try:
                     value = hxl.datatypes.normalise_date(value, self.date_dayfirst)
                     if self.date_format is not None:
                         value = dateutil.parser.parse(value).strftime(self.date_format)
-                else:
+                except ValueError:
                     logger.warning('Cannot parse %s as a date', str(value))
                     if self.purge:
                         value = ''
@@ -2318,9 +2318,9 @@ class SortFilter(AbstractCachingFilter):
         """
         norm = hxl.datatypes.normalise_string(value)
         if tag == '#date':
-            if hxl.datatypes.is_date(norm):
+            try:
                 return (float('inf'), hxl.datatypes.normalise_date(norm))
-            else:
+            except ValueError:
                 return (float('inf'), norm)
         else:
             try:

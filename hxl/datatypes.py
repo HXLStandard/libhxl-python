@@ -38,12 +38,19 @@ DEFAULT_DATE_2 = datetime.datetime(2016, 3, 3)
 def normalise(s, col=None, dayfirst=True):
     """Intelligently normalise a value, optionally using the HXL hashtag for hints"""
     # TODO add lat/lon
-    if col and col.tag == '#date' and is_date(s):
-        return normalise_date(s, dayfirst=dayfirst)
-    elif is_number(s):
+
+    if col and col.tag == '#date':
+        try:
+            return normalise_date(s, dayfirst=dayfirst)
+        except ValueError:
+            pass
+
+    # fall through
+    try:
         return normalise_number(s)
-    else:
+    except ValueError:
         return normalise_string(s)
+
 
 def typeof(s, col=None):
     """Determine the type of a column value"""
@@ -141,11 +148,14 @@ def normalise_number(v):
     @exception ValueError: if the value cannot be converted
     @see: L{is_number}
     """
-    n = float(v)
-    if n == int(n):
-        return int(n)
-    else:
-        return n
+    try:
+        n = float(v)
+        if n == int(n):
+            return int(n)
+        else:
+            return n
+    except:
+        raise ValueError("Cannot convert to number: {}".format(v))
 
 def is_date(v):
     """Test if a value contains something recognisable as a date.

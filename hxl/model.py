@@ -959,10 +959,18 @@ class RowQuery(object):
 
         # initialise is this is the first time matching for the row query
         if self._saved_indices is None:
-            if self.pattern.tag == '#date' and hxl.datatypes.is_date(self.value):
-                self.date_value = hxl.datatypes.normalise_date(self.value)
-            elif hxl.datatypes.is_number(self.value):
+            if self.pattern.tag == '#date':
+                try:
+                    self.date_value = hxl.datatypes.normalise_date(self.value)
+                except ValueError:
+                    self.date_value = None
+
+            try:
                 self.number_value = hxl.datatypes.normalise_number(self.value)
+            except ValueError:
+                self.number_value = None
+
+            self.string_value = hxl.datatypes.normalise_string(self.value)
 
         # try all the matching column values
         indices = self._get_saved_indices(row.columns)
@@ -973,12 +981,19 @@ class RowQuery(object):
 
     def match_value(self, value, op):
         """Try matching as dates, then as numbers, then as simple strings"""
-        if self.date_value is not None and hxl.datatypes.is_date(value):
-            return op(hxl.datatypes.normalise_date(value), self.date_value)
-        elif self.number_value is not None and hxl.datatypes.is_number(value):
-            return op(hxl.datatypes.normalise_number(value), self.number_value)
-        else:
-            return self.op(hxl.datatypes.normalise_string(value), hxl.datatypes.normalise_string(self.value))
+        if self.date_value is not None:
+            try:
+                return op(hxl.datatypes.normalise_date(value), self.date_value)
+            except ValueError:
+                pass
+
+        if self.number_value is not None:
+            try:
+                return op(hxl.datatypes.normalise_number(value), self.number_value)
+            except:
+                pass
+
+        return self.op(hxl.datatypes.normalise_string(value), self.string_value)
 
     def _get_saved_indices(self, columns):
         """Cache the column tests, so that we run them only once."""

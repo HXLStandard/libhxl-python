@@ -66,7 +66,7 @@ class TestDates(unittest.TestCase):
         self.assertTrue(hxl.datatypes.is_date('2018-03'))
         self.assertTrue(hxl.datatypes.is_date('2018-03-01'))
 
-        # edge cases
+        # ISO edge cases
         self.assertFalse(hxl.datatypes.is_date('2018-04-31'))
         self.assertFalse(hxl.datatypes.is_date('2018-13-01'))
         self.assertFalse(hxl.datatypes.is_date('2018W54'))
@@ -117,11 +117,11 @@ class TestDates(unittest.TestCase):
         self.assertEqual('2008-01-20', hxl.datatypes.normalise_date('20-01-2008'))
         self.assertEqual('2008-01', hxl.datatypes.normalise_date('Jan 2008'))
 
-        # test no exception
-        hxl.datatypes.normalise_date('30')
-
-    def test_edge_cases(self):
-        self.assertEqual('2019-07', hxl.datatypes.normalise_date('July'))
+    def test_bad_dates(self):
+        with self.assertRaises(ValueError):
+            self.assertEqual('July', hxl.datatypes.normalise_date('July'))
+        with self.assertRaises(ValueError):
+            hxl.datatypes.normalise_date('30')
 
 
 class TestFlatten(unittest.TestCase):
