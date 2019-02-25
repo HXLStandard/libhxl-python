@@ -120,6 +120,10 @@ class TestDates(unittest.TestCase):
         # test no exception
         hxl.datatypes.normalise_date('30')
 
+    def test_edge_cases(self):
+        self.assertEqual('2019-07', hxl.datatypes.normalise_date('July'))
+
+
 class TestFlatten(unittest.TestCase):
 
     def test_none(self):
