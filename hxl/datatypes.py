@@ -153,43 +153,10 @@ def is_date(v):
     @returns: True if usable as a date
     @see: L{normalise_date}
     """
-    v = normalise_space(v)
-    result = ISO_DATE_PATTERN.match(v)
-    if (not result):
-        result = SQL_DATETIME_PATTERN.match(v)
-    if result:
-        # lots of ugly ISO date hackery
-        # TODO not distinguishing non-leap-years yet
-
-        def in_range(n, min, max):
-            if n is '' or n is None:
-                return True
-            else:
-                n = int(n)
-                return (n >= min and n <= max)
-
-        if not in_range(result.group('year'), 1900, 2100):
-            return False
-        if not in_range(result.group('month'), 1, 12):
-            return False
-        if result.group('day') is not None:
-            month = int(result.group('month'))
-            if month == 2 and not in_range(result.group('day'), 1, 29):
-                return False
-            elif month in [4, 6, 9, 11] and not in_range(result.group('day'), 1, 30):
-                return False
-            elif not in_range(result.group('day'), 1, 31):
-                return False
-        if not in_range(result.group('quarter'), 1, 4):
-            return False
-        if not in_range(result.group('week'), 0, 53):
-            return False
-
-        return True
     try:
-        result = dateutil.parser.parse(v)
+        normalise_date(v)
         return True
-    except ValueError as e:
+    except ValueError:
         return False
 
 def normalise_date(v, dayfirst=True):
@@ -201,22 +168,32 @@ def normalise_date(v, dayfirst=True):
     """
 
     def make_date(year, quarter=None, month=None, week=None, day=None):
-        if quarter:
-            # *not* real ISO 8601
-            return '{:04d}Q{:01d}'.format(int(year), int(quarter))
-        elif week:
-            return '{:04d}W{:02d}'.format(int(year), int(week))
-        elif month:
-            if day:
-                return '{:04d}-{:02d}-{:02d}'.format(int(year), int(month), int(day))
+        if year:
+            if quarter:
+                # *not* real ISO 8601
+                quarter = int(quarter)
+                if quarter < 1 or quarter > 4:
+                    raise ValueError("Illegal Quarter number: {}".format(quarter))
+                return '{:04d}Q{:01d}'.format(int(year), int(quarter))
+            elif week:
+                week = int(week)
+                if week < 1 or week > 53:
+                    raise ValueError("Illegal week number: {}".format(week))
+                return '{:04d}W{:02d}'.format(int(year), int(week))
+            elif month:
+                month = int(month)
+                if month < 1 or month > 12:
+                    raise ValueError("Illegal month number: {}".format(month))
+                if day:
+                    day = int(day)
+                    if day < 1 or day > 31 or (month in [4, 6, 9, 11] and day > 30) or (month==2 and day>29):
+                        raise ValueError("Illegal day {} for month {}".format(day, month))
+                    return '{:04d}-{:02d}-{:02d}'.format(int(year), int(month), int(day))
+                else:
+                    return '{:04d}-{:02d}'.format(int(year), int(month))
             else:
-                return '{:04d}-{:02d}'.format(int(year), int(month))
-        elif year:
-            return '{:04d}'.format(int(year))
-        else:
-            logger.error("Cannot format %s as a date", v)
-            return v
-        
+                return '{:04d}'.format(int(year))
+        raise ValueError("Cannot format {} as a date".format(v))
 
     # First, try our quick ISO date pattern, extended to support quarter notation
     v = normalise_space(v)
