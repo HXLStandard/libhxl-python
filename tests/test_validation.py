@@ -312,6 +312,21 @@ class TestTests(unittest.TestCase):
             self.assertFalse(t.validate_cell(value, None, COLUMN))
         self.assertTrue(seen_callback)
 
+    def test_outliers_zero(self):
+        COLUMN = hxl.model.Column.parse('#x_test')
+
+        t = hxl.validation.NumericOutlierTest()
+
+        # populate with 100 zeros and 100 empty cells
+        t.start()
+        for i in range(1, 100):
+            t.scan_cell(0, None, COLUMN)
+            t.scan_cell('', None, COLUMN)
+        t.end_scan()
+
+        # should not cause a DIV0
+        self.assertTrue(t.validate_cell(0, None, COLUMN))
+
 
 class TestRule(unittest.TestCase):
     """Test the hxl.validation.SchemaRule class.
