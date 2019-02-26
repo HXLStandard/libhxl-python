@@ -941,7 +941,10 @@ class NumericOutlierTest(AbstractRuleTest):
             )
 
             # calculate the coefficient of variance, which we'll use as a cutoff
-            self.variation_coefficients[tagspec] = self.standard_deviations[tagspec] / self.mean_values[tagspec]
+            if self.mean_values[tagspec]:
+                self.variation_coefficients[tagspec] = self.standard_deviations[tagspec] / self.mean_values[tagspec]
+            else:
+                self.variation_coefficients[tagspec] = 0
 
         # free some memory
         del self.values
