@@ -667,6 +667,8 @@ class JSONInput(AbstractInput):
             elif self.outer.type == 'array':
                 # Simply dump a row in an array of JSON arrays
                 row =  [hxl.datatypes.flatten(value) for value in next(self._iterator)]
+            else:
+                raise StopIteration()
             return row
 
 
