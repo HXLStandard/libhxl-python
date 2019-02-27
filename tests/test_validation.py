@@ -808,7 +808,8 @@ class TestLoad(unittest.TestCase):
         """Handle a missing external taxonomy."""
         schema = hxl.schema(SCHEMA_TAXONOMY_MISSING)
         result = hxl.validate(DATA_TAXONOMY_GOOD, schema)
-        print('***', result)
+        self.assertTrue('validation_issues' in result)
+        self.assertEquals(1, len(result['validation_issues']))
 
 
 class TestJSONSchema(unittest.TestCase):
