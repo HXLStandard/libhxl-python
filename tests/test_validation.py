@@ -15,7 +15,8 @@ import hxl
 from hxl.model import Column, Row
 from hxl.validation import HXLValidationException, Schema, SchemaRule
 
-from . import resolve_path
+from unittest.mock import patch
+from . import resolve_path, URL_MOCK_TARGET, URL_MOCK_OBJECT
 
 
 class TestTests(unittest.TestCase):
@@ -787,17 +788,27 @@ class TestLoad(unittest.TestCase):
         schema = hxl.schema(SCHEMA_BASIC)
         self.assertFalse(schema.validate(hxl.data(DATA_BAD)))
 
-    # def test_taxonomy_good(self):
-    #     schema = hxl.schema(SCHEMA_TAXONOMY)
-    #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_GOOD)))
+    @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
+    def test_taxonomy_good(self):
+        schema = hxl.schema(SCHEMA_TAXONOMY)
+        self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_GOOD)))
 
-    # def test_taxonomy_bad(self):
-    #     schema = hxl.schema(SCHEMA_TAXONOMY)
-    #     self.assertFalse(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
+    @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
+    def test_taxonomy_bad(self):
+        schema = hxl.schema(SCHEMA_TAXONOMY)
+        self.assertFalse(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
 
-    # def test_taxonomy_all(self):
-    #     schema = hxl.schema(SCHEMA_TAXONOMY_ALL)
-    #     self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
+    @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
+    def test_taxonomy_all(self):
+        schema = hxl.schema(SCHEMA_TAXONOMY_ALL)
+        self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
+
+    @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
+    def test_taxonomy_missing(self):
+        """Handle a missing external taxonomy."""
+        schema = hxl.schema(SCHEMA_TAXONOMY_MISSING)
+        result = hxl.validate(DATA_TAXONOMY_GOOD, schema)
+        print('***', result)
 
 
 class TestJSONSchema(unittest.TestCase):
@@ -903,6 +914,12 @@ SCHEMA_TAXONOMY = [
 SCHEMA_TAXONOMY_ALL = [
     ['#valid_tag', '#valid_value+url'],
     ['#adm1+code', 'http://example.org/taxonomy.csv']
+]
+
+# Taxonomy rule without a tag selector
+SCHEMA_TAXONOMY_MISSING = [
+    ['#valid_tag', '#valid_value+url'],
+    ['#adm1+code', 'http://example.org/xxx-missing-taxonomy.csv']
 ]
 
 # External taxonomy dataset as a string (for simulation)
