@@ -443,14 +443,6 @@ class TestValidateColumns(unittest.TestCase):
         self.assertColumnErrors(['#org', '#adm1', '#org', '#org'], 0, schema_values=SCHEMA_VALUES)
         self.assertColumnErrors(['#org', '#adm1'], 1, schema_values=SCHEMA_VALUES)
 
-    def test_bad_value_url(self):
-        """Test for an error with an unresolvable #valid_value+url"""
-        SCHEMA = [
-            ["#valid_tag", "#valid_value+url"],
-            ["#adm1+code", "http://example.org/non-existant-link.csv"]
-        ]
-        self.assertColumnErrors(['#adm1+code'], 1, SCHEMA)
-
     def assertColumnErrors(self, column_values, errors_expected, schema_values):
         """Set up a list of HXL columns and count the errors"""
         errors = []
@@ -808,8 +800,11 @@ class TestLoad(unittest.TestCase):
         """Handle a missing external taxonomy."""
         schema = hxl.schema(SCHEMA_TAXONOMY_MISSING)
         result = hxl.validate(DATA_TAXONOMY_GOOD, schema)
-        self.assertTrue('validation_issues' in result)
-        self.assertEquals(1, len(result['validation_issues']))
+        import json
+        self.assertTrue(result['is_valid'])
+        self.assertTrue('external_issues' in result)
+        self.assertEqual(1, result['stats']['external'])
+        self.assertEquals(1, len(result['external_issues']))
 
 
 class TestJSONSchema(unittest.TestCase):

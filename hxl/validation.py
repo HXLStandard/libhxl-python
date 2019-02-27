@@ -58,7 +58,7 @@ class HXLValidationException(hxl.HXLException):
     SCOPES = ('dataset', 'column', 'row', 'cell',)
     """Allowed values for the error scope"""
 
-    def __init__(self, message, rule=None, value=None, row=None, column=None, suggested_value=None, scope='cell'):
+    def __init__(self, message, rule=None, value=None, row=None, column=None, suggested_value=None, scope='cell', is_external=False):
         """Construct a new validation error report.
         @param message: the text message for the error
         @param rule: the rule associated with the error (it may have a more-general descriptive message)
@@ -67,6 +67,7 @@ class HXLValidationException(hxl.HXLException):
         @param column: the \L{hxl.model.Column} object associated with the error, if any
         @param suggested_value: the suggested replacement value, if known
         @param scope: the error scope (dataset, column, row, or cell)
+        @param is_external: if True, the error is external to the data itself
         """
         super().__init__(message)
         
@@ -75,6 +76,7 @@ class HXLValidationException(hxl.HXLException):
         self.row = row
         self.column = column
         self.suggested_value = suggested_value
+        self.is_external = is_external
 
         scope = hxl.datatypes.normalise_string(scope)
         if scope in HXLValidationException.SCOPES:
@@ -96,6 +98,7 @@ class HXLValidationException(hxl.HXLException):
             if self.message:
                 s += '- {}'.format(self.message)
         return s
+
 
 #
 # Individual tests within a Schema Rule
@@ -1024,6 +1027,9 @@ class SchemaRule(object):
         self.loading_errors = []
         """Errors setting up the rule, to be reported once during each run."""
 
+        self.external_errors = []
+        """Errors external to the dataset itself (e.g. missing taxonomies)"""
+
         self.saved_indices = None
         """List of saved column indices matching tag_pattern"""
 
@@ -1097,6 +1103,11 @@ class SchemaRule(object):
         status = True
         if self.saved_indices is None:
             self.saved_indices = get_column_indices(self.tag_pattern, dataset.columns)
+
+        # Report any external errors
+        for error in self.external_errors:
+            if self.callback:
+                self.callback(error)
 
         # Report any loading errors
         for error in self.loading_errors:
@@ -1403,10 +1414,11 @@ class Schema(object):
                             if len(allowed_values) > 0:
                                 rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
                         except Exception as error:
-                            rule.loading_errors.append(HXLValidationException(
+                            rule.external_errors.append(HXLValidationException(
                                 'Error loading allowed values from {}: {}'.format(url, str(error)),
                                 scope='dataset',
-                                rule=rule
+                                rule=rule,
+                                is_external=True
                             ))
 
 
@@ -1554,9 +1566,11 @@ def make_json_report(status, issue_map, schema_url=None, data_url=None):
             "info": 0,
             "warning": 0,
             "error": 0,
-            "total": 0
+            "external": 0,
+            "total": 0,
         },
         "issues": [],
+        "external_issues": [],
     }
 
     if schema_url is not None:
@@ -1569,8 +1583,13 @@ def make_json_report(status, issue_map, schema_url=None, data_url=None):
     for rule_id, locations in issue_map.items():
         json_issue = make_json_issue(rule_id, locations)
         json_report['stats']['total'] += len(json_issue['locations'])
-        json_report['stats'][locations[0].rule.severity] += len(json_issue['locations'])
-        json_report['issues'].append(json_issue)
+        if len(locations) > 0 and locations[0].is_external:
+            # an external problem, not a validation error
+            json_report['stats']['external'] += len(json_issue['locations'])
+            json_report['external_issues'].append(json_issue)
+        else:
+            json_report['stats'][locations[0].rule.severity] += len(json_issue['locations'])
+            json_report['issues'].append(json_issue)
 
     return json_report
 

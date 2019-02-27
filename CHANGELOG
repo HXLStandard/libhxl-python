@@ -1,3 +1,11 @@
+Release 4.14
+	- report external validation errors (e.g. missing taxonomy)
+	  separately (and don't invalidate the dataset)
+	- improve date parsing, and fix bug in borderline case (month but
+	  no year)
+	- fix a bug when reading an empty dataset
+	- fix a DIV0 bug in validation
+
 2019-02-06 Release 4.13.2
 	- rewrite, correct, and simplify formula parsing
 	- fix bug in add_column filter
