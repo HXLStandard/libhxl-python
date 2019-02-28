@@ -245,7 +245,8 @@ class AbstractRuleTest(object):
                 row=row,
                 column=column,
                 suggested_value=suggested_value,
-                scope=scope
+                scope=scope,
+                is_external=False
             ))
         return False # for convenience
 
@@ -1024,9 +1025,6 @@ class SchemaRule(object):
         self.tests = []
         """List of \L{AbstractRuleTest} objects to apply as part of this rule"""
 
-        self.loading_errors = []
-        """Errors setting up the rule, to be reported once during each run."""
-
         self.external_errors = []
         """Errors external to the dataset itself (e.g. missing taxonomies)"""
 
@@ -1106,12 +1104,6 @@ class SchemaRule(object):
 
         # Report any external errors
         for error in self.external_errors:
-            if self.callback:
-                self.callback(error)
-
-        # Report any loading errors
-        for error in self.loading_errors:
-            status = False
             if self.callback:
                 self.callback(error)
 
@@ -1414,6 +1406,8 @@ class Schema(object):
                             if len(allowed_values) > 0:
                                 rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
                         except Exception as error:
+                            # don't add the test to the rule
+                            # do add an error about loading the values
                             rule.external_errors.append(HXLValidationException(
                                 'Error loading allowed values from {}: {}'.format(url, str(error)),
                                 scope='dataset',
@@ -1529,10 +1523,14 @@ def validate(data, schema=None):
     """
 
     issue_map = dict()
+    external_issue_map = dict()
 
     def add_issue(issue):
         hash = make_rule_hash(issue.rule)
-        issue_map.setdefault(hash, []).append(issue)
+        if issue.is_external:
+            external_issue_map.setdefault(hash, []).append(issue)
+        else:
+            issue_map.setdefault(hash, []).append(issue)
 
     status = hxl.schema(schema, callback=add_issue).validate(hxl.data(data))
 
@@ -1543,17 +1541,18 @@ def validate(data, schema=None):
     if hxl.datatypes.is_string(data):
         data_url = data
 
-    return make_json_report(status, issue_map, schema_url=schema_url, data_url=data_url)
+    return make_json_report(status, issue_map, external_issue_map, schema_url=schema_url, data_url=data_url)
 
 
 #
 # Local functions
 #
 
-def make_json_report(status, issue_map, schema_url=None, data_url=None):
+def make_json_report(status, issue_map, external_issue_map, schema_url=None, data_url=None):
     """Generate a JSON error report from a dict of errors
     @param status: the validation status (boolean)
     @param issue_map: a dict of lists of \L{HXLValidationException} objects grouped by rule hash
+    @param external_issue_map: a dict of lists of \L{HXLValidationException} objects grouped by rule hash
     @param data_url: the original URL of the data, if available
     @param schema_url: the original URL of the schema, if available
     """
@@ -1583,13 +1582,15 @@ def make_json_report(status, issue_map, schema_url=None, data_url=None):
     for rule_id, locations in issue_map.items():
         json_issue = make_json_issue(rule_id, locations)
         json_report['stats']['total'] += len(json_issue['locations'])
-        if len(locations) > 0 and locations[0].is_external:
-            # an external problem, not a validation error
-            json_report['stats']['external'] += len(json_issue['locations'])
-            json_report['external_issues'].append(json_issue)
-        else:
-            json_report['stats'][locations[0].rule.severity] += len(json_issue['locations'])
-            json_report['issues'].append(json_issue)
+        json_report['stats'][locations[0].rule.severity] += len(json_issue['locations'])
+        json_report['issues'].append(json_issue)
+
+    # add the external issue objects
+    for rule_id, locations in external_issue_map.items():
+        json_issue = make_json_issue(rule_id, locations)
+        json_report['stats']['total'] += len(json_issue['locations'])
+        json_report['stats']['external'] += len(json_issue['locations'])
+        json_report['external_issues'].append(json_issue)
 
     return json_report
 

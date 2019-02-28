@@ -788,22 +788,30 @@ class TestLoad(unittest.TestCase):
     @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
     def test_taxonomy_bad(self):
         schema = hxl.schema(SCHEMA_TAXONOMY)
-        self.assertFalse(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
+        result = hxl.validate(hxl.data(DATA_TAXONOMY_BAD), schema)
+        self.assertFalse(result['is_valid'])
+        self.assertEqual(1, result['stats']['error'])
+        self.assertEqual(0, result['stats']['external'])
+        self.assertEqual(1, len(result['issues']))
+        self.assertEqual(0, len(result['external_issues']))
 
     @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
     def test_taxonomy_all(self):
         schema = hxl.schema(SCHEMA_TAXONOMY_ALL)
-        self.assertTrue(schema.validate(hxl.data(DATA_TAXONOMY_BAD)))
+        result = hxl.validate(hxl.data(DATA_TAXONOMY_GOOD), schema)
+        self.assertTrue(result['is_valid'])
+        self.assertEqual(0, result['stats']['error'])
 
     @patch(URL_MOCK_TARGET, new=URL_MOCK_OBJECT)
     def test_taxonomy_missing(self):
         """Handle a missing external taxonomy."""
         schema = hxl.schema(SCHEMA_TAXONOMY_MISSING)
-        result = hxl.validate(DATA_TAXONOMY_GOOD, schema)
-        import json
+        result = hxl.validate(hxl.data(DATA_TAXONOMY_GOOD), schema)
         self.assertTrue(result['is_valid'])
         self.assertTrue('external_issues' in result)
+        self.assertEqual(0, result['stats']['error'])
         self.assertEqual(1, result['stats']['external'])
+        self.assertEquals(0, len(result['issues']))
         self.assertEquals(1, len(result['external_issues']))
 
 
