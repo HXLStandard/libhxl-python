@@ -329,6 +329,21 @@ class Dataset(object):
             value_set.update(new_values)
         return value_set
 
+
+    def get_column_indices(self, tag_patterns, columns):
+        """Get a list of indices that match the tag patterns provided
+        @param tag_patterns: a list of tag patterns or a string version of the list
+        @param columns: a list of columns
+        @returns: a (possibly-empty) list of 0-based indices
+        """
+        patterns = TagPattern.parse_list(tag_patterns)
+        indices = []
+        for i, column in enumerate(columns):
+            for pattern in patterns:
+                if pattern.match(column):
+                    indices.push(i)
+        return indices
+
     #
     # Aggregates
     #
@@ -842,27 +857,30 @@ class Row(object):
                 result.append(value)
         return result
 
-    def key(self, patterns=None):
+    def key(self, patterns=None, indices=None):
         """Generate a unique key tuple for the row, based on a list of tag patterns
         @param patterns: a list of L{TagPattern} objects, or a parseable string
         @returns: the key as a tuple (might be empty)
         """
-        if patterns:
-            patterns = TagPattern.parse_list(patterns)
-
-        def in_key(col):
-            if not patterns:
-                return True
-            for pattern in patterns:
-                if pattern.match(col):
-                    return True
-            return False
 
         key = []
-        for i, value in enumerate(self.values):
-            if i < len(self.columns) and in_key(self.columns[i]):
+
+        # if the user doesn't provide indices, get indices from the pattern
+        if not indices and patterns:
+            indices = get_column_indices(patterns, self.columns)
+
+        if indices:
+            # if we have indices, use them to build the key
+            for i in indices:
+                if i < len(self.values):
+                    key.append(hxl.datatypes.normalise(self.values[i], self.columns[i]))
+        else:
+            # if there are still no indices, use the whole row for the key
+            for i, value in enumerate(self.values):
                 key.append(hxl.datatypes.normalise(value, self.columns[i]))
-        return tuple(key)
+
+        return tuple(key) # make it into a tuple so that it's hashable
+
 
     @property
     def dictionary(self):
@@ -1087,6 +1105,24 @@ class RowQuery(object):
         '>': operator.gt,
         '>=': operator.ge,
     }
+
+    
+# Static functions
+
+def get_column_indices(tag_patterns, columns):
+    """Get a list of column indices that match the tag patterns provided
+    @param tag_patterns: a list of tag patterns or a string version of the list
+    @param columns: a list of columns
+    @returns: a (possibly-empty) list of 0-based indices
+    """
+    tag_patterns = TagPattern.parse_list(tag_patterns)
+    columns = [Column.parse(column) for column in columns]
+    indices = []
+    for i, column in enumerate(columns):
+        for pattern in tag_patterns:
+            if pattern.match(column):
+                indices.append(i)
+    return indices
 
 
 # Extra static initialisation
