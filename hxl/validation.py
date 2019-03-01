@@ -232,7 +232,7 @@ class AbstractRuleTest(object):
             return indices
         elif tag_pattern is not None:
             tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
-            return get_column_indices(tag_pattern, columns)
+            return hxl.model.get_column_indices([tag_pattern], columns)
         else:
             raise HXLException("Internal error: rule test requires a tag pattern or a list of indices")
 
@@ -670,6 +670,7 @@ class CorrelationTest(AbstractRuleTest):
     def start(self):
         """Build an empty correlation map"""
         self.correlation_map = dict()
+        self.correlation_indices = None
 
     def end(self):
         """All the error reporting happens here.
@@ -707,10 +708,15 @@ class CorrelationTest(AbstractRuleTest):
         so that we can report on them in the end() method.
         """
 
+        # will cache, so that we don't repeat the calculation
         indices = self.get_indices(indices, tag_pattern, row.columns)
 
+        # calculate the correlation-column indices only once as well
+        if self.correlation_indices is None:
+            self.correlation_indices = hxl.model.get_column_indices(self.tag_patterns, row.columns)
+
         # Make the correlation key
-        key = row.key(self.tag_patterns)
+        key = row.key(indices=self.correlation_indices)
 
         # Record the locations
         # key -> value -> location
@@ -1078,7 +1084,7 @@ class SchemaRule(object):
         @param row the Row to scan
         """
         if self.saved_indices is None:
-            self.saved_indices = get_column_indices(self.tag_pattern, row.columns)
+            self.saved_indices = hxl.model.get_column_indices([self.tag_pattern], row.columns)
 
         # scan each row, then each matching cell in the row
         for test in self.tests:
@@ -1100,7 +1106,7 @@ class SchemaRule(object):
         
         status = True
         if self.saved_indices is None:
-            self.saved_indices = get_column_indices(self.tag_pattern, dataset.columns)
+            self.saved_indices = hxl.model.get_column_indices([self.tag_pattern], dataset.columns)
 
         # Report any external errors
         for error in self.external_errors:
@@ -1124,7 +1130,7 @@ class SchemaRule(object):
         # individual rules may change to False
         status = True
         if self.saved_indices is None:
-            self.saved_indices = get_column_indices(self.tag_pattern, row.columns)
+            self.saved_indices = hxl.model.get_column_indices([self.tag_pattern], row.columns)
 
         # run each test on the complete row, then on individual cells
         for test in self.tests:
@@ -1423,19 +1429,6 @@ class Schema(object):
 #
 # Internal helper functions
 #
-
-def get_column_indices(tag_pattern, columns):
-    """Return a list of column indices matching tag_pattern
-    @param tag_pattern: the hxl.model.TagPattern to test
-    @param columns: a sequence of hxl.model.Column objects to test
-    @returns: a possibly-empty sequence of integer indices into columns
-    """
-    indices = []
-    for i, column in enumerate(columns):
-        if tag_pattern.match(column):
-            indices.append(i)
-    return indices
-
 
 def find_closest_match(s, allowed_values):
     """Find the closest match for a value from a list.
