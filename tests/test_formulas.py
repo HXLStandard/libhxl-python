@@ -307,6 +307,7 @@ class TestEval(unittest.TestCase):
 
     def test_round_function(self):
         self.assertEqual(3, e.eval(self.row, 'round(3.4)'))
+        self.assertEqual(66.7, e.eval(self.row, 'round(#affected+m_children / #affected+f+adults * 1000) / 100'))
 
     def test_datedif_function(self):
         columns = [hxl.model.Column.parse(tag) for tag in ['#date+start', '#date+end']]
@@ -315,5 +316,6 @@ class TestEval(unittest.TestCase):
 
     def test_nested_functions(self):
         self.assertEqual(5, e.eval(self.row, 'round(round(3.4) + round(1.9))'))
+
 
 
