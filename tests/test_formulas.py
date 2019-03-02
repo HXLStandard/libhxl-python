@@ -127,14 +127,14 @@ class TestFunctions(unittest.TestCase):
 
         # avoid DIV0
         result = f.divide(self.row, ['100', '0'])
-        self.assertEqual(100, result)
+        self.assertEqual('NaN', result)
 
         # ignore strings
         result = f.divide(self.row, [
             '150',
             hxl.model.TagPattern.parse('#org')
         ])
-        self.assertEqual(150, result)
+        self.assertEqual('NaN', result)
 
     def test_modulo(self):
 
@@ -290,8 +290,22 @@ class TestEval(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(2, e.eval(self.row, '1 + 1'))
 
+    def test_non_existant_tag(self):
+        # non-existant should be zero in numeric calculations
+        self.assertEqual(0, e.eval(self.row, "#xxx * 100"))
+
+    def test_string_in_calc(self):
+        self.assertEqual(100, e.eval(self.row, "#org + #affected+f+children"))
+        self.assertEqual(0, e.eval(self.row, "#org * #affected+f+children"))
+
+    def test_div0(self):
+        self.assertEqual('NaN', e.eval(self.row, '#affected+m+children / 0'))
+        self.assertEqual('NaN', e.eval(self.row, '#affected+m+children / #org'))
+
     def test_order_of_operations(self):
         self.assertEqual(7, e.eval(self.row, '1 + 2 * 3'))
+        self.assertEqual(20100, e.eval(self.row, '#affected+f+children + #affected+m+children * 100'))
+        self.assertEqual(30000, e.eval(self.row, '(#affected+f+children + #affected+m+children) * 100'))
 
     def test_complex_results(self):
         self.assertEqual(50, e.eval(self.row, '#affected+m+children / #affected+m+adults * 100'))
@@ -307,7 +321,7 @@ class TestEval(unittest.TestCase):
 
     def test_round_function(self):
         self.assertEqual(3, e.eval(self.row, 'round(3.4)'))
-        self.assertEqual(66.7, e.eval(self.row, 'round(#affected+m_children / #affected+f+adults * 1000) / 100'))
+        self.assertEqual(66.7, e.eval(self.row, 'round(#affected+m+children / #affected+f+adults * 1000) / 10'))
 
     def test_datedif_function(self):
         columns = [hxl.model.Column.parse(tag) for tag in ['#date+start', '#date+end']]

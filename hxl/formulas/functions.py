@@ -78,6 +78,8 @@ def divide(row, args, multiple=False):
         v = _num(arg) # avoid DIV0
         if v:
             result = result / v
+        else:
+            return 'NaN'
     return result
 
 def modulo(row, args, multiple=False):
@@ -306,7 +308,7 @@ def _deref(row, args, multiple=False):
         if isinstance(arg, collections.Sequence) and callable(arg[0]):
             # it's a function and args: recurse
             if arg[0] == tagref:
-                result += _deref(row, arg[1], True)
+                result += _deref(row, arg[1], multiple)
             else:
                 result.append(arg[0](row, arg[1]))
         elif isinstance(arg, hxl.model.TagPattern):
@@ -319,12 +321,15 @@ def _deref(row, args, multiple=False):
             # it's a literal: leave it alone
             result.append(arg)
 
+
     return result
 
 def _num(arg):
     """Convert to a number if possible.
     Otherwise, return zero and log a warning.
     """
+    if not arg:
+        return 0
     try:
         return hxl.datatypes.normalise_number(arg)
     except (ValueError, TypeError):

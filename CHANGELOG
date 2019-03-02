@@ -3,6 +3,7 @@ Release 4.14
 	  separately (and don't invalidate the dataset)
 	- improve date parsing, and fix bug in borderline case (month but
 	  no year)
+	- stability improvements for formulas (including "NaN" result for DIV0)
 	- efficiency improvements in validation tests
 	- fix a bug when reading an empty dataset
 	- fix a DIV0 bug in validation
