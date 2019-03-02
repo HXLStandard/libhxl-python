@@ -2,7 +2,7 @@
 """
 
 import logging
-import hxl.formulas.parser as p
+import hxl.formulas.parser as p, hxl.formulas.lexer as l
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +12,6 @@ def eval(row, formula):
     @param formula: the formula as a string
     @return: a scalar result
     """
-    statement = p.parser.parse(formula)
+    statement = p.parser.parse(formula, lexer=l.lexer)
     return statement[0](row, statement[1])
 
