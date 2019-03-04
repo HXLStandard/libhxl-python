@@ -3,9 +3,7 @@
 
 import unittest
 import hxl.model
-import hxl.formulas.functions as f
-from hxl.formulas.parser import parser
-import hxl.formulas.eval as e
+import hxl.formulas.functions as f, hxl.formulas.parser as p, hxl.formulas.lexer as l, hxl.formulas.eval as e
 
 
 class TestFunctions(unittest.TestCase):
@@ -254,25 +252,28 @@ class TestParser(unittest.TestCase):
     def setUp(self):
         pass
 
+    def parse(self, s):
+        return p.parser.parse(s, lexer=l.lexer)
+
     def test_constants(self):
-        self.assertEquals([f.const, [1]], parser.parse("1"))
-        self.assertEquals([f.const, [1.1]], parser.parse("1.1"))
-        self.assertEquals([f.const, ['foo']], parser.parse('"foo"'))
-        self.assertEquals([f.const, ["foo\tfoo"]], parser.parse('"foo\\tfoo"'))
+        self.assertEquals([f.const, [1]], self.parse("1"))
+        self.assertEquals([f.const, [1.1]], self.parse("1.1"))
+        self.assertEquals([f.const, ['foo']], self.parse('"foo"'))
+        self.assertEquals([f.const, ["foo\tfoo"]], self.parse('"foo\\tfoo"'))
 
     def test_simple_math(self):
-        self.assertEquals([f.add, [[f.const, [1]], [f.const, [1]]]], parser.parse("1 + 1"))
+        self.assertEquals([f.add, [[f.const, [1]], [f.const, [1]]]], self.parse("1 + 1"))
 
     def test_groups(self):
         self.assertEquals(
             [f.multiply, [[f.const, [2]], [f.add, [[f.const, [1]], [f.const, [1]]]]]],
-            parser.parse("2 * (1 + 1)")
+            self.parse("2 * (1 + 1)")
         )
 
     def test_functions(self):
         self.assertEquals(
             [f.function, ['sum', [f.const, [1]], [f.const, [2]], [f.const, [3]]]],
-            parser.parse("sum(1, 2, 3)")
+            self.parse("sum(1, 2, 3)")
         )
 
 class TestEval(unittest.TestCase):
