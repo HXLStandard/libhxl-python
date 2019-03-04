@@ -1,4 +1,4 @@
-Release 4.14
+2019-03-04 Release 4.14
 	- report external validation errors (e.g. missing taxonomy)
 	  separately (and don't invalidate the dataset)
 	- improve date parsing, and fix bug in borderline case (month but
@@ -7,6 +7,7 @@ Release 4.14
 	- efficiency improvements in validation tests
 	- fix a bug when reading an empty dataset
 	- fix a DIV0 bug in validation
+	- fix lexer conflict with jsonpath_rw package
 
 2019-02-06 Release 4.13.2
 	- rewrite, correct, and simplify formula parsing
