@@ -286,7 +286,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 {
                     'input': input,
                     'source': raw_source,
-                    'munged': munge_url(raw_source) if str(raw_source).startswith('http') else None
+                    'munged': munge_url(raw_source, http_headers=http_headers) if str(raw_source).startswith('http') else None
                 }
             ))
 
@@ -333,7 +333,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
             response = requests.get(
-                munge_url(url_or_filename, verify_ssl),
+                munge_url(url_or_filename, verify_ssl, http_headers=http_headers),
                 stream=True,
                 verify=verify_ssl,
                 timeout=timeout,
