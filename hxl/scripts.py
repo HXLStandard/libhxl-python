@@ -12,7 +12,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 from __future__ import print_function
 
-import argparse, json, logging, re, sys
+import argparse, json, logging, os, re, sys
 
 # Do not import hxl, to avoid circular imports
 import hxl.converters, hxl.filters, hxl.io
@@ -831,6 +831,12 @@ def make_args(description, hxl_output=True):
         type=int,
         nargs='?'
         )
+    parser.add_argument(
+        '--http-header',
+        help='Custom HTTP header to send with request',
+        metavar='header',
+        action='append'
+    )
     if hxl_output:
         parser.add_argument(
             '--remove-headers',
@@ -871,11 +877,26 @@ def make_source(args, stdin=STDIN):
 
     # logging
     logging.basicConfig(format='%(levelname)s (%(name)s): %(message)s', level=args.log.upper())
-    
+
+    # sheet index
     sheet_index = args.sheet
     if sheet_index is not None:
         sheet_index -= 1
-    input = hxl.io.make_input(args.infile or stdin, sheet_index=sheet_index, allow_local=True)
+
+    # get custom headers
+    header_strings = []
+    header = os.environ.get("HXL_HTTP_HEADER")
+    if header is not None:
+        header_strings.append(header)
+    if args.http_header is not None:
+        header_strings += args.http_header
+    http_headers = {}
+    for header in header_strings:
+        parts = header.partition(':')
+        http_headers[parts[0].strip()] = parts[2].strip()
+
+    # construct the input object
+    input = hxl.io.make_input(args.infile or stdin, sheet_index=sheet_index, allow_local=True, http_headers=http_headers)
     return hxl.io.data(input)
 
 def make_output(args, stdout=sys.stdout):
