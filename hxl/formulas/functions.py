@@ -215,11 +215,11 @@ def do_round(row, args, multiple=False):
     """
     values = _deref(row, args, False)
     if len(values) > 1:
-        logger.warn("Ignoring extra arguments to round(): %s", str(values[1:]))
+        logger.warning("Ignoring extra arguments to round(): %s", str(values[1:]))
     try:
         return round(values[0])
     except:
-        logger.warn("Trying to round non-numeric value %s", values[0])
+        logger.warning("Trying to round non-numeric value %s", values[0])
         return values[0]
     
 def do_join(row, args, multiple=True):
@@ -333,5 +333,5 @@ def _num(arg):
     try:
         return hxl.datatypes.normalise_number(arg)
     except (ValueError, TypeError):
-        logger.warn("Cannot convert %s to a number for calculated field", arg)
+        logger.warning("Cannot convert %s to a number for calculated field", arg)
         return 0
