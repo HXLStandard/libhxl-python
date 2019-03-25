@@ -177,7 +177,8 @@ def munge_url(url, verify_ssl=True, http_headers=None):
                     "Not authorised to read CKAN resource (is the dataset public?): {}".format(
                         ckan_api_result['error']['message']
                     ),
-                    url=url
+                    url=url,
+                    is_ckan=True
                 )
             else:
                 raise HXLIOException(
@@ -197,7 +198,8 @@ def munge_url(url, verify_ssl=True, http_headers=None):
                     "Not authorised to read CKAN dataset (is it public?): {}".format(
                         ckan_api_result['error']['message']
                     ),
-                    url=url
+                    url=url,
+                    is_ckan=True
                 )
             else:
                 raise HXLIOException(
