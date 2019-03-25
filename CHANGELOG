@@ -4,7 +4,8 @@ Release 4.15
 	  support for all scripts
 	- add hxl.io.HXLIOException as base class for all HXL I/O-related
 	  exceptions, with an optional url property
-	- add hxl.io.HXLAuthorizationException
+	- add hxl.io.HXLAuthorizationException, and throw it for private
+	  CKAN datasets
 
 2019-03-04 Release 4.14
 	- report external validation errors (e.g. missing taxonomy)

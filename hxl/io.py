@@ -163,26 +163,49 @@ def munge_url(url, verify_ssl=True, http_headers=None):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        if result.group(3):
+        site_url = result.group(1)
+        dataset_id = result.group(2)
+        resource_id = result.group(3)
+        if resource_id:
             # CKAN resource URL
-            ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(result.group(1), result.group(3))
+            ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(site_url, resource_id)
             ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
             if ckan_api_result['success']:
                 url = ckan_api_result['result']['url']
+            elif ckan_api_result['error']['__type'] == 'Authorization Error':
+                raise HXLAuthorizationException(
+                    "Not authorised to read CKAN resource (is the dataset public?): {}".format(
+                        ckan_api_result['error']['message']
+                    ),
+                    url=url
+                )
             else:
-                raise IOError("Unable to read HDX resource (is the dataset public?): {}".format(
-                    ckan_api_result['error']['message']
-                ))
+                raise HXLIOException(
+                    "Unable to read HDX resource: {}".format(
+                        ckan_api_result['error']['message']
+                    ),
+                    url=url
+                )
         else:
             # CKAN dataset (package) URL
-            ckan_api_query = '{}/api/3/action/package_show?id={}'.format(result.group(1), result.group(2))
+            ckan_api_query = '{}/api/3/action/package_show?id={}'.format(site_url, dataset_id)
             ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
             if ckan_api_result['success']:
                 url = ckan_api_result['result']['resources'][0]['url']
+            elif ckan_api_result['error']['__type'] == 'Authorization Error':
+                raise HXLAuthorizationException(
+                    "Not authorised to read CKAN dataset (is it public?): {}".format(
+                        ckan_api_result['error']['message']
+                    ),
+                    url=url
+                )
             else:
-                raise IOError("Unable to read resources from HDX dataset (is it public?): {}".format(
-                    ckan_api_result['error']['message']
-                ))
+                raise HXLIOException(
+                    "Unable to read CKAN dataset: {}".format(
+                        ckan_api_result['error']['message']
+                    ),
+                    url=url
+                )
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
@@ -366,14 +389,17 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     else:
         # Forbidden to try local (allow_local is False), so give up.
         logger.critical('Tried to open local file %s with allow_local set to False', url_or_filename)
-        raise IOError("Only http(s) and (s)ftp URLs allowed: {}".format(url_or_filename))
+        raise HXLIOException(
+            "Only http(s) and (s)ftp URLs allowed: {}".format(url_or_filename),
+            url=url_or_filename
+        )
 
 
 ########################################################################
 # Exported classes
 ########################################################################
 
-class HXLIOException(hxl.HXLException):
+class HXLIOException(hxl.HXLException, IOError):
     """ Base class for all HXL IO-related exceptions
     """
     def __init__(self, message, url=None):
