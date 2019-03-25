@@ -373,24 +373,36 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
 # Exported classes
 ########################################################################
 
-class HXLParseException(hxl.HXLException):
+class HXLIOException(hxl.HXLException):
+    """ Base class for all HXL IO-related exceptions
     """
-    A parsing error in a HXL dataset.
-    """
+    def __init__(self, message, url=None):
+        super().__init__(message)
+        self.url = url
 
-    def __init__(self, message, source_row_number=None, source_column_number=None):
-        super(HXLParseException, self).__init__(message)
+
+class HXLAuthorizationException(HXLIOException):
+    """ An authorisation error for a remote resource.
+    """
+    def __init__(self, message, url, is_ckan=False):
+        super().__init__(message, url)
+        self.is_ckan = is_ckan
+
+
+class HXLParseException(HXLIOException):
+    """ A parsing error in a HXL dataset.
+    """
+    def __init__(self, message, source_row_number=None, source_column_number=None, url=None):
+        super().__init__(message, url)
         self.source_row_number = source_row_number
         self.source_column_number = source_column_number
 
 
 class HXLTagsNotFoundException(HXLParseException):
+    """ Specific parsing exception: no HXL tags.
     """
-    Specific parsing exception: no HXL tags.
-    """
-
-    def __init__(self, message='HXL tags not found in first 25 rows'):
-        super(HXLTagsNotFoundException, self).__init__(message)
+    def __init__(self, message='HXL tags not found in first 25 rows', url=None):
+        super().__init__(message, url)
 
 
 class RequestResponseIOWrapper(io.RawIOBase):

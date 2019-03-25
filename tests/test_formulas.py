@@ -256,22 +256,22 @@ class TestParser(unittest.TestCase):
         return p.parser.parse(s, lexer=l.lexer)
 
     def test_constants(self):
-        self.assertEquals([f.const, [1]], self.parse("1"))
-        self.assertEquals([f.const, [1.1]], self.parse("1.1"))
-        self.assertEquals([f.const, ['foo']], self.parse('"foo"'))
-        self.assertEquals([f.const, ["foo\tfoo"]], self.parse('"foo\\tfoo"'))
+        self.assertEqual([f.const, [1]], self.parse("1"))
+        self.assertEqual([f.const, [1.1]], self.parse("1.1"))
+        self.assertEqual([f.const, ['foo']], self.parse('"foo"'))
+        self.assertEqual([f.const, ["foo\tfoo"]], self.parse('"foo\\tfoo"'))
 
     def test_simple_math(self):
-        self.assertEquals([f.add, [[f.const, [1]], [f.const, [1]]]], self.parse("1 + 1"))
+        self.assertEqual([f.add, [[f.const, [1]], [f.const, [1]]]], self.parse("1 + 1"))
 
     def test_groups(self):
-        self.assertEquals(
+        self.assertEqual(
             [f.multiply, [[f.const, [2]], [f.add, [[f.const, [1]], [f.const, [1]]]]]],
             self.parse("2 * (1 + 1)")
         )
 
     def test_functions(self):
-        self.assertEquals(
+        self.assertEqual(
             [f.function, ['sum', [f.const, [1]], [f.const, [2]], [f.const, [3]]]],
             self.parse("sum(1, 2, 3)")
         )

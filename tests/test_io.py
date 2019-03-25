@@ -370,11 +370,11 @@ class TestLocationInformation(unittest.TestCase):
     """Test location information for rows and columns"""
 
     def test_multiple_header_row_number(self):
-        source = hxl.data(_resolve_file('files/test_io/input-multiple-headers.csv'), allow_local=True)
-        for row in source:
-            self.assertEqual(row.source_row_number, row.row_number+3) # there are two header rows and the hashtags
-            for i, column in enumerate(row.columns):
-                self.assertEqual(i, column.column_number)
+        with hxl.data(_resolve_file('files/test_io/input-multiple-headers.csv'), allow_local=True) as source:
+            for row in source:
+                self.assertEqual(row.source_row_number, row.row_number+3) # there are two header rows and the hashtags
+                for i, column in enumerate(row.columns):
+                    self.assertEqual(i, column.column_number)
 
     def test_google_row_number(self):
         source = hxl.data('https://docs.google.com/spreadsheets/d/1rOO0-xYa3kIOfI-6KR-mLgMTdgIEijNxM52Nfhs8uvg/edit#gid=0')

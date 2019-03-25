@@ -1,6 +1,10 @@
 Release 4.15
 	- improve support for private datasets: fix custom HTTP headers
-	  with CKAN URL munging; add HXL_HTTP_HEADER and --http-header support for all scripts
+	  with CKAN URL munging; add HXL_HTTP_HEADER and --http-header
+	  support for all scripts
+	- add hxl.io.HXLIOException as base class for all HXL I/O-related
+	  exceptions, with an optional url property
+	- add hxl.io.HXLAuthorizationException
 
 2019-03-04 Release 4.14
 	- report external validation errors (e.g. missing taxonomy)

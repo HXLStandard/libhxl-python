@@ -675,7 +675,7 @@ class TestValidateDataset(unittest.TestCase):
             ['Plains', 'X002', 'X02'],
         ]
         report = hxl.validate(DATASET, SCHEMA)
-        self.assertEquals(4, report['stats']['total'])
+        self.assertEqual(4, report['stats']['total'])
 
     def test_suggested_value_correlation_key(self):
         """Complex test: can we suggest a value based on the correlation key?"""
@@ -811,8 +811,8 @@ class TestLoad(unittest.TestCase):
         self.assertTrue('external_issues' in result)
         self.assertEqual(0, result['stats']['error'])
         self.assertEqual(1, result['stats']['external'])
-        self.assertEquals(0, len(result['issues']))
-        self.assertEquals(1, len(result['external_issues']))
+        self.assertEqual(0, len(result['issues']))
+        self.assertEqual(1, len(result['external_issues']))
 
 
 class TestJSONSchema(unittest.TestCase):
