@@ -357,14 +357,18 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
+            url = munge_url(url_or_filename, verify_ssl, http_headers=http_headers)
             response = requests.get(
-                munge_url(url_or_filename, verify_ssl, http_headers=http_headers),
+                url,
                 stream=True,
                 verify=verify_ssl,
                 timeout=timeout,
                 headers=http_headers
             )
-            response.raise_for_status()
+            if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+                raise HXLAuthorizationException("Access not authorized", url=url)
+            else:
+                response.raise_for_status()
         except Exception as e:
             logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
