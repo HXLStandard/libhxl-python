@@ -1411,11 +1411,11 @@ class Schema(object):
                             allowed_values = source.get_value_set(row.get('#valid_value+target_tag'))
                             if len(allowed_values) > 0:
                                 rule.tests.append(EnumerationTest(allowed_values, case_sensitive))
-                        except Exception as error:
+                        except BaseException as error:
                             # don't add the test to the rule
                             # do add an error about loading the values
                             rule.external_errors.append(HXLValidationException(
-                                'Error loading allowed values from {}: {}'.format(url, str(error)),
+                                'Error loading allowed values from {}: {}'.format(url, error.args[0]),
                                 scope='dataset',
                                 rule=rule,
                                 is_external=True
@@ -1580,14 +1580,14 @@ def make_json_report(status, issue_map, external_issue_map, schema_url=None, dat
 
     # add the external issue objects
     for rule_id, locations in external_issue_map.items():
-        json_issue = make_json_issue(rule_id, locations)
-        json_report['stats']['total'] += len(json_issue['locations'])
-        json_report['stats']['external'] += len(json_issue['locations'])
+        json_issue = make_json_issue(rule_id, locations, is_external=True)
+        json_report['stats']['total'] += 1
+        json_report['stats']['external'] += 1
         json_report['external_issues'].append(json_issue)
 
     return json_report
 
-def make_json_issue(rule_id, locations):
+def make_json_issue(rule_id, locations, is_external=False):
     """Create an issue (with list of locations) for a JSON validation report
     @param rule_id: the hash for the rule (used to group locations)
     @param locations: a list of \L{HXLValidation"""
@@ -1600,27 +1600,30 @@ def make_json_issue(rule_id, locations):
     if not description:
         description = model.message
 
-    # get all unique locations
-    location_keys = set()
-    json_locations = []
-    for location in locations:
-        row_number = location.row.row_number if location.row else None
-        column_number = location.column.column_number if location.column else None
-        location_key = (row_number, column_number, location.value, location.suggested_value,)
-        if not location_key in location_keys:
-            json_locations.append(make_json_location(location))
-            location_keys.add(location_key)
-
     # make the issue
     json_issue = {
         "rule_id": rule_id,
         "tag_pattern": str(model.rule.tag_pattern),
         "description": description,
         "severity": model.rule.severity,
-        "location_count": len(locations),
         "scope": model.scope,
-        "locations": json_locations
     }
+
+    # get all unique locations
+    if is_external:
+        json_issue["description"] = model.message
+    else:
+        location_keys = set()
+        json_locations = []
+        for location in locations:
+            row_number = location.row.row_number if location.row else None
+            column_number = location.column.column_number if location.column else None
+            location_key = (row_number, column_number, location.value, location.suggested_value,)
+            if not location_key in location_keys:
+                json_locations.append(make_json_location(location))
+                location_keys.add(location_key)
+        json_issue["location_count"] = len(locations)
+        json_issue["locations"] = json_locations
 
     return json_issue
 
