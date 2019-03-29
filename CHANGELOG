@@ -1,4 +1,4 @@
-Release 4.15
+2019-03-29 Release 4.15
 	- improve support for private datasets: fix custom HTTP headers
 	  with CKAN URL munging; add HXL_HTTP_HEADER and --http-header
 	  support for all scripts
