@@ -732,6 +732,10 @@ class ExcelInput(AbstractInput):
         self.is_repeatable = True
         try:
             self._workbook = xlrd.open_workbook(file_contents=input.read())
+        except TypeError as e:
+            # xlrd throws a TypeError when it's trying to open a non-XLSX zip
+            # there are probably other exceptions we need to trap here
+            raise HXLIOException("Not an Excel workbook (possibly a zip archive)")
         finally:
             input.close()
         if sheet_index is None:

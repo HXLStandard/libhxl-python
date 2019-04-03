@@ -1,3 +1,7 @@
+2019-04-05 Release 4.15.1
+	- better error report when trying to open a zip file that's not an
+	  XLSX or zipped CSV
+
 2019-03-29 Release 4.15
 	- improve support for private datasets: fix custom HTTP headers
 	  with CKAN URL munging; add HXL_HTTP_HEADER and --http-header

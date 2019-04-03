@@ -86,8 +86,9 @@ class TestInput(unittest.TestCase):
             self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_zip_invalid(self):
-        with make_input(FILE_ZIP_INVALID, True) as input:
-            print('***', input)
+        """Expect a HXLIOException, not a meaningless TypeError"""
+        with self.assertRaises(hxl.io.HXLIOException):
+            make_input(FILE_ZIP_INVALID, True)
 
     def test_json_lists(self):
         with make_input(FILE_JSON, True) as input:
