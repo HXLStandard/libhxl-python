@@ -32,8 +32,9 @@ DATA = [
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
 FILE_TSV = _resolve_file('./files/test_io/input-valid.tsv')
 FILE_SSV = _resolve_file('./files/test_io/input-valid.ssv')
-FILE_ZIP = _resolve_file('./files/test_io/input-valid-csv.zip')
-FILE_ZIP_UNTAGGED = _resolve_file('./files/test_io/input-untagged-csv.zip')
+FILE_ZIP_CSV = _resolve_file('./files/test_io/input-valid-csv.zip')
+FILE_ZIP_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged-csv.zip')
+FILE_ZIP_INVALID = _resolve_file('./files/test_io/input-zip-invalid.zip')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
@@ -80,9 +81,13 @@ class TestInput(unittest.TestCase):
             self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_csv_zipped(self):
-        with make_input(FILE_ZIP, True) as input:
+        with make_input(FILE_ZIP_CSV, True) as input:
             self.assertFalse(input.is_repeatable)
             self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_zip_invalid(self):
+        with make_input(FILE_ZIP_INVALID, True) as input:
+            print('***', input)
 
     def test_json_lists(self):
         with make_input(FILE_JSON, True) as input:
@@ -146,7 +151,7 @@ class TestUntaggedInput(unittest.TestCase):
             ], list(input))
 
     def test_untagged_zipped_csv(self):
-        with hxl.io.make_input(FILE_ZIP_UNTAGGED, allow_local=True) as input:
+        with hxl.io.make_input(FILE_ZIP_CSV_UNTAGGED, allow_local=True) as input:
             self.assertEqual([
                 ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
                 ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos'],
