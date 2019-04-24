@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import io
 import unittest.mock
 
 # Default to turning off all but critical logging messages
@@ -20,7 +21,9 @@ def mock_open_url(url, allow_local=False, timeout=None, verify_ssl=True, http_he
     else:
         # Assume it's a file
         path = url
-    return (open(path, 'rb'), None, None, None)
+    with open(path, 'rb') as input:
+        data = input.read()
+    return (io.BytesIO(data), None, None, None)
 
 def resolve_path(filename):
     """Resolve a pathname for a test input file."""
