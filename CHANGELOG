@@ -1,8 +1,10 @@
+2019-05-01 Release 4.16
+	- fix minor stability issues (e.g. unclosed file resources)
+	- fix CSV delimiter detection to ensure "," is always tried first
+
 2019-04-04 Release 4.15.1
 	- better error report when trying to open a zip file that's not an
 	  XLSX or zipped CSV
-	- fix minor stability issues (e.g. unclosed file resources)
-	- fix CSV delimiter detection to ensure "," is always tried first
 
 2019-03-29 Release 4.15
 	- improve support for private datasets: fix custom HTTP headers
