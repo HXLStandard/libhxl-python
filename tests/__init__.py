@@ -1,8 +1,4 @@
-import logging
-import os
-import re
-import io
-import unittest.mock
+import io, logging, os, re, socket, unittest.mock
 
 # Default to turning off all but critical logging messages
 logging.basicConfig(level=logging.CRITICAL)
@@ -28,6 +24,21 @@ def mock_open_url(url, allow_local=False, timeout=None, verify_ssl=True, http_he
 def resolve_path(filename):
     """Resolve a pathname for a test input file."""
     return os.path.join(os.path.dirname(__file__), filename)
+
+def have_connectivity(host="8.8.8.8", port=53, timeout=3):
+    """ Attempt to make a DNS connection to see if we're on the Internet.
+    From https://stackoverflow.com/questions/3764291/checking-network-connection
+    @param host: the host IP to connect to (default 8.8.8.8, google-public-dns-a.google.com)
+    @param port: the port to connect to (default 53, TCP)
+    @param timeout: seconds before timeout (default 3)
+    @returns: True if connected; False otherwise.
+    """
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except Exception as ex:
+        return False
 
 # Target function to replace for mocking URL access.
 URL_MOCK_TARGET = 'hxl.io.open_url_or_file'
