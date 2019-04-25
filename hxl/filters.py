@@ -892,12 +892,13 @@ class AppendFilter(AbstractBaseFilter):
             raise StopIteration()
 
     @staticmethod
-    def parse_external_source_list(source):
+    def parse_external_source_list(input):
         append_sources = []
-        for row in hxl.data(source):
-            append_source = row.get('#x_source')
-            if append_source:
-                append_sources.append(append_source)
+        with hxl.data(input) as source:
+            for row in source:
+                append_source = row.get('#x_source')
+                if append_source:
+                    append_sources.append(append_source)
         return append_sources
         
     @staticmethod
