@@ -319,7 +319,11 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
             for name in zf.namelist():
                 if os.path.splitext(name)[1].lower()==".csv":
-                    return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
+                    try:
+                        return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
+                    finally:
+                        # have to close manually because we send a different stream to CSVInput
+                        input.close()
 
         if (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
             logger.debug('Making input from an Excel file')
@@ -538,7 +542,7 @@ class AbstractInput(object):
 class CSVInput(AbstractInput):
     """Read raw CSV input from a URL or filename."""
 
-    DELIMITERS = {",", "\t", ";", ":", "|"}
+    DELIMITERS = [",", "\t", ";", ":", "|"]
     """Field delimiters allowed"""
 
     def __init__(self, input, encoding='utf-8'):
