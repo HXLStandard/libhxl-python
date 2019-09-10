@@ -315,7 +315,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             ))
 
-        elif (mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS):
+        elif (file_ext in EXCEL_FILE_EXTS) and ((mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS)):
             zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
             for name in zf.namelist():
                 if os.path.splitext(name)[1].lower()==".csv":
