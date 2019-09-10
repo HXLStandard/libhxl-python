@@ -1,3 +1,7 @@
+??? Release 4.17
+	- fix bug opening an Excel file when the server sends a
+	  content-type: zip MIME type
+
 2019-05-01 Release 4.16
 	- fix minor stability issues (e.g. unclosed file resources)
 	- fix CSV delimiter detection to ensure "," is always tried first
