@@ -319,20 +319,25 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             ))
 
-        if (file_ext not in EXCEL_FILE_EXTS) and ((mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS)):
-            zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
-            for name in zf.namelist():
-                if os.path.splitext(name)[1].lower()==".csv":
-                    try:
-                        return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
-                    finally:
-                        # have to close manually because we send a different stream to CSVInput
-                        input.close()
-            raise HXLIOException("Cannot find CSV file in zip archive")
+        if match_sigs(sig, EXCEL_SIGS): # superset of ZIP_SIGS - could be zipfile or excel
 
-        elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
-            logger.debug('Making input from an Excel file')
-            return ExcelInput(input, sheet_index=sheet_index)
+            if (file_ext not in EXCEL_FILE_EXTS) and ((mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS)):
+                zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
+                for name in zf.namelist():
+                    if os.path.splitext(name)[1].lower()==".csv":
+                        try:
+                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
+                        finally:
+                            # have to close manually because we send a different stream to CSVInput
+                            input.close()
+                raise HXLIOException("Cannot find CSV file in zip archive")
+
+            elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
+                logger.debug('Making input from an Excel file')
+                return ExcelInput(input, sheet_index=sheet_index)
+
+            else:
+                raise HXLIOException("Can't use zip file (not Excel, and no CSV contents")
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
