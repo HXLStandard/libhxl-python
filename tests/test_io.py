@@ -37,6 +37,7 @@ FILE_ZIP_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged-csv.zip')
 FILE_ZIP_INVALID = _resolve_file('./files/test_io/input-zip-invalid.zip')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
+FILE_EXCEL_NOEXT = _resolve_file('./files/test_io/input-valid-xlsx.NOEXT')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
 FILE_JSON_TXT = _resolve_file('./files/test_io/input-valid-json.txt')
 FILE_JSON_UNTAGGED = _resolve_file('./files/test_io/input-untagged.json')
@@ -286,6 +287,11 @@ class TestParser(unittest.TestCase):
     def test_local_excel(self):
         """Test reading from a local Excel file."""
         with hxl.data(FILE_EXCEL, True) as source:
+            self.compare_input(source)
+
+    def test_local_excel_wrong_ext(self):
+        """Test reading from a local Excel file with the wrong extension."""
+        with hxl.data(FILE_EXCEL_NOEXT, True) as source:
             self.compare_input(source)
 
     def test_local_json(self):
