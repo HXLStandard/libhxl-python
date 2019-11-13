@@ -57,6 +57,10 @@ ZIP_MIME_TYPES = [
     'application/zip'
 ]
 
+ZIP_SIGS = [
+    b"PK\x03\x04",
+]
+
 EXCEL_MIME_TYPES = [
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -315,7 +319,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             ))
 
-        elif (file_ext not in EXCEL_FILE_EXTS) and ((mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS)):
+        if (file_ext not in EXCEL_FILE_EXTS) and ((mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS)):
             zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
             for name in zf.namelist():
                 if os.path.splitext(name)[1].lower()==".csv":
@@ -324,8 +328,9 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                     finally:
                         # have to close manually because we send a different stream to CSVInput
                         input.close()
+            raise HXLIOException("Cannot find CSV file in zip archive")
 
-        if (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
+        elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
             logger.debug('Making input from an Excel file')
             return ExcelInput(input, sheet_index=sheet_index)
 
