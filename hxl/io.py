@@ -321,23 +321,21 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
         if match_sigs(sig, EXCEL_SIGS): # superset of ZIP_SIGS - could be zipfile or excel
 
-            if (file_ext not in EXCEL_FILE_EXTS) and ((mime_type in ZIP_MIME_TYPES) or (file_ext in ZIP_FILE_EXTS)):
-                zf = zipfile.ZipFile(io.BytesIO(input.read()),"r")
-                for name in zf.namelist():
-                    if os.path.splitext(name)[1].lower()==".csv":
-                        try:
+            # these formats both require having the full file in memory (blech)
+            file_contents = input.read()
+            input.close()
+
+            try:
+                logger.debug('Trying input from an Excel file')
+                return ExcelInput(file_contents, sheet_index=sheet_index)
+            except:
+                if match_sigs(sig, ZIP_SIGS): # more-restrictive
+                    zf = zipfile.ZipFile(io.BytesIO(file_contents),"r")
+                    for name in zf.namelist():
+                        if os.path.splitext(name)[1].lower()==".csv":
                             return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
-                        finally:
-                            # have to close manually because we send a different stream to CSVInput
-                            input.close()
-                raise HXLIOException("Cannot find CSV file in zip archive")
 
-            elif (mime_type in EXCEL_MIME_TYPES) or (file_ext in EXCEL_FILE_EXTS) or match_sigs(sig, EXCEL_SIGS):
-                logger.debug('Making input from an Excel file')
-                return ExcelInput(input, sheet_index=sheet_index)
-
-            else:
-                raise HXLIOException("Can't use zip file (not Excel, and no CSV contents")
+            raise HXLIOException("Cannot find CSV file or Excel content in zip archive")
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
@@ -735,23 +733,20 @@ class ExcelInput(AbstractInput):
     If sheet number is not specified, will scan for the first tab with a HXL tag row.
     """
 
-    def __init__(self, input, sheet_index=None):
+    def __init__(self, file_contents, sheet_index=None):
         """
         Constructor
-        @param url the URL or filename
+        @param file_contents a byte buffer holding the Excel file contents in memory
         @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
-        @param allow_local (optional) iff True, allow opening local files
         """
         super().__init__()
         self.is_repeatable = True
         try:
-            self._workbook = xlrd.open_workbook(file_contents=input.read())
+            self._workbook = xlrd.open_workbook(file_contents=file_contents)
         except TypeError as e:
             # xlrd throws a TypeError when it's trying to open a non-XLSX zip
             # there are probably other exceptions we need to trap here
             raise HXLIOException("Not an Excel workbook (possibly a zip archive)")
-        finally:
-            input.close()
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)
