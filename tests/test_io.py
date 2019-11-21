@@ -35,6 +35,7 @@ FILE_SSV = _resolve_file('./files/test_io/input-valid.ssv')
 FILE_ZIP_CSV = _resolve_file('./files/test_io/input-valid-csv.zip')
 FILE_ZIP_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged-csv.zip')
 FILE_ZIP_INVALID = _resolve_file('./files/test_io/input-zip-invalid.zip')
+FILE_CSV_LATIN1 = _resolve_file('./files/test_io/input-valid-latin1.csv')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
 FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_EXCEL_BROKEN = _resolve_file('./files/test_io/input-broken.xlsx')
@@ -91,6 +92,10 @@ class TestInput(unittest.TestCase):
         """Expect a HXLIOException, not a meaningless TypeError"""
         with self.assertRaises(hxl.io.HXLIOException):
             make_input(FILE_ZIP_INVALID, True)
+
+    def test_csv_latin1(self):
+        with make_input(FILE_CSV_LATIN1, True, encoding="latin1") as input:
+            self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_lists(self):
         with make_input(FILE_JSON, True) as input:

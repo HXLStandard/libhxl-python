@@ -92,7 +92,7 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None):
+def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
     """
     Convenience method for reading a HXL dataset.
     If passed an existing Dataset, simply returns it.
@@ -103,6 +103,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
     @param verify_ssl: if False, don't verify SSL certificates (e.g. for self-signed certs).
     @param http_headers: optional dict of HTTP headers to add to a request.
     @param selector: selector property for a JSON file (will later also cover tabs, etc.)
+    @param encoding: force a character encoding, regardless of HTTP info etc
     """
 
     if isinstance(data, hxl.model.Dataset):
@@ -121,11 +122,12 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
             timeout=timeout,
             verify_ssl=verify_ssl,
             http_headers=http_headers,
-            selector=selector
+            selector=selector,
+            encoding=encoding
         ))
 
     
-def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None):
+def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, encoding=None):
     """Open an untagged data source and add hashtags."""
     import hxl.converters
     return hxl.data(
@@ -136,7 +138,8 @@ def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sh
                 sheet_index=sheet_index,
                 timeout=timeout,
                 verify_ssl=verify_ssl,
-                http_headers=http_headers
+                http_headers=http_headers,
+                encoding=encoding
             ),
             specs=specs,
             default_tag=default_tag,
@@ -246,7 +249,7 @@ def munge_url(url, verify_ssl=True, http_headers=None):
     return url
 
 
-def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None):
+def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
     """Figure out what kind of input to create.
 
     Can detect a URL or filename, an input stream, or an array.
@@ -260,6 +263,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     @param verify_ssl: if False, don't try to verify SSL certificates (e.g. for self-signed certs).
     @param http_headers: an optional dict of HTTP headers to send with a request.
     @param selector: a property to select the data in a JSON record (may later extend to spreadsheet tabs).
+    @param encoding: specify a character encoding
     @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
     """
 
@@ -289,8 +293,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     else:
         mime_type = None
         file_ext = None
-        encoding = None
-        
+            
         if hasattr(raw_source, 'read'):
             # it's an input stream
             logger.debug('Making input from a stream')
@@ -298,7 +301,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         else:
             # assume a URL or filename
             logger.debug('Opening source %s as a URL or file', raw_source)
-            (input, mime_type, file_ext, encoding) = open_url_or_file(
+            (input, mime_type, file_ext, specified_encoding) = open_url_or_file(
                 raw_source,
                 allow_local=allow_local,
                 timeout=timeout,
@@ -306,6 +309,12 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 http_headers=http_headers
             )
             input = wrap_stream(input)
+            if encoding is None: # if no encoding was provided, use the inferred one
+                if specified_encoding:
+                    encoding = specified_encoding
+
+        if not encoding: # if we still have no character encoding, default to UTF-8
+            encoding = "utf-8"
 
         sig = input.peek(4)[:4]
 
@@ -333,17 +342,17 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                     zf = zipfile.ZipFile(io.BytesIO(file_contents),"r")
                     for name in zf.namelist():
                         if os.path.splitext(name)[1].lower()==".csv":
-                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))))
+                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), encoding=encoding)
 
             raise HXLIOException("Cannot find CSV file or Excel content in zip archive")
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
-            return JSONInput(input, selector=selector)
+            return JSONInput(input, selector=selector, encoding=encoding)
 
         # fall back to CSV if all else fails
         logger.debug('Making input from CSV')
-        return CSVInput(input)
+        return CSVInput(input, encoding=encoding)
 
 
 def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True, http_headers=None):
@@ -957,6 +966,7 @@ def from_spec(spec):
     timeout = spec.get('timeout', None)
     verify_ssl = spec.get('verify_ssl', True)
     http_headers = spec.get('http_headers', None)
+    encoding = spec.get('encoding', None)
 
     # recipe
     tagger_spec = spec.get('tagger', None)
@@ -972,7 +982,8 @@ def from_spec(spec):
         sheet_index=sheet_index,
         timeout=timeout,
         verify_ssl=verify_ssl,
-        http_headers=http_headers
+        http_headers=http_headers,
+        encoding=encoding
     )
 
     # autotag if requested
