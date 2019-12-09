@@ -1,10 +1,8 @@
-??? Release 4.17
+2019-12-09 Release 4.16
 	- added optional encoding parameter to hxl.io.data() etc. to force a character encoding
 	- fix bug opening an Excel file when the server sends a
 	  content-type: zip MIME type
 	- fix bug peeking at UTF-8 files with many extended characters
-
-2019-05-01 Release 4.16
 	- fix minor stability issues (e.g. unclosed file resources)
 	- fix CSV delimiter detection to ensure "," is always tried first
 
