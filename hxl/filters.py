@@ -1932,17 +1932,19 @@ class JSONPathFilter(AbstractStreamingFilter):
     Optionally restrict to specific columns and/or rows
     """
 
-    def __init__(self, source, path, patterns=None, queries=[]):
+    def __init__(self, source, path, patterns=None, queries=[], use_json=True):
         """Constructor
         @param source: the upstream data source
         @param path: a JSONPath expression for extracting data
         @param patterns: a tag pattern or list of patterns for the columns to use (default to all)
         @param queries: a predicate or list of predicates for the rows to consider.
+        @param use_json: if True, serialise multiple values as JSON (default); otherwise, separate with " | "
         """
         super().__init__(source)
         self.path = jsonpath_rw.parse(path)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.queries = self._setup_queries(queries)
+        self.use_json = use_json
         self._indices = None
 
     def filter_row(self, row):
@@ -1960,9 +1962,9 @@ class JSONPathFilter(AbstractStreamingFilter):
                     if len(results) == 0:
                         values[i] = ''
                     elif len(results) == 1:
-                        values[i] = hxl.datatypes.flatten(results[0])
+                        values[i] = hxl.datatypes.flatten(results[0], self.use_json)
                     else:
-                        values[i] = hxl.datatypes.flatten(results)
+                        values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except ValueError as e:
                     logger.warning("Skipping invalid JSON expression '%s'", values[i])
 

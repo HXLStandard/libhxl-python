@@ -63,14 +63,23 @@ def typeof(s, col=None):
     else:
         return 'string'
     
-def flatten(value, is_subitem=False):
-    """Flatten potential lists and dictionaries"""
+def flatten(value, use_json=True):
+    """Flatten potential lists and dictionaries
+    If use_json is false, then remove hierarchies, and create a single list
+    separated with " | ", and will use dict keys rather than values.
+    @param value: the value to flatten (may be a list)
+    @param use_json: if True (default), encode top-level lists as JSON
+    @returns: a string version of the value
+    """
 
     # keep it simple for now
     if value is None:
         return ''
     elif is_list(value) or is_dict(value):
-        return json.dumps(value)
+        if use_json:
+            return json.dumps(value)
+        else:
+            return " | ".join([flatten(item, False) for item in value])
     else:
         return str(value)
 

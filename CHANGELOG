@@ -1,3 +1,6 @@
+Release 4.17
+	- add ability to flatten lists as non-JSON (just separated by " | ")
+
 2019-12-09 Release 4.16
 	- added optional encoding parameter to hxl.io.data() etc. to force a character encoding
 	- fix bug opening an Excel file when the server sends a

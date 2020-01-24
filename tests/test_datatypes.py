@@ -145,6 +145,11 @@ class TestFlatten(unittest.TestCase):
         output = '["a", "b", ["c", "d"], "e"]'
         self.assertEqual(output, hxl.datatypes.flatten(input))
 
+    def test_non_json(self):
+        input = ['a', 'b', ['c', 'd'], 'e']
+        output = 'a | b | c | d | e'
+        self.assertEqual(output, hxl.datatypes.flatten(input, use_json=False))
+
     def test_dict(self):
         input = {'a': 'b', 'c': ['d', 'e']}
         output = '{"a": "b", "c": ["d", "e"]}'
