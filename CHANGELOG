@@ -1,4 +1,4 @@
-Release 4.17
+2020-02-25 Release 4.17
 	- add ability to flatten lists as non-JSON (just separated by " | ")
 
 2019-12-09 Release 4.16
