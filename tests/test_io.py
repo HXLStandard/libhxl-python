@@ -327,12 +327,12 @@ class TestParser(unittest.TestCase):
 
     def test_remote_csv(self):
         """Test reading from a remote CSV file (will fail without connectivity)."""
-        with hxl.data(URL_CSV, timeout=5) as source:
+        with hxl.data(URL_CSV, timeout=10) as source:
             self.compare_input(source)
 
     def test_remote_excel(self):
         """Test reading from a remote Excel file (will fail without connectivity)."""
-        with hxl.data(URL_EXCEL, timeout=5) as source:
+        with hxl.data(URL_EXCEL, timeout=10) as source:
             self.compare_input(source)
 
     def x_test_remote_json(self):
@@ -342,27 +342,27 @@ class TestParser(unittest.TestCase):
 
     def test_google_sheet_nohash(self):
         # Google Sheet, default tab
-        with hxl.data(URL_GOOGLE_SHEET_NOHASH, timeout=5) as source:
+        with hxl.data(URL_GOOGLE_SHEET_NOHASH, timeout=10) as source:
             self.compare_input(source)
 
     def test_google_sheet_hash(self):
         # Google Sheet, specific tab
-        with hxl.data(URL_GOOGLE_SHEET_HASH, timeout=5) as source:
+        with hxl.data(URL_GOOGLE_SHEET_HASH, timeout=10) as source:
             self.compare_input(source)
 
     def test_google_file(self):
         # Google Sheet, specific tab
-        with hxl.data(URL_GOOGLE_FILE, timeout=5) as source:
+        with hxl.data(URL_GOOGLE_FILE, timeout=10) as source:
             self.compare_input(source)
 
     def test_google_drive_sheet(self):
         # Google Drive, "open" link for sheet
-        with hxl.data(URL_GOOGLE_OPEN_SHEET, timeout=5) as source:
+        with hxl.data(URL_GOOGLE_OPEN_SHEET, timeout=10) as source:
             self.compare_input(source)
 
     def test_google_drive_file(self):
         # Google Drive, "open" link for file
-        with hxl.data(URL_GOOGLE_OPEN_FILE, timeout=5) as source:
+        with hxl.data(URL_GOOGLE_OPEN_FILE, timeout=10) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):
