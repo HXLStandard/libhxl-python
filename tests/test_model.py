@@ -235,6 +235,26 @@ class TestColumn(unittest.TestCase):
         self.assertEqual(hash(col1), hash(col2))
         self.assertNotEqual(hash(col1), hash(col3))
 
+    def test_parse_valid(self):
+        col = Column.parse("#foo +a +b")
+        self.assertEqual(col.tag, '#foo')
+        self.assertTrue('a' in col.attributes)
+        self.assertTrue('b' in col.attributes)
+
+    def test_parse_invalid(self):
+
+        # empty string
+        col = Column.parse("   ")
+        self.assertIsNone(col)
+
+        # without exception
+        col = Column.parse('#foo + a +b')
+        self.assertTrue(col is False)
+
+        # with exception
+        with self.assertRaises(hxl.HXLException):
+            col = Column.parse('#foo + a +b', use_exception=True)
+
 
 class TestRow(unittest.TestCase):
 

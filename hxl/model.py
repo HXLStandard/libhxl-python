@@ -726,12 +726,20 @@ class Column(object):
 
     @staticmethod
     def parse(raw_string, header=None, use_exception=False, column_number=None):
+        """ Attempt to parse a full hashtag specification.
+        @param raw_string: the string representation of the tagspec
+        @param header: the text header to include
+        @param use_exception: if True, throw an exception for a malformed tagspec
+        @returns: None if the string is empty, False if it's malformed (and use_exception is False), or a Column object otherwise
         """
-        Attempt to parse a full hashtag specification.
-        """
+        
         # Already parsed?
         if isinstance(raw_string, Column):
             return raw_string
+
+        # Empty string?
+        if hxl.datatypes.is_empty(raw_string):
+            return None
         
         # Pattern for a single tag
         result = re.match(Column.PATTERN, raw_string)
@@ -747,7 +755,8 @@ class Column(object):
             if use_exception:
                 raise hxl.HXLException("Malformed tag expression: " + raw_string)
             else:
-                return None
+                logger.error("Malformed tag expression: %s", raw_string)
+                return False
 
     @staticmethod
     def parse_spec(raw_string, default_header=None, use_exception=False, column_number=None):

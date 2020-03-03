@@ -916,8 +916,8 @@ class HXLReader(hxl.model.Dataset):
                     columns.append(column)
                     hashtags_found += 1
                     continue
-                else:
-                    failed_hashtags.append('"' + raw_string + '"')
+                elif column is False:
+                    failed_hashtags.append(raw_string)
 
             columns.append(hxl.model.Column(header=header, column_number=source_column_number))
 
