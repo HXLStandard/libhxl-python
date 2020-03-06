@@ -1689,28 +1689,130 @@ class ImplodeFilter(AbstractBaseFilter):
     @see: hxl.filters.ExplodeFilter
     """
 
-    def __init__(self, source, pattern, output_tagspec=None):
+    def __init__(self, source, label_pattern, value_pattern):
         """ Constructor
         @param source: the upstream source dataset
         @param pattern: the tag pattern to use for the labels
         @param output_tagspec: the tagspec to use for the repeated, wide columns
         """
         super(ImplodeFilter, self).__init__(source)
-        self.pattern = hxl.model.TagPattern.parse(pattern)
-        self.output_tagspec = output_tagspec
+        self.label_pattern = label_pattern
+        self.value_pattern = value_pattern
+        
+        self.processed = False
+        self.label_index = -1
+        self.value_index = -1
+        self.labels = set()
+        self.rows = dict()
+        self.new_columns = None
 
     def filter_columns(self):
         """@returns: the new (exploded) column headers"""
-        # TODO
-        pass
+        if self.new_columns is None:
+            self.process()
+            if self.label_index == -1 or self.value_index == -1: # no usable columns
+                self.new_columns = self.source.columns
+            else:
+
+                # add existing columns (excluding label and value columns)
+                self.new_columns = []
+                for i, column in enumerate(self.source.columns):
+                    if i != self.label_index and i != self.value_index:
+                        self.new_columns.append(column)
+
+                # add extra columns for new, "wide" data
+                model = self.source.columns[self.value_index]
+
+                for label in sorted(self.labels):
+                    attributes = set(model.attributes)
+                    attributes.add("label")
+                    column = hxl.model.Column(tag=model.tag, attributes=attributes, header=label)
+                    self.new_columns.append(column)
+
+        return self.new_columns
 
     def __iter__(self):
         """Custom iterator to produce exploded rows."""
         # TODO
-        pass
+        self.process()
+        if self.label_index == -1 or self.value_index == -1: # no usable columns
+            return iter(self.source)
+
+    def process(self):
+
+        # check if we've already done all this
+        if self.processed:
+            return
+
+        # determine the indices of the label and value columns
+        # if either is missing, just pass on the source data normally (with logged errors)
+        lpattern = hxl.model.TagPattern.parse(self.label_pattern)
+        vpattern = hxl.model.TagPattern.parse(self.value_pattern)
+        for i, column in enumerate(self.source.columns):
+            if lpattern.match(column):
+                if self.label_index == -1:
+                    self.label_index = i
+                else:
+                    logger.warning(
+                        "[Implode filter] multiple columns match label pattern %s; using first match %s (%s)",
+                        self.label_pattern,
+                        self.source.columns[self.label_index].displayTag,
+                        self.source.columns[self.label_index].header
+                    )
+            if vpattern.match(column):
+                if self.value_index == -1:
+                    self.value_index = i
+                else:
+                    logger.warning(
+                        "[Implode filter] multiple columns match value pattern %s; using first match",
+                        self.value_pattern,
+                        self.source.columns[self.value_index].displayTag,
+                        self.source.columns[self.value_index].header
+                    )
+
+        if self.label_index == -1:
+            logger.error("No matching label column for %s", self.label_pattern)
+            return
+        
+        if self.value_index == -1:
+            logger.error("No matching value column for %s", self.value_pattern)
+
+
+        # iterate through the dataset
         for row in self.source:
-            for values in self._expand(row, self._plan):
-                yield hxl.model.Row(self.columns, values)
+
+            values = list(row.values)
+
+            # get the "wide" label and value
+            label = ""
+            if self.label_index < len(values):
+                label = values[self.label_index]
+
+            self.labels.add(label)
+
+            value = ""
+            if self.value_index < len(values):
+                value = values[self.value_index]
+
+            # make a key tuple, excluding the label and value columns
+            indices = list(range(0, len(values) - 1))
+            if self.label_index in indices:
+                indices.remove(self.label_index)
+            if self.value_index in indices:
+                indices.remove(self.value_index)
+            key = row.key(indices=indices)
+
+            # check to see if we already have data for that key
+            if key not in self.rows:
+                self.rows[key] = {}
+            if label in self.rows[key]:
+                logger.error("Multiple values for %s in implode filter; using %s", label, self.rows[key][label])
+            else:
+                self.rows[key][label] = value
+            
+                
+            
+                
 
     @staticmethod
     def _load(source, spec):

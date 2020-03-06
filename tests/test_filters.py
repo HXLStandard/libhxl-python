@@ -1228,8 +1228,8 @@ class TestImplodeFilter(AbstractBaseFilterTest):
     ]
 
     def test_headers (self):
-        source = hxl.data(self.DATA_IN).implode('#affected')
-        self.assertEqual(self.DATA_IN[0], source.headers)
+        source = hxl.data(self.DATA_IN).implode(label_pattern="#group", value_pattern="#affected")
+        self.assertEqual(self.DATA_OUT[0], source.headers)
 
         
 class TestFillDataFilter(AbstractBaseFilterTest):

@@ -561,14 +561,15 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
 
-    def implode(self, pattern, output_tagspec=None):
+    def implode(self, label_pattern, value_pattern):
         """Implodes a long dataset into a wide dataset
-        @param pattern: the tag pattern to match 
+        @param label_pattern: the tag pattern to match the label column
+        @param value_pattern: the tag pattern to match the 
         @return: filtered dataset.
         @see hxl.filters.ImplodeFilter
         """
         import hxl.filters
-        return hxl.filters.ImplodeFilter(self, pattern, output_tagspec)
+        return hxl.filters.ImplodeFilter(self, label_pattern=label_pattern, value_pattern=value_pattern)
 
     def jsonpath(self, path, patterns=[], queries=[], use_json=True):
         """Parse the value as a JSON expression and extract data from it.
