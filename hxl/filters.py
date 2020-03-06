@@ -1577,6 +1577,7 @@ class ExplodeFilter(AbstractBaseFilter):
     the generated columns.)
 
     @see: hxl.model.Dataset.explode
+    @see: hxl.filters.ImplodeFilter
     """
 
     def __init__(self, source, header_attribute='header', value_attribute='value'):
@@ -1664,6 +1665,64 @@ class ExplodeFilter(AbstractBaseFilter):
             source=source,
             header_attribute=opt_arg(spec, 'header_attribute', 'header'),
             value_attribute=opt_arg(spec, 'value_attribute', 'value')
+        )
+
+
+class ImplodeFilter(AbstractBaseFilter):
+    """Implode a long (series) dataset into a wide version.
+
+    The first column matching the pattern will be used as headers. For example, with the tag pattern #date+year,
+
+    Country,Header,Value
+    #country,#date+year,#affected
+    Cameroon,2015,100
+    Cameroon,2014,150
+    Cameroon,2015,120
+
+    will be converted to 
+
+    Country,2015,2014,2013
+    #country,#affected+label,#affected+label,#affected+label
+    Cameroon,100,150,120
+
+    @see: hxl.model.Dataset.implode
+    @see: hxl.filters.ExplodeFilter
+    """
+
+    def __init__(self, source, pattern, output_tagspec=None):
+        """ Constructor
+        @param source: the upstream source dataset
+        @param pattern: the tag pattern to use for the labels
+        @param output_tagspec: the tagspec to use for the repeated, wide columns
+        """
+        super(ImplodeFilter, self).__init__(source)
+        self.pattern = hxl.model.TagPattern.parse(pattern)
+        self.output_tagspec = output_tagspec
+
+    def filter_columns(self):
+        """@returns: the new (exploded) column headers"""
+        # TODO
+        pass
+
+    def __iter__(self):
+        """Custom iterator to produce exploded rows."""
+        # TODO
+        pass
+        for row in self.source:
+            for values in self._expand(row, self._plan):
+                yield hxl.model.Row(self.columns, values)
+
+    @staticmethod
+    def _load(source, spec):
+        """Create an implode filter from a dict spec.
+        @param source: the upstream source
+        @param spec: the JSON-like filter specification
+        @returns: an L{ImplodeFilter} object
+        """
+        return ImplodeFilter(
+            source=source,
+            pattern=req_arg(spec, 'pattern'),
+            output_tagspec=opt_arg(spec, 'output_tagspec', None)
         )
 
 

@@ -1204,6 +1204,33 @@ class TestExplodeFilter(AbstractBaseFilterTest):
             self.DATA_OUT[2:]
         )
 
+
+class TestImplodeFilter(AbstractBaseFilterTest):
+
+    DATA_IN = [
+        ['Province', 'Date', 'Group', 'Number affected'],
+        ['#adm1', '#date', '#group', '#affected'],
+        ['Coast', '2016', 'Girls', '200'],
+        ['Coast', '2016', 'Boys', '150'],
+        ['Coast', '2016', 'Women', '500'],
+        ['Coast', '2016', 'Men', '600'],
+        ['Plains', '2016', 'Girls', '300'],
+        ['Plains', '2016', 'Boys', '450'],
+        ['Plains', '2016', 'Women', '800'],
+        ['Plains', '2016', 'Men', '750']
+    ]
+
+    DATA_OUT = [
+        ['Province', 'Date', 'Boys', 'Girls', 'Men', 'Women'],
+        ['#adm1', '#date', '#affected+label', '#affected+label', '#affected+label', '#affected+label'],
+        ['Coast', '2016', '150', '200', '600', '500'],
+        ['Plains', '2016', '450', '300', '750', '800'],
+    ]
+
+    def test_headers (self):
+        source = hxl.data(self.DATA_IN).implode('#affected')
+        self.assertEqual(self.DATA_IN[0], source.headers)
+
         
 class TestFillDataFilter(AbstractBaseFilterTest):
 
