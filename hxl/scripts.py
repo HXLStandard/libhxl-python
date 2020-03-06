@@ -613,7 +613,7 @@ def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value)
+        filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value_att)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
