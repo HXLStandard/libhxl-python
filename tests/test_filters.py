@@ -143,6 +143,16 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = self.source.recipe({'filter': 'explode'})
         self.assertEqual(type(filtered).__name__, 'ExplodeFilter')
 
+    def test_implode(self):
+        filtered = self.source.recipe({
+            'filter': 'implode',
+            'label_pattern': "#date+year",
+            'value_pattern': "#affected"
+        })
+        self.assertEqual(type(filtered).__name__, 'ImplodeFilter')
+        self.assertEqual(filtered.label_pattern, "#date+year")
+        self.assertEqual(filtered.value_pattern, "#affected")
+
     def test_fill_data(self):
         filtered = self.source.recipe({'filter': 'fill_data'})
         self.assertEqual(type(filtered).__name__, 'FillDataFilter')

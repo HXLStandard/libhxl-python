@@ -78,6 +78,14 @@ def hxlfill():
     """Console script for hxlreplace."""
     run_script(hxlfill_main)
 
+def hxlexplode():
+    """Console script for hxlexplode."""
+    run_script(hxlexplode_main)
+
+def hxlimplode():
+    """Console script for hxlimplode."""
+    run_script(hxlimplode_main)
+
 def hxlselect():
     """Console script for hxlselect."""
     run_script(hxlselect_main)
@@ -570,6 +578,80 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.FillDataFilter(source, pattern=args.tag, queries=args.query)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlexplode with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = make_args('Explode a wide dataset into a long dataset')
+
+    parser.add_argument(
+        '-H',
+        '--header-att',
+        help='attribute to add to the label column (defaults to "label")',
+        metavar='att',
+        default="label"
+        )
+
+    parser.add_argument(
+        '-V',
+        '--value-att',
+        help='attribute to add to the value column (defaults to "value")',
+        metavar='tagpattern',
+        default="value"
+        )
+
+    args = parser.parse_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlexplode with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = make_args('Implode a long dataset into a wide dataset.')
+
+    parser.add_argument(
+        '-L',
+        '--label',
+        help='HXL tag pattern for the label column',
+        metavar='tagpattern',
+        required=True,
+        type=hxl.model.TagPattern.parse,
+        )
+
+    parser.add_argument(
+        '-V',
+        '--value',
+        help='HXL tag pattern for the value column',
+        metavar='tagpattern',
+        required=True,
+        type=hxl.model.TagPattern.parse,
+        )
+
+    args = parser.parse_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label_pattern, value_pattern=args.value_pattern)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK

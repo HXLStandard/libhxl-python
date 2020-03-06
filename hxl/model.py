@@ -765,7 +765,7 @@ class Column(object):
             if use_exception:
                 raise hxl.HXLException("Malformed tag expression: " + raw_string)
             else:
-                logger.error("Malformed tag expression: %s", raw_string)
+                logger.debug("Not a HXL hashtag spec: %s", raw_string)
                 return False
 
     @staticmethod

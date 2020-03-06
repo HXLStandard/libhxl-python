@@ -1814,8 +1814,8 @@ class ImplodeFilter(AbstractBaseFilter):
         """
         return ImplodeFilter(
             source=source,
-            pattern=req_arg(spec, 'pattern'),
-            output_tagspec=opt_arg(spec, 'output_tagspec', None)
+            label_pattern=req_arg(spec, 'label_pattern'),
+            value_pattern=req_arg(spec, 'value_pattern')
         )
 
 
@@ -2507,6 +2507,7 @@ LOAD_MAP = {
     'dedup': DeduplicationFilter._load,
     'explode': ExplodeFilter._load,
     'fill_data': FillDataFilter._load,
+    'implode': ImplodeFilter._load,
     'jsonpath': JSONPathFilter._load,
     'merge_data': MergeDataFilter._load,
     'rename_columns': RenameFilter._load,
