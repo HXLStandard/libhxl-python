@@ -651,7 +651,7 @@ def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     args = parser.parse_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label_pattern, value_pattern=args.value_pattern)
+        filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label, value_pattern=args.value)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
