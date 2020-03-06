@@ -1227,9 +1227,29 @@ class TestImplodeFilter(AbstractBaseFilterTest):
         ['Plains', '2016', '450', '300', '750', '800'],
     ]
 
+    def setUp(self):
+        self.source = hxl.data(self.DATA_IN).implode(label_pattern="#group", value_pattern="#affected")
+
     def test_headers (self):
-        source = hxl.data(self.DATA_IN).implode(label_pattern="#group", value_pattern="#affected")
-        self.assertEqual(self.DATA_OUT[0], source.headers)
+        self.assertEqual(self.DATA_OUT[0], self.source.headers)
+
+    def test_tagspecs (self):
+        self.assertEqual(self.DATA_OUT[1], self.source.display_tags)
+
+    def test_values (self):
+        self.assertEqual(self.DATA_OUT[2:], self.source.values)
+
+    def test_missing_label(self):
+        # non-existant label
+        with self.assertRaises(hxl.filters.HXLFilterException):
+            source = hxl.data(self.DATA_IN).implode(label_pattern="#foo", value_pattern="#affected")
+            source.columns
+        
+    def test_missing_value(self):
+        # non-existant value
+        with self.assertRaises(hxl.filters.HXLFilterException):
+            source = hxl.data(self.DATA_IN).implode(label_pattern="#group", value_pattern="#foo")
+            source.columns
 
         
 class TestFillDataFilter(AbstractBaseFilterTest):

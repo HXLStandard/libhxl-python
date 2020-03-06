@@ -1705,41 +1705,39 @@ class ImplodeFilter(AbstractBaseFilter):
         self.labels = set()
         self.rows = dict()
         self.new_columns = None
+        self.source_iterator = None
 
     def filter_columns(self):
         """@returns: the new (exploded) column headers"""
         if self.new_columns is None:
             self.process()
-            if self.label_index == -1 or self.value_index == -1: # no usable columns
-                self.new_columns = self.source.columns
-            else:
-
-                # add existing columns (excluding label and value columns)
-                self.new_columns = []
-                for i, column in enumerate(self.source.columns):
-                    if i != self.label_index and i != self.value_index:
-                        self.new_columns.append(column)
-
-                # add extra columns for new, "wide" data
-                model = self.source.columns[self.value_index]
-
-                for label in sorted(self.labels):
-                    attributes = set(model.attributes)
-                    attributes.add("label")
-                    column = hxl.model.Column(tag=model.tag, attributes=attributes, header=label)
+            # add existing columns (excluding label and value columns)
+            self.new_columns = []
+            for i, column in enumerate(self.source.columns):
+                if i != self.label_index and i != self.value_index:
                     self.new_columns.append(column)
+
+            # add extra columns for new, "wide" data
+            model = self.source.columns[self.value_index]
+            for label in sorted(self.labels):
+                attributes = set(model.attributes)
+                attributes.add("label")
+                column = hxl.model.Column(tag=model.tag, attributes=attributes, header=label)
+                self.new_columns.append(column)
 
         return self.new_columns
 
     def __iter__(self):
         """Custom iterator to produce exploded rows."""
-        # TODO
         self.process()
-        if self.label_index == -1 or self.value_index == -1: # no usable columns
-            return iter(self.source)
+        for key in self.rows:
+            values = list(key)
+            # extra, wide values
+            for label in sorted(self.labels):
+                values.append(self.rows[key].get(label, ""))
+            yield hxl.model.Row(self.columns, values)
 
     def process(self):
-
         # check if we've already done all this
         if self.processed:
             return
@@ -1756,7 +1754,7 @@ class ImplodeFilter(AbstractBaseFilter):
                     logger.warning(
                         "[Implode filter] multiple columns match label pattern %s; using first match %s (%s)",
                         self.label_pattern,
-                        self.source.columns[self.label_index].displayTag,
+                        self.source.columns[self.label_index].display_tag,
                         self.source.columns[self.label_index].header
                     )
             if vpattern.match(column):
@@ -1766,17 +1764,15 @@ class ImplodeFilter(AbstractBaseFilter):
                     logger.warning(
                         "[Implode filter] multiple columns match value pattern %s; using first match",
                         self.value_pattern,
-                        self.source.columns[self.value_index].displayTag,
+                        self.source.columns[self.value_index].display_tag,
                         self.source.columns[self.value_index].header
                     )
 
         if self.label_index == -1:
-            logger.error("No matching label column for %s", self.label_pattern)
-            return
+            raise HXLFilterException("No matching label column for {}".format(self.label_pattern))
         
         if self.value_index == -1:
-            logger.error("No matching value column for %s", self.value_pattern)
-
+            raise HXLFilterException("No matching value column for {}".format(self.value_pattern))
 
         # iterate through the dataset
         for row in self.source:
@@ -1795,12 +1791,11 @@ class ImplodeFilter(AbstractBaseFilter):
                 value = values[self.value_index]
 
             # make a key tuple, excluding the label and value columns
-            indices = list(range(0, len(values) - 1))
-            if self.label_index in indices:
-                indices.remove(self.label_index)
-            if self.value_index in indices:
-                indices.remove(self.value_index)
-            key = row.key(indices=indices)
+            values = []
+            for i, value in enumerate(row.values):
+                if i != self.label_index and i != self.value_index:
+                    values.append(value)
+            key = tuple(values)
 
             # check to see if we already have data for that key
             if key not in self.rows:
@@ -1810,10 +1805,6 @@ class ImplodeFilter(AbstractBaseFilter):
             else:
                 self.rows[key][label] = value
             
-                
-            
-                
-
     @staticmethod
     def _load(source, spec):
         """Create an implode filter from a dict spec.
