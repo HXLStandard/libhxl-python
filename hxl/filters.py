@@ -2037,14 +2037,17 @@ class RenameFilter(AbstractStreamingFilter):
     def _rename_column(self, column):
         """@returns: a copy of the column object, with a new name if needed"""
         for spec in self.rename:
-            if spec[0].match(column):
+            norm = hxl.datatypes.normalise_string
+            if spec[0].match(column) and (not spec[2] or norm(spec[2]) == norm(column.header)):
                 new_column = copy.deepcopy(spec[1])
                 if new_column.header is None:
                     new_column.header = column.header
                 return new_column
         return copy.deepcopy(column)
 
-    RENAME_PATTERN = r'^\s*#?({token}(?:\s*[+-]{token})*):(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    RENAME_PATTERN = r'^\s*(?:([^#]*)#)?({token}(?:\s*[+-]{token})*)\s*:\s*(?:([^#]*)#)?({token}(?:\s*[+]{token})*)\s*$'.format(
+        token=hxl.datatypes.TOKEN_PATTERN
+    )
     """Regular expression for parsing a rename pattern"""
 
     @staticmethod
@@ -2057,9 +2060,10 @@ class RenameFilter(AbstractStreamingFilter):
         if isinstance(s, six.string_types):
             result = re.match(RenameFilter.RENAME_PATTERN, s)
             if result:
-                pattern = hxl.model.TagPattern.parse(result.group(1))
-                column = hxl.model.Column.parse('#' + result.group(3), header=result.group(2), use_exception=True)
-                return (pattern, column)
+                header = result.group(1)
+                pattern = hxl.model.TagPattern.parse(result.group(2))
+                column = hxl.model.Column.parse('#' + result.group(4), header=result.group(3), use_exception=True)
+                return (pattern, column, header)
             else:
                 raise HXLFilterException("Bad rename expression: " + s)
         else:

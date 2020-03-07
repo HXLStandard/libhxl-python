@@ -3,6 +3,7 @@ Release 4.18
 	- add hxlexplode and hxlimplode command-line scripts
 	- change hxl.model.Column.parse to return None for an empty string, or False for a malformed one
 	- add logging for malformed tagspecs
+	- extend column-rename spec to allow filtering by header as well as tag pattern
 
 2020-02-25 Release 4.17
 	- add ability to flatten lists as non-JSON (just separated by " | ")

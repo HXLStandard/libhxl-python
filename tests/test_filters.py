@@ -974,6 +974,17 @@ class TestRenameFilter(AbstractBaseFilterTest):
             self.source.rename_columns(self.spec).headers
         )
 
+    def test_header_selector(self):
+        # wide data
+        source = hxl.data([
+            ["Province", "Women", "Men"],
+            ["#adm1", "#affected+label", "#affected+label"],
+            ["Coast", 200, 100]
+        ])
+        expected_tags = ["#adm1", "#affected+f", "#affected+label"]
+
+        self.assertEqual(expected_tags, source.rename_columns('Women#affected+label:Women#affected+f').display_tags)
+
 
 class TestReplaceFilter(AbstractBaseFilterTest):
 
