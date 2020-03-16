@@ -1,4 +1,4 @@
-Release 4.18
+2020-03-16 Release 4.18
 	- add ImplodeFilter and implode() method to convert a long dataset into a wide dataset
 	- add hxlexplode and hxlimplode command-line scripts
 	- change hxl.model.Column.parse to return None for an empty string, or False for a malformed one
