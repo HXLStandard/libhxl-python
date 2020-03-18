@@ -305,7 +305,7 @@ def _deref(row, args, multiple=False):
     result = []
 
     for arg in args:
-        if isinstance(arg, collections.Sequence) and callable(arg[0]):
+        if isinstance(arg, collections.abc.Sequence) and callable(arg[0]):
             # it's a function and args: recurse
             if arg[0] == tagref:
                 result += _deref(row, arg[1], multiple)

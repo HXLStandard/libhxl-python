@@ -250,12 +250,12 @@ def is_dict(e):
     @param e: the value to test
     @return: True if the value is a dict; False otherwise
     """
-    return isinstance(e, collections.Mapping)
+    return isinstance(e, collections.abc.Mapping)
 
 def is_list(e):
     """Test if a value is a Python sequence (other than a string)
     @param e: the value to test
     @return: True if the value is a sequence; False otherwise
     """
-    return isinstance(e, collections.Sequence) and not isinstance(e, six.string_types)
+    return isinstance(e, collections.abc.Sequence) and not isinstance(e, six.string_types)
 
