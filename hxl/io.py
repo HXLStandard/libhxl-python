@@ -674,7 +674,7 @@ class JSONInput(AbstractInput):
                     for key in item:
                         if not key in self.headers:
                             self.headers.append(key)
-            elif isinstance(item, collections.Sequence) and not isinstance(item, six.string_types):
+            elif isinstance(item, collections.abc.Sequence) and not isinstance(item, six.string_types):
                 if self.type == 'object':
                     #detect mixed values (object and array)
                     return False
