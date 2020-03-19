@@ -37,9 +37,10 @@ FILE_ZIP_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged-csv.zip')
 FILE_ZIP_INVALID = _resolve_file('./files/test_io/input-zip-invalid.zip')
 FILE_CSV_LATIN1 = _resolve_file('./files/test_io/input-valid-latin1.csv')
 FILE_CSV_OUT = _resolve_file('./files/test_io/output-valid.csv')
-FILE_EXCEL = _resolve_file('./files/test_io/input-valid.xlsx')
-FILE_EXCEL_BROKEN = _resolve_file('./files/test_io/input-broken.xlsx')
-FILE_EXCEL_NOEXT = _resolve_file('./files/test_io/input-valid-xlsx.NOEXT')
+FILE_XLSX = _resolve_file('./files/test_io/input-valid.xlsx')
+FILE_XLS = _resolve_file('./files/test_io/input-valid.xls')
+FILE_XLSX_BROKEN = _resolve_file('./files/test_io/input-broken.xlsx')
+FILE_XLSX_NOEXT = _resolve_file('./files/test_io/input-valid-xlsx.NOEXT')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
 FILE_JSON_TXT = _resolve_file('./files/test_io/input-valid-json.txt')
 FILE_JSON_UNTAGGED = _resolve_file('./files/test_io/input-untagged.json')
@@ -53,7 +54,8 @@ FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
-URL_EXCEL = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
+URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
+URL_XLS = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/dev/tests/files/test_io/input-valid.xls'
 URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.json'
 URL_GOOGLE_SHEET_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_SHEET_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
@@ -112,8 +114,8 @@ class TestInput(unittest.TestCase):
             # TODO
             pass
 
-    def test_excel(self):
-        with make_input(FILE_EXCEL, True) as input:
+    def test_xlsx(self):
+        with make_input(FILE_XLSX, True) as input:
             self.assertTrue(input.is_repeatable)
 
     def test_ckan_resource(self):
@@ -290,19 +292,24 @@ class TestParser(unittest.TestCase):
         with hxl.data(FILE_CSV, True) as source:
             self.compare_input(source)
 
-    def test_local_excel(self):
-        """Test reading from a local Excel file."""
-        with hxl.data(FILE_EXCEL, True) as source:
+    def test_local_xlsx(self):
+        """Test reading from a local XLSX file."""
+        with hxl.data(FILE_XLSX, True) as source:
             self.compare_input(source)
 
-    def test_local_excel_broken(self):
-        """Test reading from a local Excel file."""
-        with hxl.data(FILE_EXCEL_BROKEN, True) as source:
+    def test_local_xls(self):
+        """Test reading from a local XLS (legacy) file."""
+        with hxl.data(FILE_XLS, True) as source:
+            self.compare_input(source)
+
+    def test_local_xlsx_broken(self):
+        """Test reading from a local XLSX file."""
+        with hxl.data(FILE_XLSX_BROKEN, True) as source:
             source.columns # just do something 
 
-    def test_local_excel_wrong_ext(self):
-        """Test reading from a local Excel file with the wrong extension."""
-        with hxl.data(FILE_EXCEL_NOEXT, True) as source:
+    def test_local_xlsx_wrong_ext(self):
+        """Test reading from a local XLSX file with the wrong extension."""
+        with hxl.data(FILE_XLSX_NOEXT, True) as source:
             self.compare_input(source)
 
     def test_local_json(self):
@@ -330,9 +337,14 @@ class TestParser(unittest.TestCase):
         with hxl.data(URL_CSV, timeout=10) as source:
             self.compare_input(source)
 
-    def test_remote_excel(self):
-        """Test reading from a remote Excel file (will fail without connectivity)."""
-        with hxl.data(URL_EXCEL, timeout=10) as source:
+    def test_remote_xlsx(self):
+        """Test reading from a remote XLSX file (will fail without connectivity)."""
+        with hxl.data(URL_XLSX, timeout=10) as source:
+            self.compare_input(source)
+
+    def test_remote_xls(self):
+        """Test reading from a remote XLSX file (will fail without connectivity)."""
+        with hxl.data(URL_XLS, timeout=10) as source:
             self.compare_input(source)
 
     def x_test_remote_json(self):
@@ -382,7 +394,7 @@ class TestParser(unittest.TestCase):
             for j, value in enumerate(row):
                 if value is None:
                     value = ''
-                # For Excel, numbers may be pre-parsed
+                # For XLSX, numbers may be pre-parsed
                 try:
                     self.assertEqual(float(TestParser.EXPECTED_CONTENT[i][j]), float(value))
                 except:
