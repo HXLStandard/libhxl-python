@@ -7,7 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc, collections, csv, io, io_wrapper, json, logging, re, requests, six, sys, xlrd, xml.sax
+import abc, collections, csv, io, io_wrapper, json, logging, re, requests, shutil, six, sys, tempfile, xlrd, xml.sax
 
 import hxl, hxl.filters
 import zipfile
@@ -61,19 +61,28 @@ ZIP_SIGS = [
     b"PK\x03\x04",
 ]
 
-EXCEL_MIME_TYPES = [
-    'application/vnd.ms-excel',
+XLSX_MIME_TYPES = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 ]
 
-EXCEL_FILE_EXTS = [
-    'xls',
+XLSX_FILE_EXTS = [
     'xlsx'
 ]
 
-EXCEL_SIGS = [
+XLSX_SIGS = [
     b"PK\x03\x04",
-    b"\xd0\xcf\x11\xe0"
+]
+
+XLS_MIME_TYPES = [
+    'application/vnd.ms-excel',
+]
+
+XLS_FILE_EXTS = [
+    'xls'
+]
+
+XLS_SIGS = [
+    b"\xd0\xcf\x11\xe0",
 ]
 
 HTML5_MIME_TYPES = [
@@ -267,6 +276,11 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
     """
 
+    def make_tempfile(input):
+        tmpfile = tempfile.NamedTemporaryFile();
+        shutil.copyfileobj(input, tmpfile)
+        return tmpfile # have to return the object, so it doesn't get garbage collected and delete the file
+
     def wrap_stream(stream):
         if hasattr(stream, 'peek'):
             # already buffered
@@ -328,7 +342,11 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             ))
 
-        if match_sigs(sig, EXCEL_SIGS): # superset of ZIP_SIGS - could be zipfile or excel
+        if match_sigs(sig, XLS_SIGS):
+            tmpfile = make_tempfile(input)
+            return XLSInput(tmpfile, sheet_index=sheet_index)
+
+        if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or excel
 
             # these formats both require having the full file in memory (blech)
             file_contents = input.read()
@@ -735,6 +753,85 @@ class JSONInput(AbstractInput):
             else:
                 raise StopIteration()
             return row
+
+
+class XLSInput(AbstractInput):
+    """Iterable: Read raw XLS input from a URL or filename.
+    If sheet number is not specified, will scan for the first tab with a HXL tag row.
+    """
+
+    def __init__(self, tmpfile, sheet_index=None):
+        """
+        Constructor
+        @param tmpfile: a named temporary file object holding the workbook contents
+        @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
+        """
+        super().__init__()
+        self.is_repeatable = True
+        try:
+            self._workbook = xlrd.open_workbook(filename=tmpfile.name)
+        except TypeError as e:
+            # xlrd throws a TypeError when it's trying to open a non-XLSX zip
+            # there are probably other exceptions we need to trap here
+            raise HXLIOException("Not an Excel workbook (possibly a zip archive)")
+        if sheet_index is None:
+            sheet_index = self._find_hxl_sheet_index()
+        self._sheet = self._workbook.sheet_by_index(sheet_index)
+
+    def __iter__(self):
+        return ExcelInput.ExcelIter(self)
+
+    def _find_hxl_sheet_index(self):
+        """Scan for a tab containing a HXL dataset."""
+        for sheet_index in range(0, self._workbook.nsheets):
+            sheet = self._workbook.sheet_by_index(sheet_index)
+            for row_index in range(0, min(25, sheet.nrows)):
+                raw_row = [ExcelInput._fix_value(cell) for cell in sheet.row(row_index)]
+                # FIXME nasty violation of encapsulation
+                if HXLReader.parse_tags(raw_row):
+                    return sheet_index
+        # if no sheet has tags, default to the first one for now
+        return 0
+
+    @staticmethod
+    def _fix_value(cell):
+        """Clean up an Excel value for CSV-like representation."""
+
+        if cell.value is None or cell.ctype == xlrd.XL_CELL_EMPTY:
+            return ''
+
+        elif cell.ctype == xlrd.XL_CELL_NUMBER:
+            # let numbers be integers if possible
+            if float(cell.value).is_integer():
+                return int(cell.value)
+            else:
+                return cell.value
+
+        elif cell.ctype == xlrd.XL_CELL_DATE:
+            # dates need to be formatted
+            data = xlrd.xldate_as_tuple(cell.value, 0)
+            return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
+
+        elif cell.ctype == xlrd.XL_CELL_BOOLEAN:
+            return int(cell.value)
+
+        else: # XL_CELL_TEXT, or anything else
+            return cell.value
+
+    class ExcelIter:
+        """Internal iterator class for reading through an Excel sheet multiple times."""
+
+        def __init__(self, outer):
+            self.outer = outer
+            self._row_index = 0
+            
+        def __next__(self):
+            if self._row_index < self.outer._sheet.nrows:
+                row = [ExcelInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                self._row_index += 1
+                return row
+            else:
+                raise StopIteration()
 
 
 class ExcelInput(AbstractInput):
