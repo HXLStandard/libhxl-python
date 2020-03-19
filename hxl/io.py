@@ -766,6 +766,7 @@ class XLSInput(AbstractInput):
         @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
         """
         super().__init__()
+        self.tmpfile = tmpfile # prevent garbage collection as long as this object exists
         self.is_repeatable = True
         self._workbook = xlrd.open_workbook(filename=tmpfile.name)
         if sheet_index is None:
@@ -840,6 +841,7 @@ class XLSXInput(AbstractInput):
         @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
         """
         super().__init__()
+        self.tmpfile = tmpfile # prevent garbage collection
         self.is_repeatable = True
         try:
             self._workbook = xlrd.open_workbook(filename=tmpfile.name)
