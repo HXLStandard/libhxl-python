@@ -460,7 +460,7 @@ class Aggregator(object):
         value = row.get(self.pattern)
 
         # Skip empty values
-        if value is '' or value is None:
+        if hxl.datatypes.is_empty(value):
             return
 
         # Numbers only for sum and average
