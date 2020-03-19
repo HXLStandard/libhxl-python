@@ -354,7 +354,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
             try:
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(file_contents, sheet_index=sheet_index)
+                return XLSXInput(file_contents, sheet_index=sheet_index)
             except:
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
                     zf = zipfile.ZipFile(io.BytesIO(file_contents),"r")
@@ -768,25 +768,20 @@ class XLSInput(AbstractInput):
         """
         super().__init__()
         self.is_repeatable = True
-        try:
-            self._workbook = xlrd.open_workbook(filename=tmpfile.name)
-        except TypeError as e:
-            # xlrd throws a TypeError when it's trying to open a non-XLSX zip
-            # there are probably other exceptions we need to trap here
-            raise HXLIOException("Not an Excel workbook (possibly a zip archive)")
+        self._workbook = xlrd.open_workbook(filename=tmpfile.name)
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)
 
     def __iter__(self):
-        return ExcelInput.ExcelIter(self)
+        return XLSInput.XLSIter(self)
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._workbook.sheet_by_index(sheet_index)
             for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [ExcelInput._fix_value(cell) for cell in sheet.row(row_index)]
+                raw_row = [XLSInput._fix_value(cell) for cell in sheet.row(row_index)]
                 # FIXME nasty violation of encapsulation
                 if HXLReader.parse_tags(raw_row):
                     return sheet_index
@@ -818,7 +813,7 @@ class XLSInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
-    class ExcelIter:
+    class XLSIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
         def __init__(self, outer):
@@ -827,14 +822,14 @@ class XLSInput(AbstractInput):
             
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
-                row = [ExcelInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                row = [XLSInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
                 self._row_index += 1
                 return row
             else:
                 raise StopIteration()
 
 
-class ExcelInput(AbstractInput):
+class XLSXInput(AbstractInput):
     """Iterable: Read raw XLS input from a URL or filename.
     If sheet number is not specified, will scan for the first tab with a HXL tag row.
     """
@@ -858,14 +853,14 @@ class ExcelInput(AbstractInput):
         self._sheet = self._workbook.sheet_by_index(sheet_index)
 
     def __iter__(self):
-        return ExcelInput.ExcelIter(self)
+        return XLSXInput.XLSXIter(self)
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._workbook.sheet_by_index(sheet_index)
             for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [ExcelInput._fix_value(cell) for cell in sheet.row(row_index)]
+                raw_row = [XLSXInput._fix_value(cell) for cell in sheet.row(row_index)]
                 # FIXME nasty violation of encapsulation
                 if HXLReader.parse_tags(raw_row):
                     return sheet_index
@@ -897,7 +892,7 @@ class ExcelInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
-    class ExcelIter:
+    class XLSXIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
         def __init__(self, outer):
@@ -906,7 +901,7 @@ class ExcelInput(AbstractInput):
             
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
-                row = [ExcelInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                row = [XLSXInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
                 self._row_index += 1
                 return row
             else:
