@@ -279,6 +279,8 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     def make_tempfile(input):
         tmpfile = tempfile.NamedTemporaryFile();
         shutil.copyfileobj(input, tmpfile)
+        tmpfile.seek(0)
+        input.close()
         return tmpfile # have to return the object, so it doesn't get garbage collected and delete the file
 
     def wrap_stream(stream):
@@ -342,22 +344,19 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 }
             ))
 
-        if match_sigs(sig, XLS_SIGS):
+        if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
             return XLSInput(tmpfile, sheet_index=sheet_index)
 
-        if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or excel
-
-            # these formats both require having the full file in memory (blech)
-            file_contents = input.read()
-            input.close()
+        if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
+            tmpfile = make_tempfile(input)
 
             try:
                 logger.debug('Trying input from an Excel file')
-                return XLSXInput(file_contents, sheet_index=sheet_index)
+                return XLSXInput(tmpfile, sheet_index=sheet_index)
             except:
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
-                    zf = zipfile.ZipFile(io.BytesIO(file_contents),"r")
+                    zf = zipfile.ZipFile(tmpfile, "r")
                     for name in zf.namelist():
                         if os.path.splitext(name)[1].lower()==".csv":
                             return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), encoding=encoding)
@@ -834,16 +833,16 @@ class XLSXInput(AbstractInput):
     If sheet number is not specified, will scan for the first tab with a HXL tag row.
     """
 
-    def __init__(self, file_contents, sheet_index=None):
+    def __init__(self, tmpfile, sheet_index=None):
         """
         Constructor
-        @param file_contents a byte buffer holding the Excel file contents in memory
+        @param tmpfile: temporary file object holding the contents
         @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
         """
         super().__init__()
         self.is_repeatable = True
         try:
-            self._workbook = xlrd.open_workbook(file_contents=file_contents)
+            self._workbook = xlrd.open_workbook(filename=tmpfile.name)
         except TypeError as e:
             # xlrd throws a TypeError when it's trying to open a non-XLSX zip
             # there are probably other exceptions we need to trap here
