@@ -1,3 +1,6 @@
+Release 4.19
+	- various code cleanup
+
 2020-03-16 Release 4.18
 	- add ImplodeFilter and implode() method to convert a long dataset into a wide dataset
 	- add hxlexplode and hxlimplode command-line scripts
