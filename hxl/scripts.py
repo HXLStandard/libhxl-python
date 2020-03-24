@@ -136,6 +136,8 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.AddColumnsFilter(source, specs=args.spec, before=args.before)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -180,6 +182,8 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     add_queries_arg(parser, 'From --append datasets, include only rows matching at least one query.')
         
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     append_sources = []
     for append_source in args.append:
@@ -275,6 +279,8 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     args = parser.parse_args(args)
     
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
 
         filter = hxl.filters.CleanDataFilter(
@@ -318,6 +324,9 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     add_queries_arg(parser, 'Count only rows that match at least one query.')
 
     args = parser.parse_args(args)
+
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.CountFilter(source, patterns=args.tags, aggregators=args.aggregator, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -343,6 +352,8 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ColumnFilter(source, args.include, args.exclude)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -362,6 +373,8 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     add_queries_arg(parser, 'Leave rows alone if they don\'t match at least one query.')
 
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.DeduplicationFilter(source, args.tags, args.query)
@@ -385,6 +398,8 @@ def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
 
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     with make_source(args, stdin) as source:
         if args.headers_only:
@@ -448,6 +463,8 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.io.data(args.merge, True) if args.merge else None as merge_source:
         filter = hxl.filters.MergeDataFilter(
             source, merge_source=merge_source,
@@ -479,6 +496,8 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         type=hxl.filters.RenameFilter.parse_rename
         )
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.RenameFilter(source, args.rename)
@@ -540,6 +559,8 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         if args.map:
             replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.io.data(args.map, True))
@@ -576,6 +597,8 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.FillDataFilter(source, pattern=args.tag, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -611,6 +634,8 @@ def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
 
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value_att)
@@ -650,6 +675,8 @@ def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label, value_pattern=args.value)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -686,6 +713,8 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.RowFilter(source, queries=args.query, reverse=args.reverse)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -719,6 +748,8 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default=False
         )
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.SortFilter(source, args.tags, args.reverse)
@@ -875,7 +906,7 @@ def run_script(func):
     try:
         sys.exit(func(sys.argv[1:], STDIN, sys.stdout))
     except KeyboardInterrupt:
-        print("Interrupted", file=sys.stderr)
+        logger.error("Interrupted")
         sys.exit(EXIT_ERROR)
     except Exception as e:
         # show a generic error message
@@ -885,7 +916,7 @@ def run_script(func):
             message = str(e)
         if not message:
             message = type(e).__name__
-        print("Error: {}".format(message), file=sys.stderr)
+        logger.error("Error: %s", message)
         sys.exit(EXIT_ERROR)
 
 def make_args(description, hxl_output=True):
@@ -954,11 +985,13 @@ def add_queries_arg(parser, help='Apply only to rows matching at least one query
     return parser
 
 
+def do_common_args(args):
+    """Process standard args"""
+    logging.basicConfig(format='%(levelname)s (%(name)s): %(message)s', level=args.log.upper())
+
+
 def make_source(args, stdin=STDIN):
     """Create a HXL input source."""
-
-    # logging
-    logging.basicConfig(format='%(levelname)s (%(name)s): %(message)s', level=args.log.upper())
 
     # sheet index
     sheet_index = args.sheet

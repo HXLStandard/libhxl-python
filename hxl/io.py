@@ -115,6 +115,8 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
     @param encoding: force a character encoding, regardless of HTTP info etc
     """
 
+    logger.debug("HXL data from %s", str(data))
+
     if isinstance(data, hxl.model.Dataset):
         # it's already HXL data
         return data

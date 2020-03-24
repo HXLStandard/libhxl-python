@@ -447,7 +447,9 @@ class Dataset(object):
         @returns: a new HXL source for chaining
         """
         import hxl.filters
+        logger.debug("Loading append list from %s...", source_list_url)
         append_sources = hxl.filters.AppendFilter.parse_external_source_list(source_list_url)
+        logger.debug("Done loading")
         return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)
 
     def cache(self):
