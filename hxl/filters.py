@@ -1141,7 +1141,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 for i in indices:
                     value = row.values[i]
                     if value:
-                        result = re.match(r'^[^\d]*(\d\d?)[^\d]+(\d\d?)[^\d].*$', value)
+                        result = re.match(r'^[^\d]*(\d\d?)[^\d]+(\d\d?)[^\d].*$', hxl.datatypes.normalise_string(value))
                         if result:
                             if int(result.group(1)) > 12:
                                 ddmm_count += 1

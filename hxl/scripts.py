@@ -908,16 +908,6 @@ def run_script(func):
     except KeyboardInterrupt:
         logger.error("Interrupted")
         sys.exit(EXIT_ERROR)
-    except Exception as e:
-        # show a generic error message
-        if hasattr(e, 'args') and hasattr(e.args, '__len__') and len(e.args) > 0:
-            message = str(e.args[0])
-        else:
-            message = str(e)
-        if not message:
-            message = type(e).__name__
-        logger.error("Error: %s", message)
-        sys.exit(EXIT_ERROR)
 
 def make_args(description, hxl_output=True):
     """Set up parser with default arguments.
