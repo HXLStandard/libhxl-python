@@ -110,9 +110,14 @@ class TestInput(unittest.TestCase):
             self.assertTrue('#sector' in hxl.data(input).tags)
 
     def test_json_selector(self):
+        SEL1_DATA = [["Coast", "100"]]
+        SEL2_DATA = [["Plains", "200"]]
+
+        # make sure legacy selectors still work
         with make_input(FILE_JSON_SELECTOR, True, selector="sel1") as input:
-            # TODO
-            pass
+            self.assertEqual(SEL1_DATA, hxl.data(input).values)
+        with make_input(FILE_JSON_SELECTOR, True, selector="sel2") as input:
+            self.assertEqual(SEL2_DATA, hxl.data(input).values)
 
     def test_xlsx(self):
         with make_input(FILE_XLSX, True) as input:
