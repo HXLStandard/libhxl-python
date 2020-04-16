@@ -108,6 +108,13 @@ def is_string(v):
     """
     return isinstance(v, six.string_types)
 
+def is_token(v):
+    """Test if a value is a valid HXL token
+    @param v: the value to test
+    @returns: True if the value is a token
+    """
+    return is_string(v) and re.fullmatch(TOKEN_PATTERN, v)
+
 def normalise_space(s):
     """Normalise whitespace only
     @param v: value to normalise

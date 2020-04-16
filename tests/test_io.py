@@ -119,6 +119,11 @@ class TestInput(unittest.TestCase):
         with make_input(FILE_JSON_SELECTOR, True, selector="sel2") as input:
             self.assertEqual(SEL2_DATA, hxl.data(input).values)
 
+        # test JSONPath support
+        with make_input(FILE_JSON_SELECTOR, True, selector="$.sel1") as input:
+            self.assertEqual(SEL1_DATA, hxl.data(input).values)
+            
+
     def test_xlsx(self):
         with make_input(FILE_XLSX, True) as input:
             self.assertTrue(input.is_repeatable)

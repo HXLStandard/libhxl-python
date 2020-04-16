@@ -7,7 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc, collections, csv, io, io_wrapper, json, logging, re, requests, shutil, six, sys, tempfile, xlrd, xml.sax
+import abc, collections, csv, io, io_wrapper, json, jsonpath_rw, logging, re, requests, shutil, six, sys, tempfile, xlrd, xml.sax
 
 import hxl, hxl.filters
 import zipfile
@@ -651,25 +651,37 @@ class JSONInput(AbstractInput):
 
         # read the JSON data from the stream
         with io.TextIOWrapper(input, encoding=encoding) as _input:
-            self.json_data = json.load(_input, encoding=encoding, object_pairs_hook=collections.OrderedDict)
-
-        if selector is not None and isinstance(self.json_data, dict):
-            if not selector in self.json_data:
-                raise HXLParseException("Selector {} not found at top level of JSON data")
-            # top level is a JSON object (dict); use the key provided to find HXL data
-            if not self._scan_data_element(self.json_data[selector]):
-                raise HXLParseException("Selected JSON data is not usable as HXL input (must be array of objects or array of arrays).")
-            self.json_data = self.json_data[selector]
-        else:
-            # top level is a JSON array; see if we can find HXL data in it
-            if not self._scan_data_element(self.json_data):
-                self.json_data = self._search_data(self.json_data)
-            if self.json_data is None:
-                raise HXLParseException("Could not usable JSON data (need array of objects or array of arrays)")
+            self.json_data = self._select(selector, json.load(_input, encoding=encoding, object_pairs_hook=collections.OrderedDict))
+        if not self._scan_data_element(self.json_data):
+            self.json_data = self._search_data(self.json_data)
+        if self.json_data is None:
+            raise HXLParseException("Could not usable JSON data (need array of objects or array of arrays)")
 
     def __iter__(self):
         """@returns: an iterator over raw HXL data (arrays of scalar values)"""
         return JSONInput.JSONIter(self)
+
+    def _select(self, selector, data):
+        """Find the JSON matching the selector"""
+        if selector is None:
+            # no selector
+            return data
+        elif hxl.datatypes.is_token(selector):
+            # legacy selector (top-level JSON object property)
+            if not isinstance(data, dict):
+                raise HXLParseException("Expected a JSON object at the top level for simple selector {}".format(selector))
+            if selector not in data:
+                raise HXLParseException("Selector {} not found at top level of JSON data".format(selector))
+            return data[selector]
+        else:
+            # full JSONpath
+            path = jsonpath_rw.parse(selector)
+            matches = path.find(data)
+            if len(matches) == 0:
+                raise HXLParseException("No matches for JSONpath {}".format(selector))
+            elif len(matches) > 1:
+                logger.warning("Multiple matches for JSONPath %s (using first one)", selector)
+            return matches[0].value
 
     def _scan_data_element(self, data_element):
         """Scan a data sequence to see if it's a list of lists or list of arrays.
