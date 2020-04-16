@@ -659,6 +659,7 @@ class JSONInput(AbstractInput):
             # top level is a JSON object (dict); use the key provided to find HXL data
             if not self._scan_data_element(self.json_data[selector]):
                 raise HXLParseException("Selected JSON data is not usable as HXL input (must be array of objects or array of arrays).")
+            self.json_data = self.json_data[selector]
         else:
             # top level is a JSON array; see if we can find HXL data in it
             if not self._scan_data_element(self.json_data):

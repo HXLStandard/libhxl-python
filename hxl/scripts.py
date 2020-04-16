@@ -935,6 +935,12 @@ def make_args(description, hxl_output=True):
         nargs='?'
         )
     parser.add_argument(
+        '--selector',
+        help='JSONPath expression for starting point in JSON input',
+        metavar='path',
+        nargs='?'
+        )
+    parser.add_argument(
         '--http-header',
         help='Custom HTTP header to send with request',
         metavar='header',
@@ -988,6 +994,9 @@ def make_source(args, stdin=STDIN):
     if sheet_index is not None:
         sheet_index -= 1
 
+    # JSONPath selector
+    selector = args.selector
+
     # get custom headers
     header_strings = []
     header = os.environ.get("HXL_HTTP_HEADER")
@@ -1001,7 +1010,7 @@ def make_source(args, stdin=STDIN):
         http_headers[parts[0].strip()] = parts[2].strip()
 
     # construct the input object
-    input = hxl.io.make_input(args.infile or stdin, sheet_index=sheet_index, allow_local=True, http_headers=http_headers)
+    input = hxl.io.make_input(args.infile or stdin, sheet_index=sheet_index, selector=selector, allow_local=True, http_headers=http_headers)
     return hxl.io.data(input)
 
 def make_output(args, stdout=sys.stdout):

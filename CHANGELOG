@@ -1,6 +1,7 @@
 Release 4.19
 	- various code cleanup
 	- fixed bug with date heuristics
+	- fix JSON selector and add support for command-line scripts
 
 2020-03-16 Release 4.18
 	- add ImplodeFilter and implode() method to convert a long dataset into a wide dataset
