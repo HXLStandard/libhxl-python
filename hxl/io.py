@@ -679,9 +679,16 @@ class JSONInput(AbstractInput):
             matches = path.find(data)
             if len(matches) == 0:
                 raise HXLParseException("No matches for JSONpath {}".format(selector))
-            elif len(matches) > 1:
-                logger.warning("Multiple matches for JSONPath %s (using first one)", selector)
-            return matches[0].value
+            else:
+                # Tricky: we have multiple matches
+                # Do we want a list of all matches, or just the first match?
+                # Try to guess from the first value matched
+                values = [match.value for match in matches]
+                if len(values) > 0 and self._scan_data_element(values[0]):
+                    return values[0]
+                else:
+                    return values
+            raise HXLParseException("JSONPath results for {} not usable as HXL data".format())
 
     def _scan_data_element(self, data_element):
         """Scan a data sequence to see if it's a list of lists or list of arrays.
