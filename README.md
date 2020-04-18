@@ -231,3 +231,62 @@ Once you've installed, you will be able to include the HXL libraries
 from any Python application, and will be able to call scripts like
 _hxlvalidate_ from the command line.
 
+
+# Makefile
+
+There is also a generic Makefile that automates many tasks, including
+setting up a Python virtual environment for testing. The Python3 venv
+module is required for most of the targets.
+
+
+```
+make build-venv
+```
+
+Set up a local Python virtual environment for testing, if it doesn't
+already exist. Will recreate the virtual environment if setup.py has
+changed.
+
+```
+make test
+```
+
+Set up a virtual environment (if missing) and run all the unit tests
+
+```
+make test-install
+```
+
+Test a clean installation to verify there are no missing dependencies,
+etc.
+
+```
+make close-issue
+```
+
+Merge the current git issue branch into the dev branch and delete the
+issue branch.
+
+```
+make push-dev
+```
+
+Push the git dev branch to upstream.
+
+```
+make merge-test
+```
+
+Merge the git dev branch into the test branch and push to upstream.
+
+```
+make merge-master
+```
+
+Merge the git test branch into the master branch and push to upstream.
+
+```
+make etags
+```
+
+(Re)build the TAGS file that Emacs uses for global search and replace.
