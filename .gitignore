@@ -1,4 +1,6 @@
 *.pyc
+*.egg
+TAGS
 /.eggs
 /.pypirc
 /build
@@ -7,3 +9,4 @@
 /hxl/formulas/parser.out
 /hxl/formulas/parsetab.py
 /profile
+/venv

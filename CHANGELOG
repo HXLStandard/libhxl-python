@@ -1,4 +1,5 @@
 Release 4.19
+	- add a generic Makefile to simplify common testing and git tasks
 	- various code cleanup
 	- fixed bug with date heuristics
 	- add --selector option to all command-line scripts
