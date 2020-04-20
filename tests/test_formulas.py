@@ -237,6 +237,22 @@ class TestFunctions(unittest.TestCase):
             ['2018-01-01', '2018-02-01', 'D']
         ))
 
+    def test_toupper(self):
+        result = f.FUNCTIONS['toupper'](
+            self.row,
+            [hxl.model.TagPattern.parse('#adm1'), 'Coast Region'],
+            False
+        )
+        self.assertEqual('COAST REGION', result)
+
+    def test_tolower(self):
+        result = f.FUNCTIONS['tolower'](
+            self.row,
+            [hxl.model.TagPattern.parse('#adm1'), 'Coast Region'],
+            False
+        )
+        self.assertEqual('coast region', result)
+
     def test_embedded(self):
 
         result = f.multiply(self.row, [
@@ -328,6 +344,12 @@ class TestEval(unittest.TestCase):
         columns = [hxl.model.Column.parse(tag) for tag in ['#date+start', '#date+end']]
         row = hxl.model.Row(columns=columns, values=['2018-01-01', '2018-02-03'])
         self.assertEqual(5, e.eval(row, 'datedif(#date+start, #date+end, "W")'))
+
+    def test_toupper_function(self):
+        self.assertEqual("COAST REGION", e.eval(self.row, 'toupper(#adm1)'))
+
+    def test_tolower_function(self):
+        self.assertEqual("coast region", e.eval(self.row, 'tolower(#adm1)'))
 
     def test_nested_functions(self):
         self.assertEqual(5, e.eval(self.row, 'round(round(3.4) + round(1.9))'))

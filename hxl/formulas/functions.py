@@ -273,7 +273,29 @@ def do_datedif(row, args, multiple=False):
     else:
         logger.error("Unrecognised unit % for datediff()", unit)
         return ''
-    
+
+
+def do_toupper(row, args, multiple=False):
+    """Convert the value to a string in upper case
+    USAGE: toupper(value)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the value as an upper-case string
+    """
+    values = _deref(row, args, multiple)
+    return str(values[0]).upper()
+
+
+def do_tolower(row, args, multiple=False):
+    """Convert the value to a string in lower case
+    USAGE: tolower(value)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the value as an upper-case string
+    """
+    values = _deref(row, args, multiple)
+    return str(values[0]).lower()
+
 
 FUNCTIONS = {
     'sum': lambda row, args, multiple: add(row, args, multiple),
@@ -284,6 +306,8 @@ FUNCTIONS = {
     'round': do_round,
     'join': do_join,
     'datedif': do_datedif,
+    'toupper': do_toupper,
+    'tolower': do_tolower,
 }
 """Master table of user-callable functions"""
 

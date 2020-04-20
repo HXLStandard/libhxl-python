@@ -4,6 +4,7 @@ Release 4.19
 	- fixed bug with date heuristics
 	- add --selector option to all command-line scripts
 	- allow selector for JSON data to be a JSON path as well as just a simple token
+	- added toupper() and tolower() row functions
 
 2020-03-16 Release 4.18
 	- add ImplodeFilter and implode() method to convert a long dataset into a wide dataset
