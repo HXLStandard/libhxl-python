@@ -1089,6 +1089,13 @@ class TestJSONPathFilter(unittest.TestCase):
         # shouldn't raise an exception (but will log a warning)
         self.assertEqual('bad json', hxl.data(self.DATA).jsonpath("a.x").values[1][0])
 
+    def test_outliers(self):
+        DATA = [
+            ['#xxx'],
+            [10]
+        ]
+        self.assertEqual(10, hxl.data(DATA).jsonpath('a.x').values[0][0])
+
 
 class TestRowFilter(unittest.TestCase):
 
