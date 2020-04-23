@@ -59,9 +59,13 @@ merge-master: merge-test
 	git checkout master && git merge test && git push && git checkout dev
 
 # do a cold install in a temporary virtual environment and run unit tests
-test-install:
+test-install: 
 	rm -rf venv-test && python3 -m venv venv-test && . venv-test/bin/activate && python setup.py install && python setup.py test
 	rm -rf venv-test # make sure we clean up
+
+# make a PyPi release
+upload-pypi: $(VENV)
+	. $(VENV) && python setup.py sdist upload
 
 # (re)generate emacs TAGS file
 etags:
