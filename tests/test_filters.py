@@ -513,6 +513,18 @@ class TestCleanDataFilter(AbstractBaseFilterTest):
         source = hxl.data(DATA_IN)
         self.assertEqual(EXPECTED[1:], source.clean_data(date='date').values)
 
+    def test_date_epoch(self):
+        DATA_IN = [
+            ['#date'],
+            ['1582502400000'],
+        ]
+        EXPECTED = [
+            ['#date'],
+            ['2020-02-24'],
+        ]
+        source = hxl.data(DATA_IN)
+        self.assertEqual(EXPECTED[1:], source.clean_data(date='date').values)
+
     def test_upper_case(self):
         DATA_OUT = [
             ['NGO A', 'WASH', 'Coast', '200'],
