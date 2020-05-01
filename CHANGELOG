@@ -1,4 +1,5 @@
 Release 4.20
+	- add support for parsing Unix-style epoch timestamps (nanoseconds, milliseconds, or seconds)
 	- add long description in setup.py for PyPi (from README.md)
 
 2020-04-23 Release 4.19

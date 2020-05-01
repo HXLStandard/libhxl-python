@@ -233,6 +233,17 @@ def normalise_date(v, dayfirst=True):
             day=result.group('day')
         )
 
+    # Next, check for a timestamp, which will crash the datetime module
+    if re.match(r'^\d{10}\d*$', str(v)):
+        if len(str(v)) >= 16:
+            timestamp = int(v) / 1000000 # nanoseconds
+        if len(str(v)) >= 13:
+            timestamp = int(v) / 1000 # milliseconds
+        else:
+            timestamp = int(v) # seconds
+        d = datetime.datetime.utcfromtimestamp(timestamp)
+        return d.date().isoformat()
+
     # revert to full date parsing
     # we parse the date twice, to detect any default values Python might have filled in
     date1 = dateutil.parser.parse(v, default=DEFAULT_DATE_1, dayfirst=dayfirst)
