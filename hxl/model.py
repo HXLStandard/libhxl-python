@@ -952,6 +952,12 @@ class RowQuery(object):
         self.op = op
         self.value = value
 
+        # if the value is a formula, extract it
+        self.formula = None
+        result = re.match(r'^{{(.+)}}$', hxl.datatypes.normalise_space(value))
+        if result:
+            self.formula = result.group(1)
+
         self.is_aggregate=is_aggregate
         self.needs_aggregate = False
         """Need to calculate an aggregate value"""
@@ -998,19 +1004,28 @@ class RowQuery(object):
             raise HXLException("must call calc_aggregate before matching an 'is min' or 'is max' condition")
 
         # initialise is this is the first time matching for the row query
-        if self._saved_indices is None:
+        if self._saved_indices is None or self.formula:
+
+            # if it's a row formula, evaluate first
+            if self.formula:
+                value = hxl.formulas.eval.eval(row, self.formula)
+                print('***', self.value, value)
+            else:
+                value = self.value
+
             if self.pattern.tag == '#date':
                 try:
-                    self.date_value = hxl.datatypes.normalise_date(self.value)
+                    self.date_value = hxl.datatypes.normalise_date(value)
                 except ValueError:
                     self.date_value = None
 
             try:
-                self.number_value = hxl.datatypes.normalise_number(self.value)
+                self.number_value = hxl.datatypes.normalise_number(value)
+                print("*** number", value)
             except ValueError:
                 self.number_value = None
 
-            self.string_value = hxl.datatypes.normalise_string(self.value)
+            self.string_value = hxl.datatypes.normalise_string(value)
 
         # try all the matching column values
         indices = self._get_saved_indices(row.columns)
@@ -1018,6 +1033,7 @@ class RowQuery(object):
             if i < len(row.values) and self.match_value(row.values[i], self.op):
                 return True
         return False
+
 
     def match_value(self, value, op):
         """Try matching as dates, then as numbers, then as simple strings"""

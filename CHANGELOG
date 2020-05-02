@@ -1,4 +1,5 @@
 Release 4.20
+	- add support for row formulas as right side of row queries (making it possible to compare one row to another)
 	- add support for parsing Unix-style epoch timestamps (nanoseconds, milliseconds, or seconds)
 	- add long description in setup.py for PyPi (from README.md)
 
