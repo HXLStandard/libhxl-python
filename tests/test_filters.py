@@ -1127,9 +1127,29 @@ class TestRowFilter(unittest.TestCase):
         self.assertEqual(self.DATA[3:5], self.source.with_rows(['#sector=education']).values)
         self.assertEqual(self.DATA[3:5], self.source.with_rows('#sector=education').values)
 
+    def test_with_rows_formula(self):
+        DATA = [
+            ['#foo1', '#foo2'],
+            ['100', '50'],
+            ['150', '200'],
+            ['100', '15'],
+        ]
+        source = hxl.data(DATA)
+        self.assertEqual([DATA[1], DATA[3]], source.with_rows('#foo1 > {{#foo2}}').values)
+
     def test_without_rows(self):
         self.assertEqual(self.DATA[3:6], self.source.without_rows(['#sector=wash']).values)
         self.assertEqual(self.DATA[3:6], self.source.without_rows('#sector=wash').values)
+
+    def test_without_rows_formula(self):
+        DATA = [
+            ['#foo1', '#foo2'],
+            ['100', '50'],
+            ['150', '200'],
+            ['100', '15'],
+        ]
+        source = hxl.data(DATA)
+        self.assertEqual([DATA[2]], source.without_rows('#foo1 > {{#foo2}}').values)
 
     def test_regex(self):
         self.assertEqual(self.DATA[3:6], self.source.with_rows('#sector~duca').values)
