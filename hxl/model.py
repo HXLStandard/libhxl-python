@@ -1009,7 +1009,6 @@ class RowQuery(object):
             # if it's a row formula, evaluate first
             if self.formula:
                 value = hxl.formulas.eval.eval(row, self.formula)
-                print('***', self.value, value)
             else:
                 value = self.value
 
@@ -1021,7 +1020,6 @@ class RowQuery(object):
 
             try:
                 self.number_value = hxl.datatypes.normalise_number(value)
-                print("*** number", value)
             except ValueError:
                 self.number_value = None
 

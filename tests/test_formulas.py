@@ -2,7 +2,7 @@
 """
 
 import unittest
-import hxl.model
+import hxl.model, datetime
 import hxl.formulas.functions as f, hxl.formulas.parser as p, hxl.formulas.lexer as l, hxl.formulas.eval as e
 
 
@@ -217,6 +217,11 @@ class TestFunctions(unittest.TestCase):
             ['|', hxl.model.TagPattern.parse('#affected')]
         )
         self.assertEqual('100|200|300|400', result)
+
+    def test_today(self):
+        F = f.FUNCTIONS['today']
+        today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        self.assertEqual(today, F(self.row, []))
 
     def test_datedif(self):
         F = f.FUNCTIONS['datedif']

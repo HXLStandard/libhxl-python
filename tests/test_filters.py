@@ -9,7 +9,7 @@ License: Public Domain
 
 import unittest
 
-import hxl
+import datetime, hxl
 
 # Mock URL access so that tests work offline
 from . import URL_MOCK_TARGET, URL_MOCK_OBJECT
@@ -1136,6 +1136,29 @@ class TestRowFilter(unittest.TestCase):
         ]
         source = hxl.data(DATA)
         self.assertEqual([DATA[1], DATA[3]], source.with_rows('#foo1 > {{#foo2}}').values)
+
+    def test_with_rows_today(self):
+        today = datetime.datetime.utcnow()
+        yesterday = today + datetime.timedelta(days=-1)
+        tomorrow = today + datetime.timedelta(days=1)
+        DATA = [
+            ['#date'],
+            [yesterday.strftime('%Y-%m-%d')],
+            [today.strftime('%Y-%m-%d')],
+            [tomorrow.strftime('%Y-%m-%d')],
+        ]
+
+        self.assertEqual(
+            [DATA[1]], hxl.data(DATA).with_rows('#date < {{today()}}').values
+        )
+
+        self.assertEqual(
+            [DATA[2]], hxl.data(DATA).with_rows('#date = {{today()}}').values
+        )
+
+        self.assertEqual(
+            [DATA[3]], hxl.data(DATA).with_rows('#date > {{today()}}').values
+        )
 
     def test_without_rows(self):
         self.assertEqual(self.DATA[3:6], self.source.without_rows(['#sector=wash']).values)

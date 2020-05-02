@@ -235,6 +235,15 @@ def do_join(row, args, multiple=True):
     return separator.join(values[1:])
 
 
+def do_today(row, args, multiple=False):
+    """Return the current date (UTC) in ISO format YYYY-mm-dd
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the current UTC date in ISO YYYY-mm-dd format
+    """
+    return datetime.datetime.utcnow().strftime('%Y-%m-%d')
+
+
 def do_datedif(row, args, multiple=False):
     """Calculate the difference between the first date and the second.
     The optional internal units arg determines the unit of measurement.
@@ -305,6 +314,7 @@ FUNCTIONS = {
     'average': do_average,
     'round': do_round,
     'join': do_join,
+    'today': do_today,
     'datedif': do_datedif,
     'toupper': do_toupper,
     'tolower': do_tolower,
