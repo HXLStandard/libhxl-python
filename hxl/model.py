@@ -1,10 +1,22 @@
-"""
-Data model for the Humanitarian Exchange Language (HXL) v1.0
-David Megginson
-Started October 2014
+"""Main data-model classes for the Humanitarian Exchange Language (HXL).
 
-License: Public Domain
-Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+This module defines the basic classes for working with HXL data. Other
+modules have classes derived from these (e.g. in
+[hxl.filters](filters.html) or [hxl.io](io.html)). The core class is
+[Dataset](#hxl.model.Dataset), which defines the operations available
+on a HXL dataset, including convenience methods for chaining filters.
+
+Typical usage:
+
+    source = hxl.data("https://example.org/data.csv")
+    # returns a hxl.model.Dataset object
+
+    result = source.with_lines("#country+name=Kenya").sort()
+    # a filtered/sorted view of the data
+
+
+This code is released into the Public Domain and comes with NO WARRANTY.
+
 """
 
 import abc, copy, csv, dateutil, hashlib, json, logging, operator, re, six
@@ -16,23 +28,36 @@ logger = logging.getLogger(__name__)
 
 class TagPattern(object):
     """Pattern for matching a HXL hashtag and attributes
-    #tag matches #tag with any attributes
-    #tag+foo matches #tag with foo among its attributes
-    #tag-foo matches #tag with foo *not* among its attributes
-    #tag+foo-bar matches #tag with foo but not bar
+
+    - the pattern "#*" matches any hashtag/attribute combination
+    - the pattern "#*+foo" matches any hashtag with the foo attribute
+    - the pattern "#tag" matches #tag with any attributes
+    - the pattern "#tag+foo" matches #tag with foo among its attributes
+    - the pattern "#tag-foo" matches #tag with foo *not* among its attributes
+    - the pattern "#tag+foo-bar" matches #tag with foo but not bar
+    - the pattern "#tag+foo+bar!" matches #tag with exactly the attributes foo and bar, but *no others*
+
+    The normal way to create a tag pattern is using the
+    [parse()](#hxl.model.TagPattern.parse) method rather than the
+    constructor:
+
+        pattern = hxl.model.TagPattern.parse("#affected+f-children")
+
+    Args:
+        tag: the basic hashtag (without attributes)
+        include_attributes: a list of attributes that must be present
+        exclude_attributes: a list of attributes that must not be present
+        is_absolute: if True, no attributes are allowed except those in _include_attributes_
+
     """
 
-    # Regular expression to match a HXL tag pattern (including '-' to exclude attributes)
+    
     PATTERN = r'^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*(!)?\s*$'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    """Constant: regular expression to match a HXL tag pattern.
+    """
 
     def __init__(self, tag, include_attributes=[], exclude_attributes=[], is_absolute=False):
-        """Like a column, but has a whitelist and a blacklist.
-        @param tag: the basic hashtag (without attributes)
-        @param include_attributes: a list of attributes that must be present
-        @param exclude_attributes: a list of attributes that must not be present
-        """
         self.tag = tag
-        """HXL hashtag, or "#*" for a wildcard"""
 
         self.include_attributes = set(include_attributes)
         """Set of all attributes that must be present"""
@@ -113,7 +138,20 @@ class TagPattern(object):
 
     @staticmethod
     def parse(s):
-        """Parse a single tag pattern, like #tag+foo-bar."""
+        """Parse a single tag-pattern string.
+
+            pattern = TagPattern.parse("#affected+f-children")
+
+        The [parse_list()](#hxl.model.TagPattern.parse_list) method
+        will call this method to parse multiple patterns at once.
+        
+        Args:
+            s: the tag-pattern string to parse
+
+        Returns:
+            A TagPattern object
+
+        """
 
         if not s:
             # edge case: null value
@@ -150,12 +188,24 @@ class TagPattern(object):
 
     @staticmethod
     def parse_list(specs):
-        """
-        Normalise a list of tag specs.
-        Split if a comma-separated string.
-        Convert every element to a TagPattern
-        @param specs the raw input
-        @return normalised list of tag patterns
+        """Parse a list of tag-pattern strings.
+
+        If _specs_ is a list of already-parsed TagPattern objects, do
+        nothing. If it's a list of strings, apply
+        [parse()](#hxl.model.TagPattern.parse) to each one. If it's a
+        single string with multiple patterns separated by commas,
+        split the string, then parse the patterns.
+
+            patterns = TagPattern.parse_list("#affected+f,#inneed+f")
+            # or
+            patterns = TagPattern.parse_list("#affected+f", "#inneed+f")
+        
+        Args:
+            specs: the raw input (a list of strings, or a single string with commas separating the patterns)
+
+        Returns:
+            A list of TagPattern objects.
+
         """
         if not specs:
             return []
@@ -166,9 +216,20 @@ class TagPattern(object):
     @staticmethod
     def match_list(column, patterns):
         """Test if a column matches any of the patterns in a list.
-        @param column: the column to test
-        @param patterns: a list of zero or more patterns.
-        @returns: True if there is a match
+
+        This is convenient to use together with [parse_list()](hxl.model.TagPattern.parse_list):
+
+            patterns = TagPattern.parse_list(["#affected+f", "#inneed+f"])
+            if TagPattern.match_list(column, patterns):
+                print("The column matched one of the patterns")
+
+        Args:
+            column: the column to test
+            patterns: a list of zero or more patterns.
+
+        Returns:
+            True if there is a match
+
         """
         for pattern in patterns:
             if pattern.match(column):
