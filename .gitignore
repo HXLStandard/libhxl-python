@@ -5,6 +5,7 @@ TAGS
 /.pypirc
 /build
 /dist
+/docs
 /libhxl.egg-info
 /hxl/formulas/parser.out
 /hxl/formulas/parsetab.py

@@ -30,6 +30,9 @@ BRANCH=$(shell git symbolic-ref --short HEAD)
 # activation script for the Python virtual environment
 VENV=venv/bin/activate
 
+# temporary directory for RST API docs
+TMPRST = /tmp/libhxl-temp-rst/
+
 
 # run unit tests
 test: $(VENV)
@@ -40,7 +43,7 @@ build-venv: $(VENV)
 
 # (re)build the virtual environment if it's missing, or whenever setup.py changes
 $(VENV): setup.py
-	rm -rf venv && python3 -m venv venv && . $(VENV) && python setup.py develop
+	rm -rf venv && python3 -m venv venv && . $(VENV) && python setup.py develop && pip install pdoc3
 
 # close the current issue branch and merge into dev
 close-issue:
@@ -66,6 +69,10 @@ test-install:
 # make a PyPi release
 upload-pypi: $(VENV)
 	. $(VENV) && python setup.py sdist upload
+
+# generate API documentation
+api-docs: $(VENV)
+	. $(VENV) && rm -rf docs/* && pdoc3 -o docs/ --html hxl && mv docs/hxl/* docs/ && rmdir docs/hxl/
 
 # (re)generate emacs TAGS file
 etags:
