@@ -3,5 +3,5 @@ xlrd
 requests
 unidecode
 python-io-wrapper
-jsonpath-rw-ext
+jsonpath-ng
 ply
