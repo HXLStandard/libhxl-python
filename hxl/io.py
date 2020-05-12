@@ -7,7 +7,7 @@ License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 """
 
-import abc, collections, csv, io, io_wrapper, json, jsonpath_ng, logging, re, requests, shutil, six, sys, tempfile, xlrd, xml.sax
+import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, shutil, six, sys, tempfile, xlrd, xml.sax
 
 import hxl, hxl.filters
 import zipfile
@@ -675,7 +675,7 @@ class JSONInput(AbstractInput):
             return data[selector]
         else:
             # full JSONpath
-            path = jsonpath_ng.parse(selector)
+            path = jsonpath_ng.ext.parse(selector)
             matches = path.find(data)
             if len(matches) == 0:
                 raise HXLParseException("No matches for JSONpath {}".format(selector))

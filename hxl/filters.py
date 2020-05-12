@@ -38,7 +38,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 """
 
 import hxl, hxl.formulas.eval as feval
-import abc, copy, dateutil.parser, json, jsonpath_ng, logging, re, six, sys
+import abc, copy, dateutil.parser, json, jsonpath_ng.ext, logging, re, six, sys
 
 
 logger = logging.getLogger(__name__)
@@ -2097,7 +2097,7 @@ class JSONPathFilter(AbstractStreamingFilter):
         @param use_json: if True, serialise multiple values as JSON (default); otherwise, separate with " | "
         """
         super().__init__(source)
-        self.path = jsonpath_ng.parse(path)
+        self.path = jsonpath_ng.ext.parse(path)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.queries = self._setup_queries(queries)
         self.use_json = use_json

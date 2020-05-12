@@ -1097,6 +1097,14 @@ class TestJSONPathFilter(unittest.TestCase):
     def test_no_match(self):
         self.assertEqual('', hxl.data(self.DATA).jsonpath('no.match').values[0][0])
 
+    def test_filter(self):
+        """ Confirm that the JSONPath implementation supports filters. """
+        data = [
+            ["#x"],
+            ['[{"a": 1, "b": 2}, {"a": 3, "b": 4}]'],
+        ]
+        self.assertEqual("2", hxl.data(data).jsonpath('$[?(@.a=1)].b').values[0][0]);
+
     def test_bad_json(self):
         # shouldn't raise an exception (but will log a warning)
         self.assertEqual('bad json', hxl.data(self.DATA).jsonpath("a.x").values[1][0])
