@@ -826,8 +826,11 @@ class XLSInput(AbstractInput):
 
         elif cell.ctype == xlrd.XL_CELL_DATE:
             # dates need to be formatted
-            data = xlrd.xldate_as_tuple(cell.value, 0)
-            return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
+            try:
+                data = xlrd.xldate_as_tuple(cell.value, 0)
+                return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
+            except:
+                return cell.value;
 
         elif cell.ctype == xlrd.XL_CELL_BOOLEAN:
             return int(cell.value)
@@ -906,8 +909,11 @@ class XLSXInput(AbstractInput):
 
         elif cell.ctype == xlrd.XL_CELL_DATE:
             # dates need to be formatted
-            data = xlrd.xldate_as_tuple(cell.value, 0)
-            return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
+            try:
+                data = xlrd.xldate_as_tuple(cell.value, 0)
+                return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
+            except:
+                return cell.value
 
         elif cell.ctype == xlrd.XL_CELL_BOOLEAN:
             return int(cell.value)
