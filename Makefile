@@ -67,8 +67,11 @@ test-install:
 	rm -rf venv-test # make sure we clean up
 
 # make a PyPi release
-upload-pypi: $(VENV)
-	. $(VENV) && python setup.py sdist upload
+#upload-pypi: $(VENV)
+#	. $(VENV) && python setup.py sdist upload
+# need to upload with twine:
+# $ python setup.py sdist
+# $ twine upload dist/libhxl-4.xx*
 
 # generate API documentation
 api-docs: $(VENV)
