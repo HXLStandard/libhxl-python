@@ -1,6 +1,6 @@
 2020-05-20 Release 4.20
 	- switch to jsonpath-ng library to support more JSONPath features
-	- add support for row formulas as right side of row queries (making it possible to compare one row to another)
+	- add support for row formulas as right side of row queries (making it possible to compare one column to another)
 	- add today() function for row formulas (today's UTC date in ISO YYYY-mm-dd format)
 	- add support for parsing Unix-style epoch timestamps (nanoseconds, milliseconds, or seconds)
 	- add long description in setup.py for PyPi (from README.md)
