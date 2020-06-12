@@ -7,6 +7,8 @@ also supported Python 2.7).
 
 About HXL: http://hxlstandard.org
 
+More-detailed documentation is available in the wiki: https://github.com/HXLStandard/libhxl-python/wiki
+
 
 # Usage
 
