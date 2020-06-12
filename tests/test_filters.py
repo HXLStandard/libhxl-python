@@ -1343,6 +1343,44 @@ class TestImplodeFilter(AbstractBaseFilterTest):
             source.columns
 
         
+class TestListExpandFilter(AbstractBaseFilterTest):
+    DATA_IN = [
+        ["District", "Organisation", "Cluster"],
+        ["#adm1", "#org+name+list", "#sector+cluster+list"],
+        ["Coast", "Org A | Org B", "Health | Nutrition | Education"],
+        ["Plains", "Org A | Org C", "Shelter"],
+    ]
+
+    DATA_OUT = [
+        ["District", "Organisation", "Cluster"],
+        ["#adm1", "#org+name", "#sector+cluster"],
+        ["Coast", "Org A", "Health"],
+        ["Coast", "Org A", "Nutrition"],
+        ["Coast", "Org A", "Education"],
+        ["Coast", "Org B", "Health"],
+        ["Coast", "Org B", "Nutrition"],
+        ["Coast", "Org B", "Education"],
+        ["Plains", "Org A", "Shelter"],
+        ["Plains", "Org C", "Shelter"],
+    ]
+
+    def setUp(self):
+        self.source1 = hxl.data(self.DATA_IN).expand_lists()
+        self.source2 = hxl.data(self.DATA_IN).expand_lists(['org', 'sector'])
+
+    def test_headers(self):
+        self.assertEqual(self.DATA_OUT[0], self.source1.headers)
+        self.assertEqual(self.DATA_OUT[0], self.source2.headers)
+
+    def test_tagspecs(self):
+        self.assertEqual(self.DATA_OUT[1], self.source1.display_tags)
+        self.assertEqual(self.DATA_OUT[1], self.source2.display_tags)
+
+    def test_values(self):
+        self.assertEqual(self.DATA_OUT[2:], self.source1.values)
+        self.assertEqual(self.DATA_OUT[2:], self.source2.values)
+        
+
 class TestFillDataFilter(AbstractBaseFilterTest):
 
     DATA_IN = [
