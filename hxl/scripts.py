@@ -350,12 +350,20 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tag,tag...',
         type=hxl.model.TagPattern.parse_list
         )
+    parser.add_argument(
+        '-s',
+        '--skip-untagged',
+        help="Skip columns without HXL hashtags",
+        action='store_const',
+        const=True,
+        default=False
+        )
     args = parser.parse_args(args)
 
     do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.ColumnFilter(source, args.include, args.exclude)
+        filter = hxl.filters.ColumnFilter(source, args.include, args.exclude, args.skip_untagged)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
