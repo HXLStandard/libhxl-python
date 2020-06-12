@@ -1343,7 +1343,7 @@ class TestImplodeFilter(AbstractBaseFilterTest):
             source.columns
 
         
-class TestListExpandFilter(AbstractBaseFilterTest):
+class TestExpandListsFilter(AbstractBaseFilterTest):
     DATA_IN = [
         ["District", "Organisation", "Cluster"],
         ["#adm1", "#org+name+list", "#sector+cluster+list"],

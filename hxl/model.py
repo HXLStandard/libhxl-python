@@ -609,9 +609,25 @@ class Dataset(object):
         )
     
     def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
-        """Merges values from a second dataset."""
+        """Merges values from a second dataset.
+        @param merge_source: the second HXL data source
+        @param keys: a single tagspec or list of tagspecs for the shared keys
+        @param tags: the tags to copy over from the second dataset
+        @param replace: if True, replace existing columns when present
+        @param overwrite: if True, overwrite individual values in existing columns when available
+        @param queries: optional row queries to control the merge
+        """
         import hxl.filters
         return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, queries=queries)
+
+    def expand_lists(self, patterns=None, separator="|"):
+        """Expand lists by repeating rows.
+        By default, applies to every column with a +list attribute, and uses "|" as the separator.
+        @param patterns: a single tag pattern or list of tag patterns for columns to expand
+        @param separator: the list-item separator
+        """
+        import hxl.filters
+        return hxl.filters.ExpandListsFilter(self, patterns=patterns, separator=separator)
 
     def explode(self, header_attribute='header', value_attribute='value'):
         """Explodes a wide dataset into a long datasets.
