@@ -1553,6 +1553,14 @@ class DeduplicationFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, 'queries', [])
         )
 
+
+class ExpandListsFilter(AbstractStreamingFilter):
+    """Expand in-cell lists by duplicating data rows.
+    """
+
+    def __init__(self, source, patterns=None, separator="|"):
+        super().__init__(source)
+
         
 class ExplodeFilter(AbstractBaseFilter):
     """Explode a wide (series) dataset into a long version.
