@@ -38,7 +38,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 """
 
 import hxl, hxl.formulas.eval as feval
-import abc, copy, dateutil.parser, json, jsonpath_ng.ext, logging, re, six, sys
+import abc, copy, dateutil.parser, itertools, json, jsonpath_ng.ext, logging, re, six, sys
 
 
 logger = logging.getLogger(__name__)
@@ -1554,12 +1554,71 @@ class DeduplicationFilter(AbstractStreamingFilter):
         )
 
 
-class ExpandListsFilter(AbstractStreamingFilter):
+class ExpandListsFilter(AbstractBaseFilter):
     """Expand in-cell lists by duplicating data rows.
     """
 
     def __init__(self, source, patterns=None, separator="|"):
         super().__init__(source)
+        self.scan_columns(patterns)
+
+    def filter_columns(self):
+        """ Remove the +list attribute from targeted columns """
+        columns = list(self.source.columns)
+        for index in self.column_indices:
+            column = copy.deepcopy(columns[index])
+            column.remove_attribute('list')
+            columns[index] = column
+        return columns
+
+    def scan_columns(self, patterns):
+        """ Save the indices of the columns containing lists """
+        self.column_indices = []
+        if patterns:
+            patterns = hxl.model.TagPattern.parse_list(patterns)
+            for i, column in enumerate(self.source.columns):
+                if hxl.model.TagPattern.match_list(column, patterns):
+                    self.column_indices.append(i)
+        else:
+            for i, column in enumerate(self.source.columns):
+                if column.has_attribute("list"):
+                    self.column_indices.append(i)
+
+    def __iter__(self):
+
+        min_length = max(self.column_indices) + 1
+
+        for row in self.source:
+
+            # special case, if there are no lists
+            if len(self.column_indices) == 0:
+                return row
+            
+            # parse the lists
+            value_lists = []
+            for index in self.column_indices:
+                if index < len(row.values):
+                    value_lists.append(re.split(r"\s*\|\s*", str(row.values[index])))
+                else:
+                    value_lists.append([""])
+
+            # generate the cartesian product of the values
+            row_value_list = list(itertools.product(*value_lists))
+
+            # yield all of the resulting rows
+            for row_values in row_value_list:
+                values = copy.deepcopy(row.values)
+
+                # make sure the value list is long enough
+                if len(values) < min_length:
+                    values += [""] * (min_length - len(values))
+
+                # replace the list values
+                for i, value in enumerate(row_values):
+                    values[self.column_indices[i]] = value
+
+                # yield a new row
+                yield hxl.model.Row(self.columns, values)
 
         
 class ExplodeFilter(AbstractBaseFilter):

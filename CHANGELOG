@@ -1,4 +1,5 @@
 Release 4.21
+	- added a new ExpandListsFilter
 	- added --skip-untagged option to hxlcut script
 
 2020-05-20 Release 4.20
