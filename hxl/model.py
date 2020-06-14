@@ -620,14 +620,14 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.MergeDataFilter(self, merge_source, keys, tags, replace, overwrite, queries=queries)
 
-    def expand_lists(self, patterns=None, separator="|", queries=[]):
+    def expand_lists(self, patterns=None, separator="|", correlate=False, queries=[]):
         """Expand lists by repeating rows.
         By default, applies to every column with a +list attribute, and uses "|" as the separator.
         @param patterns: a single tag pattern or list of tag patterns for columns to expand
         @param separator: the list-item separator
         """
         import hxl.filters
-        return hxl.filters.ExpandListsFilter(self, patterns=patterns, separator=separator, queries=queries)
+        return hxl.filters.ExpandListsFilter(self, patterns=patterns, separator=separator, correlate=correlate, queries=queries)
 
     def explode(self, header_attribute='header', value_attribute='value'):
         """Explodes a wide dataset into a long datasets.

@@ -646,6 +646,15 @@ def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default="|"
         )
 
+    parser.add_argument(
+        "-c",
+        '--correlate',
+        help='correlate list values instead of producing a cartesian product',
+        action='store_const',
+        const=True,
+        default=False
+        )
+
     add_queries_arg(parser, 'Limit list expansion to rows matching at least one query.')
 
     args = parser.parse_args(args)
@@ -653,7 +662,7 @@ def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.ExpandListsFilter(source, patterns=args.tags, separator=args.separator, queries=args.query)
+        filter = hxl.filters.ExpandListsFilter(source, patterns=args.tags, separator=args.separator, correlate=args.correlate, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK

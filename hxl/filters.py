@@ -1558,10 +1558,11 @@ class ExpandListsFilter(AbstractBaseFilter):
     """Expand in-cell lists by duplicating data rows.
     """
 
-    def __init__(self, source, patterns=None, separator="|", queries=[]):
+    def __init__(self, source, patterns=None, separator="|", correlate=False, queries=[]):
         super().__init__(source)
         self.separator = str(separator)
         self.scan_columns(patterns)
+        self.correlate = correlate
         self.queries = self._setup_queries(queries)
         """The row queries to limit where we expand lists"""
 
@@ -1612,27 +1613,45 @@ class ExpandListsFilter(AbstractBaseFilter):
             for index in self.column_indices:
                 if index < len(row.values):
                     values = str(row.values[index]).split(self.separator)
-                    value_lists.append(map(hxl.datatypes.normalise_space, values))
+                    value_lists.append(list(map(hxl.datatypes.normalise_space, values)))
                 else:
                     value_lists.append([""])
 
-            # generate the cartesian product of the values
-            row_value_list = list(itertools.product(*value_lists))
+            if (self.correlate):
+                # correlate the lists
 
-            # yield all of the resulting rows
-            for row_values in row_value_list:
-                values = copy.deepcopy(row.values)
+                nrows = max([len(item) for item in value_lists])
 
-                # make sure the value list is long enough
-                if len(values) < min_length:
-                    values += [""] * (min_length - len(values))
+                for i in range(0, nrows):
+                    values = copy.deepcopy(row.values)
+                    for j, v in enumerate(value_lists):
+                        index = self.column_indices[j]
+                        if len(v) <= i:
+                            values[index] = ""
+                        else:
+                            values[index] = v[i]
+                    yield hxl.model.Row(self.columns, values)
 
-                # replace the list values
-                for i, value in enumerate(row_values):
-                    values[self.column_indices[i]] = value
+            else:
+                # generate the cartesian product of all the lists
 
-                # yield a new row
-                yield hxl.model.Row(self.columns, values)
+                # generate the cartesian product of the values
+                row_value_list = list(itertools.product(*value_lists))
+
+                # yield all of the resulting rows
+                for row_values in row_value_list:
+                    values = copy.deepcopy(row.values)
+
+                    # make sure the value list is long enough
+                    if len(values) < min_length:
+                        values += [""] * (min_length - len(values))
+
+                    # replace the list values
+                    for i, value in enumerate(row_values):
+                        values[self.column_indices[i]] = value
+
+                    # yield a new row
+                    yield hxl.model.Row(self.columns, values)
 
         
     @staticmethod
@@ -1645,6 +1664,7 @@ class ExpandListsFilter(AbstractBaseFilter):
             source=source,
             patterns=opt_arg(spec, 'patterns'),
             separator=opt_arg(spec, 'separator'),
+            correlate=opt_arg(spec, 'correlate'),
             queries=opt_arg(spec, 'queries')
         )
 

@@ -1397,6 +1397,20 @@ class TestExpandListsFilter(AbstractBaseFilterTest):
 
         source = hxl.data(DATA_IN).expand_lists(separator=",")
         self.assertEqual(VALUES_OUT, source.values)
+
+    def test_correlation(self):
+        DATA_IN = [
+            ["#adm1+name+list", "#adm1+code+list", "#sector"],
+            ["Plains | Coast | Mountains | Capital", "01 | 02 | 03", "Health"],
+        ]
+        VALUES_OUT = [
+            ["Plains", "01", "Health"],
+            ["Coast", "02", "Health"],
+            ["Mountains", "03", "Health"],
+            ["Capital", "", "Health"],
+        ]
+        source = hxl.data(DATA_IN).expand_lists(correlate=True)
+        self.assertEqual(VALUES_OUT, source.values)
         
 
 class TestFillDataFilter(AbstractBaseFilterTest):
