@@ -139,6 +139,10 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = self.source.recipe({'filter': 'dedup'})
         self.assertEqual(type(filtered).__name__, 'DeduplicationFilter')
 
+    def test_expand_lists(self):
+        filtered = self.source.recipe({'filter': 'expand_lists'})
+        self.assertEqual(type(filtered).__name__, 'ExpandListsFilter')
+
     def test_explode(self):
         filtered = self.source.recipe({'filter': 'explode'})
         self.assertEqual(type(filtered).__name__, 'ExplodeFilter')

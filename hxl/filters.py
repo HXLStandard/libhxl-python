@@ -1635,6 +1635,20 @@ class ExpandListsFilter(AbstractBaseFilter):
                 yield hxl.model.Row(self.columns, values)
 
         
+    @staticmethod
+    def _load(source, spec):
+        """New instance from a JSON-style dictionary.
+        @param source: the upstream data source
+        @param spec: the JSON-style specification
+        """
+        return ExpandListsFilter(
+            source=source,
+            patterns=opt_arg(spec, 'patterns'),
+            separator=opt_arg(spec, 'separator'),
+            queries=opt_arg(spec, 'queries')
+        )
+
+
 class ExplodeFilter(AbstractBaseFilter):
     """Explode a wide (series) dataset into a long version.
 
@@ -2591,6 +2605,7 @@ LOAD_MAP = {
     'clean_data': CleanDataFilter._load,
     'count': CountFilter._load,
     'dedup': DeduplicationFilter._load,
+    'expand_lists': ExpandListsFilter._load,
     'explode': ExplodeFilter._load,
     'fill_data': FillDataFilter._load,
     'implode': ImplodeFilter._load,
