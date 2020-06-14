@@ -78,6 +78,10 @@ def hxlfill():
     """Console script for hxlreplace."""
     run_script(hxlfill_main)
 
+def hxlexpand():
+    """Console script for hxlexpand."""
+    run_script(hxlexpand_main)
+
 def hxlexplode():
     """Console script for hxlexplode."""
     run_script(hxlexplode_main)
@@ -609,6 +613,47 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.FillDataFilter(source, pattern=args.tag, queries=args.query)
+        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """
+    Run hxlexpand with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    """
+
+    parser = make_args('Expand lists in cells by repeating rows')
+
+    parser.add_argument(
+        '-t',
+        '--tags',
+        help='Comma-separated list of tag patterns for columns with lists to expand',
+        metavar='tag,tag...',
+        type=hxl.model.TagPattern.parse_list,
+        nargs="?"
+        )
+
+    parser.add_argument(
+        "-s",
+        '--separator',
+        help='string separating list items (defaults to "|")',
+        metavar='string',
+        default="|"
+        )
+
+    add_queries_arg(parser, 'Limit list expansion to rows matching at least one query.')
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ExpandListsFilter(source, patterns=args.tags, separator=args.separator, queries=args.query)
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK

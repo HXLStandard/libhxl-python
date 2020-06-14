@@ -32,6 +32,7 @@ setup(
             'hxlcount = hxl.scripts:hxlcount',
             'hxlcut = hxl.scripts:hxlcut',
             'hxldedup = hxl.scripts:hxldedup',
+            'hxlexpand = hxl.scripts:hxlexpand',
             'hxlexplode = hxl.scripts:hxlexplode',
             'hxlfill = hxl.scripts:hxlfill',
             'hxlimplode = hxl.scripts:hxlimplode',

@@ -1558,10 +1558,12 @@ class ExpandListsFilter(AbstractBaseFilter):
     """Expand in-cell lists by duplicating data rows.
     """
 
-    def __init__(self, source, patterns=None, separator="|"):
+    def __init__(self, source, patterns=None, separator="|", queries=[]):
         super().__init__(source)
         self.separator = str(separator)
         self.scan_columns(patterns)
+        self.queries = self._setup_queries(queries)
+        """The row queries to limit where we expand lists"""
 
     def filter_columns(self):
         """ Remove the +list attribute from targeted columns """
@@ -1587,14 +1589,24 @@ class ExpandListsFilter(AbstractBaseFilter):
 
     def __iter__(self):
 
+        # Special case: no columns to expand
+        if len(self.column_indices) == 0:
+            for row in self.source:
+                yield row
+            return
+
+
+        # Regular case
+
         min_length = max(self.column_indices) + 1
 
         for row in self.source:
 
-            # special case, if there are no lists
-            if len(self.column_indices) == 0:
-                return row
-            
+            # If there are queries, the row must match one of them
+            if not hxl.model.RowQuery.match_list(row, self.queries):
+                yield row
+                continue
+
             # parse the lists
             value_lists = []
             for index in self.column_indices:
