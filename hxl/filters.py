@@ -1560,6 +1560,7 @@ class ExpandListsFilter(AbstractBaseFilter):
 
     def __init__(self, source, patterns=None, separator="|"):
         super().__init__(source)
+        self.separator = str(separator)
         self.scan_columns(patterns)
 
     def filter_columns(self):
@@ -1598,7 +1599,8 @@ class ExpandListsFilter(AbstractBaseFilter):
             value_lists = []
             for index in self.column_indices:
                 if index < len(row.values):
-                    value_lists.append(re.split(r"\s*\|\s*", str(row.values[index])))
+                    values = str(row.values[index]).split(self.separator)
+                    value_lists.append(map(hxl.datatypes.normalise_space, values))
                 else:
                     value_lists.append([""])
 

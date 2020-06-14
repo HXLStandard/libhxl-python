@@ -1379,6 +1379,20 @@ class TestExpandListsFilter(AbstractBaseFilterTest):
     def test_values(self):
         self.assertEqual(self.DATA_OUT[2:], self.source1.values)
         self.assertEqual(self.DATA_OUT[2:], self.source2.values)
+
+    def test_separator(self):
+        DATA_IN = [
+            ["#adm1", "#sector+list"],
+            ["Plains", "Health, Education, Protection"],
+        ]
+        VALUES_OUT = [
+            ["Plains", "Health"],
+            ["Plains", "Education"],
+            ["Plains", "Protection"],
+        ]
+
+        source = hxl.data(DATA_IN).expand_lists(separator=",")
+        self.assertEqual(VALUES_OUT, source.values)
         
 
 class TestFillDataFilter(AbstractBaseFilterTest):
