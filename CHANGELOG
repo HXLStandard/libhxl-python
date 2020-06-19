@@ -1,6 +1,7 @@
 Release 4.21
 	- added a new ExpandListsFilter and hxlexpand command-line script
 	- added --skip-untagged option to hxlcut script
+	- improved docstrings for hxl.datatypes and hxl.geo modules
 
 2020-05-20 Release 4.20
 	- switch to jsonpath-ng library to support more JSONPath features
