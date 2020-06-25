@@ -1277,9 +1277,10 @@ class CleanDataFilter(AbstractStreamingFilter):
 class ColumnFilter(AbstractStreamingFilter):
     """Composable filter class to remove columns from a HXL dataset.
 
-    This filter supports removing columns based on either a whitelist
-    or a blacklist of L{tag patterns<hxl.model.TagPattern>}. It
-    supports the L{hxl.model.Dataset.with_columns} and
+    This filter supports removing columns based on either an include
+    list or an exclude list of L{tag
+    patterns<hxl.model.TagPattern>}. It supports the
+    L{hxl.model.Dataset.with_columns} and
     L{hxl.model.Dataset.without_columns} convenience methods and the
     L{hxl.scripts.hxlcut} command-line script.
 
@@ -1302,13 +1303,14 @@ class ColumnFilter(AbstractStreamingFilter):
       filter = hxl.data(url).with_columns(['org', 'sector', 'activity'])
 
     @see: L{RowFilter}
+
     """
 
     def __init__(self, source, include_tags=[], exclude_tags=[], skip_untagged=False):
         """Construct a column filter.
         @param source: a L{hxl.model.Dataset}
-        @param include_tags: a whitelist of L{tag patterns<hxl.model.TagPattern>} objects to include
-        @param exclude_tags: a blacklist of tag patterns objects to exclude
+        @param include_tags: an include list of L{tag patterns<hxl.model.TagPattern>} objects to include
+        @param exclude_tags: an exclude list of tag patterns objects to exclude
         @param skip_untagged: True if all columns without HXL hashtags should be removed
         """
         super(ColumnFilter, self).__init__(source)
@@ -1338,31 +1340,34 @@ class ColumnFilter(AbstractStreamingFilter):
         return values
 
     def _test_column(self, column):
-        """Test whether a  column should be included in the output.
-        If there is a whitelist, it must be in the whitelist; if there is a blacklist, it must not be in the blacklist.
-        @param column: the L{hxl.model.Column} to test
+        """Test whether a column should be included in the output.  If there
+        is an include list, it must be in that list; if there is an
+        exclude list, it must not be in that list.
+
+        @param column: the L{hxl.model.Column} to test 
         @returns: True if the column should be included
+
         """
         if self.include_tags:
-            # whitelist
+            # exclude list
             for pattern in self.include_tags:
                 if pattern.match(column):
                     # succeed as soon as we match an included pattern
                     return True
-            # fail if there was a whitelist and we didn't match
+            # fail if there was an exclude list and we didn't match
             return False
 
         if self.exclude_tags or self.skip_untagged:
             # skip untagged columns?
             if self.skip_untagged and not column.tag:
                 return False
-            # blacklist
+            # exclude list
             for pattern in self.exclude_tags:
                 if pattern.match(column):
                     # fail as soon as we match an excluded pattern
                     return False
 
-        # not a whitelist, and no reason to exclude
+        # not an include list, and no reason to exclude
         return True
 
     @staticmethod
@@ -1375,12 +1380,12 @@ class ColumnFilter(AbstractStreamingFilter):
         if spec.get('filter') == 'with_columns':
             return ColumnFilter(
                 source=source,
-                include_tags=req_arg(spec, 'whitelist')
+                include_tags=req_arg(spec, 'includes')
             )
         else:
             return ColumnFilter(
                 source=source,
-                exclude_tags=req_arg(spec, 'blacklist'),
+                exclude_tags=req_arg(spec, 'excludes'),
                 skip_untagged=opt_arg(spec, 'skip_untagged')
             )
 
@@ -2463,10 +2468,10 @@ class RowFilter(AbstractStreamingFilter):
     Usage:
 
     <pre>
-    # whitelist
+    # include list
     hxl.data(url).with_rows('org=OXFAM')
 
-    # blacklist
+    # exclude list
     hxl.data(url).without_rows('org=OXFAM')
     </pre>
     """

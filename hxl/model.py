@@ -523,15 +523,15 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.DeduplicationFilter(self, patterns=patterns, queries=queries)
 
-    def with_columns(self, whitelist):
+    def with_columns(self, includes):
         """Select matching columns."""
         import hxl.filters
-        return hxl.filters.ColumnFilter(self, include_tags=whitelist)
+        return hxl.filters.ColumnFilter(self, include_tags=includes)
 
-    def without_columns(self, blacklist=None, skip_untagged=False):
+    def without_columns(self, excludes=None, skip_untagged=False):
         """Select non-matching columns."""
         import hxl.filters
-        return hxl.filters.ColumnFilter(self, exclude_tags=blacklist, skip_untagged=skip_untagged)
+        return hxl.filters.ColumnFilter(self, exclude_tags=excludes, skip_untagged=skip_untagged)
 
     def with_rows(self, queries, mask=[]):
         """Select matching rows.

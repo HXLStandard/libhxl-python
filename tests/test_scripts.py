@@ -132,13 +132,13 @@ class TestCut(BaseTest):
         self.function = hxl.scripts.hxlcut_main
         self.input_file = 'input-simple.csv'
 
-    def test_whitelist(self):
-        self.assertOutput(['-i', 'sector,org,adm1'], 'cut-output-whitelist.csv')
-        self.assertOutput(['--include', 'sector,org,adm1'], 'cut-output-whitelist.csv')
+    def test_includes(self):
+        self.assertOutput(['-i', 'sector,org,adm1'], 'cut-output-includes.csv')
+        self.assertOutput(['--include', 'sector,org,adm1'], 'cut-output-includes.csv')
 
-    def test_blacklist(self):
-        self.assertOutput(['-x', 'population+sex,targeted'], 'cut-output-blacklist.csv')
-        self.assertOutput(['--exclude', 'population+sex,targeted'], 'cut-output-blacklist.csv')
+    def test_excludes(self):
+        self.assertOutput(['-x', 'population+sex,targeted'], 'cut-output-excludes.csv')
+        self.assertOutput(['--exclude', 'population+sex,targeted'], 'cut-output-excludes.csv')
 
 
 class TestMerge(BaseTest):

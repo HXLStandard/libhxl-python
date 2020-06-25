@@ -1,4 +1,10 @@
 Release 4.21
+	- BACKWARDS-INCOMPATIBLE: rename "whitelist" to "includes" in
+	  hxl.model.Dataset.with_columns() and JSON format for loading a
+	  ColumnFilter
+	- BACKWARDS-INCOMPATIBLE: rename "blacklist" to "excludes" in
+	  hxl.model.Dataset.without_columns() and JSON format for loading a
+	  ColumnFilter
 	- added a new ExpandListsFilter and hxlexpand command-line script
 	- added --skip-untagged option to hxlcut script
 	- improved docstrings for hxl.datatypes and hxl.geo modules
