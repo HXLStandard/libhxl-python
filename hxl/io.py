@@ -36,7 +36,7 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["data", "tagger", "write_hxl", "write_json", "make_input", "HXLIOException", "HXLAuthorizationException", "HXLParseException", "HXLTagsNotFoundException", "HXLReader", "from_spec"]
+__all__ = ["data", "tagger", "write_hxl", "write_json", "make_input", "HXLIOException", "HXLAuthorizationException", "HXLParseException", "HXLTagsNotFoundException", "AbstractInput", "CSVInput", "JSONInput", "XLSInput", "XLSXInput", "ArrayInput", "HXLReader", "from_spec"]
 
 
 ########################################################################
@@ -145,6 +145,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
     Raises:
         IOError: if there's an error loading the data.
         hxl.HXLException: if there's a structural error in the data.
+        hxl.io.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
 
     """
 
@@ -209,6 +210,7 @@ def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sh
     Raises:
         IOError: if there's an error loading the data.
         hxl.HXLException: if there's a structural error in the data.
+        hxl.io.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
 
     """
     import hxl.converters
@@ -301,7 +303,7 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
         output.write(line)
 
 
-def munge_url(url, verify_ssl=True, http_headers=None):
+def _munge_url(url, verify_ssl=True, http_headers=None):
     """Munge a URL to get at underlying data for well-known types."""
 
     #
@@ -393,19 +395,38 @@ def munge_url(url, verify_ssl=True, http_headers=None):
 def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
     """Figure out what kind of input to create.
 
-    Can detect a URL or filename, an input stream, or an array.
-    Will also try to detect HTML and Excel before defaulting to CSV.
-    The result is an object that can deliver rows of data for the HXL library to parse.
+    This is a lower-level I/O function that sits beneath ``data()``
+    and ``tagger()``. It figures out how to create row-by-row data
+    from various sources (e.g. XLSX, Google Sheets, CSV, JSON), and
+    returns an object for iterating through the rows.
 
-    @param raw_source: the raw data source (e.g. a URL or input stream).
-    @param allow_local: if True, allow opening local files as well as remote URLs (default: False).
-    @param sheet_index: if a number, read that sheet from an Excel workbook (default: None).
-    @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-    @param verify_ssl: if False, don't try to verify SSL certificates (e.g. for self-signed certs).
-    @param http_headers: an optional dict of HTTP headers to send with a request.
-    @param selector: a property to select the data in a JSON record (may later extend to spreadsheet tabs).
-    @param encoding: specify a character encoding
-    @return: an object belonging to a subclass of AbstractInput, returning rows of raw data.
+    Example:
+    ```
+    input = make_input("data.xlsx", allow_local=True)
+    for raw_row in input:
+        process_row(raw_row) # each row will be a list of values
+    ```
+
+    The raw source can be a URL or filename, an input stream, or an array.
+
+    Args:
+        raw_source: a HXL data provider, file object, array, or string (representing a URL or file name).
+        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
+        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
+        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
+        http_headers (dict): optional dict of HTTP headers to add to a request.
+        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
+        encoding (str): force a character encoding, regardless of HTTP info etc
+
+    Returns:
+        hxl.io.AbstractInput: a row-by-row input object (before checking for HXL hashtags)
+
+    Raises:
+        IOError: if there's an error loading the data.
+        hxl.HXLException: if there's a structural error in the data.
+        hxl.io.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
+
     """
 
     def make_tempfile(input):
@@ -472,7 +493,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                 {
                     'input': input,
                     'source': raw_source,
-                    'munged': munge_url(raw_source, http_headers=http_headers) if str(raw_source).startswith('http') else None
+                    'munged': _munge_url(raw_source, http_headers=http_headers) if str(raw_source).startswith('http') else None
                 }
             ))
 
@@ -506,13 +527,21 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
 def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True, http_headers=None):
     """Try opening a local or remote resource.
+
     Allows only HTTP(S) and (S)FTP URLs.
-    @param url_or_filename: the string to try openining.
-    @param allow_local: if True, OK to open local files; otherwise, only remote URLs allowed (default: False).
-    @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-    @param verify_ssl: if True, then fail on an SSL error.
-    @param http_headers: dictionary of headers to add to the request.
-    @return: an io stream.
+
+    Args:
+        url_or_filename (string): the string to try openining.
+        allow_local (bool): if True, OK to open local files; otherwise, only remote URLs allowed (default: False).
+        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+        verify_ssl (bool): if True, then fail on an SSL error.
+        http_headers (dict): dictionary of headers to add to the request.
+
+    Returns:
+        io.IOBase: an I/O stream for reading.
+
+    Raises:
+        IOError: if there's an error opening the data stream
     """
     mime_type = None
     file_ext = None
@@ -527,7 +556,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
-            url = munge_url(url_or_filename, verify_ssl, http_headers=http_headers)
+            url = _munge_url(url_or_filename, verify_ssl, http_headers=http_headers)
             response = requests.get(
                 url,
                 stream=True,
@@ -571,6 +600,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
         )
 
 
+
 ########################################################################
 # Exported classes
 ########################################################################
@@ -579,22 +609,53 @@ class HXLIOException(hxl.HXLException, IOError):
     """ Base class for all HXL IO-related exceptions
     """
     def __init__(self, message, url=None):
+        """
+        Args:
+            message (str): the error message
+            url (str): the URL that caused the error (if relevant)
+
+        """
         super().__init__(message)
         self.url = url
 
 
 class HXLAuthorizationException(HXLIOException):
     """ An authorisation error for a remote resource.
+
+    This exception means that the library was not allowed to read the remote resource.
+    Sometimes adding an ``Authorization:`` HTTP header with a token will help.
+    
     """
     def __init__(self, message, url, is_ckan=False):
+        """
+        Args:
+            message (str): the error message
+            url (str): the URL that triggered the exception
+            is_ckan (bool): if True, the error came from a CKAN instance
+
+        """
         super().__init__(message, url)
         self.is_ckan = is_ckan
 
 
 class HXLParseException(HXLIOException):
-    """ A parsing error in a HXL dataset.
+    """A parsing error in a HXL dataset.
+    
+    This exception means that something was wrong with the HXL tagging
+    (or similar). The ``message`` will contain details, and if
+    possible, there will be a column and row number to help the user
+    locate the error.
+
     """
     def __init__(self, message, source_row_number=None, source_column_number=None, url=None):
+        """
+        Args:
+            message (str): the error message
+            source_row_number (int): the row number in the raw source data, if known.
+            source_column_number (int): the column number in the raw source data, if known.
+            url (str): the URL of the source data, if relevant.
+        
+        """
         super().__init__(message, url)
         self.source_row_number = source_row_number
         self.source_column_number = source_column_number
@@ -602,8 +663,18 @@ class HXLParseException(HXLIOException):
 
 class HXLTagsNotFoundException(HXLParseException):
     """ Specific parsing exception: no HXL tags.
+
+    This exception means that the library could find no HXL hashtags in the source data.
+    Using the ``tagger()`` function with tagging specs can resolve the problem.
+
     """
     def __init__(self, message='HXL tags not found in first 25 rows', url=None):
+        """
+        Args:
+            message (str): the error message
+            url (str): the URL of the source data, if available
+        
+        """
         super().__init__(message, url)
 
 
@@ -686,7 +757,15 @@ class RequestResponseIOWrapper(io.RawIOBase):
 
 
 class AbstractInput(object):
-    """Abstract base class for input classes."""
+    """Abstract base class for input classes.
+
+    All of the derived classes allow returning one row of raw data at
+    a time from child classes, via normal iteration, and support
+    context management ("with" statements). Each row is represented as
+    a list of values. No semantic HXL processing has taken place yet
+    at this stage.
+
+    """
 
     __metaclass__ = abc.ABCMeta
 
@@ -706,16 +785,33 @@ class AbstractInput(object):
 
 
 class CSVInput(AbstractInput):
-    """Read raw CSV input from a URL or filename."""
+    """Iterable: read raw CSV rows from an input stream.
 
-    DELIMITERS = [",", "\t", ";", ":", "|"]
-    """Field delimiters allowed"""
+    Supports context management.
+
+    Example:
+    ```
+    with hxl.io.CSVInput(open("data.csv", "r")) as csv:
+        for raw_row in csv:
+            process_row(raw_row)
+    ```
+
+    """
+
+    _DELIMITERS = [",", "\t", ";", ":", "|"]
+    """ CSV delimiters allowed """
 
     def __init__(self, input, encoding='utf-8'):
+        """
+        Args:
+            input (io.IOBase): a byte input stream
+            encoding (str): the character encoding to use
+
+        """
         super().__init__()
 
         # guess the delimiter
-        delimiter = CSVInput.detect_delimiter(input, encoding)
+        delimiter = CSVInput._detect_delimiter(input, encoding)
         
         self._input = io.TextIOWrapper(input, encoding=encoding)
         self._reader = csv.reader(self._input, delimiter=delimiter)
@@ -727,7 +823,7 @@ class CSVInput(AbstractInput):
         return self._reader
 
     @staticmethod
-    def detect_delimiter(input, encoding):
+    def _detect_delimiter(input, encoding):
         """Detect the CSV delimiter in use
         Grab the first 16K bytes, split into lines, then try splitting
         each line with each delimiter. The first one that yields a well-formed
@@ -744,7 +840,7 @@ class CSVInput(AbstractInput):
         # first, try for a hashtag row
         for line in lines:
             if '#' in line:
-                for delim in CSVInput.DELIMITERS:
+                for delim in CSVInput._DELIMITERS:
                     fields = next(csv.reader([line], delimiter=delim))
                     if HXLReader.parse_tags(fields):
                         return delim
@@ -752,7 +848,7 @@ class CSVInput(AbstractInput):
         # if that fails, return the delimiter that appears most often
         most_common_delim = ','
         max_count = -1
-        for delim in CSVInput.DELIMITERS:
+        for delim in CSVInput._DELIMITERS:
             count = sample.count(delim)
             if count > max_count:
                 max_count = count
@@ -760,17 +856,32 @@ class CSVInput(AbstractInput):
                     
         return most_common_delim
     
+
 class JSONInput(AbstractInput):
-    """Iterable: Read raw CSV input from an input stream.
-    The iterable values will be arrays usable as raw input for HXL.
+    """Iterable: Read raw JSON rows from an input stream.
+
+    Can handle both row-style and object-style JSON, and will detect
+    it from the data. Will also search through the data to find
+    something that looks like rows of data, or can use an explicit
+    selector (either a top-level property name or a JSONPath
+    statement) to find the data rows.
+
+    Example:
+    ```
+    with hxl.io.JSONInput(open("data.json", "r")) as json:
+        for raw_row in json:
+            process_row(raw_row)
+    ```
+
     """
 
     def __init__(self, input, encoding='utf-8', selector=None):
-        """Constructor
-        The selector is used only if the top-level JSON is an object rather than an array.
-        @param input: an input stream
-        @param encoding: the default encoding to use (defaults to "utf-8")
-        @param selector: the default dictionary key for the HXL data (defaults to "hxl")
+        """
+        Args:
+            input (io.IOBase): an input byte stream
+            encoding (str): the character encoding to use
+            selector (str): either a top-level property name or a JSONPath expression to locate the row data (if not provided, the class will try to locate it heuristically)
+
         """
         super().__init__()
 
@@ -789,7 +900,7 @@ class JSONInput(AbstractInput):
 
     def __iter__(self):
         """@returns: an iterator over raw HXL data (arrays of scalar values)"""
-        return JSONInput.JSONIter(self)
+        return JSONInput._JSONIter(self)
 
     def _select(self, selector, data):
         """Find the JSON matching the selector"""
@@ -881,7 +992,7 @@ class JSONInput(AbstractInput):
 
         return None # didn't find anything
 
-    class JSONIter:
+    class _JSONIter:
         """Iterator over JSON data"""
 
         def __init__(self, outer):
@@ -907,15 +1018,34 @@ class JSONInput(AbstractInput):
 
 
 class XLSInput(AbstractInput):
-    """Iterable: Read raw XLS input from a URL or filename.
-    If sheet number is not specified, will scan for the first tab with a HXL tag row.
+    """Iterable: Read raw XLS (old-style Excel) rows from a temporary file object
+
+    If there is no sheet number specified, will scan the Excel
+    workbook for the first sheet containing HXL hashtags; if that
+    fails, will use the first sheet in the workbook.
+
+    Note that this requires a Python tempfile.TemporaryFile object,
+    with the Excel contents copied into it.
+
+    Example:
+    ```
+    tmpfile = tempfile.NamedTemporaryFile();
+    with open("data.xls", "r") as input:
+        shutil.copyfileobj(input, tmpfile)
+
+    with hxl.io.XLSInput(tmpfile) as xls:
+        for raw_row in xls:
+            process_row(raw_row)
+    ```
+
     """
 
     def __init__(self, tmpfile, sheet_index=None):
         """
-        Constructor
-        @param tmpfile: a named temporary file object holding the workbook contents
-        @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
+        Args:
+            tmpfile (tempfile.NamedTemporaryFile): a named temporary file object holding the workbook contents
+            sheet_index (int): the 0-based index of the sheet (if unspecified, scan)
+
         """
         super().__init__()
         self.tmpfile = tmpfile # prevent garbage collection as long as this object exists
@@ -926,7 +1056,7 @@ class XLSInput(AbstractInput):
         self._sheet = self._workbook.sheet_by_index(sheet_index)
 
     def __iter__(self):
-        return XLSInput.XLSIter(self)
+        return XLSInput._XLSIter(self)
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
@@ -968,7 +1098,7 @@ class XLSInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
-    class XLSIter:
+    class _XLSIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
         def __init__(self, outer):
@@ -985,15 +1115,33 @@ class XLSInput(AbstractInput):
 
 
 class XLSXInput(AbstractInput):
-    """Iterable: Read raw XLS input from a URL or filename.
-    If sheet number is not specified, will scan for the first tab with a HXL tag row.
+    """Iterable: Read raw XLSX (new-style Excel) rows from a temporary file object
+
+    If there is no sheet number specified, will scan the Excel
+    workbook for the first sheet containing HXL hashtags; if that
+    fails, will use the first sheet in the workbook.
+
+    Note that this requires a Python tempfile.TemporaryFile object,
+    with the Excel contents copied into it.
+
+    Example:
+    ```
+    tmpfile = tempfile.NamedTemporaryFile();
+    with open("data.xls", "r") as input:
+        shutil.copyfileobj(input, tmpfile)
+
+    with hxl.io.XLSXInput(tmpfile) as xlsx:
+        for raw_row in xlsx:
+            process_row(raw_row)
+    ```
+
     """
 
     def __init__(self, tmpfile, sheet_index=None):
         """
-        Constructor
-        @param tmpfile: temporary file object holding the contents
-        @param sheet_index (optional) the 0-based index of the sheet (if unspecified, scan)
+        Args:
+            tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents
+            sheet_index (int): the 0-based index of the sheet (if unspecified, scan)
         """
         super().__init__()
         self.tmpfile = tmpfile # prevent garbage collection
@@ -1009,7 +1157,7 @@ class XLSXInput(AbstractInput):
         self._sheet = self._workbook.sheet_by_index(sheet_index)
 
     def __iter__(self):
-        return XLSXInput.XLSXIter(self)
+        return XLSXInput._XLSXIter(self)
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
@@ -1051,7 +1199,7 @@ class XLSXInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
-    class XLSXIter:
+    class _XLSXIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
         def __init__(self, outer):
@@ -1068,9 +1216,21 @@ class XLSXInput(AbstractInput):
 
 
 class ArrayInput(AbstractInput):
-    """Iterable: read raw input from an array."""
+    """Iterable: read raw input from an array.
+
+    This is a simple placeholder class for dealing with a pre-parsed
+    array of rows in the same class hierarchy as the other classes
+    derived from hxl.io.AbstractInput. There is no value in using it
+    alone.
+
+    """
 
     def __init__(self, data):
+        """
+        Args:
+            data (array): any iterable
+
+        """
         super().__init__()
         self.data = data
         self.is_repeatable = True
@@ -1079,15 +1239,26 @@ class ArrayInput(AbstractInput):
         return iter(self.data)
 
 
+
+########################################################################
+# HXL semantic parsing
+########################################################################
+
 class HXLReader(hxl.model.Dataset):
     """Read HXL data from a raw input source
-    This class is an iterable.
-    @see: L{hxl.io.AbstractInput}
+
+    This class is the parser that reads raw rows of data from a
+    ``hxl.io.AbstractInput`` class and looks for HXL semantics such as
+    hashtags and attributes. The object itself is a hxl.model.Dataset
+    that's available for iteration and filter chaining.
+
     """
 
     def __init__(self, input):
-        """Constructor
-        @param input: a child class of L{hxl.io.AbstractInput}
+        """
+        Args:
+            input (hxl.io.AbstractInput): an input source for raw data rows
+
         """
         self._input = input
         # TODO - for repeatable raw input, start a new iterator each time
@@ -1108,17 +1279,33 @@ class HXLReader(hxl.model.Dataset):
             self._input.__exit__(value, type, traceback)
 
     def __iter__(self):
-        return HXLReader.HXLIter(self)
+        return HXLReader._HXLIter(self)
 
     @property
     def is_cached(self):
-        """If the low-level input is repeatable, then the data is cached."""
+        """If the low-level input is repeatable, then the data is cached.
+
+        "Repeatable" means that you can iterate over a dataset
+        multiple times. By default, the data is streaming, so it's
+        used up after one iteration.
+
+        Returns:
+            bool: True if the data is repeatable.
+
+        """
         #return self._input.is_repeatable
         return False # FIXME until we know that HXLReader is repeatable
 
     @property
     def columns(self):
-        """Return a list of Column objects.
+        """List of columns
+
+        Overrides the method in the base class to allow lazy parsing of
+        HXL data.
+
+        Returns:
+            list: a list of hxl.model.Column objects
+
         """
         if self._columns is None:
             self._columns = self._find_tags()
@@ -1142,8 +1329,18 @@ class HXLReader(hxl.model.Dataset):
 
     @staticmethod
     def parse_tags(raw_row, previous_row=None):
-        """
-        Try parsing a raw CSV data row as a HXL hashtag row.
+        """Try parsing a raw CSV data row as a HXL hashtag row.
+
+        This method is externally visible, because other functions and
+        classes use it (e.g. scanning heuristically for HXL data).
+
+        Args:
+            raw_row (list): a raw row from a ``hxl.io.AbstractInput`` object
+            previous_row (list): the previous raw row, for extracting headers
+
+        Returns:
+            list: a list of hxl.model.Column objects if successfully parsed; None otherwise.
+
         """
         # how many values we've seen
         nonEmptyCount = 0
@@ -1185,7 +1382,7 @@ class HXLReader(hxl.model.Dataset):
         self._source_row_number += 1
         return next(self._iter)
 
-    class HXLIter:
+    class _HXLIter:
         """Internal iterator class"""
         
         def __init__(self, outer):
@@ -1204,7 +1401,58 @@ class HXLReader(hxl.model.Dataset):
 
 
 def from_spec(spec):
-    """Build a full spec (including source) from a JSON-like data structure."""
+    """Build a full spec (including source) from a JSON-like data structure.
+
+    The JSON spec can have the following top-level properties:
+
+    - **input:** the source-data location (which is typically a URL or a nested JSON spec)
+    - **allow_local:** if 1 (true), allow local filenames
+    - **sheet_index:** the 0-based index of a sheet in an Excel workbook
+    - **timeout:** the number of seconds to wait before timing out an HTTP connection
+    - **verify_ssl:** if 0 (false), do not verify SSL certificates. This is useful for self-signed certificates.
+    - **http_headers:** an object (dictionary) of HTTP headers and values, e.g. for authorization.
+    - **encoding:** the character encoding to use (e.g. "utf-8")
+    - **tagger:** optional information for adding HXL hashtags to a non-HXL data source
+    - **recipe:** the filters to apply to the HXL data
+
+    The _tagger_ spec is an object with the following properties:
+
+    - **match_all:** if 1 (true), require complete matches for headers
+    - **default_tag:** use this HXL hashtag and attributes for any unmatched column
+    - **specs:** an object where each property is a header string, and each value is a HXL hashtag spec
+
+    Example:
+    ```
+    "tagger": {
+        "match_all": 0,
+        "specs": {
+            "Country": "#country+name",
+            "ISO3": "#country+code",
+            "Cluster:" "#sector+cluster",
+            "Organisation": "#org"
+        }
+    }
+    ```
+
+    The _recipe_ spec is is a list of filter objects, with different
+    properties for each filter type, and is documented at
+    https://github.com/HXLStandard/hxl-proxy/wiki/JSON-recipes
+
+    Example:
+    ```
+    "recipe:" [
+        { 
+            "filter": "with_rows",
+            "queries": ["org=unicef"]
+        },
+        { 
+            "filter": "count",
+            "tags": "adm1+name"
+        }
+    ]
+    ```
+
+    """
     
     if isinstance(spec, six.string_types):
         # a JSON string (parse it first)

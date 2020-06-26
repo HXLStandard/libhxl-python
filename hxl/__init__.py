@@ -58,8 +58,9 @@ class HXLException(Exception):
     def __init__(self, message, data={}):
         """Create a new HXL exception.
 
-        @param message: error message for the exception
-        @param data: dict of properties associated with the exception (default {})
+        Args:
+            message (str): error message for the exception
+            data (dict): properties associated with the exception (default {})
         """
         super(Exception, self).__init__(message)
 
