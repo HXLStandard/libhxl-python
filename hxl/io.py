@@ -1,13 +1,33 @@
-"""
-Input/output library for the Humanitarian Exchange Language (HXL) v1.0
-David Megginson
-Started October 2014
+"""Input/output library for the Humanitarian Exchange Language (HXL) v1.0
 
-License: Public Domain
-Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+This module handles all contact with the outside world (reading and
+writing data in different formats through different channels).
+
+Examples:
+    ```
+    # Read a HXL-hashtagged dataset
+    dataset = hxl.io.data("http://example.org/hxl-example.csv")
+    
+    # Read a non-HXL dataset and add hashtags
+    specs = [['Cluster', '#sector'], ["Province", "#adm1+name"]]
+    tagged_data = hxl.io.tagger("http://example.org/non-hxl-example.csv", specs)
+
+    # Write out a dataset as JSON
+    hxl.io.write_json(sys.stdout, dataset)
+
+    # Write out a dataset as CSV
+    hxl.io.write_csv(sys.stdout, dataset)
+    ```
+
+Author:
+    David Megginson
+
+License:
+    Public Domain
+
 """
 
-import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, shutil, six, sys, tempfile, xlrd, xml.sax
+import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, shutil, six, sys, tempfile, xlrd
 
 import hxl, hxl.filters
 import zipfile
@@ -15,6 +35,8 @@ import os.path
 import urllib.parse
 
 logger = logging.getLogger(__name__)
+
+__all__ = ["data", "tagger", "write_hxl", "write_json", "make_input", "HXLIOException", "HXLAuthorizationException", "HXLParseException", "HXLTagsNotFoundException", "HXLReader", "from_spec"]
 
 
 ########################################################################
@@ -104,15 +126,26 @@ HTML5_SIGS = [
 def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
     """
     Convenience method for reading a HXL dataset.
-    If passed an existing Dataset, simply returns it.
-    @param data: a HXL data provider, file object, array, or string (representing a URL or file name).
-    @param allow_local: if true, allow opening local filenames as well as remote URLs (default: False).
-    @param sheet_index: if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
-    @param timeout: if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-    @param verify_ssl: if False, don't verify SSL certificates (e.g. for self-signed certs).
-    @param http_headers: optional dict of HTTP headers to add to a request.
-    @param selector: selector property for a JSON file (will later also cover tabs, etc.)
-    @param encoding: force a character encoding, regardless of HTTP info etc
+
+    If passed an existing Dataset, simply returns it. All args exception "data" are optional.
+
+    Args:
+        data: a HXL data provider, file object, array, or string (representing a URL or file name).
+        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
+        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
+        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
+        http_headers (dict): optional dict of HTTP headers to add to a request.
+        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
+        encoding (str): force a character encoding, regardless of HTTP info etc
+
+    Returns:
+        hxl.model.Dataset: a data-access object
+
+    Raises:
+        IOError: if there's an error loading the data.
+        hxl.HXLException: if there's a structural error in the data.
+
     """
 
     logger.debug("HXL data from %s", str(data))
@@ -139,7 +172,45 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
 
     
 def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, encoding=None):
-    """Open an untagged data source and add hashtags."""
+    """Open an untagged data source and add hashtags.
+
+    The specs are a list of pairs in the format ["header", "#hashtag"], e.g.
+
+    ```
+    specs = [
+        ["Province", "#adm1+name"],
+        ["P-code", "#adm1+code"],
+        ["Organisation", "#org+name"],
+        ["Cluster", "#sector+cluster"]
+    ]
+    ```
+
+    It is not necessary to match the headers in all columns, and if
+    the "match_all" arg is False (the default), the header strings
+    will match partial as well as complete header strings. Matching is
+    always case- and whitespace-insensitive. Other args are identical
+    to the data() function.
+
+    Args:
+        data: a HXL data provider, file object, array, or string (representing a URL or file name).
+        specs (list): a list of mapping pairs of headers and hashtags.
+        match_all (bool): if True, match the complete header string; otherwise, allow partial matches (default)
+        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
+        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
+        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
+        http_headers (dict): optional dict of HTTP headers to add to a request.
+        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
+        encoding (str): force a character encoding, regardless of HTTP info etc
+
+    Returns:
+        hxl.converters.Tagger: a data-access object subclassed from hxl.model.Dataset
+
+    Raises:
+        IOError: if there's an error loading the data.
+        hxl.HXLException: if there's a structural error in the data.
+
+    """
     import hxl.converters
     return hxl.data(
         hxl.converters.Tagger(
@@ -160,13 +231,72 @@ def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sh
 
     
 def write_hxl(output, source, show_headers=True, show_tags=True):
-    """Serialize a HXL dataset to an output stream."""
+    """Serialize a HXL dataset to an output stream in CSV format.
+
+    The output will be comma-separated CSV, in UTF-8 character encoding.
+
+    Args:
+        output (io.IOBase): an output byte stream
+        source (hxl.model.Dataset): a HXL data-access object
+        show_headers (bool): if True (default), include text header row.
+        show_tags (bool): if True (default), include the HXL hashtag row.
+
+    Raises:
+        IOError: if there's a problem writing the output
+    
+    """
     for line in source.gen_csv(show_headers, show_tags):
         output.write(line)
 
         
 def write_json(output, source, show_headers=True, show_tags=True, use_objects=False):
-    """Serialize a dataset to JSON."""
+    """Serialize a HXL dataset to an output stream.
+
+    The output will be JSON in one of two styles.
+
+    Row-style JSON (default):
+    ```
+    [
+        ["Province", "Organisation", "Cluster"],
+        ["#adm1+name", "#org", "#sector+cluster"],
+        ["Coast", "Org A", "Health"],
+        ["Plains", "Org B", "Education"],
+        ["Mountains", "Org A", "Nutrition"]
+    ]
+    ```
+
+    Object-style JSON:
+    ```
+    [
+        {
+            "#adm1+name": "Coast",
+            "#org": "Org A",
+            "#sector+cluster": "Health"
+        },
+        {
+            "#adm1+name": "Plains",
+            "#org": "Org B",
+            "#sector+cluster": "Education"
+        },
+        {
+            "#adm1+name": "Mountains",
+            "#org": "Org A",
+            "#sector+cluster": "Nutrition"
+        }
+    ]
+    ```
+
+    Args:
+        output (io.IOBase): an output byte stream
+        source (hxl.model.Dataset): a HXL data-access object
+        show_headers (bool): if True (default), include text header row.
+        show_tags (bool): if True (default), include the HXL hashtag row.
+        use_objects (bool): if True, produce object-style JSON; otherwise, produce row-style JSON (default).
+
+    Raises:
+        IOError: if there's a problem writing the output
+    
+    """
     for line in source.gen_json(show_headers, show_tags, use_objects):
         output.write(line)
 
