@@ -1,15 +1,16 @@
 """Data-conversion classes
 
 This module holds classes for converting to HXL from other formats, or
-from HXL to other formats. Current, the only class is L{Tagger} (for
-adding tags to non-HXL tabular data on the fly), but we will add more
-converters soon, especially for formats like GeoJSON.
+from HXL to other formats. Current, the only class is ``Tagger`` (for
+adding tags to non-HXL tabular data on the fly), but we may add more
+converters, especially for formats like GeoJSON.
 
-@author: David Megginson
-@organization: UNOCHA
-@license: Public Domain
-@date: Started April 2015
-@see: U{http://hxlstandard.org}
+Author:
+    David Megginson
+
+License:
+    Public Domain
+
 """
 
 import hxl
@@ -20,18 +21,21 @@ logger = logging.getLogger(__name__)
 
 
 class Tagger(hxl.io.AbstractInput):
-    """Add HXL hashtags to a CSV-like input stream.
+    """Add HXL hashtags to a non-HXL datasource on the fly.
 
-    Usage::
-    
-      input = open('data.csv', 'r')
-      specs = [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
-      tagger = Tagger(input, specs)
+    Example:
+    ```
+    input = hxl.io.make_input(url_or_filename)
+    specs = [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
+    dataset = hxl.converters.Tagger(input, specs)
+    ```
 
-    The tagger object acts as a L{hxl.io.AbstractInput} source, which you can
-    use with the L{hxl.data} function like this::
+    The more-common way to invoke the tagger is through the
+    ``hxl.io.tagger()`` function:
 
-      source = hxl.data(Tagger(input, specs)).with_rows('org=unicef').sort()
+    ```
+    dataset = hxl.io.tagger(url_or_filename, specs)
+    ```
 
     """
 
@@ -40,14 +44,22 @@ class Tagger(hxl.io.AbstractInput):
 
         The input spec is a list of tuples, where the first item is a
         substring to match (case-/space-/punctuation-insensitive), and
-        the second item is the HXL tag spec to use. Example::
+        the second item is the HXL tag spec to use.
 
-          [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
+        Example:
+        ```
+        spec = [
+            ['Cluster', '#sector'],
+            ['Organisation', '#org'],
+            ['Province', '#adm1+es']
+        ]
+        ```
 
-        @param input: an input stream of some kind
-        @param specs: the input specs, as described above (default: [])
-        @param match_all: if True, require that the full header string match; otherwise, match substrings (default: False)
-        @param default_tag: default tagspec to use for any column without a match
+        Args:
+            input (hxl.io.AbstractInput): an input source that can yield rows of values (see ``hxl.io.make_input``).
+            specs (dict): the input specs, as described above (default: [])
+             match_all (bool): if True, require that the full header string match; otherwise, match substrings (default: False)
+            default_tag (str): default tagspec to use for any column without a match
         """
         if isinstance(specs, dict):
             # convert to list of tuples if needed
@@ -137,11 +149,32 @@ class Tagger(hxl.io.AbstractInput):
 
     @staticmethod
     def parse_spec(s):
-        """Try parsing a tagger spec (used only by the command-line tools)
-        Uses Tagger._SPEC_PATTERN
-        @param s: the string representing a tagging specification
-        @return: the parsed specification
-        @exception HXLFilterException: if there is an error parsing the spec
+        """Parse a JSON-like tagger spec
+
+        Used only by the command-line tools.
+
+        Example:
+        ```
+        {
+          "match_all": false,
+          "default_tag": "#affected+label",
+          "specs": [
+            ["district", "#adm1+name"],
+            ["p-code", "#adm1+code+v_pcode"],
+            ["organi", "#org+name"]
+          ]
+        }
+        ```
+
+        Args:
+            s (str): the string representing a tagging specification
+
+        Returns:
+            The parsed specification
+
+        Raises:
+            hxl.filters.HXLFilterException: if there is an error parsing the spec
+
         """
         result = re.match(Tagger._SPEC_PATTERN, s)
         if result:
@@ -151,20 +184,7 @@ class Tagger(hxl.io.AbstractInput):
 
     @staticmethod
     def _load(input, spec):
-        """Create a tagger from a dict spec.
-        Example spec:
-        {
-          "match_all": False,
-          "default_tag": "#affected+label",
-          "specs": [
-            ('district', '#adm1+name',),
-            ('p-code', '#adm1+code+v_pcode',),
-            ('organi', '#org+name',),
-          ]
-        }
-        @param spec: the dictionary specification
-        @return: a Tagger object
-        """
+        """Create a tagger from a dict spec. """
         return Tagger(
             input=input,
             specs=spec.get('specs', []),
