@@ -151,7 +151,34 @@ class Tagger(hxl.io.AbstractInput):
     def parse_spec(s):
         """Parse a JSON-like tagger spec
 
+        The string is in the format "HEADER TEXT#hashtag+attributes"
+
+        Example:
+        ```
+        spec = hxl.converters.Tagger.parse_spec("Organisation name#org+name")
+        ```
+
         Used only by the command-line tools.
+
+        Args:
+            s (str): the string representing a tagging specification
+
+        Returns:
+            hxl.model.Column: the parsed specification as a column object (header, hashtags, and attributes)
+
+        Raises:
+            hxl.filters.HXLFilterException: if there is an error parsing the spec
+
+        """
+        result = re.match(Tagger._SPEC_PATTERN, s)
+        if result:
+            return (result.group(1), hxl.model.Column.parse(result.group(2), use_exception=True).display_tag)
+        else:
+            raise HXLFilterException("Bad tagging spec: " + s)
+
+    @staticmethod
+    def _load(input, spec):
+        """Create a tagger from a dict spec.
 
         Example:
         ```
@@ -166,25 +193,7 @@ class Tagger(hxl.io.AbstractInput):
         }
         ```
 
-        Args:
-            s (str): the string representing a tagging specification
-
-        Returns:
-            The parsed specification
-
-        Raises:
-            hxl.filters.HXLFilterException: if there is an error parsing the spec
-
         """
-        result = re.match(Tagger._SPEC_PATTERN, s)
-        if result:
-            return (result.group(1), hxl.model.Column.parse(result.group(2), use_exception=True).display_tag)
-        else:
-            raise HXLFilterException("Bad tagging spec: " + s)
-
-    @staticmethod
-    def _load(input, spec):
-        """Create a tagger from a dict spec. """
         return Tagger(
             input=input,
             specs=spec.get('specs', []),
