@@ -12,7 +12,7 @@ Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
 from __future__ import print_function
 
-import argparse, json, logging, os, re, sys
+import argparse, json, logging, os, re, requests, sys
 
 # Do not import hxl, to avoid circular imports
 import hxl.converters, hxl.filters, hxl.io
@@ -835,14 +835,18 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     """
 
-    def get_json (filename_or_url):
-        if not filename_or_url:
+    def get_json (url_or_filename):
+        
+        if not url_or_filename:
             return json.load(stdin)
-        try:
-            response = requests.get(filename_or_url)
-            return response.json
-        except:
-            with open(filename_or_url, "r") as input:
+
+        if re.match(r'^(?:https?|s?ftp)://', url_or_filename.lower()):
+            headers = make_headers(args)
+            response = requests.get(url_or_filename, verify=(not args.ignore_certs), headers=headers)
+            response.raise_for_status()
+            return response.json()
+        else:
+            with open(url_or_filename, "r") as input:
                 return json.load(input)
     
     parser = make_args('Process a HXL JSON spec')
@@ -851,7 +855,6 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     do_common_args(args)
 
     spec = get_json(args.infile)
-
     source = hxl.io.from_spec(spec)
 
     with make_output(args, stdout) as output:
@@ -894,7 +897,7 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    with hxl.io.make_input(args.infile or stdin, allow_local=True) as input, make_output(args, stdout) as output:
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
         tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag, match_all=args.match_all)
         hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
 
@@ -936,7 +939,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
-    with hxl.io.make_input(args.infile or stdin, True) as input, make_output(args, stdout) as output:
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
 
         class Counter:
             infos = 0
@@ -976,7 +979,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         output.write("Validating {} with schema {} ...\n".format(args.infile or "<standard input>", args.schema or "<default>"))
         source = hxl.io.data(input)
         if args.schema:
-            with hxl.io.make_input(args.schema, True) as schema_input:
+            with make_input(args, None, args.schema) as schema_input:
                 schema = hxl.schema(schema_input, callback=callback)
         else:
             schema = hxl.schema(callback=callback)
@@ -1062,6 +1065,13 @@ def make_args(description, hxl_output=True):
             default=False
         )
     parser.add_argument(
+        "--ignore-certs",
+        help="Don't verify SSL connections (useful for self-signed)",
+        action='store_const',
+        const=True,
+        default=False
+    )
+    parser.add_argument(
         '--log',
         help='Set minimum logging level',
         metavar='debug|info|warning|error|critical|none',
@@ -1089,6 +1099,17 @@ def do_common_args(args):
 def make_source(args, stdin=STDIN):
     """Create a HXL input source."""
 
+    # construct the input object
+    input = make_input(args, stdin)
+    return hxl.io.data(input)
+
+
+def make_input(args, stdin=sys.stdin, url_or_filename=None):
+    """Create an input object"""
+
+    if url_or_filename is None:
+        url_or_filename = args.infile
+
     # sheet index
     sheet_index = args.sheet
     if sheet_index is not None:
@@ -1097,6 +1118,27 @@ def make_source(args, stdin=STDIN):
     # JSONPath selector
     selector = args.selector
 
+    http_headers = make_headers(args)
+
+    return hxl.io.make_input(
+        url_or_filename or stdin,
+        sheet_index=sheet_index,
+        selector=selector,
+        allow_local=True,
+        http_headers=http_headers,
+        verify_ssl=(not args.ignore_certs)
+    )
+
+
+def make_output(args, stdout=sys.stdout):
+    """Create an output stream."""
+    if args.outfile:
+        return FileOutput(args.outfile)
+    else:
+        return StreamOutput(stdout)
+
+
+def make_headers (args):
     # get custom headers
     header_strings = []
     header = os.environ.get("HXL_HTTP_HEADER")
@@ -1108,17 +1150,8 @@ def make_source(args, stdin=STDIN):
     for header in header_strings:
         parts = header.partition(':')
         http_headers[parts[0].strip()] = parts[2].strip()
-
-    # construct the input object
-    input = hxl.io.make_input(args.infile or stdin, sheet_index=sheet_index, selector=selector, allow_local=True, http_headers=http_headers)
-    return hxl.io.data(input)
-
-def make_output(args, stdout=sys.stdout):
-    """Create an output stream."""
-    if args.outfile:
-        return FileOutput(args.outfile)
-    else:
-        return StreamOutput(stdout)
+    return http_headers
+    
 
 class FileOutput(object):
 
