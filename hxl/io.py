@@ -552,7 +552,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     if result:
         file_ext = result.group(1).lower()
     
-    if re.match(r'^(?:https?|s?ftp)://', url_or_filename):
+    if re.match(r'^(?:https?|s?ftp)://', url_or_filename.lower()):
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
