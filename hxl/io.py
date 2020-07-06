@@ -53,6 +53,8 @@ GOOGLE_SHEETS_URL = r'^https?://[^/]+google.com/.*[^0-9A-Za-z_-]([0-9A-Za-z_-]{4
 GOOGLE_FILE_URL = r'https?://drive.google.com/file/d/([0-9A-Za-z_-]+)/.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)(?:/resource/([a-z0-9-]{36}))?$'
+HXL_PROXY_SAVED_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data/([a-zA-Z0-9_]{6}).*$'
+HXL_PROXY_ARGS_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data.*\?(.+)$'
 
 # opening signatures for well-known file types
 
@@ -387,6 +389,16 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     result = re.match(DROPBOX_URL, url)
     if result:
         return 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
+
+    # Is it a HXL Proxy saved recipe?
+    result = re.match(HXL_PROXY_SAVED_URL, url)
+    if result:
+        return '{0}/data/{1}.csv'.format(result.group(1), result.group(2))
+
+    # Is it a HXL Proxy args-based recipe?
+    result = re.match(HXL_PROXY_ARGS_URL, url)
+    if result:
+        return '{0}/data.csv?{1}'.format(result.group(1), result.group(2))
 
     # No changes
     return url
