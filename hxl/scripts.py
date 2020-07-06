@@ -98,6 +98,10 @@ def hxlsort():
     """Console script for hxlsort."""
     run_script(hxlsort_main)
 
+def hxlspec():
+    """Console script for hxlspec."""
+    run_script(hxlspec_main)
+
 def hxltag():
     """Console script for hxltag."""
     run_script(hxltag_main)
@@ -818,6 +822,40 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
+
+
+def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """ Run hxlspec with command-line arguments.
+
+    Args:
+        args (list): a list of command-line arguments
+        stdin (io.IOBase): alternative standard input (mainly for testing)
+        stdout (io.IOBase): alternative standard output (mainly for testing)
+        stderr (io.IOBase): alternative standard error (mainly for testing)
+
+    """
+
+    def get_json (filename_or_url):
+        if not filename_or_url:
+            return json.load(stdin)
+        try:
+            response = requests.get(filename_or_url)
+            return response.json
+        except:
+            with open(filename_or_url, "r") as input:
+                return json.load(input)
+    
+    parser = make_args('Process a HXL JSON spec')
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    spec = get_json(args.infile)
+
+    source = hxl.io.from_spec(spec)
+
+    with make_output(args, stdout) as output:
+        hxl.io.write_hxl(output.output, source, show_tags=not args.strip_tags)
 
 
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):

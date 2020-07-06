@@ -42,6 +42,7 @@ setup(
             'hxlreplace = hxl.scripts:hxlreplace',
             'hxlselect = hxl.scripts:hxlselect',
             'hxlsort = hxl.scripts:hxlsort',
+            'hxlspec = hxl.scripts:hxlspec',
             'hxltag = hxl.scripts:hxltag',
             'hxlvalidate = hxl.scripts:hxlvalidate'
         ]
