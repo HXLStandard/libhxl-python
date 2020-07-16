@@ -159,7 +159,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
 
     elif isinstance(data, dict) and data.get('input'):
         """If it's a JSON-type spec, try parsing it."""
-        return hxl.io.from_spec(data)
+        return hxl.io.from_spec(data, allow_local_ok=allow_local)
 
     else:
         return HXLReader(make_input(
@@ -1412,7 +1412,7 @@ class HXLReader(hxl.model.Dataset):
             return hxl.model.Row(columns=columns, values=values, row_number=self.row_number, source_row_number=self.outer._source_row_number)
 
 
-def from_spec(spec):
+def from_spec(spec, allow_local_ok=False):
     """Build a full spec (including source) from a JSON-like data structure.
 
     The JSON spec can have the following top-level properties:
@@ -1472,7 +1472,7 @@ def from_spec(spec):
 
     # source
     input_spec = spec.get('input')
-    allow_local = spec.get('allow_local', False)
+    allow_local = spec.get('allow_local', False) and allow_local_ok
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
     verify_ssl = spec.get('verify_ssl', True)

@@ -855,7 +855,7 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     do_common_args(args)
 
     spec = get_json(args.infile)
-    source = hxl.io.from_spec(spec)
+    source = hxl.io.from_spec(spec, allow_local_ok=True)
 
     with make_output(args, stdout) as output:
         hxl.io.write_hxl(output.output, source, show_tags=not args.strip_tags)
