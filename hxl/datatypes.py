@@ -36,15 +36,15 @@ TOKEN_PATTERN = r'[A-Za-z][_0-9A-Za-z]*'
 """A regular expression matching a single string token.
 """
 
-_WHITESPACE_PATTERN = re.compile('\s+', re.MULTILINE)
+_WHITESPACE_PATTERN = re.compile(r'\s+', re.MULTILINE)
 
 _ISO_DATE_PATTERN = re.compile(
-    '^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$',
+    r'^(?P<year>[12]\d\d\d)(?:Q(?P<quarter>[1-4])|W(?P<week>\d\d?)|-(?P<month>\d\d?)(?:-(?P<day>\d\d?))?)?$',
     re.IGNORECASE
 )
 
 _SQL_DATETIME_PATTERN = re.compile(
-    '^(?P<year>[12]\d\d\d)-(?P<month>\d\d?)-(?P<day>\d\d?) \d\d?:\d\d?:\d\d?(?P<week>)?(?P<quarter>)?$'
+    r'^(?P<year>[12]\d\d\d)-(?P<month>\d\d?)-(?P<day>\d\d?) \d\d?:\d\d?:\d\d?(?P<week>)?(?P<quarter>)?$'
 )
 
 _DEFAULT_DATE_1 = datetime.datetime(2015, 1, 1)

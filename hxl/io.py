@@ -843,7 +843,7 @@ class CSVInput(AbstractInput):
         that appeared most often in the sample.
         @param input: the input byte stream (with a peek() method)
         @param encoding: the character encoding to use
-        @returns a \L{csv.Dialect} object or string.
+        @returns a csv.Dialect object or string.
         """
         
         sample = input.peek(16384).decode(encoding)

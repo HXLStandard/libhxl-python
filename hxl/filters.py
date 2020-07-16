@@ -510,10 +510,10 @@ class Aggregator(object):
         else:
             raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
 
-    TAG_PATTERN = '#?{token}(?:\s*[+-]{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    TAG_PATTERN = r'#?{token}(?:\s*[+-]{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for a tag pattern"""
     
-    COL_PATTERN = '#{token}(?:\s*\+{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    COL_PATTERN = r'#{token}(?:\s*\+{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for an output column pattern"""
 
     AGGREGATOR_PATTERN = r'^\s*({token})\(({tag})?\)(?:\s*as\s+([^#]*)({col}))?$'.format(
@@ -1159,9 +1159,9 @@ class CleanDataFilter(AbstractStreamingFilter):
 
         # Whitespace (-w)
         if self._match_patterns(self.whitespace, column):
-            value = re.sub('^\s+', '', value)
-            value = re.sub('\s+$', '', value)
-            value = re.sub('\s+', ' ', value)
+            value = re.sub(r'^\s+', '', value)
+            value = re.sub(r'\s+$', '', value)
+            value = re.sub(r'\s+', ' ', value)
 
         # Uppercase (-u)
         if self._match_patterns(self.upper, column):
@@ -1202,7 +1202,7 @@ class CleanDataFilter(AbstractStreamingFilter):
             if value:
                 n = try_number(value)
                 if n is None:
-                    s = re.sub('[^\de.]+', '', value)
+                    s = re.sub(r'[^\de.]+', '', value)
                     n = try_number(s) # OK, try again
                 if n is not None:
                     value = n

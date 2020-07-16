@@ -906,7 +906,7 @@ class Row(object):
         def parse(column, value):
             if parsed:
                 if column.has_attribute('list'):
-                    return re.split("\s*,\s*", value)
+                    return re.split(r'\s*,\s*', value)
                 else:
                     return [value]
             return value

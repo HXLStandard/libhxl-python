@@ -26,28 +26,28 @@ logger = logging.getLogger(__name__)
 ########################################################################
 
 # regular expression fragments
-_DEG_RE = '(?P<deg>\d+(?:\.\d*)?)\s*\°?'
-_MIN_RE = '(?P<min>\d+(?:\.\d*)?)\s*[\'`′]?'
-_SEC_RE = '(?P<sec>\d+(?:\.\d*)?)\s*(?:["“”″]|[\'`′][\'`′])?'
+_DEG_RE = r'(?P<deg>\d+(?:\.\d*)?)\s*\°?'
+_MIN_RE = r'(?P<min>\d+(?:\.\d*)?)\s*[\'`′]?'
+_SEC_RE = r'(?P<sec>\d+(?:\.\d*)?)\s*(?:["“”″]|[\'`′][\'`′])?'
 
 LAT_PATTERNS = (
     re.compile(
-        '^(?P<sign>[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
+        r'^(?P<sign>[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # -00 00 00
     re.compile(
-        '^(?P<hemi>[NS])\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
+        r'^(?P<hemi>[NS])\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # S 00 00 00
     re.compile(
-        '^{}\s*(?P<hemi>[NS])\s*(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
+        r'^{}\s*(?P<hemi>[NS])\s*(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # 00 S 00 00
     re.compile(
-        '^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P<hemi>[NS])?$'.format(
+        r'^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P<hemi>[NS])?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # 00 00 00 S
@@ -57,22 +57,22 @@ LAT_PATTERNS = (
 
 LON_PATTERNS = (
     re.compile(
-        '^(?P<sign>[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
+        r'^(?P<sign>[+-])?\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # -00 00 00
     re.compile(
-        '^(?P<hemi>[EW])\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
+        r'^(?P<hemi>[EW])\s*{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # S 00 00 00
     re.compile(
-        '^{}\s*(?P<hemi>[EW])\s*(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
+        r'^{}\s*(?P<hemi>[EW])\s*(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # 00 S 00 00
     re.compile(
-        '^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P<hemi>[EW])?$'.format(
+        r'^{}(?:[\s:;,-]*{}(?:[\s:;,-]*{})?)\s*(?P<hemi>[EW])?$'.format(
             _DEG_RE, _MIN_RE, _SEC_RE
         ), flags=re.I
     ), # 00 00 00 S

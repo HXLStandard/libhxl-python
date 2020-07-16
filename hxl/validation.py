@@ -5,7 +5,7 @@ Started October 2014
 License: Public Domain
 Documentation: https://github.com/HXLStandard/libhxl-python/wiki
 
-A \L{Schema} is the top-level class for validating a HXL dataset. The
+A Schema is the top-level class for validating a HXL dataset. The
 easiest way to create a schema is via the hxl.schema() method. The
 validate() function validates a dataset. Here is a simple validation
 example:
@@ -17,10 +17,10 @@ example:
     if not hxl.schema(schema_url, callback=callback).validate(source):
         print('Validation failed')
 
-Each schema contains one or more \L{SchemaRule} objects.
+Each schema contains one or more SchemaRule objects.
 
 Each schema rule contains one or more objects implementing
-\L{AbstractRuleTest}. To add a new test, create a class extending
+AbstractRuleTest. To add a new test, create a class extending
 AbstractRuleTest, override the methods you need (validate_cell() is
 the most common), then add code to Schema.parse() method to parse and
 create your new test from the HXL schema.
@@ -29,12 +29,12 @@ Validation tests go through the following workflow:
 
 - needs_scan() to check if the test needs multiple passes
 - start()
-- scan_row(\L{hxl.model.Row}) for each row in the dataset (only if needs_scan() returned True)
-- scan_cell(value, \L{hxl.model.Row}, L\{hxl.model.Column}) for each non-empty cell in each row (only if needs_scan() returned True)
+- scan_row(hxl.model.Row) for each row in the dataset (only if needs_scan() returned True)
+- scan_cell(value, hxl.model.Row, hxl.model.Column) for each non-empty cell in each row (only if needs_scan() returned True)
 - end_scan() (only if needs_scan() returned True)
-- validate_dataset(\L{hxl.model.Dataset})
-- validate_row(\L{hxl.model.Row}) for each row (row-level validations only)
-- validate_cell(value, \L{hxl.model.Row}, \L{hxl.model.Column}) for each cell in each row
+- validate_dataset(hxl.model.Dataset)
+- validate_row(hxl.model.Row) for each row (row-level validations only)
+- validate_cell(value, hxl.model.Row, hxl.model.Column) for each cell in each row
 - end()
 
 Any failure means that the entire test, rule, and schema fail
@@ -51,8 +51,8 @@ class HXLValidationException(hxl.HXLException):
     """Data structure to hold a HXL validation error.
 
     Normally, this exception isn't thrown, but is passed as a
-    parameter to callbacks via \L{Schema}, \L{SchemaRule}, and classes
-    extending \L{AbstractRuleTest}.
+    parameter to callbacks via Schema, SchemaRule, and classes
+    extending AbstractRuleTest.
     """
 
     SCOPES = ('dataset', 'column', 'row', 'cell',)
@@ -63,8 +63,8 @@ class HXLValidationException(hxl.HXLException):
         @param message: the text message for the error
         @param rule: the rule associated with the error (it may have a more-general descriptive message)
         @param value: the value that triggered the error, if available
-        @param row: the \L{hxl.model.Row} object associated with the error, if any
-        @param column: the \L{hxl.model.Column} object associated with the error, if any
+        @param row: the hxl.model.Row object associated with the error, if any
+        @param column: the hxl.model.Column object associated with the error, if any
         @param suggested_value: the suggested replacement value, if known
         @param scope: the error scope (dataset, column, row, or cell)
         @param is_external: if True, the error is external to the data itself
@@ -107,7 +107,7 @@ class HXLValidationException(hxl.HXLException):
 class AbstractRuleTest(object):
     """Base class for a single test inside a validation rule.
 
-    Workflow (triggered by \L{SchemaRule}):
+    Workflow (triggered by SchemaRule):
 
     - needs_scan()
     - start()
@@ -151,7 +151,7 @@ class AbstractRuleTest(object):
 
     def end(self):
         """Code to run after validating each dataset.
-        Will report errors via the test's \I{callback}, if available.
+        Will report errors via the test's callback, if available.
         @returns: True if there are no new validation errors
         """
         return True
@@ -198,7 +198,7 @@ class AbstractRuleTest(object):
 
         """Apply test at the dataset level
         Called before validate_row() or validate_value()
-        Will report errors via the test's \I{callback}, if available.
+        Will report errors via the test's callback, if available.
         @param dataset: a hxl.model.Dataset object to validate
         @param indices: optional pre-compiled indices for columns matching tag_pattern
         @returns: True if there are no new validation errors.
@@ -208,7 +208,7 @@ class AbstractRuleTest(object):
     def validate_row(self, row, indices=None, tag_pattern=None):
         """Apply test at the row level
         Called for each row before validate_cell() calls.
-        Will report errors via the test's \I{callback}, if available.
+        Will report errors via the test's callback, if available.
         @param row: a hxl.model.Row object to validate
         @param indices: optional pre-compiled indices for columns matching tag_pattern
         @returns: True if there are no new validation errors.
@@ -218,7 +218,7 @@ class AbstractRuleTest(object):
     def validate_cell(self, value, row, column):
         """Apply test at the cell level
         Called for each matching non-empty value.
-        Will also report errors via the test's \I{callback}, if available.
+        Will also report errors via the test's callback, if available.
         @param value: the non-empty value to validate
         @param row: a hxl.model.Row object for location
         @param column: a hxl.model.Column object for location
@@ -325,7 +325,7 @@ class RequiredTest(AbstractRuleTest):
 class DatatypeTest(AbstractRuleTest):
     """Test for a specified datatype
     HXL schema: #valid_datatype-consistent
-    See also \L{ConsistentDatatypeTest}, which infers the most-common datatype.
+    See also ConsistentDatatypeTest, which infers the most-common datatype.
     """
 
     # allowed datatypes
@@ -994,7 +994,7 @@ class SchemaRule(object):
     (a tag pattern, severity level, and description). If any test fails, then
     the whole rule fails.
 
-    Workflow (triggered by \L{Schema.validate}:
+    Workflow (triggered by Schema.validate:
 
     - needs_scan()
     - start()
@@ -1029,7 +1029,7 @@ class SchemaRule(object):
 
         # Additional internal variables
         self.tests = []
-        """List of \L{AbstractRuleTest} objects to apply as part of this rule"""
+        """List of AbstractRuleTest objects to apply as part of this rule"""
 
         self.external_errors = []
         """Errors external to the dataset itself (e.g. missing taxonomies)"""
@@ -1167,7 +1167,7 @@ class Schema(object):
 
     def __init__(self, callback=None):
         """Constructor
-        @param callback: a callback function to receive \L{HXLValidationException} objects as error reports
+        @param callback: a callback function to receive HXLValidationException objects as error reports
         """
         self.rules = []
         """Rules making up this schema"""
@@ -1177,7 +1177,7 @@ class Schema(object):
 
     def validate(self, source):
         """Execute the main validation workflow.
-        @param source: the \L{hxl.model.Dataset} to validate
+        @param source: the hxl.model.Dataset to validate
         """
         status = True # all is well at the beginning
         needs_scan = False # assume we don't need a pre-scan
@@ -1249,7 +1249,7 @@ class Schema(object):
 
     def validate_dataset(self, dataset):
         """Validate just at the dataset level
-        @param dataset: the \L{hxl.model.Dataset} object to validate
+        @param dataset: the hxl.model.Dataset object to validate
         """
         status = True
         for rule in self.rules:
@@ -1510,7 +1510,7 @@ def validate(data, schema=None):
 
     result = hxl.validate(hxl.data('foo.csv', allow_local=True), hxl.data('schema.csv', allow_local=True))
 
-    @param data: the data to validate (a URL or anything else accepted by \L{hxl.data})
+    @param data: the data to validate (a URL or anything else accepted by hxl.data)
     @param schema: the schema to validate against (anything accepted by L{hxl.data}), or None (default) to use the built-in schema.
     @returns: a JSON validation report as documented at https://github.com/HXLStandard/hxl-proxy/wiki/Validation-reports
     """
@@ -1544,8 +1544,8 @@ def validate(data, schema=None):
 def make_json_report(status, issue_map, external_issue_map, schema_url=None, data_url=None):
     """Generate a JSON error report from a dict of errors
     @param status: the validation status (boolean)
-    @param issue_map: a dict of lists of \L{HXLValidationException} objects grouped by rule hash
-    @param external_issue_map: a dict of lists of \L{HXLValidationException} objects grouped by rule hash
+    @param issue_map: a dict of lists of HXLValidationException objects grouped by rule hash
+    @param external_issue_map: a dict of lists of HXLValidationException objects grouped by rule hash
     @param data_url: the original URL of the data, if available
     @param schema_url: the original URL of the schema, if available
     """
@@ -1590,7 +1590,7 @@ def make_json_report(status, issue_map, external_issue_map, schema_url=None, dat
 def make_json_issue(rule_id, locations, is_external=False):
     """Create an issue (with list of locations) for a JSON validation report
     @param rule_id: the hash for the rule (used to group locations)
-    @param locations: a list of \L{HXLValidation"""
+    @param locations: a list of HXLValidation"""
 
     # grab first location as a model
     model = locations[0]
@@ -1607,7 +1607,7 @@ def make_json_issue(rule_id, locations, is_external=False):
         "description": description,
         "severity": model.rule.severity,
         "scope": model.scope,
-    }
+    
 
     # get all unique locations
     if is_external:

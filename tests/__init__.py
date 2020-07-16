@@ -1,7 +1,12 @@
-import io, logging, os, re, socket, unittest.mock
+import io, logging, os, re, socket, sys, unittest.mock, warnings
 
 # Default to turning off all but critical logging messages
 logging.basicConfig(level=logging.CRITICAL)
+
+# But turn on system-level warnings
+warnings.simplefilter("default")
+os.environ["PYTHONWARNINGS"] = "default"
+
 
 def mock_open_url(url, allow_local=False, timeout=None, verify_ssl=True, http_headers=None):
     """Open local files instead of URLs.
