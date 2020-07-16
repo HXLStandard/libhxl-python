@@ -1590,7 +1590,8 @@ def make_json_report(status, issue_map, external_issue_map, schema_url=None, dat
 def make_json_issue(rule_id, locations, is_external=False):
     """Create an issue (with list of locations) for a JSON validation report
     @param rule_id: the hash for the rule (used to group locations)
-    @param locations: a list of HXLValidation"""
+    @param locations: a list of HXLValidation
+    """
 
     # grab first location as a model
     model = locations[0]
@@ -1607,7 +1608,7 @@ def make_json_issue(rule_id, locations, is_external=False):
         "description": description,
         "severity": model.rule.severity,
         "scope": model.scope,
-    
+    }
 
     # get all unique locations
     if is_external:
