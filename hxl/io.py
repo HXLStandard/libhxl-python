@@ -306,144 +306,6 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
         output.write(line)
 
 
-def _munge_url(url, verify_ssl=True, http_headers=None):
-    """Munge a URL to get at underlying data for well-known types."""
-
-    #
-    # Stage 1: unpack indirect links
-    #
-
-    # Is it a CKAN resource? (Assumes the v.3 API for now)
-    result = re.match(CKAN_URL, url)
-    if result:
-        site_url = result.group(1)
-        dataset_id = result.group(2)
-        resource_id = result.group(3)
-        if resource_id:
-            # CKAN resource URL
-            ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(site_url, resource_id)
-            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
-            if ckan_api_result['success']:
-                url = ckan_api_result['result']['url']
-            elif ckan_api_result['error']['__type'] == 'Authorization Error':
-                raise HXLAuthorizationException(
-                    "Not authorised to read CKAN resource (is the dataset public?): {}".format(
-                        ckan_api_result['error']['message']
-                    ),
-                    url=url,
-                    is_ckan=True
-                )
-            else:
-                raise HXLIOException(
-                    "Unable to read HDX resource: {}".format(
-                        ckan_api_result['error']['message']
-                    ),
-                    url=url
-                )
-        else:
-            # CKAN dataset (package) URL
-            ckan_api_query = '{}/api/3/action/package_show?id={}'.format(site_url, dataset_id)
-            ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
-            if ckan_api_result['success']:
-                url = ckan_api_result['result']['resources'][0]['url']
-            elif ckan_api_result['error']['__type'] == 'Authorization Error':
-                raise HXLAuthorizationException(
-                    "Not authorised to read CKAN dataset (is it public?): {}".format(
-                        ckan_api_result['error']['message']
-                    ),
-                    url=url,
-                    is_ckan=True
-                )
-            else:
-                raise HXLIOException(
-                    "Unable to read CKAN dataset: {}".format(
-                        ckan_api_result['error']['message']
-                    ),
-                    url=url
-                )
-
-    # Is it a Google Drive "open" URL?
-    result = re.match(GOOGLE_DRIVE_URL, url)
-    if result:
-        response = requests.head(url)
-        if response.is_redirect:
-            url = response.headers['Location']
-
-    result = re.match(KOBO_URL, url)
-    if result:
-        asset_id = result.group(1)
-
-        # a. create export
-        params = {
-            "source": "https://kobo.humanitarianresponse.info/assets/{}/".format(asset_id),
-            "type": "csv",
-            "lang": "en",
-            "fields_from_all_versions": False,
-            "hierarchy_in_labels": False,
-            "group_sep": ",",
-        }
-        response = requests.post(
-            "https://kobo.humanitarianresponse.info/exports/",
-            verify=verify_ssl,
-            headers=http_headers,
-            data=params
-        )
-        if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
-            raise HXLAuthorizationException("Access not authorized", url=url)
-        else:
-            response.raise_for_status()
-        info_url = response.json().get("url")
-
-        # b. get export record
-        response = requests.get(
-            info_url,
-            verify=verify_ssl,
-            headers=http_headers
-        )
-        if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
-            raise HXLAuthorizationException("Access not authorized", url=info_url)
-        else:
-            response.raise_for_status()
-
-        # the download URL
-        url = response.json().get("result")
-
-    #
-    # Stage 2: munge to get direct-download links
-    #
-
-    # Is it a Google Drive *file*?
-    result = re.match(GOOGLE_FILE_URL, url)
-    if result:
-        return 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
-
-    # Is it a Google *Sheet*?
-    result = re.match(GOOGLE_SHEETS_URL, url)
-    if result and not re.search(r'/pub', url):
-        if result.group(2):
-            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
-        else:
-            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
-
-    # Is it a Dropbox URL?
-    result = re.match(DROPBOX_URL, url)
-    if result:
-        return 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
-
-    # Is it a HXL Proxy saved recipe?
-    result = re.match(HXL_PROXY_SAVED_URL, url)
-    if result:
-        return '{0}/data/{1}.csv'.format(result.group(1), result.group(2))
-
-    # Is it a HXL Proxy args-based recipe?
-    result = re.match(HXL_PROXY_ARGS_URL, url)
-    if result:
-        return '{0}/data.csv?{1}'.format(result.group(1), result.group(2))
-
-    # No changes
-    return url
-
-
 def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
     """Figure out what kind of input to create.
 
@@ -1549,4 +1411,217 @@ def from_spec(spec, allow_local_ok=False):
         recipe=recipe_spec
     )
 
+
+
+########################################################################
+# URL-munging code
+#
+# This is where a lot of the magic happens, figuring out how to download
+# machine readable data from difference specialised URLs.
+########################################################################
+
+
+def _munge_url(url, verify_ssl=True, http_headers=None):
+    """ Munge a URL to get at underlying data for well-known types.
+
+    For example, if it's an HDX dataset, figure out the download
+    link for the first resource. If it's a Kobo survey, create an
+    export and get the download link (given an appropriate
+    authorization header).
+
+    Args:
+        url (str): the original URL to munge
+        verify_ssl (bool): if False, don't verify SSL certs
+        http_headers (bool): array of extra HTTP headers to pass
+
+    Returns:
+        str: the actual direct-download URL
+
+    Raises:
+        hxl.io.HXLAuthorizationException: if the source requires some kind of authorization
+
+    """
+
+    #
+    # Stage 1: unpack indirect links (requires extra HTTP requests)
+    #
+
+    # Is it a CKAN resource? (Assumes the v.3 API for now)
+    result = re.match(CKAN_URL, url)
+    if result:
+        url = _get_ckan_url(result.group(1), result.group(2), result.group(3), verify_ssl, http_headers)
+
+    # Is it a Google Drive "open" URL?
+    result = re.match(GOOGLE_DRIVE_URL, url)
+    if result:
+        response = requests.head(url)
+        if response.is_redirect:
+            url = response.headers['Location']
+
+    # Is it a Kobo survey?
+    result = re.match(KOBO_URL, url)
+    if result:
+        url = _get_kobo_url(result.group(1), verify_ssl, http_headers)
+
+    #
+    # Stage 2: rewrite URLs to get direct-download links
+    #
+
+    # Is it a Google Drive *file*?
+    result = re.match(GOOGLE_FILE_URL, url)
+    if result:
+        return 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
+
+    # Is it a Google *Sheet*?
+    result = re.match(GOOGLE_SHEETS_URL, url)
+    if result and not re.search(r'/pub', url):
+        if result.group(2):
+            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
+        else:
+            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
+
+    # Is it a Dropbox URL?
+    result = re.match(DROPBOX_URL, url)
+    if result:
+        return 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
+
+    # Is it a HXL Proxy saved recipe?
+    result = re.match(HXL_PROXY_SAVED_URL, url)
+    if result:
+        return '{0}/data/{1}.csv'.format(result.group(1), result.group(2))
+
+    # Is it a HXL Proxy args-based recipe?
+    result = re.match(HXL_PROXY_ARGS_URL, url)
+    if result:
+        return '{0}/data.csv?{1}'.format(result.group(1), result.group(2))
+
+    # No changes
+    return url
+
+
+def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
+    """Look up a CKAN download URL starting from a dataset or resource page
+    
+    If the link is to a dataset page, try the first resource. If it's
+    to a resource page, look up the resource's download link. Either
+    dataset_id or resource_id is required (will prefer resource_id
+    over dataset_id).
+
+    Args:
+        site_url (str): the CKAN site URL (e.g. https://data.humdata.org)
+        dataset_id (str): the CKAN dataset ID, or None if unavailable
+        resource_id (str): the CKAN resource ID, or None if unavailable
+        verify_ssl (bool): if False, don't verify SSL certs
+        http_headers (bool): array of extra HTTP headers to pass
+
+    Returns:
+        str: the direct-download URL for the CKAN dataset
+
+    """
+
+    if resource_id:
+        # CKAN resource URL
+        ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(site_url, resource_id)
+        ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
+        if ckan_api_result['success']:
+            url = ckan_api_result['result']['url']
+        elif ckan_api_result['error']['__type'] == 'Authorization Error':
+            raise HXLAuthorizationException(
+                "Not authorised to read CKAN resource (is the dataset public?): {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=url,
+                is_ckan=True
+            )
+        else:
+            raise HXLIOException(
+                "Unable to read HDX resource: {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=url
+            )
+    else:
+        # CKAN dataset (package) URL
+        ckan_api_query = '{}/api/3/action/package_show?id={}'.format(site_url, dataset_id)
+        ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
+        if ckan_api_result['success']:
+            url = ckan_api_result['result']['resources'][0]['url']
+        elif ckan_api_result['error']['__type'] == 'Authorization Error':
+            raise HXLAuthorizationException(
+                "Not authorised to read CKAN dataset (is it public?): {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=url,
+                is_ckan=True
+            )
+        else:
+            raise HXLIOException(
+                "Unable to read CKAN dataset: {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=url
+            )
+
+    return url
+    
+
+def _get_kobo_url(asset_id, verify_ssl, http_headers):
+    """ Create an export for a Kobo survey, then return the download link.
+
+    This will fail unless there's an Authorization: header including a Kobo
+    API token.
+
+    Args:
+        asset_id (str): the Kobo asset ID for the survey (extracted from the URL)
+        verify_ssl (bool): if False, don't verify SSL certs
+        http_headers (bool): array of extra HTTP headers to pass
+
+    Returns:
+        str: the direct-download URL for the Kobo survey data export
+
+    Raises:
+        hxl.io.HXLAuthorizationException: if http_headers does not include a valid Authorization: header
+
+    """
+
+    # 1. Create the export in Kobo
+    params = {
+        "source": "https://kobo.humanitarianresponse.info/assets/{}/".format(asset_id),
+        "type": "csv",
+        "lang": "en",
+        "fields_from_all_versions": False,
+        "hierarchy_in_labels": False,
+        "group_sep": ",",
+    }
+    response = requests.post(
+        "https://kobo.humanitarianresponse.info/exports/",
+        verify=verify_ssl,
+        headers=http_headers,
+        data=params
+    )
+
+    # check for errors
+    if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+        raise HXLAuthorizationException("Access not authorized", url=url)
+    else:
+        response.raise_for_status()
+    info_url = response.json().get("url")
+
+    # 2. Look up the data record for the export to get the download URL
+    response = requests.get(
+        info_url,
+        verify=verify_ssl,
+        headers=http_headers
+    )
+
+    # check for errors
+    if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+        raise HXLAuthorizationException("Access not authorized", url=info_url)
+    else:
+        response.raise_for_status()
+
+    # the .result field holds the direct-download URL for the new export
+    return response.json().get("result")
+
+    
 # end
