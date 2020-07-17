@@ -55,6 +55,7 @@ DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)(?:/resource/([a-z0-9-]{36}))?$'
 HXL_PROXY_SAVED_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data/([a-zA-Z0-9_]{6}).*$'
 HXL_PROXY_ARGS_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data.*\?(.+)$'
+KOBO_URL = r'^https://kobo.humanitarianresponse.info/#/forms/([A-Za-z0-9]{16,32})/'
 
 # opening signatures for well-known file types
 
@@ -367,6 +368,45 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
         response = requests.head(url)
         if response.is_redirect:
             url = response.headers['Location']
+
+    result = re.match(KOBO_URL, url)
+    if result:
+        asset_id = result.group(1)
+
+        # a. create export
+        params = {
+            "source": "https://kobo.humanitarianresponse.info/assets/{}/".format(asset_id),
+            "type": "csv",
+            "lang": "en",
+            "fields_from_all_versions": False,
+            "hierarchy_in_labels": False,
+            "group_sep": ",",
+        }
+        response = requests.post(
+            "https://kobo.humanitarianresponse.info/exports/",
+            verify=verify_ssl,
+            headers=http_headers,
+            data=params
+        )
+        if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+            raise HXLAuthorizationException("Access not authorized", url=url)
+        else:
+            response.raise_for_status()
+        info_url = response.json().get("url")
+
+        # b. get export record
+        response = requests.get(
+            info_url,
+            verify=verify_ssl,
+            headers=http_headers
+        )
+        if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+            raise HXLAuthorizationException("Access not authorized", url=info_url)
+        else:
+            response.raise_for_status()
+
+        # the download URL
+        url = response.json().get("result")
 
     #
     # Stage 2: munge to get direct-download links
