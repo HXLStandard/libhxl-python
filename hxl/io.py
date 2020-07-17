@@ -33,6 +33,7 @@ import hxl, hxl.filters
 import zipfile
 import os.path
 import urllib.parse
+import datetime, dateutil.parser
 
 logger = logging.getLogger(__name__)
 
@@ -1461,7 +1462,8 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     # Is it a Kobo survey?
     result = re.match(KOBO_URL, url)
     if result:
-        url = _get_kobo_url(result.group(1), url, verify_ssl, http_headers)
+        max_export_age_seconds = 4 * 60 * 60 # 4 hours; TODO: make configurable
+        url = _get_kobo_url(result.group(1), url, verify_ssl, http_headers, max_export_age_seconds)
 
     #
     # Stage 2: rewrite URLs to get direct-download links
@@ -1565,7 +1567,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
     return url
     
 
-def _get_kobo_url(asset_id, url, verify_ssl, http_headers):
+def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_seconds=14400):
     """ Create an export for a Kobo survey, then return the download link.
 
     This will fail unless there's an Authorization: header including a Kobo
@@ -1575,6 +1577,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers):
         asset_id (str): the Kobo asset ID for the survey (extracted from the URL)
         verify_ssl (bool): if False, don't verify SSL certs
         http_headers (bool): array of extra HTTP headers to pass
+        max_export_age_seconds (int): maximum age to reuse an existing export (defaults to 14,400 seconds, or 4 hours)
 
     Returns:
         str: the direct-download URL for the Kobo survey data export
@@ -1584,7 +1587,37 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers):
 
     """
 
-    # 1. Create the export in Kobo
+    # 1. Check current exports
+    params = {
+        "q": "source:{}".format(asset_id)
+    }
+    response = requests.get(
+        "https://kobo.humanitarianresponse.info/exports/",
+        verify=verify_ssl,
+        headers=http_headers,
+        params=params
+    )
+    # check for errors
+    if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+        raise HXLAuthorizationException("Access not authorized", url=url)
+    else:
+        response.raise_for_status()
+
+    exports = response.json()['results']
+    if len(exports) > 0:
+        export = exports[-1]
+        created = dateutil.parser.isoparse(export['date_created'])
+        now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+        age_in_seconds = (now - created).total_seconds()
+
+        # if less than four hours, and has a URL, use it (and stop here)
+        if export.get('result') and (age_in_seconds < max_export_age_seconds):
+            logger.info("Reusing existing Kobo export for %s", asset_id)
+            return export['result']
+
+    logger.info("Generating new Kobo export for %s", asset_id)
+
+    # 2. Create the export in Kobo
     params = {
         "source": "https://kobo.humanitarianresponse.info/assets/{}/".format(asset_id),
         "type": "csv",
@@ -1605,9 +1638,10 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers):
         raise HXLAuthorizationException("Access not authorized", url=url)
     else:
         response.raise_for_status()
+        
     info_url = response.json().get("url")
 
-    # 2. Look up the data record for the export to get the download URL
+    # 3. Look up the data record for the export to get the download URL
 
     fail_counter = 0
     while True:
