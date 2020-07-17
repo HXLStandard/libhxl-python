@@ -13,5 +13,9 @@ def eval(row, formula):
     @return: a scalar result
     """
     statement = p.parser.parse(formula, lexer=l.lexer)
-    return statement[0](row, statement[1])
+    if statement:
+        return statement[0](row, statement[1])
+    else:
+        logger.error("Cannot parse formula {{ {} }}".format(formula))
+        return "**ERROR**"
 
