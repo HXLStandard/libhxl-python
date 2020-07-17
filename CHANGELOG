@@ -10,6 +10,7 @@ Release 4.21
 	- improved docstrings for hxl.io, hxl.datatypes, hxl.converters, and hxl.geo modules
 	- added hxlspec command-line script to process a HXL JSON spec
 	- added URL munging for HXL Proxy links (non-CSV/JSON)
+	- added URL munging for Kobo survey links (requires an Authorization: header)
 
 2020-05-20 Release 4.20
 	- switch to jsonpath-ng library to support more JSONPath features

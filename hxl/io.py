@@ -27,7 +27,7 @@ License:
 
 """
 
-import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, shutil, six, sys, tempfile, xlrd
+import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, shutil, six, sys, tempfile, time, xlrd
 
 import hxl, hxl.filters
 import zipfile
@@ -1461,7 +1461,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     # Is it a Kobo survey?
     result = re.match(KOBO_URL, url)
     if result:
-        url = _get_kobo_url(result.group(1), verify_ssl, http_headers)
+        url = _get_kobo_url(result.group(1), url, verify_ssl, http_headers)
 
     #
     # Stage 2: rewrite URLs to get direct-download links
@@ -1565,7 +1565,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
     return url
     
 
-def _get_kobo_url(asset_id, verify_ssl, http_headers):
+def _get_kobo_url(asset_id, url, verify_ssl, http_headers):
     """ Create an export for a Kobo survey, then return the download link.
 
     This will fail unless there's an Authorization: header including a Kobo
@@ -1608,20 +1608,31 @@ def _get_kobo_url(asset_id, verify_ssl, http_headers):
     info_url = response.json().get("url")
 
     # 2. Look up the data record for the export to get the download URL
-    response = requests.get(
-        info_url,
-        verify=verify_ssl,
-        headers=http_headers
-    )
 
-    # check for errors
-    if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
-        raise HXLAuthorizationException("Access not authorized", url=info_url)
-    else:
-        response.raise_for_status()
+    fail_counter = 0
+    while True:
+        response = requests.get(
+            info_url,
+            verify=verify_ssl,
+            headers=http_headers
+        )
 
-    # the .result field holds the direct-download URL for the new export
-    return response.json().get("result")
+        # check for errors
+        if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+            raise HXLAuthorizationException("Access not authorized", url=info_url)
+        else:
+            response.raise_for_status()
 
+        url = response.json().get("result")
+
+        if url:
+            return url
+
+        fail_counter += 1
+        if fail_counter >= 5:
+            raise HXLIOException("Time out generating Kobo export")
+        else:
+            logger.warning("Kobo export not ready; will try again")
+            time.sleep(1)
     
 # end
