@@ -1629,10 +1629,10 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers):
             return url
 
         fail_counter += 1
-        if fail_counter >= 5:
-            raise HXLIOException("Time out generating Kobo export")
+        if fail_counter > 5:
+            raise HXLIOException("Time out generating Kobo export (try again)")
         else:
             logger.warning("Kobo export not ready; will try again")
-            time.sleep(1)
+            time.sleep(2)
     
 # end
