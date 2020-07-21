@@ -576,6 +576,19 @@ class HXLParseException(HXLIOException):
         self.source_column_number = source_column_number
 
 
+class HXLTimeoutException(HXLIOException):
+    """ There is a timeout when trying to load data
+    Right now, only Kobo uses this.
+    """
+    def __init__(self, message="Timeout downloading source data", url=None):
+        """
+        Args:
+            message (str): the error message
+            url (str): the URL that triggered the exception
+        """
+        super().init__(message, url)
+
+
 class HXLTagsNotFoundException(HXLParseException):
     """ Specific parsing exception: no HXL tags.
 
@@ -1664,7 +1677,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
 
         fail_counter += 1
         if fail_counter > 30:
-            raise HXLIOException("Time out generating Kobo export (try again)")
+            raise HXLTimeoutException("Time out generating Kobo export (try again)", url)
         else:
             logger.warning("Kobo export not ready; will try again")
             time.sleep(2)
