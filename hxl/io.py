@@ -27,7 +27,7 @@ License:
 
 """
 
-import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, shutil, six, sys, tempfile, time, xlrd
+import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd
 
 import hxl, hxl.filters
 import zipfile
@@ -1658,11 +1658,12 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
 
     fail_counter = 0
     while True:
-        response = requests.get(
-            info_url,
-            verify=verify_ssl,
-            headers=http_headers
-        )
+        with requests_cache.disabled():
+            response = requests.get(
+                info_url,
+                verify=verify_ssl,
+                headers=http_headers
+            )
 
         # check for errors
         if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file

@@ -18,7 +18,7 @@ setup(
     author='David Megginson',
     author_email='megginson@un.org',
     url='http://hxlproject.org',
-    install_requires=['python-dateutil', 'xlrd', 'requests', 'unidecode', 'python-io-wrapper>=0.2', 'jsonpath_ng', 'ply'],
+    install_requires=['python-dateutil', 'xlrd', 'requests', 'requests_cache', 'unidecode', 'python-io-wrapper>=0.2', 'jsonpath_ng', 'ply'],
     packages=['hxl', 'hxl.formulas'],
     package_data={'hxl': ['*.json']},
     include_package_data=True,

@@ -1,6 +1,7 @@
 python-dateutil
 xlrd
 requests
+requests_cache
 unidecode
 python-io-wrapper>=0.2
 jsonpath-ng
