@@ -11,14 +11,23 @@ with open("README.md", "r") as fh:
 
 setup(
     name='libhxl',
-    version="4.20",
+    version="4.21",
     description='Python support library for the Humanitarian Exchange Language (HXL). See http://hxlstandard.org and https://github.com/HXLStandard/libhxl-python',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='David Megginson',
     author_email='megginson@un.org',
     url='http://hxlproject.org',
-    install_requires=['python-dateutil', 'xlrd', 'requests', 'requests_cache', 'unidecode', 'python-io-wrapper>=0.2', 'jsonpath_ng', 'ply'],
+    install_requires=[
+        'requests>=2.11',
+        'requests_cache',
+        'python-dateutil',
+        'xlrd',
+        'unidecode',
+        'python-io-wrapper>=0.2',
+        'jsonpath_ng',
+        'ply'
+    ],
     packages=['hxl', 'hxl.formulas'],
     package_data={'hxl': ['*.json']},
     include_package_data=True,
