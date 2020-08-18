@@ -1,3 +1,4 @@
+wheel
 python-dateutil
 xlrd
 requests
