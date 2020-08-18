@@ -54,7 +54,7 @@ GOOGLE_SHEETS_URL = r'^https?://[^/]+google.com/.*[^0-9A-Za-z_-]([0-9A-Za-z_-]{4
 GOOGLE_FILE_URL = r'https?://drive.google.com/file/d/([0-9A-Za-z_-]+)/.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)(?:/resource/([a-z0-9-]{36}))?$'
-HXL_PROXY_SAVED_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data/([a-zA-Z0-9_]{6}).*$'
+HXL_PROXY_SAVED_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data/([a-zA-Z0-9_]{6})[^?]*(\?.*)?$'
 HXL_PROXY_ARGS_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data.*\?(.+)$'
 KOBO_URL = r'^https://kobo.humanitarianresponse.info/#/forms/([A-Za-z0-9]{16,32})/'
 
@@ -1471,6 +1471,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
         response = requests.head(url)
         if response.is_redirect:
             url = response.headers['Location']
+            logger.info("Following Google Drive redirect to %s", url)
 
     # Is it a Kobo survey?
     result = re.match(KOBO_URL, url)
@@ -1485,30 +1486,39 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     # Is it a Google Drive *file*?
     result = re.match(GOOGLE_FILE_URL, url)
     if result:
-        return 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
+        url = 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
+        logger.info("Google Drive direct file download URL: %s", url)
 
     # Is it a Google *Sheet*?
     result = re.match(GOOGLE_SHEETS_URL, url)
     if result and not re.search(r'/pub', url):
         if result.group(2):
-            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
+            url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
         else:
-            return 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
+            url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
+        logger.info("Google Sheets CSV export URL: %s", url)
+        return url
 
     # Is it a Dropbox URL?
     result = re.match(DROPBOX_URL, url)
     if result:
-        return 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
+        url = 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
+        logger.info("Dropbox direct-download URL: %s", url)
+        return url
 
     # Is it a HXL Proxy saved recipe?
     result = re.match(HXL_PROXY_SAVED_URL, url)
     if result:
-        return '{0}/data/{1}.csv'.format(result.group(1), result.group(2))
+        url = '{0}/data/{1}.csv{2}'.format(result.group(1), result.group(2), result.group(3))
+        logger.info("HXL Proxy saved-recipe URL: %s", url)
+        return url
 
     # Is it a HXL Proxy args-based recipe?
     result = re.match(HXL_PROXY_ARGS_URL, url)
     if result:
-        return '{0}/data.csv?{1}'.format(result.group(1), result.group(2))
+        url = '{0}/data.csv?{1}'.format(result.group(1), result.group(2))
+        logger.info("HXL Proxy direct-download URL: %s", url)
+        return url
 
     # No changes
     return url
@@ -1540,6 +1550,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
         ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['url']
+            logger.info("Converted CKAN resource URL to %s", url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
             raise HXLAuthorizationException(
                 "Not authorised to read CKAN resource (is the dataset public?): {}".format(
@@ -1561,6 +1572,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
         ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['resources'][0]['url']
+            logger.info("Converted CKAN package URL to %s", url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
             raise HXLAuthorizationException(
                 "Not authorised to read CKAN dataset (is it public?): {}".format(
@@ -1625,7 +1637,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
 
         # if less than four hours, and has a URL, use it (and stop here)
         if export.get('result') and (age_in_seconds < max_export_age_seconds):
-            logger.info("Reusing existing Kobo export for %s", asset_id)
+            logger.info("Reusing existing Kobo export for %s: %s", asset_id, export['result'])
             return export['result']
 
     logger.info("Generating new Kobo export for %s", asset_id)
@@ -1674,6 +1686,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
         url = response.json().get("result")
 
         if url:
+            logger.info("Kobo export URL: %s", url)
             return url
 
         fail_counter += 1

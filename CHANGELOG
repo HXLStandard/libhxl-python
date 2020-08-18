@@ -1,5 +1,5 @@
-Release 4.22
-	- 
+2020-08-18 Release 4.21.1
+	- Bug-fix release: corrected rare bug in handling HXL Proxy saved recipes as a source
 
 2020-07-22 Release 4.21
 	- BACKWARDS-INCOMPATIBLE: rename "whitelist" to "includes" in
