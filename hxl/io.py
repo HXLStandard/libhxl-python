@@ -761,8 +761,18 @@ class CSVInput(AbstractInput):
         @param encoding: the character encoding to use
         @returns a csv.Dialect object or string.
         """
+
+        raw = input.peek(16384)
+
+        # Special case: there might be part of a multibyte Unicode character at the end
+        for i in range(0, 7):
+            try:
+                print(i)
+                sample = raw[:-1].decode(encoding)
+            except Exception as e:
+                continue
+            break
         
-        sample = input.peek(16384).decode(encoding)
         lines = re.split(r'\r?\n', sample)
 
         # first, try for a hashtag row
