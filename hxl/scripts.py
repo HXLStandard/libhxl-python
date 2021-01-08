@@ -897,6 +897,8 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     )
     args = parser.parse_args(args)
 
+    do_common_args(args)
+
     with make_input(args, stdin) as input, make_output(args, stdout) as output:
         tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag, match_all=args.match_all)
         hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
@@ -938,6 +940,8 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default='info'
     )
     args = parser.parse_args(args)
+
+    do_common_args(args)
 
     with make_input(args, stdin) as input, make_output(args, stdout) as output:
 
