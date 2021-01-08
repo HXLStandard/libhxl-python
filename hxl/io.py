@@ -27,7 +27,7 @@ License:
 
 """
 
-import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd
+import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
 
 import hxl, hxl.filters
 import zipfile
@@ -420,9 +420,11 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             tmpfile = make_tempfile(input)
 
             try:
+                # Is the zip file really an XLSX file?
                 logger.debug('Trying input from an Excel file')
                 return XLSXInput(tmpfile, sheet_index=sheet_index)
-            except:
+            except xlrd.XLRDError:
+                # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
                     zf = zipfile.ZipFile(tmpfile, "r")
                     for name in zf.namelist():
@@ -988,7 +990,7 @@ class XLSInput(AbstractInput):
         super().__init__()
         self.tmpfile = tmpfile # prevent garbage collection as long as this object exists
         self.is_repeatable = True
-        self._workbook = xlrd.open_workbook(filename=tmpfile.name)
+        self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)
@@ -1084,12 +1086,7 @@ class XLSXInput(AbstractInput):
         super().__init__()
         self.tmpfile = tmpfile # prevent garbage collection
         self.is_repeatable = True
-        try:
-            self._workbook = xlrd.open_workbook(filename=tmpfile.name)
-        except TypeError as e:
-            # xlrd throws a TypeError when it's trying to open a non-XLSX zip
-            # there are probably other exceptions we need to trap here
-            raise HXLIOException("Not an Excel workbook (possibly a zip archive)")
+        self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._workbook.sheet_by_index(sheet_index)

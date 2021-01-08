@@ -1,3 +1,8 @@
+Release 4.21.3
+	- Bug-fix release: switch to xlrd3 library, since xlrd has dropped support for XLSX files
+	- be more careful about detecting non-XLSX zip files
+	- be more efficient with memory usage for Excel files
+
 2020-12-08 Release 4.21.2
 	- Bug-fix release: corrected rare Unicode bug in lookahead buffer for CSV files
 

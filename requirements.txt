@@ -1,6 +1,6 @@
 wheel
 python-dateutil
-xlrd
+xlrd3
 requests
 requests_cache
 unidecode

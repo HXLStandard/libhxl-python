@@ -23,7 +23,7 @@ setup(
         'requests>=2.11',
         'requests_cache',
         'python-dateutil',
-        'xlrd',
+        'xlrd3',
         'unidecode',
         'python-io-wrapper>=0.2',
         'jsonpath_ng',
