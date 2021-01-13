@@ -228,6 +228,27 @@ class TestBadInput(unittest.TestCase):
         with self.assertRaises(IOError):
             source = hxl.data('http://x.localhost/XXXXX', timeout=1)
 
+    def test_local_file_fails(self):
+        with self.assertRaises(hxl.io.HXLIOException):
+            # allow_local should default to False
+            source = hxl.data("/etc/passwd")
+
+    def test_ip_address_fails(self):
+        with self.assertRaises(hxl.io.HXLIOException):
+            # allow_local should default to False
+            source = hxl.data("http://127.0.0.1/index.html")
+
+    def test_localhost_fails(self):
+        with self.assertRaises(hxl.io.HXLIOException):
+            # allow_local should default to False
+            source = hxl.data("http://localhost/index.html")
+
+    def test_localdomain_fails(self):
+        with self.assertRaises(hxl.io.HXLIOException):
+            # allow_local should default to False
+            source = hxl.data("http://foo.localdomain/index.html")
+            
+
 class TestParser(unittest.TestCase):
 
     EXPECTED_ROW_COUNT = 4

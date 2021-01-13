@@ -468,8 +468,27 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     result = re.search(r'\.([A-Za-z0-9]{1,5})$', url_or_filename)
     if result:
         file_ext = result.group(1).lower()
-    
-    if re.match(r'^(?:https?|s?ftp)://', url_or_filename.lower()):
+
+    result = re.match(r'^(?:https?|s?ftp)://([^/]+)', url_or_filename.lower())
+    if result:
+
+        # Check for possible exploits when allow_local is False
+        if not allow_local:
+
+            hostname = result.group(1).lower().strip()
+
+            # forbid dotted quads
+            if re.match(r'^[0-9.]+$', hostname):
+                raise HXLIOException("Security settings forbid accessing host via IP address {}", hostname)
+
+            # forbid localhost
+            if hostname == "localhost":
+                raise HXLIOException("Security settings forbid accessing localhost")
+                
+            # forbid localhost
+            if hostname.endswith(".localdomain"):
+                raise HXLIOException("Security settings forbid accessing hostnames ending in .localdomain: {}", hostname)
+                
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
@@ -510,7 +529,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
 
     else:
         # Forbidden to try local (allow_local is False), so give up.
-        logger.critical('Tried to open local file %s with allow_local set to False', url_or_filename)
+        logger.critical('Security settings forbid accessing local files or non http(s)/ftp(s) URL schemes: %s', url_or_filename)
         raise HXLIOException(
             "Only http(s) and (s)ftp URLs allowed: {}".format(url_or_filename),
             url=url_or_filename
@@ -769,7 +788,6 @@ class CSVInput(AbstractInput):
         # Special case: there might be part of a multibyte Unicode character at the end
         for i in range(0, 7):
             try:
-                print(i)
                 sample = raw[:-1].decode(encoding)
             except Exception as e:
                 continue
