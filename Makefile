@@ -54,7 +54,7 @@ push-dev:
 	git checkout dev && git push
 
 # merge the dev branch into test and push both to origin
-merge-test:
+merge-test: push-dev
 	git checkout test && git merge dev && git push && git checkout dev
 
 # merge the test branch into master and push both to origin
