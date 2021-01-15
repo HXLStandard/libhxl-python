@@ -123,10 +123,19 @@ class TestInput(unittest.TestCase):
         with make_input(FILE_JSON_SELECTOR, True, selector="$.sel1") as input:
             self.assertEqual(SEL1_DATA, hxl.data(input).values)
             
+    def test_xls(self):
+        with make_input(FILE_XLS, True) as input:
+            self.assertTrue(input.is_repeatable)
 
     def test_xlsx(self):
         with make_input(FILE_XLSX, True) as input:
             self.assertTrue(input.is_repeatable)
+
+    def test_xlsx_sheet_index(self):
+        # a non-existant sheet should throw an exception
+        with self.assertRaises(hxl.io.HXLIOException):
+            with make_input(FILE_XLSX, True, sheet_index=100) as input:
+                pass
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')

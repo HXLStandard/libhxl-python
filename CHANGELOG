@@ -1,3 +1,8 @@
+Release 4.22
+	- consolidate recent bugfix releases
+	- use same input code for XLS (old Excel) and XLSX (new Excel)
+	- more-informative exception for an out-of-range Excel sheet index
+
 2021-01-13 Release 4.21.3
 	- Bug-fix release: switch to xlrd3 library, since xlrd has dropped support for XLSX files
 	- be more careful about detecting non-XLSX zip files

@@ -37,7 +37,7 @@ import datetime, dateutil.parser
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["data", "tagger", "write_hxl", "write_json", "make_input", "HXLIOException", "HXLAuthorizationException", "HXLParseException", "HXLTagsNotFoundException", "AbstractInput", "CSVInput", "JSONInput", "XLSInput", "XLSXInput", "ArrayInput", "HXLReader", "from_spec"]
+__all__ = ["data", "tagger", "write_hxl", "write_json", "make_input", "HXLIOException", "HXLAuthorizationException", "HXLParseException", "HXLTagsNotFoundException", "AbstractInput", "CSVInput", "JSONInput", "ExcelInput", "ArrayInput", "HXLReader", "from_spec"]
 
 
 ########################################################################
@@ -414,7 +414,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
         if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
-            return XLSInput(tmpfile, sheet_index=sheet_index)
+            return ExcelInput(tmpfile, sheet_index=sheet_index)
 
         if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
             tmpfile = make_tempfile(input)
@@ -422,7 +422,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             try:
                 # Is the zip file really an XLSX file?
                 logger.debug('Trying input from an Excel file')
-                return XLSXInput(tmpfile, sheet_index=sheet_index)
+                return ExcelInput(tmpfile, sheet_index=sheet_index)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -975,8 +975,8 @@ class JSONInput(AbstractInput):
             return row
 
 
-class XLSInput(AbstractInput):
-    """Iterable: Read raw XLS (old-style Excel) rows from a temporary file object
+class ExcelInput(AbstractInput):
+    """Iterable: Read raw XLS or XLSX (Excel) rows from a temporary file object
 
     If there is no sheet number specified, will scan the Excel
     workbook for the first sheet containing HXL hashtags; if that
@@ -991,104 +991,7 @@ class XLSInput(AbstractInput):
     with open("data.xls", "r") as input:
         shutil.copyfileobj(input, tmpfile)
 
-    with hxl.io.XLSInput(tmpfile) as xls:
-        for raw_row in xls:
-            process_row(raw_row)
-    ```
-
-    """
-
-    def __init__(self, tmpfile, sheet_index=None):
-        """
-        Args:
-            tmpfile (tempfile.NamedTemporaryFile): a named temporary file object holding the workbook contents
-            sheet_index (int): the 0-based index of the sheet (if unspecified, scan)
-
-        """
-        super().__init__()
-        self.tmpfile = tmpfile # prevent garbage collection as long as this object exists
-        self.is_repeatable = True
-        self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
-        if sheet_index is None:
-            sheet_index = self._find_hxl_sheet_index()
-        self._sheet = self._workbook.sheet_by_index(sheet_index)
-
-    def __iter__(self):
-        return XLSInput._XLSIter(self)
-
-    def _find_hxl_sheet_index(self):
-        """Scan for a tab containing a HXL dataset."""
-        for sheet_index in range(0, self._workbook.nsheets):
-            sheet = self._workbook.sheet_by_index(sheet_index)
-            for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [XLSInput._fix_value(cell) for cell in sheet.row(row_index)]
-                # FIXME nasty violation of encapsulation
-                if HXLReader.parse_tags(raw_row):
-                    return sheet_index
-        # if no sheet has tags, default to the first one for now
-        return 0
-
-    @staticmethod
-    def _fix_value(cell):
-        """Clean up an Excel value for CSV-like representation."""
-
-        if cell.value is None or cell.ctype == xlrd.XL_CELL_EMPTY:
-            return ''
-
-        elif cell.ctype == xlrd.XL_CELL_NUMBER:
-            # let numbers be integers if possible
-            if float(cell.value).is_integer():
-                return int(cell.value)
-            else:
-                return cell.value
-
-        elif cell.ctype == xlrd.XL_CELL_DATE:
-            # dates need to be formatted
-            try:
-                data = xlrd.xldate_as_tuple(cell.value, 0)
-                return '{0[0]:04d}-{0[1]:02d}-{0[2]:02d}'.format(data)
-            except:
-                return cell.value;
-
-        elif cell.ctype == xlrd.XL_CELL_BOOLEAN:
-            return int(cell.value)
-
-        else: # XL_CELL_TEXT, or anything else
-            return cell.value
-
-    class _XLSIter:
-        """Internal iterator class for reading through an Excel sheet multiple times."""
-
-        def __init__(self, outer):
-            self.outer = outer
-            self._row_index = 0
-            
-        def __next__(self):
-            if self._row_index < self.outer._sheet.nrows:
-                row = [XLSInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
-                self._row_index += 1
-                return row
-            else:
-                raise StopIteration()
-
-
-class XLSXInput(AbstractInput):
-    """Iterable: Read raw XLSX (new-style Excel) rows from a temporary file object
-
-    If there is no sheet number specified, will scan the Excel
-    workbook for the first sheet containing HXL hashtags; if that
-    fails, will use the first sheet in the workbook.
-
-    Note that this requires a Python tempfile.TemporaryFile object,
-    with the Excel contents copied into it.
-
-    Example:
-    ```
-    tmpfile = tempfile.NamedTemporaryFile();
-    with open("data.xls", "r") as input:
-        shutil.copyfileobj(input, tmpfile)
-
-    with hxl.io.XLSXInput(tmpfile) as xlsx:
+    with hxl.io.ExcelInput(tmpfile) as xlsx:
         for raw_row in xlsx:
             process_row(raw_row)
     ```
@@ -1107,22 +1010,29 @@ class XLSXInput(AbstractInput):
         self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
-        self._sheet = self._workbook.sheet_by_index(sheet_index)
+        self._sheet = self._get_sheet(sheet_index)
 
     def __iter__(self):
-        return XLSXInput._XLSXIter(self)
+        return ExcelInput._ExcelIter(self)
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
         for sheet_index in range(0, self._workbook.nsheets):
-            sheet = self._workbook.sheet_by_index(sheet_index)
+            sheet = self._get_sheet(sheet_index)
             for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [XLSXInput._fix_value(cell) for cell in sheet.row(row_index)]
+                raw_row = [ExcelInput._fix_value(cell) for cell in sheet.row(row_index)]
                 # FIXME nasty violation of encapsulation
                 if HXLReader.parse_tags(raw_row):
                     return sheet_index
         # if no sheet has tags, default to the first one for now
         return 0
+
+    def _get_sheet(self, index):
+        """Try opening a sheet, and raise an exception if it's not possible"""
+        if index >= self._workbook.nsheets:
+            raise HXLIOException("Excel sheet index out of range 0-{}".format(self._workbook.nsheets))
+        else:
+            return self._workbook.sheet_by_index(index)
 
     @staticmethod
     def _fix_value(cell):
@@ -1152,7 +1062,7 @@ class XLSXInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
-    class _XLSXIter:
+    class _ExcelIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
         def __init__(self, outer):
@@ -1161,7 +1071,7 @@ class XLSXInput(AbstractInput):
             
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
-                row = [XLSXInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                row = [ExcelInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
                 self._row_index += 1
                 return row
             else:
