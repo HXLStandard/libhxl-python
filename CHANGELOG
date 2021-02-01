@@ -1,3 +1,6 @@
+Release 4.23
+	- handle encoding errors in CSV more gracefully (replace with "?")
+
 2021-01-15 Release 4.22
 	- consolidate recent bugfix releases
 	- use same input code for XLS (old Excel) and XLSX (new Excel) via xlrd3 library

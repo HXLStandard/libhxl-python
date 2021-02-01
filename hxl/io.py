@@ -633,9 +633,6 @@ class RequestResponseIOWrapper(io.RawIOBase):
     stream from the raw property doesn't unzip the payload.
     """
 
-    _seen_decode_exception = False
-    """Remember if the decode_content param failed for read()."""
-
     BUFFER_SIZE = 0x1000
     """Size of input chunk buffer from requests.raw.iter_content"""
 
@@ -762,7 +759,7 @@ class CSVInput(AbstractInput):
         # guess the delimiter
         delimiter = CSVInput._detect_delimiter(input, encoding)
         
-        self._input = io.TextIOWrapper(input, encoding=encoding)
+        self._input = io.TextIOWrapper(input, encoding=encoding, errors="replace")
         self._reader = csv.reader(self._input, delimiter=delimiter)
 
     def __exit__(self, value, type, traceback):
@@ -788,7 +785,7 @@ class CSVInput(AbstractInput):
         # Special case: there might be part of a multibyte Unicode character at the end
         for i in range(0, 7):
             try:
-                sample = raw[:-1].decode(encoding)
+                sample = raw[:-1].decode(encoding, errors="replace")
             except Exception as e:
                 continue
             break
