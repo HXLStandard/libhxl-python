@@ -1,5 +1,7 @@
 Release 4.23
 	- handle encoding errors in CSV more gracefully (replace with "?")
+	- fix bug in JSON recipes (correct "key" to "tags" in the sort filter)
+	- fix bug in the sort filter when there is no key and untagged columns on the right side of the dataset
 
 2021-01-15 Release 4.22
 	- consolidate recent bugfix releases

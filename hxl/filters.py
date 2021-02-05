@@ -2582,7 +2582,8 @@ class SortFilter(AbstractCachingFilter):
         else:
             # Sort everything, left to right
             for index, value in enumerate(values):
-                key.append(SortFilter._make_sort_value(self.columns[index].tag, value))
+                if index < len(self.columns):
+                    key.append(SortFilter._make_sort_value(self.columns[index].tag, value))
 
         # convert the key to a tuple for sorting
         return tuple(key)

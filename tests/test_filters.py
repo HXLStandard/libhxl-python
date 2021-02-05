@@ -1268,7 +1268,7 @@ class TestSortFilter(AbstractBaseFilterTest):
         ]
 
         # should not trigger an exception
-        hxl.data(DATA).sort().values()
+        hxl.data(DATA).sort().values
 
 class TestExplodeFilter(AbstractBaseFilterTest):
 
