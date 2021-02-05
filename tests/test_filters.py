@@ -1256,6 +1256,20 @@ class TestSortFilter(AbstractBaseFilterTest):
         self.assertEqual(hxl.data(DATA).with_rows('#affected is max').values, [DATA[5]])
         self.assertEqual(hxl.data(DATA).with_rows('#affected is min').values, [DATA[2]])
 
+    def test_untagged_columns(self):
+        DATA = [
+            ['#date+year', '#affected', '#adm1', '', ''],
+            ['2016', '200', 'Coast', 'xxx', 'yyy'],
+            ['2016', '100', 'Plains', 'xxx', 'yyy'],
+            ['2015', '300', 'Coast', 'xxx', 'yyy'],
+            ['2015', '200', 'Plains', 'xxx', 'yyy', 'xxx', 'yyy'],
+            ['2014', '400', 'Coast', 'xxx', 'yyy'],
+            ['2014', '300', 'Plains', 'xxx', 'yyy']
+        ]
+
+        # should not trigger an exception
+        hxl.data(DATA).sort().values()
+
 class TestExplodeFilter(AbstractBaseFilterTest):
 
     # deliberate variation in attribute ordering
