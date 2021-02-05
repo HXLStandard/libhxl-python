@@ -80,7 +80,7 @@ class TestRecipe(AbstractBaseFilterTest):
             },
             {
                 'filter': 'sort',
-                'keys': 'sector'
+                'tags': 'sector'
             }
         ])
         self.assertEqual(filtered.values, [DATA[4], DATA[2]])

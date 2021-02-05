@@ -2613,7 +2613,7 @@ class SortFilter(AbstractCachingFilter):
         """Create a sort filter from a dict spec."""
         return SortFilter(
             source = source,
-            tags=opt_arg(spec, 'keys', []),
+            tags=opt_arg(spec, 'tags', []),
             reverse=opt_arg(spec, 'reverse', False)
         )
 
