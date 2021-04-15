@@ -92,7 +92,7 @@ class Tagger(hxl.io.AbstractInput):
         """
         for n in range(0, 25):
             raw_row = next(self.input)
-            if not raw_row:
+            if raw_row is None:
                 break
             self._cache.append(raw_row)
             tag_row = self._try_tag_row(raw_row)
