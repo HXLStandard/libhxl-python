@@ -16,7 +16,7 @@
 # close-issue - merge the current issue branch into dev and delete
 # push-dev - push current dev branch to upstream
 # merge-test - merge the dev branch into the test branch and push
-# merge-master - merge the test branch into the master branch and push
+# merge-main - merge the test branch into the main branch and push
 #
 # Other:
 #
@@ -57,9 +57,9 @@ push-dev:
 merge-test: push-dev
 	git checkout test && git merge dev && git push && git checkout dev
 
-# merge the test branch into master and push both to origin
-merge-master: merge-test
-	git checkout master && git merge test && git push && git checkout dev
+# merge the test branch into main and push both to origin
+merge-main: merge-test
+	git checkout main && git merge test && git push && git checkout dev
 
 # do a cold install in a temporary virtual environment and run unit tests
 test-install: 
