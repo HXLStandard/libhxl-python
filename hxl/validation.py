@@ -82,7 +82,7 @@ class HXLValidationException(hxl.HXLException):
         if scope in HXLValidationException.SCOPES:
             self.scope = scope
         else:
-            raise HXLException("Unrecognised validation-error scope: {}".format(scope))
+            raise hxl.HXLException("Unrecognised validation-error scope: {}".format(scope))
 
     def __str__(self):
         """Get a string rendition of this error."""
@@ -234,7 +234,7 @@ class AbstractRuleTest(object):
             tag_pattern = hxl.model.TagPattern.parse(tag_pattern)
             return hxl.model.get_column_indices([tag_pattern], columns)
         else:
-            raise HXLException("Internal error: rule test requires a tag pattern or a list of indices")
+            raise hxl.HXLException("Internal error: rule test requires a tag pattern or a list of indices")
 
     def report_error(self, message, row=None, column=None, value=None, suggested_value=None, scope='cell'):
         """Report an error from this test, if there is a callback function available."""
@@ -1025,7 +1025,7 @@ class SchemaRule(object):
         if severity in SchemaRule.SEVERITY:
             self.severity = severity
         else:
-            raise HXLException("Unsupported rule severity level: {}".format(severity))
+            raise hxl.HXLException("Unsupported rule severity level: {}".format(severity))
 
         # Additional internal variables
         self.tests = []
