@@ -345,7 +345,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
     """
 
     def make_tempfile(input):
-        tmpfile = tempfile.NamedTemporaryFile();
+        tmpfile = tempfile.NamedTemporaryFile()
         shutil.copyfileobj(input, tmpfile)
         tmpfile.seek(0)
         input.close()
