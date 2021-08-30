@@ -847,7 +847,7 @@ class JSONInput(AbstractInput):
 
         # read the JSON data from the stream
         with io.TextIOWrapper(input, encoding=encoding) as _input:
-            self.json_data = self._select(selector, json.load(_input, encoding=encoding, object_pairs_hook=collections.OrderedDict))
+            self.json_data = self._select(selector, json.load(_input, object_pairs_hook=collections.OrderedDict))
         if not self._scan_data_element(self.json_data):
             self.json_data = self._search_data(self.json_data)
         if self.json_data is None:
