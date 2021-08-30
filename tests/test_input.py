@@ -1,6 +1,6 @@
 #coding=UTF8
 """
-Unit tests for the hxl.io module
+Unit tests for the hxl.input module
 David Megginson
 October 2014
 
@@ -16,7 +16,7 @@ from urllib.error import HTTPError
 from io import StringIO
 
 import hxl
-from hxl.io import make_input, HXLParseException, HXLReader, CSVInput
+from hxl.input import make_input, HXLParseException, HXLReader, CSVInput
 
 
 def _resolve_file(filename):
@@ -92,7 +92,7 @@ class TestInput(unittest.TestCase):
 
     def test_zip_invalid(self):
         """Expect a HXLIOException, not a meaningless TypeError"""
-        with self.assertRaises(hxl.io.HXLIOException):
+        with self.assertRaises(hxl.input.HXLIOException):
             make_input(FILE_ZIP_INVALID, True)
 
     def test_csv_latin1(self):
@@ -133,7 +133,7 @@ class TestInput(unittest.TestCase):
 
     def test_xlsx_sheet_index(self):
         # a non-existant sheet should throw an exception
-        with self.assertRaises(hxl.io.HXLIOException):
+        with self.assertRaises(hxl.input.HXLIOException):
             with make_input(FILE_XLSX, True, sheet_index=100) as input:
                 pass
 
@@ -152,14 +152,14 @@ class TestInput(unittest.TestCase):
 
     def test_optional_params(self):
         url = 'https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832'
-        hxl.io.make_input(url, verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'})
+        hxl.input.make_input(url, verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'})
         hxl.data(url, verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'})
         
 
 class TestUntaggedInput(unittest.TestCase):
 
     def test_untagged_json(self):
-        with hxl.io.make_input(FILE_JSON_UNTAGGED, allow_local=True) as input:
+        with hxl.input.make_input(FILE_JSON_UNTAGGED, allow_local=True) as input:
             self.assertEqual([
                 ['Qué?', '', '', 'Quién?', 'Para quién?', '', 'Dónde?', 'Cuándo?'],
                 ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
@@ -170,7 +170,7 @@ class TestUntaggedInput(unittest.TestCase):
             ], list(input))
 
     def test_untagged_json_objects(self):
-        with hxl.io.make_input(FILE_JSON_OBJECTS_UNTAGGED, allow_local=True) as input:
+        with hxl.input.make_input(FILE_JSON_OBJECTS_UNTAGGED, allow_local=True) as input:
             self.assertEqual([
                 ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
                 ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos'],
@@ -180,7 +180,7 @@ class TestUntaggedInput(unittest.TestCase):
             ], list(input))
 
     def test_untagged_zipped_csv(self):
-        with hxl.io.make_input(FILE_ZIP_CSV_UNTAGGED, allow_local=True) as input:
+        with hxl.input.make_input(FILE_ZIP_CSV_UNTAGGED, allow_local=True) as input:
             self.assertEqual([
                 ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
                 ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos'],
@@ -238,22 +238,22 @@ class TestBadInput(unittest.TestCase):
             source = hxl.data('http://x.localhost/XXXXX', timeout=1)
 
     def test_local_file_fails(self):
-        with self.assertRaises(hxl.io.HXLIOException):
+        with self.assertRaises(hxl.input.HXLIOException):
             # allow_local should default to False
             source = hxl.data("/etc/passwd")
 
     def test_ip_address_fails(self):
-        with self.assertRaises(hxl.io.HXLIOException):
+        with self.assertRaises(hxl.input.HXLIOException):
             # allow_local should default to False
             source = hxl.data("http://127.0.0.1/index.html")
 
     def test_localhost_fails(self):
-        with self.assertRaises(hxl.io.HXLIOException):
+        with self.assertRaises(hxl.input.HXLIOException):
             # allow_local should default to False
             source = hxl.data("http://localhost/index.html")
 
     def test_localdomain_fails(self):
-        with self.assertRaises(hxl.io.HXLIOException):
+        with self.assertRaises(hxl.input.HXLIOException):
             # allow_local should default to False
             source = hxl.data("http://foo.localdomain/index.html")
             
@@ -478,7 +478,7 @@ class TestFunctions(unittest.TestCase):
     ]
 
     def test_tagger(self):
-        input = hxl.io.tagger(TestFunctions.DATA_UNTAGGED, {
+        input = hxl.input.tagger(TestFunctions.DATA_UNTAGGED, {
                 "District": "#org"
         })
         self.assertEqual(TestFunctions.DATA_UNTAGGED[1:], [row.values for row in input])
@@ -488,7 +488,7 @@ class TestFunctions(unittest.TestCase):
             expected = input.read()
             buffer = StringIO()
             with hxl.data(FILE_CSV, True) as source:
-                hxl.io.write_hxl(buffer, source)
+                hxl.input.write_hxl(buffer, source)
                 # Need to work with bytes to handle CRLF
                 self.assertEqual(expected, buffer.getvalue().encode('utf-8'))
 
@@ -497,7 +497,7 @@ class TestFunctions(unittest.TestCase):
             expected = input.read()
             buffer = StringIO()
             with hxl.data(FILE_CSV, True) as source:
-                hxl.io.write_json(buffer, source)
+                hxl.input.write_json(buffer, source)
                 self.assertEqual(expected, buffer.getvalue())
 
     def test_write_json_objects(self):
@@ -505,7 +505,7 @@ class TestFunctions(unittest.TestCase):
             expected = input.read()
             buffer = StringIO()
             with hxl.data(FILE_CSV, True) as source:
-                hxl.io.write_json(buffer, source, use_objects=True)
+                hxl.input.write_json(buffer, source, use_objects=True)
                 self.assertEqual(expected, buffer.getvalue())
 
     def test_write_json_attribute_normalisation(self):
@@ -520,6 +520,6 @@ class TestFunctions(unittest.TestCase):
         ]
         buffer = StringIO()
         source = hxl.data(DATA_IN)
-        hxl.io.write_json(buffer, source, use_objects=True)
+        hxl.input.write_json(buffer, source, use_objects=True)
         self.assertEqual(DATA_OUT, json.loads(buffer.getvalue()))
             

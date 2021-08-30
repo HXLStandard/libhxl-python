@@ -2,7 +2,7 @@
 
 This module defines the basic classes for working with HXL data. Other
 modules have classes derived from these (e.g. in
-[hxl.filters](filters.html) or [hxl.io](io.html)). The core class is
+[hxl.filters](filters.html) or [hxl.input](io.html)). The core class is
 [Dataset](#hxl.model.Dataset), which defines the operations available
 on a HXL dataset, including convenience methods for chaining filters.
 

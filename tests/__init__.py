@@ -46,8 +46,8 @@ def have_connectivity(host="8.8.8.8", port=53, timeout=3):
         return False
 
 # Target function to replace for mocking URL access.
-URL_MOCK_TARGET = 'hxl.io.open_url_or_file'
+URL_MOCK_TARGET = 'hxl.input.open_url_or_file'
 
-# Mock object to replace hxl.io.make_stream
+# Mock object to replace hxl.input.make_stream
 URL_MOCK_OBJECT = unittest.mock.Mock()
 URL_MOCK_OBJECT.side_effect = mock_open_url

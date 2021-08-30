@@ -325,7 +325,7 @@ class TestValidate(BaseTest):
         def try_script():
             self.assertExitStatus([], exit_status = hxl.scripts.EXIT_ERROR),
         # from the command line, this will get intercepted
-        self.assertRaises(hxl.io.HXLTagsNotFoundException, try_script)
+        self.assertRaises(hxl.input.HXLTagsNotFoundException, try_script)
 
     def test_default_valid_status(self):
         self.assertExitStatus([

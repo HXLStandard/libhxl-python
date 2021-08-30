@@ -15,7 +15,7 @@ from __future__ import print_function
 import argparse, json, logging, os, re, requests, sys
 
 # Do not import hxl, to avoid circular imports
-import hxl.converters, hxl.filters, hxl.io
+import hxl.converters, hxl.filters, hxl.input
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.AddColumnsFilter(source, specs=args.spec, before=args.before)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -207,7 +207,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             add_columns=(not args.exclude_extra_columns),
             queries=args.query
         )
-        hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -296,7 +296,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,
             latlon=args.latlon, purge=args.purge, queries=args.query
         )
-        hxl.io.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -337,7 +337,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.CountFilter(source, patterns=args.tags, aggregators=args.aggregator, queries=args.query)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -372,7 +372,7 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ColumnFilter(source, args.include, args.exclude, args.skip_untagged)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -394,7 +394,7 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.DeduplicationFilter(source, args.tags, args.query)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -481,13 +481,13 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     do_common_args(args)
 
-    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.io.data(args.merge, True) if args.merge else None as merge_source:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, True) if args.merge else None as merge_source:
         filter = hxl.filters.MergeDataFilter(
             source, merge_source=merge_source,
             keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
             queries=args.query
         )
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -517,7 +517,7 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.RenameFilter(source, args.rename)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -579,14 +579,14 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         if args.map:
-            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.io.data(args.map, True))
+            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, True))
         else:
             replacements = []
         if args.pattern:
             for tag in args.tags:
                 replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
         filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -617,7 +617,7 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.FillDataFilter(source, pattern=args.tag, queries=args.query)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -667,7 +667,7 @@ def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ExpandListsFilter(source, patterns=args.tags, separator=args.separator, correlate=args.correlate, queries=args.query)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -705,7 +705,7 @@ def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value_att)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -745,7 +745,7 @@ def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label, value_pattern=args.value)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -783,7 +783,7 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.RowFilter(source, queries=args.query, reverse=args.reverse)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -819,7 +819,7 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.SortFilter(source, args.tags, args.reverse)
-        hxl.io.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -855,10 +855,10 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     do_common_args(args)
 
     spec = get_json(args.infile)
-    source = hxl.io.from_spec(spec, allow_local_ok=True)
+    source = hxl.input.from_spec(spec, allow_local_ok=True)
 
     with make_output(args, stdout) as output:
-        hxl.io.write_hxl(output.output, source, show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, source, show_tags=not args.strip_tags)
 
 
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
@@ -901,7 +901,7 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_input(args, stdin) as input, make_output(args, stdout) as output:
         tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag, match_all=args.match_all)
-        hxl.io.write_hxl(output.output, hxl.io.data(tagger), show_tags=not args.strip_tags)
+        hxl.input.write_hxl(output.output, hxl.input.data(tagger), show_tags=not args.strip_tags)
 
     return EXIT_OK
 
@@ -981,7 +981,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             output.write(message)
 
         output.write("Validating {} with schema {} ...\n".format(args.infile or "<standard input>", args.schema or "<default>"))
-        source = hxl.io.data(input)
+        source = hxl.input.data(input)
         if args.schema:
             with make_input(args, None, args.schema) as schema_input:
                 schema = hxl.schema(schema_input, callback=callback)
@@ -1105,7 +1105,7 @@ def make_source(args, stdin=STDIN):
 
     # construct the input object
     input = make_input(args, stdin)
-    return hxl.io.data(input)
+    return hxl.input.data(input)
 
 
 def make_input(args, stdin=sys.stdin, url_or_filename=None):
@@ -1124,7 +1124,7 @@ def make_input(args, stdin=sys.stdin, url_or_filename=None):
 
     http_headers = make_headers(args)
 
-    return hxl.io.make_input(
+    return hxl.input.make_input(
         url_or_filename or stdin,
         sheet_index=sheet_index,
         selector=selector,

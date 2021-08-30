@@ -1,5 +1,6 @@
 Release 4.25
 	- remove discontinued "encoding" keyword for json.load (Python 3.9)
+	- rename the hxl.io module to hxl.input (to avoid problems in Python on Windows)
 
 2021-04-23 Release 4.24
 	- fix bug that prevented tagger from adding tags if there was a blank row before the text headers

@@ -6,17 +6,17 @@ writing data in different formats through different channels).
 Examples:
     ```
     # Read a HXL-hashtagged dataset
-    dataset = hxl.io.data("http://example.org/hxl-example.csv")
+    dataset = hxl.input.data("http://example.org/hxl-example.csv")
     
     # Read a non-HXL dataset and add hashtags
     specs = [['Cluster', '#sector'], ["Province", "#adm1+name"]]
-    tagged_data = hxl.io.tagger("http://example.org/non-hxl-example.csv", specs)
+    tagged_data = hxl.input.tagger("http://example.org/non-hxl-example.csv", specs)
 
     # Write out a dataset as JSON
-    hxl.io.write_json(sys.stdout, dataset)
+    hxl.input.write_json(sys.stdout, dataset)
 
     # Write out a dataset as CSV
-    hxl.io.write_csv(sys.stdout, dataset)
+    hxl.input.write_csv(sys.stdout, dataset)
     ```
 
 Author:
@@ -149,7 +149,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
     Raises:
         IOError: if there's an error loading the data.
         hxl.HXLException: if there's a structural error in the data.
-        hxl.io.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
+        hxl.input.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
 
     """
 
@@ -161,7 +161,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
 
     elif isinstance(data, dict) and data.get('input'):
         """If it's a JSON-type spec, try parsing it."""
-        return hxl.io.from_spec(data, allow_local_ok=allow_local)
+        return hxl.input.from_spec(data, allow_local_ok=allow_local)
 
     else:
         return HXLReader(make_input(
@@ -214,7 +214,7 @@ def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sh
     Raises:
         IOError: if there's an error loading the data.
         hxl.HXLException: if there's a structural error in the data.
-        hxl.io.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
+        hxl.input.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
 
     """
     import hxl.converters
@@ -335,12 +335,12 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         encoding (str): force a character encoding, regardless of HTTP info etc
 
     Returns:
-        hxl.io.AbstractInput: a row-by-row input object (before checking for HXL hashtags)
+        hxl.input.AbstractInput: a row-by-row input object (before checking for HXL hashtags)
 
     Raises:
         IOError: if there's an error loading the data.
         hxl.HXLException: if there's a structural error in the data.
-        hxl.io.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
+        hxl.input.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
 
     """
 
@@ -737,7 +737,7 @@ class CSVInput(AbstractInput):
 
     Example:
     ```
-    with hxl.io.CSVInput(open("data.csv", "r")) as csv:
+    with hxl.input.CSVInput(open("data.csv", "r")) as csv:
         for raw_row in csv:
             process_row(raw_row)
     ```
@@ -823,7 +823,7 @@ class JSONInput(AbstractInput):
 
     Example:
     ```
-    with hxl.io.JSONInput(open("data.json", "r")) as json:
+    with hxl.input.JSONInput(open("data.json", "r")) as json:
         for raw_row in json:
             process_row(raw_row)
     ```
@@ -988,7 +988,7 @@ class ExcelInput(AbstractInput):
     with open("data.xls", "r") as input:
         shutil.copyfileobj(input, tmpfile)
 
-    with hxl.io.ExcelInput(tmpfile) as xlsx:
+    with hxl.input.ExcelInput(tmpfile) as xlsx:
         for raw_row in xlsx:
             process_row(raw_row)
     ```
@@ -1080,7 +1080,7 @@ class ArrayInput(AbstractInput):
 
     This is a simple placeholder class for dealing with a pre-parsed
     array of rows in the same class hierarchy as the other classes
-    derived from hxl.io.AbstractInput. There is no value in using it
+    derived from hxl.input.AbstractInput. There is no value in using it
     alone.
 
     """
@@ -1108,7 +1108,7 @@ class HXLReader(hxl.model.Dataset):
     """Read HXL data from a raw input source
 
     This class is the parser that reads raw rows of data from a
-    ``hxl.io.AbstractInput`` class and looks for HXL semantics such as
+    ``hxl.input.AbstractInput`` class and looks for HXL semantics such as
     hashtags and attributes. The object itself is a hxl.model.Dataset
     that's available for iteration and filter chaining.
 
@@ -1117,7 +1117,7 @@ class HXLReader(hxl.model.Dataset):
     def __init__(self, input):
         """
         Args:
-            input (hxl.io.AbstractInput): an input source for raw data rows
+            input (hxl.input.AbstractInput): an input source for raw data rows
 
         """
         self._input = input
@@ -1195,7 +1195,7 @@ class HXLReader(hxl.model.Dataset):
         classes use it (e.g. scanning heuristically for HXL data).
 
         Args:
-            raw_row (list): a raw row from a ``hxl.io.AbstractInput`` object
+            raw_row (list): a raw row from a ``hxl.input.AbstractInput`` object
             previous_row (list): the previous raw row, for extracting headers
 
         Returns:
@@ -1384,7 +1384,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
         str: the actual direct-download URL
 
     Raises:
-        hxl.io.HXLAuthorizationException: if the source requires some kind of authorization
+        hxl.input.HXLAuthorizationException: if the source requires some kind of authorization
 
     """
 
@@ -1540,7 +1540,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
         str: the direct-download URL for the Kobo survey data export
 
     Raises:
-        hxl.io.HXLAuthorizationException: if http_headers does not include a valid Authorization: header
+        hxl.input.HXLAuthorizationException: if http_headers does not include a valid Authorization: header
 
     """
 

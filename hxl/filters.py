@@ -2734,7 +2734,7 @@ def list_product(lists, head=[]):
 
 def is_sourcey(arg):
     """Convoluted method to try to distinguish a single HXL data source from a list of sources.
-    Trying to recognise all the source types supported by hxl.io.make_input
+    Trying to recognise all the source types supported by hxl.input.make_input
     @param arg: the thing to test (we want to know if it's a single source or lists of sources)
     @returns: True if we think it's a single source; False otherwise.
     """

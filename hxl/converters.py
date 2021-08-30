@@ -20,21 +20,21 @@ import logging, re
 logger = logging.getLogger(__name__)
 
 
-class Tagger(hxl.io.AbstractInput):
+class Tagger(hxl.input.AbstractInput):
     """Add HXL hashtags to a non-HXL datasource on the fly.
 
     Example:
     ```
-    input = hxl.io.make_input(url_or_filename)
+    input = hxl.input.make_input(url_or_filename)
     specs = [('Cluster', '#sector'), ('Organi', '#org'), ('province', '#adm1+es')]
     dataset = hxl.converters.Tagger(input, specs)
     ```
 
     The more-common way to invoke the tagger is through the
-    ``hxl.io.tagger()`` function:
+    ``hxl.input.tagger()`` function:
 
     ```
-    dataset = hxl.io.tagger(url_or_filename, specs)
+    dataset = hxl.input.tagger(url_or_filename, specs)
     ```
 
     """
@@ -56,7 +56,7 @@ class Tagger(hxl.io.AbstractInput):
         ```
 
         Args:
-            input (hxl.io.AbstractInput): an input source that can yield rows of values (see ``hxl.io.make_input``).
+            input (hxl.input.AbstractInput): an input source that can yield rows of values (see ``hxl.input.make_input``).
             specs (dict): the input specs, as described above (default: [])
              match_all (bool): if True, require that the full header string match; otherwise, match substrings (default: False)
             default_tag (str): default tagspec to use for any column without a match
