@@ -411,6 +411,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
                     'munged': _munge_url(raw_source, http_headers=http_headers) if str(raw_source).startswith('http') else None
                 }
             ))
+            raise HXLIOException("Cannot find CSV file or Excel content")
 
         if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
