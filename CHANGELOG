@@ -1,4 +1,4 @@
-Release 4.25
+2022-02-28 Release 4.25
 	- remove discontinued "encoding" keyword for json.load (Python 3.9)
 	- rename the hxl.io module to hxl.input (to avoid problems in Python on Windows)
 
