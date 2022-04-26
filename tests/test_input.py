@@ -60,6 +60,7 @@ URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/t
 URL_GOOGLE_SHEET_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_SHEET_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 URL_GOOGLE_FILE = 'https://drive.google.com/file/d/1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb/view'
+URL_GOOGLE_XLSX_VIEW = 'https://docs.google.com/spreadsheets/d/1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb/edit#gid=930997768'
 URL_GOOGLE_OPEN_SHEET = 'https://drive.google.com/open?id=1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg'
 URL_GOOGLE_OPEN_FILE = 'https://drive.google.com/open?id=1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb'
 
@@ -415,6 +416,11 @@ class TestParser(unittest.TestCase):
     def test_google_drive_file(self):
         # Google Drive, "open" link for file
         with hxl.data(URL_GOOGLE_OPEN_FILE, timeout=10) as source:
+            self.compare_input(source)
+
+    def test_google_xlsx_view(self):
+        # Google drive XLSX in view mode
+        with hxl.data(URL_GOOGLE_XLSX_VIEW, timeout=10) as source:
             self.compare_input(source)
 
     def test_fuzzy(self):

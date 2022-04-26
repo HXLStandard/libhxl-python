@@ -51,6 +51,7 @@ FUZZY_HASHTAG_PERCENTAGE = 0.5
 # Patterns for URL munging
 GOOGLE_DRIVE_URL = r'^https?://drive.google.com/open\?id=([0-9A-Za-z_-]+)$'
 GOOGLE_SHEETS_URL = r'^https?://[^/]+google.com/.*[^0-9A-Za-z_-]([0-9A-Za-z_-]{44})(?:.*gid=([0-9]+))?.*$'
+GOOGLE_SHEETS_XLSX_URL = r'^https?://[^/]+google.com/.*[^0-9A-Za-z_-]([0-9A-Za-z_-]{33})(?:.*gid=([0-9]+))?.*$'
 GOOGLE_FILE_URL = r'https?://drive.google.com/file/d/([0-9A-Za-z_-]+)/.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)(?:/resource/([a-z0-9-]{36}))?$'
@@ -1415,12 +1416,6 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     # Stage 2: rewrite URLs to get direct-download links
     #
 
-    # Is it a Google Drive *file*?
-    result = re.match(GOOGLE_FILE_URL, url)
-    if result:
-        url = 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
-        logger.info("Google Drive direct file download URL: %s", url)
-
     # Is it a Google *Sheet*?
     result = re.match(GOOGLE_SHEETS_URL, url)
     if result and not re.search(r'/pub', url):
@@ -1429,6 +1424,15 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
         else:
             url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
         logger.info("Google Sheets CSV export URL: %s", url)
+        return url
+
+    # Is it a Google Drive *file*?
+    result = re.match(GOOGLE_FILE_URL, url)
+    if not result:
+        result = re.match(GOOGLE_SHEETS_XLSX_URL, url)
+    if result:
+        url = 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
+        logger.info("Google Drive direct file download URL: %s", url)
         return url
 
     # Is it a Dropbox URL?
