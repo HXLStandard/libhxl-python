@@ -93,6 +93,16 @@ class TestPattern(unittest.TestCase):
         self.assertTrue(pattern.match(Column.parse('#foo+a')))
         self.assertFalse(pattern.match(Column.parse('#foo')))
         self.assertFalse(pattern.match(Column.parse('#foo+a+b')))
+
+    def test_find_column_index(self):
+        pattern = TagPattern.parse('#adm1')
+        data = hxl.data(DATA)
+        self.assertEqual(2, pattern.find_column_index(data.columns))
+
+    def test_find_column(self):
+        pattern = TagPattern.parse('#adm1')
+        data = hxl.data(DATA)
+        self.assertEqual("#adm1", pattern.find_column(data.columns).tag)
         
     def test_parse(self):
         pattern = TagPattern.parse('#tag+foo-xxx')
