@@ -1035,6 +1035,12 @@ def make_args(description, hxl_output=True):
             nargs='?'
         )
     parser.add_argument(
+        '--encoding',
+        help='Specify the character encoding of the input',
+        metavar='string',
+        nargs='?'
+        )
+    parser.add_argument(
         '--sheet',
         help='Select sheet from a workbook (1 is first sheet)',
         metavar='number',
@@ -1130,7 +1136,8 @@ def make_input(args, stdin=sys.stdin, url_or_filename=None):
         selector=selector,
         allow_local=True,
         http_headers=http_headers,
-        verify_ssl=(not args.ignore_certs)
+        verify_ssl=(not args.ignore_certs),
+        encoding=args.encoding
     )
 
 
