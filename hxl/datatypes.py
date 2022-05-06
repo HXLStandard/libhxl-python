@@ -164,7 +164,7 @@ def is_empty(value):
         bool: True if the value is functionally empty
 
     """
-    return (value is None or value == '' or str(value).isspace())
+    return (value is None or value == '' or str(value).isspace() or is_merged(value))
 
 
 def is_string(value):
@@ -429,4 +429,14 @@ def is_list(value):
     """
     return isinstance(value, collections.abc.Sequence) and not isinstance(value, six.string_types)
 
+def is_merged(value):
+    """Test if a value represents a merged cell
 
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the cell is a merged cell (but not the original in 0,0 position)
+    """
+    import hxl.model
+    return isinstance(value, hxl.model.MergedCell)

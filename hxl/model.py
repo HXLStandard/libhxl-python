@@ -25,17 +25,25 @@ import hxl
 
 logger = logging.getLogger(__name__)
 
+
 class MergedCell(object):
     """ Object representing the value of a merged cell.
-    The __str__ method returns an empty string.
+    The __str__ method returns an empty string. This object will not be used for the top left cell of a merged
+    area (the value for the merge). x and y give the position within the merged area, and w and h give the width
+    and height of the area.
 
     """
 
-    def __str__(self):
+    def __init__ (self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+
+    def __str__ (self):
         return ""
 
-MERGED_CELL = MergedCell()
-""" Constant value for a merged cell (__str__ returns an empty string) """
+    # TODO comparison magic methods
 
 
 class TagPattern(object):
@@ -874,8 +882,9 @@ class Column(object):
             return Column.parse('#' + raw_string, header=default_header, column_number=column_number)
 
 class Row(object):
-    """
-    An iterable row of values in a HXL dataset.
+    """ An iterable row of values in a HXL dataset.
+
+    If a value is part of a merged area, and not in the top left position, it will be a MergedCell object.
     """
 
     # Predefine the slots for efficiency (may reconsider later)

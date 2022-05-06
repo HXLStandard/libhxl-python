@@ -1032,6 +1032,20 @@ class ExcelInput(AbstractInput):
         else:
             return self._workbook.sheet_by_index(index)
 
+    def _get_merged(self, row_num, col_num, value):
+        """Check if a cell is merged (not in 0,0 position), and return a MergedCell object if it is"""
+        for merge in self._sheet.merged_cells:
+            row_min, row_max, col_min, col_max = merge
+            if not (row_num == row_min and col_num == col_min) and row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
+                return hxl.model.MergedCell(
+                    row_num-row_min,
+                    col_num-col_min,
+                    row_max-row_min,
+                    col_max-col_min,
+                )
+        # not a merged cell, or the top left of a merged section
+        return value
+
     @staticmethod
     def _fix_value(cell):
         """Clean up an Excel value for CSV-like representation."""
@@ -1069,7 +1083,14 @@ class ExcelInput(AbstractInput):
             
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
-                row = [ExcelInput._fix_value(cell) for cell in self.outer._sheet.row(self._row_index)]
+                for col_index, cell in enumerate(self.outer._sheet.row(self._row_index)):
+                    row = [
+                        self.outer._get_merged(
+                            self._row_index,
+                            col_index,
+                            ExcelInput._fix_value(cell)
+                        ) for cell in self.outer._sheet.row(self._row_index)
+                    ]
                 self._row_index += 1
                 return row
             else:
