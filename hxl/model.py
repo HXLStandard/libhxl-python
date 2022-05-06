@@ -25,6 +25,18 @@ import hxl
 
 logger = logging.getLogger(__name__)
 
+class MergedCell(object):
+    """ Object representing the value of a merged cell.
+    The __str__ method returns an empty string.
+
+    """
+
+    def __str__(self):
+        return ""
+
+MERGED_CELL = MergedCell()
+""" Constant value for a merged cell (__str__ returns an empty string) """
+
 
 class TagPattern(object):
     """Pattern for matching a HXL hashtag and attributes
