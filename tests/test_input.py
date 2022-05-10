@@ -41,6 +41,7 @@ FILE_XLSX = _resolve_file('./files/test_io/input-valid.xlsx')
 FILE_XLS = _resolve_file('./files/test_io/input-valid.xls')
 FILE_XLSX_BROKEN = _resolve_file('./files/test_io/input-broken.xlsx')
 FILE_XLSX_NOEXT = _resolve_file('./files/test_io/input-valid-xlsx.NOEXT')
+FILE_XLSX_MERGED = _resolve_file('./files/test_io/input-merged.xlsx')
 FILE_JSON = _resolve_file('./files/test_io/input-valid.json')
 FILE_JSON_TXT = _resolve_file('./files/test_io/input-valid-json.txt')
 FILE_JSON_UNTAGGED = _resolve_file('./files/test_io/input-untagged.json')
@@ -131,6 +132,16 @@ class TestInput(unittest.TestCase):
     def test_xlsx(self):
         with make_input(FILE_XLSX, True) as input:
             self.assertTrue(input.is_repeatable)
+            header_row = next(iter(input))
+            self.assertEqual("¿Qué?", header_row[0])
+
+    def test_xlsx_merged_cell(self):
+        with make_input(FILE_XLSX_MERGED, True) as input:
+            header_row = next(iter(input))
+            self.assertFalse(isinstance(header_row[0], hxl.model.MergedCell))
+            self.assertTrue(isinstance(header_row[1], hxl.model.MergedCell))
+            self.assertEqual(1, header_row[1].x)
+            self.assertEqual(0, header_row[1].y)
 
     def test_xlsx_sheet_index(self):
         # a non-existant sheet should throw an exception
