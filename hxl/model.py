@@ -687,7 +687,7 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.JSONPathFilter(self, path, patterns=patterns, queries=queries, use_json=use_json)
 
-    def fill_data(self, patterns=[], queries=[]):
+    def fill_data(self, patterns=[], queries=[], use_merged=False):
         """Fills empty cells in a column using the last non-empty value.
         @param patterns: a tag pattern or list of patterns for the columns to fill (default to all)
         @param queries: a predicate or list of predicates for rows to fill (leave any blank that don't match).
@@ -695,7 +695,7 @@ class Dataset(object):
         @see hxl.filters.FillFilter
         """
         import hxl.filters
-        return hxl.filters.FillDataFilter(self, patterns=patterns, queries=queries)
+        return hxl.filters.FillDataFilter(self, patterns=patterns, queries=queries, use_merged=use_merged)
 
     #
     # Generators

@@ -1459,11 +1459,34 @@ class TestFillDataFilter(AbstractBaseFilterTest):
         ['NGO A', '', '', '150'],
     ]
 
+    DATA_IN_MERGED = [
+        ['Organisation', 'Cluster', 'District', 'Affected'],
+        ['#org', '#sector+list', '#adm1', '#affected'],
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', hxl.model.MergedCell(1, 3, 1, 1, 'Education'), 'Coast', '300'],
+        ['NGO A', '', 'Coast', '150'],
+    ]
+
+    VALUES_OUT_MERGED = [
+        ['NGO A', 'WASH', 'Coast', '200'],
+        ['NGO B', 'Education', 'Plains', '100'],
+        ['NGO B', 'Education', 'Coast', '300'],
+        ['NGO A', '', 'Coast', '150'],
+    ]
+
     def test_fill_all(self):
         """Fill everywhere."""
         self.assertEqual(
             hxl.data(self.DATA_IN).fill_data().values,
             self.VALUES_OUT_ALL
+        )
+
+    def test_fill_merged(self):
+        """Fill everywhere."""
+        self.assertEqual(
+            hxl.data(self.DATA_IN_MERGED).fill_data(use_merged=True).values,
+            self.VALUES_OUT_MERGED
         )
 
     def test_fill_pattern(self):

@@ -602,13 +602,22 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     parser = make_args('Fill empty cells in a HXL dataset')
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=False)
+
+    group.add_argument(
         '-t',
         '--tag',
-        help='Fill empty cells only in matching columns (default: fill in all)',
+        help='Fill empty cells only in matching columns (default: fill in all); not allowed with --use-merged',
         metavar='tagpattern,...',
-        type=hxl.model.TagPattern.parse,
+        type=hxl.model.TagPattern.parse_list,
         )
+    group.add_argument(
+        '--use-merged',
+        help='Use XLS(X) merged areas instead of tag patterns; not allowed with --tag',
+        action='store_const',
+        const=True,
+        default=False
+    )
     add_queries_arg(parser, 'Fill only in rows that match at least one query.')
 
     args = parser.parse_args(args)
@@ -616,7 +625,7 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.FillDataFilter(source, pattern=args.tag, queries=args.query)
+        filter = hxl.filters.FillDataFilter(source, patterns=args.tag, queries=args.query, use_merged=args.use_merged)
         hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
