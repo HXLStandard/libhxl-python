@@ -1009,6 +1009,7 @@ class ExcelInput(AbstractInput):
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._get_sheet(sheet_index)
+        self.merged_values = {}
 
     def __iter__(self):
         return ExcelInput._ExcelIter(self)
@@ -1036,15 +1037,20 @@ class ExcelInput(AbstractInput):
         """Check if a cell is merged (not in 0,0 position), and return a MergedCell object if it is"""
         for merge in self._sheet.merged_cells:
             row_min, row_max, col_min, col_max = merge
-            if (not (row_num == row_min and col_num == col_min)) and row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
-                cell = hxl.model.MergedCell(
-                    col_num-col_min,
-                    row_num-row_min,
-                    col_max-col_min,
-                    row_max-row_min,
-                )
-                return cell
-        # not a merged cell, or the top left of a merged section
+            if row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
+                if row_num == row_min and col_num == col_min:
+                    # top left == the value merged through all the cells
+                    self.merged_values[(merge)] = value
+                    return value
+                else:
+                    return hxl.model.MergedCell(
+                        col_num-col_min,
+                        row_num-row_min,
+                        col_max-col_min,
+                        row_max-row_min,
+                        self.merged_values[(merge)],
+                    )
+        # not a merged cell
         return value
 
     @staticmethod

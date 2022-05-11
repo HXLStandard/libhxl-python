@@ -142,6 +142,7 @@ class TestInput(unittest.TestCase):
             self.assertTrue(isinstance(header_row[1], hxl.model.MergedCell))
             self.assertEqual(1, header_row[1].x)
             self.assertEqual(0, header_row[1].y)
+            self.assertEqual("¿Qué?", header_row[1].merged_value)
 
     def test_xlsx_sheet_index(self):
         # a non-existant sheet should throw an exception
