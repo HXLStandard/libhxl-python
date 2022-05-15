@@ -128,7 +128,17 @@ HTML5_SIGS = [
 ########################################################################
 
 
-def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
+def data(
+        data,
+        allow_local=False,
+        sheet_index=None,
+        timeout=None,
+        verify_ssl=True,
+        http_headers=None,
+        selector=None,
+        encoding=None,
+        expand_merged=False
+):
     """
     Convenience method for reading a HXL dataset.
 
@@ -143,6 +153,7 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
         http_headers (dict): optional dict of HTTP headers to add to a request.
         selector (str): selector property for a JSON file (will later also cover tabs, etc.)
         encoding (str): force a character encoding, regardless of HTTP info etc
+        expand_merged (bool): expand merged areas by repeating the value (Excel only)
 
     Returns:
         hxl.model.Dataset: a data-access object
@@ -173,11 +184,24 @@ def data(data, allow_local=False, sheet_index=None, timeout=None, verify_ssl=Tru
             verify_ssl=verify_ssl,
             http_headers=http_headers,
             selector=selector,
-            encoding=encoding
+            encoding=encoding,
+            expand_merged=expand_merged,
         ))
 
     
-def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, encoding=None):
+def tagger(
+        data,
+        specs,
+        default_tag=None,
+        match_all=False,
+        allow_local=False,
+        sheet_index=None,
+        timeout=None,
+        verify_ssl=True,
+        http_headers=None,
+        encoding=None,
+        expand_merged=False
+):
     """Open an untagged data source and add hashtags.
 
     The specs are a list of pairs in the format ["header", "#hashtag"], e.g.
@@ -208,6 +232,7 @@ def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sh
         http_headers (dict): optional dict of HTTP headers to add to a request.
         selector (str): selector property for a JSON file (will later also cover tabs, etc.)
         encoding (str): force a character encoding, regardless of HTTP info etc
+        expand_merged (bool): expand merged areas by repeating the value (Excel only)
 
     Returns:
         hxl.converters.Tagger: a data-access object subclassed from hxl.model.Dataset
@@ -228,7 +253,8 @@ def tagger(data, specs, default_tag=None, match_all=False, allow_local=False, sh
                 timeout=timeout,
                 verify_ssl=verify_ssl,
                 http_headers=http_headers,
-                encoding=encoding
+                encoding=encoding,
+                expand_merged=expand_merged,
             ),
             specs=specs,
             default_tag=default_tag,
@@ -308,7 +334,17 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
         output.write(line)
 
 
-def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, verify_ssl=True, http_headers=None, selector=None, encoding=None):
+def make_input(
+        raw_source,
+        allow_local=False,
+        sheet_index=None,
+        timeout=None,
+        verify_ssl=True,
+        http_headers=None,
+        selector=None,
+        encoding=None,
+        expand_merged=False,
+):
     """Figure out what kind of input to create.
 
     This is a lower-level I/O function that sits beneath ``data()``
@@ -334,6 +370,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
         http_headers (dict): optional dict of HTTP headers to add to a request.
         selector (str): selector property for a JSON file (will later also cover tabs, etc.)
         encoding (str): force a character encoding, regardless of HTTP info etc
+        expand_merged (bool): expand merged cells by repeating the value (Excel only)
 
     Returns:
         hxl.input.AbstractInput: a row-by-row input object (before checking for HXL hashtags)
@@ -415,7 +452,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
 
         if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
-            return ExcelInput(tmpfile, sheet_index=sheet_index)
+            return ExcelInput(tmpfile, sheet_index=sheet_index, expand_merged=expand_merged)
 
         if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
             tmpfile = make_tempfile(input)
@@ -423,7 +460,7 @@ def make_input(raw_source, allow_local=False, sheet_index=None, timeout=None, ve
             try:
                 # Is the zip file really an XLSX file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(tmpfile, sheet_index=sheet_index)
+                return ExcelInput(tmpfile, sheet_index=sheet_index, expand_merged=expand_merged)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -1355,6 +1392,7 @@ def from_spec(spec, allow_local_ok=False):
     verify_ssl = spec.get('verify_ssl', True)
     http_headers = spec.get('http_headers', None)
     encoding = spec.get('encoding', None)
+    expand_merged = spec.get('expand_merged', False)
 
     # recipe
     tagger_spec = spec.get('tagger', None)
@@ -1371,7 +1409,8 @@ def from_spec(spec, allow_local_ok=False):
         timeout=timeout,
         verify_ssl=verify_ssl,
         http_headers=http_headers,
-        encoding=encoding
+        encoding=encoding,
+        expand_merged=expand_merged,
     )
 
     # autotag if requested

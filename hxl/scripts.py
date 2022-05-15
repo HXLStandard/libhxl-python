@@ -1091,6 +1091,13 @@ def make_args(description, hxl_output=True):
         default=False
     )
     parser.add_argument(
+        "--expand-merged",
+        help="Expand merged areas by repeating the value (Excel only)",
+        action='store_const',
+        const=True,
+        default=False
+    )
+    parser.add_argument(
         '--log',
         help='Set minimum logging level',
         metavar='debug|info|warning|error|critical|none',
@@ -1146,7 +1153,8 @@ def make_input(args, stdin=sys.stdin, url_or_filename=None):
         allow_local=True,
         http_headers=http_headers,
         verify_ssl=(not args.ignore_certs),
-        encoding=args.encoding
+        encoding=args.encoding,
+        expand_merged=args.expand_merged,
     )
 
 
