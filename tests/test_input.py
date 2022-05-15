@@ -141,6 +141,17 @@ class TestInput(unittest.TestCase):
             with make_input(FILE_XLSX, True, sheet_index=100) as input:
                 pass
 
+    def test_xlsx_merged(self):
+        with make_input(FILE_XLSX, True, expand_merged=False) as input:
+            self.assertTrue(input.is_repeatable)
+            header_row = next(iter(input))
+            self.assertEqual("", header_row[1])
+
+        with make_input(FILE_XLSX, True, expand_merged=True) as input:
+            self.assertTrue(input.is_repeatable)
+            header_row = next(iter(input))
+            self.assertEqual("¿Qué?", header_row[1])
+
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
         self.assertTrue('#vocab' in source.tags)
