@@ -1,6 +1,6 @@
 wheel
 python-dateutil
-xlrd3=1.1.0
+xlrd3==1.1.0
 requests
 requests_cache
 unidecode

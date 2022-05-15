@@ -26,30 +26,6 @@ import hxl
 logger = logging.getLogger(__name__)
 
 
-class MergedCell(object):
-    """ Object representing the value of a merged cell.
-    The __str__ method returns an empty string. This object will not be used for the top left cell of a merged
-    area (the value for the merge). x and y give the position within the merged area, and w and h give the width
-    and height of the area.
-
-    """
-
-    def __init__ (self, x, y, w, h, merged_value):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-        self.merged_value = merged_value
-
-    def __str__ (self):
-        return ""
-
-    def __repr__ (self):
-        return "''"
-
-    # TODO comparison magic methods
-
-
 class TagPattern(object):
     """Pattern for matching a HXL hashtag and attributes
 
@@ -687,7 +663,7 @@ class Dataset(object):
         import hxl.filters
         return hxl.filters.JSONPathFilter(self, path, patterns=patterns, queries=queries, use_json=use_json)
 
-    def fill_data(self, patterns=[], queries=[], use_merged=False):
+    def fill_data(self, patterns=[], queries=[]):
         """Fills empty cells in a column using the last non-empty value.
         @param patterns: a tag pattern or list of patterns for the columns to fill (default to all)
         @param queries: a predicate or list of predicates for rows to fill (leave any blank that don't match).
@@ -695,7 +671,7 @@ class Dataset(object):
         @see hxl.filters.FillFilter
         """
         import hxl.filters
-        return hxl.filters.FillDataFilter(self, patterns=patterns, queries=queries, use_merged=use_merged)
+        return hxl.filters.FillDataFilter(self, patterns=patterns, queries=queries)
 
     #
     # Generators

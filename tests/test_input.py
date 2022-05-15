@@ -135,15 +135,6 @@ class TestInput(unittest.TestCase):
             header_row = next(iter(input))
             self.assertEqual("¿Qué?", header_row[0])
 
-    def test_xlsx_merged_cell(self):
-        with make_input(FILE_XLSX_MERGED, True) as input:
-            header_row = next(iter(input))
-            self.assertFalse(isinstance(header_row[0], hxl.model.MergedCell))
-            self.assertTrue(isinstance(header_row[1], hxl.model.MergedCell))
-            self.assertEqual(1, header_row[1].x)
-            self.assertEqual(0, header_row[1].y)
-            self.assertEqual("¿Qué?", header_row[1].merged_value)
-
     def test_xlsx_sheet_index(self):
         # a non-existant sheet should throw an exception
         with self.assertRaises(hxl.input.HXLIOException):

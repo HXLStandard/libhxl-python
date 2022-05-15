@@ -2268,17 +2268,15 @@ class FillDataFilter(AbstractStreamingFilter):
     Optionally restrict to specific columns and/or rows.
     """
 
-    def __init__(self, source, patterns=None, queries=[], use_merged=False):
+    def __init__(self, source, patterns=None, queries=[]):
         """Constructor
         @param source: the source dataset
-        @param patterns: a tag pattern or list of patterns for the columns to fill (default to all; ignored if use_merged is True)
+        @param patterns: a tag pattern or list of patterns for the columns to fill (default to all)
         @param queries: restrict filling to rows matching one of these queries (default: fill all rows).
-        @param use_merged: if true, use only hxl.model.MergedCell objects (available from XLS and XLSX)
         """
         super().__init__(source)
         self.patterns = hxl.model.TagPattern.parse_list(patterns)
         self.queries = self._setup_queries(queries)
-        self.use_merged = use_merged
         self._saved = {}
         self._indices = None
 
@@ -2286,25 +2284,16 @@ class FillDataFilter(AbstractStreamingFilter):
         """@returns: row values with some empty values possibly filled in"""
         values = list(row.values)
 
-        if self.use_merged:
-
-            # Using explicit merges from XLS(X)
-            for i, value in enumerate(values):
-                if isinstance(value, hxl.model.MergedCell):
-                    values[i] = value.merged_value
-
-        else:
-
-            # Guessing at empty cells (column-wise only)
-            if self._indices is None:
-                self._indices = self._get_indices(self.patterns)
-            for i in self._indices:
-                if i >= len(values):
-                    values += [''] * (i - len(values) + 1) # make sure list is long enough
-                if values[i]:
-                    self._saved[i] = values[i]
-                elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
-                    values[i] = self._saved[i] if self._saved.get(i) else ''
+        # Guessing at empty cells (column-wise only)
+        if self._indices is None:
+            self._indices = self._get_indices(self.patterns)
+        for i in self._indices:
+            if i >= len(values):
+                values += [''] * (i - len(values) + 1) # make sure list is long enough
+            if values[i]:
+                self._saved[i] = values[i]
+            elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
+                values[i] = self._saved[i] if self._saved.get(i) else ''
                     
         return values
 
@@ -2319,7 +2308,6 @@ class FillDataFilter(AbstractStreamingFilter):
             source=source,
             patterns=opt_arg(spec, 'patterns'),
             queries=opt_arg(spec, 'queries'),
-            use_merged=opt_arg(spec, 'use_merged'),
         )
 
     

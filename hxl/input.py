@@ -996,11 +996,12 @@ class ExcelInput(AbstractInput):
 
     """
 
-    def __init__(self, tmpfile, sheet_index=None):
+    def __init__(self, tmpfile, sheet_index=None, expand_merged=False):
         """
         Args:
             tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents
             sheet_index (int): the 0-based index of the sheet (if unspecified, scan)
+            expand_merged(boolean): if True, expand merged cells by repeating the value.
         """
         super().__init__()
         self.tmpfile = tmpfile # prevent garbage collection
@@ -1009,6 +1010,7 @@ class ExcelInput(AbstractInput):
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
         self._sheet = self._get_sheet(sheet_index)
+        self._expand_merged = expand_merged
         self.merged_values = {}
 
     def __iter__(self):
@@ -1019,7 +1021,7 @@ class ExcelInput(AbstractInput):
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._get_sheet(sheet_index)
             for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [ExcelInput._fix_value(cell) for cell in sheet.row(row_index)]
+                raw_row = [self._fix_value(cell) for cell in sheet.row(row_index)]
                 # FIXME nasty violation of encapsulation
                 if HXLReader.parse_tags(raw_row):
                     return sheet_index
@@ -1033,28 +1035,7 @@ class ExcelInput(AbstractInput):
         else:
             return self._workbook.sheet_by_index(index)
 
-    def _get_merged(self, row_num, col_num, value):
-        """Check if a cell is merged (not in 0,0 position), and return a MergedCell object if it is"""
-        for merge in self._sheet.merged_cells:
-            row_min, row_max, col_min, col_max = merge
-            if row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
-                if row_num == row_min and col_num == col_min:
-                    # top left == the value merged through all the cells
-                    self.merged_values[(merge)] = value
-                    return value
-                else:
-                    return hxl.model.MergedCell(
-                        col_num-col_min,
-                        row_num-row_min,
-                        col_max-col_min,
-                        row_max-row_min,
-                        self.merged_values[(merge)],
-                    )
-        # not a merged cell
-        return value
-
-    @staticmethod
-    def _fix_value(cell):
+    def _fix_value(self, cell):
         """Clean up an Excel value for CSV-like representation."""
 
         if cell.value is None or cell.ctype == xlrd.XL_CELL_EMPTY:
@@ -1081,6 +1062,24 @@ class ExcelInput(AbstractInput):
         else: # XL_CELL_TEXT, or anything else
             return cell.value
 
+    def _do_expand (self, row_num, col_num, value):
+        """ Repeat a value in a merged section, if necessary.
+        """
+        
+        if self._expand_merged:
+            for merge in self._sheet.merged_cells:
+                row_min, row_max, col_min, col_max = merge
+                if row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
+                    if row_num == row_min and col_num == col_min:
+                        # top left == the value merged through all the cells
+                        self.merged_values[(merge)] = value
+                        return value
+                    else:
+                        return self.merged_values[(merge)]
+
+        # default: unchanged
+        return value
+
     class _ExcelIter:
         """Internal iterator class for reading through an Excel sheet multiple times."""
 
@@ -1093,10 +1092,10 @@ class ExcelInput(AbstractInput):
                 row = []
                 for col_index, cell in enumerate(self.outer._sheet.row(self._row_index)):
                     row.append(
-                        self.outer._get_merged(
+                        self.outer._do_expand(
                             self._row_index,
                             col_index,
-                            ExcelInput._fix_value(cell)
+                            self.outer._fix_value(cell)
                         )
                     )
                 self._row_index += 1
