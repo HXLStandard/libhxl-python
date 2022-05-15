@@ -1106,7 +1106,7 @@ class ExcelInput(AbstractInput):
         if self._expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
-                if row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
+                if row_num in range(row_min, row_max+1) and col_num in range(col_min, col_max):
                     if row_num == row_min and col_num == col_min:
                         # top left == the value merged through all the cells
                         self.merged_values[(merge)] = value
@@ -1123,11 +1123,20 @@ class ExcelInput(AbstractInput):
         def __init__(self, outer):
             self.outer = outer
             self._row_index = 0
+            self._col_max = 0
             
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
                 row = []
+
+                # process the actual cells
                 for col_index, cell in enumerate(self.outer._sheet.row(self._row_index)):
+
+                    # keep track of maximum row length seen so far
+                    if col_index >= self._col_max:
+                        self._col_max = col_index + 1
+
+                    # process and add the value
                     row.append(
                         self.outer._do_expand(
                             self._row_index,
@@ -1135,6 +1144,18 @@ class ExcelInput(AbstractInput):
                             self.outer._fix_value(cell)
                         )
                     )
+
+                # fill in the row with empty values, up the the maximum length previously observed
+                # (this lets us expand merged areas at the end of the row, if needed)
+                for col_index in range(len(self.outer._sheet.row(self._row_index)), self._col_max):
+                    row.append(
+                        self.outer._do_expand(
+                            self._row_index,
+                            col_index,
+                            '',
+                        )
+                    )
+                    
                 self._row_index += 1
                 return row
             else:
