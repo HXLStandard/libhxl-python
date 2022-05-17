@@ -818,7 +818,7 @@ class TestLoad(unittest.TestCase):
 class TestJSONSchema(unittest.TestCase):
 
     def test_truthy(self):
-        schema = hxl.schema(hxl.data(resolve_path('files/test_validation/truthy-schema.json'), allow_local=True))
+        schema = hxl.schema(hxl.data(resolve_path('files/test_validation/truthy-schema.json'), hxl.InputOptions(allow_local=True)))
         BAD_DATA = [
             ['#sector'],
             ['Health']

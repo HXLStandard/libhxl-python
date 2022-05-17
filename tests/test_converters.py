@@ -72,6 +72,6 @@ class TaggerTest(unittest.TestCase):
             ('food_monthly', '#value+expenditure+food_monthly',),
         ]
         filename = resolve_path("files/test_converters/wide-tagging-test.csv")
-        source = hxl.data(hxl.converters.Tagger(hxl.input.make_input(filename, allow_local=True), tagging_specs)).cache()
+        source = hxl.data(hxl.converters.Tagger(hxl.input.make_input(filename, hxl.input.InputOptions(allow_local=True)), tagging_specs)).cache()
         self.assertTrue('#value+expenditure+food_monthly' in source.display_tags)
                      

@@ -76,7 +76,7 @@ class HXLException(Exception):
 import hxl.geo
 import hxl.datatypes
 from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
-from hxl.input import data, tagger, HXLParseException, write_hxl, make_input, from_spec
+from hxl.input import data, tagger, HXLParseException, write_hxl, make_input, InputOptions, from_spec
 from hxl.validation import schema, validate, HXLValidationException
 
 # end

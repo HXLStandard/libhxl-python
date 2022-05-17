@@ -37,7 +37,25 @@ import datetime, dateutil.parser
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["data", "tagger", "write_hxl", "write_json", "make_input", "HXLIOException", "HXLAuthorizationException", "HXLParseException", "HXLTagsNotFoundException", "AbstractInput", "CSVInput", "JSONInput", "ExcelInput", "ArrayInput", "HXLReader", "from_spec"]
+__all__ = (
+    "data",
+    "tagger",
+    "write_hxl",
+    "write_json",
+    "make_input",
+    "HXLIOException",
+    "HXLAuthorizationException",
+    "HXLParseException",
+    "HXLTagsNotFoundException",
+    "AbstractInput",
+    "CSVInput",
+    "JSONInput",
+    "ExcelInput",
+    "ArrayInput",
+    "InputOptions",
+    "HXLReader",
+    "from_spec",
+)
 
 
 ########################################################################
@@ -122,23 +140,12 @@ HTML5_SIGS = [
 ]
 
 
-
 ########################################################################
 # Exported functions
 ########################################################################
 
 
-def data(
-        data,
-        allow_local=False,
-        sheet_index=None,
-        timeout=None,
-        verify_ssl=True,
-        http_headers=None,
-        selector=None,
-        encoding=None,
-        expand_merged=False
-):
+def data(data, input_options=None):
     """
     Convenience method for reading a HXL dataset.
 
@@ -146,14 +153,7 @@ def data(
 
     Args:
         data: a HXL data provider, file object, array, or string (representing a URL or file name).
-        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
-        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
-        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
-        http_headers (dict): optional dict of HTTP headers to add to a request.
-        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
-        encoding (str): force a character encoding, regardless of HTTP info etc
-        expand_merged (bool): expand merged areas by repeating the value (Excel only)
+        input_options (InputOptions): options for reading a dataset.
 
     Returns:
         hxl.model.Dataset: a data-access object
@@ -173,35 +173,13 @@ def data(
 
     elif isinstance(data, dict) and data.get('input'):
         """If it's a JSON-type spec, try parsing it."""
-        return hxl.input.from_spec(data, allow_local_ok=allow_local)
+        return hxl.input.from_spec(data, allow_local_ok=input_options is not None and input_options.allow_local)
 
     else:
-        return HXLReader(make_input(
-            data,
-            allow_local=allow_local,
-            sheet_index=sheet_index,
-            timeout=timeout,
-            verify_ssl=verify_ssl,
-            http_headers=http_headers,
-            selector=selector,
-            encoding=encoding,
-            expand_merged=expand_merged,
-        ))
+        return HXLReader(make_input(data, input_options))
 
     
-def tagger(
-        data,
-        specs,
-        default_tag=None,
-        match_all=False,
-        allow_local=False,
-        sheet_index=None,
-        timeout=None,
-        verify_ssl=True,
-        http_headers=None,
-        encoding=None,
-        expand_merged=False
-):
+def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
     """Open an untagged data source and add hashtags.
 
     The specs are a list of pairs in the format ["header", "#hashtag"], e.g.
@@ -225,14 +203,7 @@ def tagger(
         data: a HXL data provider, file object, array, or string (representing a URL or file name).
         specs (list): a list of mapping pairs of headers and hashtags.
         match_all (bool): if True, match the complete header string; otherwise, allow partial matches (default)
-        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
-        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
-        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
-        http_headers (dict): optional dict of HTTP headers to add to a request.
-        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
-        encoding (str): force a character encoding, regardless of HTTP info etc
-        expand_merged (bool): expand merged areas by repeating the value (Excel only)
+        input_options (InputOptions): options for reading a dataset.
 
     Returns:
         hxl.converters.Tagger: a data-access object subclassed from hxl.model.Dataset
@@ -246,16 +217,7 @@ def tagger(
     import hxl.converters
     return hxl.data(
         hxl.converters.Tagger(
-            input=make_input(
-                data,
-                allow_local=allow_local,
-                sheet_index=sheet_index,
-                timeout=timeout,
-                verify_ssl=verify_ssl,
-                http_headers=http_headers,
-                encoding=encoding,
-                expand_merged=expand_merged,
-            ),
+            input=make_input(data, input_options),
             specs=specs,
             default_tag=default_tag,
             match_all=match_all
@@ -334,17 +296,7 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
         output.write(line)
 
 
-def make_input(
-        raw_source,
-        allow_local=False,
-        sheet_index=None,
-        timeout=None,
-        verify_ssl=True,
-        http_headers=None,
-        selector=None,
-        encoding=None,
-        expand_merged=False,
-):
+def make_input(raw_source, input_options=None):
     """Figure out what kind of input to create.
 
     This is a lower-level I/O function that sits beneath ``data()``
@@ -354,7 +306,7 @@ def make_input(
 
     Example:
     ```
-    input = make_input("data.xlsx", allow_local=True)
+    input = make_input("data.xlsx", InputOptions(allow_local=True))
     for raw_row in input:
         process_row(raw_row) # each row will be a list of values
     ```
@@ -363,14 +315,7 @@ def make_input(
 
     Args:
         raw_source: a HXL data provider, file object, array, or string (representing a URL or file name).
-        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
-        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
-        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
-        http_headers (dict): optional dict of HTTP headers to add to a request.
-        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
-        encoding (str): force a character encoding, regardless of HTTP info etc
-        expand_merged (bool): expand merged cells by repeating the value (Excel only)
+        input_options (InputOptions): input_options for reading a dataset.
 
     Returns:
         hxl.input.AbstractInput: a row-by-row input object (before checking for HXL hashtags)
@@ -403,6 +348,9 @@ def make_input(
                 return True
         return False
 
+    if input_options is None:
+        input_options = InputOptions(allow_local=False, verify_ssl=True) # safe default
+
     if isinstance(raw_source, AbstractInput):
         # already an input source: no op
         return raw_source
@@ -415,6 +363,7 @@ def make_input(
     else:
         mime_type = None
         file_ext = None
+        encoding = input_options.encoding
             
         if hasattr(raw_source, 'read'):
             # it's an input stream
@@ -423,14 +372,10 @@ def make_input(
         else:
             # assume a URL or filename
             logger.debug('Opening source %s as a URL or file', raw_source)
-            (input, mime_type, file_ext, specified_encoding) = open_url_or_file(
-                raw_source,
-                allow_local=allow_local,
-                timeout=timeout,
-                verify_ssl=verify_ssl,
-                http_headers=http_headers
-            )
+            (input, mime_type, file_ext, specified_encoding) = open_url_or_file(raw_source, input_options)
             input = wrap_stream(input)
+
+            # figure out the character encoding
             if encoding is None: # if no encoding was provided, use the inferred one
                 if specified_encoding:
                     encoding = specified_encoding
@@ -446,13 +391,13 @@ def make_input(
                 {
                     'input': input,
                     'source': raw_source,
-                    'munged': _munge_url(raw_source, http_headers=http_headers) if str(raw_source).startswith('http') else None
+                    'munged': _munge_url(raw_source, input_options) if str(raw_source).startswith('http') else None
                 }
             ))
 
         if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
-            return ExcelInput(tmpfile, sheet_index=sheet_index, expand_merged=expand_merged)
+            return ExcelInput(tmpfile, input_options)
 
         if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
             tmpfile = make_tempfile(input)
@@ -460,37 +405,34 @@ def make_input(
             try:
                 # Is the zip file really an XLSX file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(tmpfile, sheet_index=sheet_index, expand_merged=expand_merged)
+                return ExcelInput(tmpfile, input_options)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
                     zf = zipfile.ZipFile(tmpfile, "r")
                     for name in zf.namelist():
                         if os.path.splitext(name)[1].lower()==".csv":
-                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), encoding=encoding)
+                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), input_options)
 
             raise HXLIOException("Cannot find CSV file or Excel content in zip archive")
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
-            return JSONInput(input, selector=selector, encoding=encoding)
+            return JSONInput(input, input_options)
 
         # fall back to CSV if all else fails
         logger.debug('Making input from CSV')
-        return CSVInput(input, encoding=encoding)
+        return CSVInput(input, input_options)
 
 
-def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ssl=True, http_headers=None):
+def open_url_or_file(url_or_filename, input_options):
     """Try opening a local or remote resource.
 
     Allows only HTTP(S) and (S)FTP URLs.
 
     Args:
         url_or_filename (string): the string to try openining.
-        allow_local (bool): if True, OK to open local files; otherwise, only remote URLs allowed (default: False).
-        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
-        verify_ssl (bool): if True, then fail on an SSL error.
-        http_headers (dict): dictionary of headers to add to the request.
+        input_options (InputOptions): options for reading a dataset.
 
     Returns:
         io.IOBase: an I/O stream for reading.
@@ -511,7 +453,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
     if result:
 
         # Check for possible exploits when allow_local is False
-        if not allow_local:
+        if not input_options.allow_local:
 
             hostname = result.group(1).lower().strip()
 
@@ -530,13 +472,13 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
-            url = _munge_url(url_or_filename, verify_ssl, http_headers=http_headers)
+            url = _munge_url(url_or_filename, input_options)
             response = requests.get(
                 url,
                 stream=True,
-                verify=verify_ssl,
-                timeout=timeout,
-                headers=http_headers
+                verify=input_options.verify_ssl,
+                timeout=input_options.timeout,
+                headers=input_options.http_headers
             )
             if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
                 raise HXLAuthorizationException("Access not authorized", url=url)
@@ -557,7 +499,7 @@ def open_url_or_file(url_or_filename, allow_local=False, timeout=None, verify_ss
 
         return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding)
 
-    elif allow_local:
+    elif input_options.allow_local:
         # Default to a local file, if allowed
         try:
             return (io.open(url_or_filename, 'rb'), mime_type, file_ext, encoding)
@@ -665,6 +607,41 @@ class HXLTagsNotFoundException(HXLParseException):
         super().__init__(message, url)
 
 
+class InputOptions:
+    """ Input options for datasets.
+
+    Properties:
+        allow_local (bool): if true, allow opening local filenames as well as remote URLs (default: False).
+        sheet_index (int): if supplied, use the specified 1-based index to choose a sheet from an Excel workbook (default: None)
+        timeout (int): if supplied, time out an HTTP(S) request after the specified number of seconds with no data received (default: None)
+        verify_ssl (bool): if False, don't verify SSL certificates (e.g. for self-signed certs).
+        http_headers (dict): optional dict of HTTP headers to add to a request.
+        selector (str): selector property for a JSON file (will later also cover tabs, etc.)
+        encoding (str): force a character encoding, regardless of HTTP info etc
+        expand_merged (bool): expand merged areas by repeating the value (Excel only)
+    """
+
+    def __init__ (
+            self,
+            allow_local=False,
+            sheet_index=None,
+            timeout=None,
+            verify_ssl=True,
+            http_headers=None,
+            selector=None,
+            encoding=None,
+            expand_merged=False
+            ):
+        self.allow_local = allow_local
+        self.sheet_index = sheet_index
+        self.timeout = timeout
+        self.verify_ssl = verify_ssl
+        self.http_headers = http_headers
+        self.selector = selector
+        self.encoding = encoding
+        self.expand_merged = expand_merged
+
+
 class RequestResponseIOWrapper(io.RawIOBase):
     """Wrapper for a Response object from the requests library.  Streaming
     in requests is a bit broken: for example, if you're streaming, the
@@ -753,8 +730,9 @@ class AbstractInput(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self):
+    def __init__(self, input_options):
         super().__init__()
+        self.input_options = input_options
         self.is_repeatable = False
 
     @abc.abstractmethod
@@ -785,19 +763,19 @@ class CSVInput(AbstractInput):
     _DELIMITERS = [",", "\t", ";", ":", "|"]
     """ CSV delimiters allowed """
 
-    def __init__(self, input, encoding='utf-8'):
+    def __init__(self, input, input_options):
         """
         Args:
             input (io.IOBase): a byte input stream
-            encoding (str): the character encoding to use
+            input_options (InputOptions): options for reading a dataset.
 
         """
-        super().__init__()
+        super().__init__(input_options)
 
         # guess the delimiter
-        delimiter = CSVInput._detect_delimiter(input, encoding)
+        delimiter = CSVInput._detect_delimiter(input, input_options.encoding or "utf-8")
         
-        self._input = io.TextIOWrapper(input, encoding=encoding, errors="replace")
+        self._input = io.TextIOWrapper(input, encoding=input_options.encoding, errors="replace")
         self._reader = csv.reader(self._input, delimiter=delimiter)
 
     def __exit__(self, value, type, traceback):
@@ -825,6 +803,7 @@ class CSVInput(AbstractInput):
             try:
                 sample = raw[:-1].decode(encoding, errors="replace")
             except Exception as e:
+                print("***", e)
                 continue
             break
         
@@ -868,15 +847,14 @@ class JSONInput(AbstractInput):
 
     """
 
-    def __init__(self, input, encoding='utf-8', selector=None):
+    def __init__(self, input, input_options):
         """
         Args:
             input (io.IOBase): an input byte stream
-            encoding (str): the character encoding to use
-            selector (str): either a top-level property name or a JSONPath expression to locate the row data (if not provided, the class will try to locate it heuristically)
+            input_options (InputOptions): options for reading a dataset.
 
         """
-        super().__init__()
+        super().__init__(input_options)
 
         # values to be set by _scan_data_element
         self.type = None
@@ -884,8 +862,8 @@ class JSONInput(AbstractInput):
         self.show_headers = False
 
         # read the JSON data from the stream
-        with io.TextIOWrapper(input, encoding=encoding) as _input:
-            self.json_data = self._select(selector, json.load(_input, object_pairs_hook=collections.OrderedDict))
+        with io.TextIOWrapper(input, encoding=input_options.encoding) as _input:
+            self.json_data = self._select(input_options.selector, json.load(_input, object_pairs_hook=collections.OrderedDict))
         if not self._scan_data_element(self.json_data):
             self.json_data = self._search_data(self.json_data)
         if self.json_data is None:
@@ -1033,21 +1011,22 @@ class ExcelInput(AbstractInput):
 
     """
 
-    def __init__(self, tmpfile, sheet_index=None, expand_merged=False):
+    def __init__(self, tmpfile, input_options):
         """
         Args:
             tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents
-            sheet_index (int): the 0-based index of the sheet (if unspecified, scan)
-            expand_merged(boolean): if True, expand merged cells by repeating the value.
+            input_options (InputOptions): options for reading a dataset.
         """
-        super().__init__()
+        super().__init__(input_options)
         self.tmpfile = tmpfile # prevent garbage collection
         self.is_repeatable = True
         self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
+
+        sheet_index = self.input_options.sheet_index
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
+            
         self._sheet = self._get_sheet(sheet_index)
-        self._expand_merged = expand_merged
         self.merged_values = {}
 
     def __iter__(self):
@@ -1103,7 +1082,7 @@ class ExcelInput(AbstractInput):
         """ Repeat a value in a merged section, if necessary.
         """
         
-        if self._expand_merged:
+        if self.input_options.expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
                 if row_num in range(row_min, row_max+1) and col_num in range(col_min, col_max):
@@ -1178,7 +1157,7 @@ class ArrayInput(AbstractInput):
             data (array): any iterable
 
         """
-        super().__init__()
+        super().__init__(input_options=None)
         self.data = data
         self.is_repeatable = True
 
@@ -1425,13 +1404,15 @@ def from_spec(spec, allow_local_ok=False):
     # set up the input
     input = make_input(
         raw_source=input_spec,
-        allow_local=allow_local,
-        sheet_index=sheet_index,
-        timeout=timeout,
-        verify_ssl=verify_ssl,
-        http_headers=http_headers,
-        encoding=encoding,
-        expand_merged=expand_merged,
+        input_options = InputOptions(
+            allow_local=allow_local,
+            sheet_index=sheet_index,
+            timeout=timeout,
+            verify_ssl=verify_ssl,
+            http_headers=http_headers,
+            encoding=encoding,
+            expand_merged=expand_merged,
+        )
     )
 
     # autotag if requested
@@ -1456,7 +1437,7 @@ def from_spec(spec, allow_local_ok=False):
 ########################################################################
 
 
-def _munge_url(url, verify_ssl=True, http_headers=None):
+def _munge_url(url, input_options):
     """ Munge a URL to get at underlying data for well-known types.
 
     For example, if it's an HDX dataset, figure out the download
@@ -1466,8 +1447,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
 
     Args:
         url (str): the original URL to munge
-        verify_ssl (bool): if False, don't verify SSL certs
-        http_headers (bool): array of extra HTTP headers to pass
+        input_options (InputOptions): options for reading a dataset.
 
     Returns:
         str: the actual direct-download URL
@@ -1484,7 +1464,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        url = _get_ckan_url(result.group(1), result.group(2), result.group(3), verify_ssl, http_headers)
+        url = _get_ckan_url(result.group(1), result.group(2), result.group(3), input_options)
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
@@ -1498,7 +1478,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     result = re.match(KOBO_URL, url)
     if result:
         max_export_age_seconds = 4 * 60 * 60 # 4 hours; TODO: make configurable
-        url = _get_kobo_url(result.group(1), url, verify_ssl, http_headers, max_export_age_seconds)
+        url = _get_kobo_url(result.group(1), url, input_options, max_export_age_seconds)
 
     #
     # Stage 2: rewrite URLs to get direct-download links
@@ -1548,7 +1528,7 @@ def _munge_url(url, verify_ssl=True, http_headers=None):
     return url
 
 
-def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
+def _get_ckan_url(site_url, dataset_id, resource_id, input_options):
     """Look up a CKAN download URL starting from a dataset or resource page
     
     If the link is to a dataset page, try the first resource. If it's
@@ -1560,8 +1540,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
         site_url (str): the CKAN site URL (e.g. https://data.humdata.org)
         dataset_id (str): the CKAN dataset ID, or None if unavailable
         resource_id (str): the CKAN resource ID, or None if unavailable
-        verify_ssl (bool): if False, don't verify SSL certs
-        http_headers (bool): array of extra HTTP headers to pass
+        input_options (InputOptions): options for reading a dataset.
 
     Returns:
         str: the direct-download URL for the CKAN dataset
@@ -1571,7 +1550,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
     if resource_id:
         # CKAN resource URL
         ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(site_url, resource_id)
-        ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
+        ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['url']
             logger.info("Converted CKAN resource URL to %s", url)
@@ -1593,7 +1572,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
     else:
         # CKAN dataset (package) URL
         ckan_api_query = '{}/api/3/action/package_show?id={}'.format(site_url, dataset_id)
-        ckan_api_result = requests.get(ckan_api_query, verify=verify_ssl, headers=http_headers).json()
+        ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['resources'][0]['url']
             logger.info("Converted CKAN package URL to %s", url)
@@ -1616,7 +1595,7 @@ def _get_ckan_url(site_url, dataset_id, resource_id, verify_ssl, http_headers):
     return url
     
 
-def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_seconds=14400):
+def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     """ Create an export for a Kobo survey, then return the download link.
 
     This will fail unless there's an Authorization: header including a Kobo
@@ -1624,9 +1603,9 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
 
     Args:
         asset_id (str): the Kobo asset ID for the survey (extracted from the URL)
-        verify_ssl (bool): if False, don't verify SSL certs
-        http_headers (bool): array of extra HTTP headers to pass
         max_export_age_seconds (int): maximum age to reuse an existing export (defaults to 14,400 seconds, or 4 hours)
+        input_options (InputOptions): options for reading a dataset.
+
 
     Returns:
         str: the direct-download URL for the Kobo survey data export
@@ -1642,8 +1621,8 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
     }
     response = requests.get(
         "https://kobo.humanitarianresponse.info/exports/",
-        verify=verify_ssl,
-        headers=http_headers,
+        verify=input_options.verify_ssl,
+        headers=input_options.http_headers,
         params=params
     )
     # check for errors
@@ -1677,7 +1656,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
     }
     response = requests.post(
         "https://kobo.humanitarianresponse.info/exports/",
-        verify=verify_ssl,
+        verify=input_options.verify_ssl,
         headers=http_headers,
         data=params
     )
@@ -1697,7 +1676,7 @@ def _get_kobo_url(asset_id, url, verify_ssl, http_headers, max_export_age_second
         with requests_cache.disabled():
             response = requests.get(
                 info_url,
-                verify=verify_ssl,
+                verify=input_options.verify_ssl,
                 headers=http_headers
             )
 

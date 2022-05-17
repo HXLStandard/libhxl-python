@@ -481,7 +481,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     do_common_args(args)
 
-    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, True) if args.merge else None as merge_source:
+    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, hxl.InputOptions(allow_local=True)) if args.merge else None as merge_source:
         filter = hxl.filters.MergeDataFilter(
             source, merge_source=merge_source,
             keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
@@ -1148,13 +1148,15 @@ def make_input(args, stdin=sys.stdin, url_or_filename=None):
 
     return hxl.input.make_input(
         url_or_filename or stdin,
-        sheet_index=sheet_index,
-        selector=selector,
-        allow_local=True,
-        http_headers=http_headers,
-        verify_ssl=(not args.ignore_certs),
-        encoding=args.encoding,
-        expand_merged=args.expand_merged,
+        hxl.input.InputOptions(
+            sheet_index=sheet_index,
+            selector=selector,
+            allow_local=True,
+            http_headers=http_headers,
+            verify_ssl=(not args.ignore_certs),
+            encoding=args.encoding,
+            expand_merged=args.expand_merged,
+        ),
     )
 
 

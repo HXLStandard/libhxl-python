@@ -1289,7 +1289,7 @@ class Schema(object):
         if source is None:
             # Use the built-in default schema and recurse
             path = os.path.join(os.path.dirname(__file__), 'hxl-default-schema.json');
-            with hxl.data(path, True) as source:
+            with hxl.data(path, hxl.InputOptions(allow_local=True)) as source:
                 return Schema.parse(source, callback)
 
         if isinstance(source, Schema):
