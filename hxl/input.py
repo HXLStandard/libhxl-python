@@ -27,7 +27,7 @@ License:
 
 """
 
-import abc, collections, csv, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
+import abc, collections, csv, hashlib, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
 
 import hxl, hxl.filters
 import zipfile
@@ -61,10 +61,6 @@ __all__ = (
 ########################################################################
 # Constants
 ########################################################################
-
-# Cut off for fuzzy detection of a hashtag row
-# At least this percentage of cells must parse as HXL hashtags
-FUZZY_HASHTAG_PERCENTAGE = 0.5
 
 # Patterns for URL munging
 GOOGLE_DRIVE_URL = r'^https?://drive.google.com/open\?id=([0-9A-Za-z_-]+)$'
@@ -735,6 +731,26 @@ class AbstractInput(object):
         self.input_options = input_options
         self.is_repeatable = False
 
+    def info(self):
+        """ Get information about the raw dataset.
+        Uses low-level row-wise input, so the source doesn't have to be HXLated.
+
+        The result will be a list of dicts, one for each sheet, with the following info:
+
+        - sheet_name (string)
+        - is_hidden (boolean)
+        - nrows (int)
+        - ncols (int)
+        - has_merged_cells (boolean)
+        - is_hxlated (boolean)
+        - header_hash (MD5 string)
+        - hashtag hash (MD5 string, or null if not HXLated)
+
+        (Currently supported only for Excel.)
+        
+        """
+        raise NotImplementedError()
+
     @abc.abstractmethod
     def __iter__(self):
         return self
@@ -814,7 +830,7 @@ class CSVInput(AbstractInput):
             if '#' in line:
                 for delim in CSVInput._DELIMITERS:
                     fields = next(csv.reader([line], delimiter=delim))
-                    if HXLReader.parse_tags(fields):
+                    if hxl.model.Column.parse_list(fields):
                         return delim
 
         # if that fails, return the delimiter that appears most often
@@ -1029,6 +1045,34 @@ class ExcelInput(AbstractInput):
         self._sheet = self._get_sheet(sheet_index)
         self.merged_values = {}
 
+    def info (self):
+        """ See method doc for parent class """
+
+        def hash_headers (raw_row):
+            """ Create a hash just for the first row of values
+            """
+            md5 = hashlib.md5()
+            for value in raw_row:
+                md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
+            return md5.hexdigest()
+            
+        result = []
+        for sheet_index in range(0, self._workbook.nsheets):
+            sheet = self._get_sheet(sheet_index)
+            columns = self._get_columns(sheet)
+            info = {
+                "name": sheet.name,
+                "is_hidden": (sheet.visibility > 0),
+                "nrows": sheet.nrows,
+                "ncols": sheet.ncols,
+                "has_merged_cells": (len(sheet.merged_cells) > 0),
+                "is_hxlated": (columns is not None),
+                "header_hash": hash_headers(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
+                "hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
+            }
+            result.append(info)
+        return result
+
     def __iter__(self):
         return ExcelInput._ExcelIter(self)
 
@@ -1036,13 +1080,22 @@ class ExcelInput(AbstractInput):
         """Scan for a tab containing a HXL dataset."""
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._get_sheet(sheet_index)
-            for row_index in range(0, min(25, sheet.nrows)):
-                raw_row = [self._fix_value(cell) for cell in sheet.row(row_index)]
-                # FIXME nasty violation of encapsulation
-                if HXLReader.parse_tags(raw_row):
-                    return sheet_index
+            if self._get_columns(sheet):
+                return sheet_index
         # if no sheet has tags, default to the first one for now
         return 0
+
+    def _get_columns(self, sheet):
+        """ Return a list of column objects if a sheet has HXL hashtags in the first 25 rows """
+        previous_row = None
+        for row_index in range(0, min(25, sheet.nrows)):
+            raw_row = self._get_row(sheet, row_index)
+            tags = hxl.model.Column.parse_list(raw_row, previous_row)
+            if tags:
+                return tags
+            else:
+                previous_row = raw_row
+        return None
 
     def _get_sheet(self, index):
         """Try opening a sheet, and raise an exception if it's not possible"""
@@ -1050,6 +1103,10 @@ class ExcelInput(AbstractInput):
             raise HXLIOException("Excel sheet index out of range 0-{}".format(self._workbook.nsheets))
         else:
             return self._workbook.sheet_by_index(index)
+
+    def _get_row(self, sheet, index):
+        row = sheet.row(index)
+        return [self._fix_value(cell) for cell in row]
 
     def _fix_value(self, cell):
         """Clean up an Excel value for CSV-like representation."""
@@ -1245,63 +1302,13 @@ class HXLReader(hxl.model.Dataset):
         try:
             for n in range(0,25):
                 raw_row = self._get_row()
-                columns = self.parse_tags(raw_row, previous_row)
+                columns = hxl.model.Column.parse_list(raw_row, previous_row)
                 if columns is not None:
                     return columns
                 previous_row = raw_row
         except StopIteration:
             pass
         raise HXLTagsNotFoundException()
-
-    @staticmethod
-    def parse_tags(raw_row, previous_row=None):
-        """Try parsing a raw CSV data row as a HXL hashtag row.
-
-        This method is externally visible, because other functions and
-        classes use it (e.g. scanning heuristically for HXL data).
-
-        Args:
-            raw_row (list): a raw row from a ``hxl.input.AbstractInput`` object
-            previous_row (list): the previous raw row, for extracting headers
-
-        Returns:
-            list: a list of hxl.model.Column objects if successfully parsed; None otherwise.
-
-        """
-        # how many values we've seen
-        nonEmptyCount = 0
-
-        # the logical column number
-        hashtags_found = 0
-
-        columns = []
-        failed_hashtags = []
-
-        for source_column_number, raw_string in enumerate(raw_row):
-            if previous_row and source_column_number < len(previous_row):
-                header = previous_row[source_column_number]
-            else:
-                header = None
-            if not hxl.datatypes.is_empty(raw_string):
-                raw_string = hxl.datatypes.normalise_string(raw_string)
-                nonEmptyCount += 1
-                column = hxl.model.Column.parse(raw_string, header=header, column_number=source_column_number)
-                if column:
-                    columns.append(column)
-                    hashtags_found += 1
-                    continue
-                elif column is False:
-                    failed_hashtags.append(raw_string)
-
-            columns.append(hxl.model.Column(header=header, column_number=source_column_number))
-
-        # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
-        if (nonEmptyCount > 0) and ((hashtags_found/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE):
-            if len(failed_hashtags) > 0:
-                logger.error('Skipping column(s) with malformed hashtag specs: %s', ', '.join(failed_hashtags))
-            return columns
-        else:
-            return None
 
     def _get_row(self):
         """Parse a row of raw CSV data.  Returns an array of strings."""
@@ -1698,5 +1705,6 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         else:
             logger.warning("Kobo export not ready; will try again")
             time.sleep(2)
-    
+
+
 # end

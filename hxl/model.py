@@ -26,6 +26,11 @@ import hxl
 logger = logging.getLogger(__name__)
 
 
+# Cut off for fuzzy detection of a hashtag row
+# At least this percentage of cells must parse as HXL hashtags
+FUZZY_HASHTAG_PERCENTAGE = 0.5
+
+
 class TagPattern(object):
     """Pattern for matching a HXL hashtag and attributes
 
@@ -297,12 +302,7 @@ class Dataset(object):
         @returns: a 32-character hex-formatted MD5 hash string
 
         """
-        md5 = hashlib.md5()
-        for column in self.columns:
-            md5.update(hxl.datatypes.normalise_space(column.header).encode('utf-8'))
-        for column in self.columns:
-            md5.update(hxl.datatypes.normalise_space(column.display_tag).encode('utf-8'))
-        return md5.hexdigest()
+        return hxl.Column.hash_list(self.columns)
 
     @property
     def data_hash(self):
@@ -814,6 +814,31 @@ class Column(object):
     __str__ = __repr__
 
     @staticmethod
+    def hash_list(columns):
+        """Generate a hash across all of the columns in the dataset.
+
+        This function helps detect whether two HXL documents are of
+        the same type, even if they contain different data (e.g. the
+        HXL API output for the same humanitarian dataset in two
+        different months or two different countries).
+
+        It takes into account text headers, hashtags, the order of
+        attributes, and the order of columns. Whitespace is
+        normalised, and null values are treated as empty strings. The
+        MD5 hash digest is generated from a UTF-8 encoded version of
+        each header.
+
+        @returns: a 32-character hex-formatted MD5 hash string
+
+        """
+        md5 = hashlib.md5()
+        for column in columns:
+            md5.update(hxl.datatypes.normalise_space(column.header).encode('utf-8'))
+        for column in columns:
+            md5.update(hxl.datatypes.normalise_space(column.display_tag).encode('utf-8'))
+        return md5.hexdigest()
+
+    @staticmethod
     def parse(raw_string, header=None, use_exception=False, column_number=None):
         """ Attempt to parse a full hashtag specification.
         @param raw_string: the string representation of the tagspec
@@ -860,6 +885,54 @@ class Column(object):
             return Column.parse(matches.group(2), header=header, column_number=column_number)
         else:
             return Column.parse('#' + raw_string, header=default_header, column_number=column_number)
+
+    @staticmethod
+    def parse_list(raw_row, previous_row=None):
+        """Try parsing a raw data row as a HXL hashtag row.
+
+        Args:
+            raw_row (list): a raw row from a ``hxl.input.AbstractInput`` object
+            previous_row (list): the previous raw row, for extracting headers
+
+        Returns:
+            list: a list of hxl.model.Column objects if successfully parsed; None otherwise.
+
+        """
+        # how many values we've seen
+        nonEmptyCount = 0
+
+        # the logical column number
+        hashtags_found = 0
+
+        columns = []
+        failed_hashtags = []
+
+        for source_column_number, raw_string in enumerate(raw_row):
+            if previous_row and source_column_number < len(previous_row):
+                header = previous_row[source_column_number]
+            else:
+                header = None
+            if not hxl.datatypes.is_empty(raw_string):
+                raw_string = hxl.datatypes.normalise_string(raw_string)
+                nonEmptyCount += 1
+                column = hxl.model.Column.parse(raw_string, header=header, column_number=source_column_number)
+                if column:
+                    columns.append(column)
+                    hashtags_found += 1
+                    continue
+                elif column is False:
+                    failed_hashtags.append(raw_string)
+
+            columns.append(hxl.model.Column(header=header, column_number=source_column_number))
+
+        # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
+        if (nonEmptyCount > 0) and ((hashtags_found/float(nonEmptyCount)) >= FUZZY_HASHTAG_PERCENTAGE):
+            if len(failed_hashtags) > 0:
+                logger.error('Skipping column(s) with malformed hashtag specs: %s', ', '.join(failed_hashtags))
+            return columns
+        else:
+            return None
+    
 
 class Row(object):
     """ An iterable row of values in a HXL dataset.

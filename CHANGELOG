@@ -4,6 +4,8 @@
 	- add --encoding option to all command-line scripts (tested with CSV)
 	- upgrade to xlrd3 version 1.1.0
 	- add hxl.input.InputOption object to hold all input options
+	- add info method to input objects to get general info about contents
+	- refactor input and model classes
 
 2022-02-28 Release 4.25
 	- remove discontinued "encoding" keyword for json.load (Python 3.9)
