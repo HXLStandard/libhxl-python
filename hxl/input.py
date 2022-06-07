@@ -360,6 +360,7 @@ def make_input(raw_source, input_options=None):
         mime_type = None
         file_ext = None
         encoding = input_options.encoding
+        url_or_filename = None
             
         if hasattr(raw_source, 'read'):
             # it's an input stream
@@ -368,6 +369,7 @@ def make_input(raw_source, input_options=None):
         else:
             # assume a URL or filename
             logger.debug('Opening source %s as a URL or file', raw_source)
+            url_or_filename = raw_source
             (input, mime_type, file_ext, specified_encoding) = open_url_or_file(raw_source, input_options)
             input = wrap_stream(input)
 
@@ -393,7 +395,7 @@ def make_input(raw_source, input_options=None):
 
         if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
-            return ExcelInput(tmpfile, input_options)
+            return ExcelInput(tmpfile, input_options, url_or_filename=url_or_filename)
 
         if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
             tmpfile = make_tempfile(input)
@@ -401,7 +403,7 @@ def make_input(raw_source, input_options=None):
             try:
                 # Is the zip file really an XLSX file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(tmpfile, input_options)
+                return ExcelInput(tmpfile, input_options, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -1031,13 +1033,14 @@ class ExcelInput(AbstractInput):
 
     """
 
-    def __init__(self, tmpfile, input_options):
+    def __init__(self, tmpfile, input_options, url_or_filename=None):
         """
         Args:
             tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents
             input_options (InputOptions): options for reading a dataset.
         """
         super().__init__(input_options)
+        self.url_or_filename = url_or_filename
         self.tmpfile = tmpfile # prevent garbage collection
         self.is_repeatable = True
         self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
@@ -1061,6 +1064,7 @@ class ExcelInput(AbstractInput):
             return md5.hexdigest()
             
         result = {
+            "url_or_filename": self.url_or_filename,
             "format": "XLSX" if self._workbook.biff_version is 0 else "XLS",
             "sheets": [],
         }
