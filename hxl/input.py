@@ -735,7 +735,12 @@ class AbstractInput(object):
         """ Get information about the raw dataset.
         Uses low-level row-wise input, so the source doesn't have to be HXLated.
 
-        The result will be a list of dicts, one for each sheet, with the following info:
+        The result will be a dict with info about the workbook:
+
+        - format (e.g. "XLSX")
+        - sheets (list)
+
+        The following will appear for each sheet:
 
         - sheet_name (string)
         - is_hidden (boolean)
@@ -819,7 +824,6 @@ class CSVInput(AbstractInput):
             try:
                 sample = raw[:-1].decode(encoding, errors="replace")
             except Exception as e:
-                print("***", e)
                 continue
             break
         
@@ -1056,11 +1060,14 @@ class ExcelInput(AbstractInput):
                 md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
             return md5.hexdigest()
             
-        result = []
+        result = {
+            "format": "XLSX" if self._workbook.biff_version is 0 else "XLS",
+            "sheets": [],
+        }
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._get_sheet(sheet_index)
             columns = self._get_columns(sheet)
-            info = {
+            sheet_info = {
                 "name": sheet.name,
                 "is_hidden": (sheet.visibility > 0),
                 "nrows": sheet.nrows,
@@ -1070,7 +1077,7 @@ class ExcelInput(AbstractInput):
                 "header_hash": hash_headers(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
                 "hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
             }
-            result.append(info)
+            result["sheets"].append(sheet_info)
         return result
 
     def __iter__(self):
