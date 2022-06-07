@@ -1153,7 +1153,7 @@ class ExcelInput(AbstractInput):
         if self.input_options.expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
-                if row_num in range(row_min, row_max+1) and col_num in range(col_min, col_max):
+                if row_num in range(row_min, row_max) and col_num in range(col_min, col_max):
                     if row_num == row_min and col_num == col_min:
                         # top left == the value merged through all the cells
                         self.merged_values[(merge)] = value
