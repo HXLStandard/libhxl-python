@@ -1482,7 +1482,7 @@ def _munge_url(url, input_options):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        url = _get_ckan_url(result.group(1), result.group(2), result.group(3), input_options)[0]
+        url = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)[0]
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
@@ -1546,7 +1546,7 @@ def _munge_url(url, input_options):
     return url
 
 
-def _get_ckan_url(site_url, dataset_id, resource_id, input_options):
+def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     """Look up a CKAN download URL starting from a dataset or resource page
     
     If the link is to a dataset page, try the first resource. If it's
