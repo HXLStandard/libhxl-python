@@ -1,7 +1,11 @@
 4.25.1
-	- add support for reporting merged cells (XLS and XLSX only for now)
+	- support reporting merged cells (XLS and XLSX only for now)
+	- support optionally filling merged areas (XLS and XLSX only)
+	- support optionally scanning CKAN datasets for the first HXLated resource (in hxl.data(), not make_input())
 	- support Google Sheets interactive view URLs for XLSX files (but not tab identifiers)
 	- add --encoding option to all command-line scripts (tested with CSV)
+	- add --expand-merged option to all comand-line scripts
+	- add --scan-ckan-resources option to all command-line scripts
 	- upgrade to xlrd3 version 1.1.0
 	- add hxl.input.InputOption object to hold all input options
 	- add info method to input objects to get general info about contents

@@ -1098,6 +1098,13 @@ def make_args(description, hxl_output=True):
         default=False
     )
     parser.add_argument(
+        "--scan-ckan-resources",
+        help="For a CKAN dataset URL, scan all CKAN resources for one that's HXLated",
+        action='store_const',
+        const=True,
+        default=False
+    )
+    parser.add_argument(
         '--log',
         help='Set minimum logging level',
         metavar='debug|info|warning|error|critical|none',
@@ -1125,9 +1132,11 @@ def do_common_args(args):
 def make_source(args, stdin=STDIN):
     """Create a HXL input source."""
 
-    # construct the input object
-    input = make_input(args, stdin)
-    return hxl.input.data(input)
+    infile = args.infile
+    if infile is None:
+        infile = stdin
+
+    return hxl.input.data(infile, make_input_options(args))
 
 
 def make_input(args, stdin=sys.stdin, url_or_filename=None):
@@ -1136,27 +1145,31 @@ def make_input(args, stdin=sys.stdin, url_or_filename=None):
     if url_or_filename is None:
         url_or_filename = args.infile
 
-    # sheet index
+    # JSONPath selector
+    selector = args.selector
+
+    return hxl.input.make_input(
+        url_or_filename or stdin,
+        make_input_options(args),
+    )
+
+def make_input_options(args):
+
     sheet_index = args.sheet
     if sheet_index is not None:
         sheet_index -= 1
 
-    # JSONPath selector
-    selector = args.selector
-
     http_headers = make_headers(args)
-
-    return hxl.input.make_input(
-        url_or_filename or stdin,
-        hxl.input.InputOptions(
-            sheet_index=sheet_index,
-            selector=selector,
-            allow_local=True,
-            http_headers=http_headers,
-            verify_ssl=(not args.ignore_certs),
-            encoding=args.encoding,
-            expand_merged=args.expand_merged,
-        ),
+        
+    return hxl.input.InputOptions(
+        sheet_index=sheet_index,
+        selector=args.selector,
+        allow_local=True,
+        http_headers=http_headers,
+        verify_ssl=(not args.ignore_certs),
+        encoding=args.encoding,
+        expand_merged=args.expand_merged,
+        scan_ckan_resources=args.scan_ckan_resources,
     )
 
 

@@ -172,6 +172,21 @@ def data(data, input_options=None):
         return hxl.input.from_spec(data, allow_local_ok=input_options is not None and input_options.allow_local)
 
     else:
+
+        # kludge: if it's a CKAN dataset URL without a resource,
+        # try to find a resource with hashtags (only if requested)
+        if input_options and input_options.scan_ckan_resources:
+            result = re.match(CKAN_URL, str(data))
+            if result and not result.group(3): # no resource
+                resource_urls = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)
+                for resource_url in resource_urls:
+                    try:
+                        source = hxl.data(resource_url, input_options)
+                        source.columns # force HXLTagsNotFoundException if not HXLated
+                        return source
+                    except:
+                        pass
+        
         return HXLReader(make_input(data, input_options))
 
     
@@ -361,7 +376,7 @@ def make_input(raw_source, input_options=None):
         file_ext = None
         encoding = input_options.encoding
         url_or_filename = None
-            
+
         if hasattr(raw_source, 'read'):
             # it's an input stream
             logger.debug('Making input from a stream')
@@ -369,6 +384,8 @@ def make_input(raw_source, input_options=None):
         else:
             # assume a URL or filename
             logger.debug('Opening source %s as a URL or file', raw_source)
+
+            # back to usual
             url_or_filename = raw_source
             (input, mime_type, file_ext, specified_encoding) = open_url_or_file(raw_source, input_options)
             input = wrap_stream(input)
@@ -617,6 +634,7 @@ class InputOptions:
         selector (str): selector property for a JSON file (will later also cover tabs, etc.)
         encoding (str): force a character encoding, regardless of HTTP info etc
         expand_merged (bool): expand merged areas by repeating the value (Excel only)
+        scan_ckan_resources (bool): for a CKAN dataset URL, scan all resources for the first HXLated one (defaults to just using first resource)
     """
 
     def __init__ (
@@ -628,7 +646,8 @@ class InputOptions:
             http_headers=None,
             selector=None,
             encoding=None,
-            expand_merged=False
+            expand_merged=False,
+            scan_ckan_resources=False
             ):
         self.allow_local = allow_local
         self.sheet_index = sheet_index
@@ -638,6 +657,7 @@ class InputOptions:
         self.selector = selector
         self.encoding = encoding
         self.expand_merged = expand_merged
+        self.scan_ckan_resources = scan_ckan_resources
 
 
 class RequestResponseIOWrapper(io.RawIOBase):
@@ -1065,7 +1085,7 @@ class ExcelInput(AbstractInput):
             
         result = {
             "url_or_filename": self.url_or_filename,
-            "format": "XLSX" if self._workbook.biff_version is 0 else "XLS",
+            "format": "XLSX" if self._workbook.biff_version == 0 else "XLS",
             "sheets": [],
         }
         for sheet_index in range(0, self._workbook.nsheets):
@@ -1411,6 +1431,7 @@ def from_spec(spec, allow_local_ok=False):
     http_headers = spec.get('http_headers', None)
     encoding = spec.get('encoding', None)
     expand_merged = spec.get('expand_merged', False)
+    scan_ckan_resources = spec.get('scan_ckan_resources', False)
 
     # recipe
     tagger_spec = spec.get('tagger', None)
@@ -1430,6 +1451,7 @@ def from_spec(spec, allow_local_ok=False):
             http_headers=http_headers,
             encoding=encoding,
             expand_merged=expand_merged,
+            scan_ckan_resources=scan_ckan_resources,
         )
     )
 
