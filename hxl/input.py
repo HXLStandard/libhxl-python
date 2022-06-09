@@ -1482,7 +1482,7 @@ def _munge_url(url, input_options):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        url = _get_ckan_url(result.group(1), result.group(2), result.group(3), input_options)
+        url = _get_ckan_url(result.group(1), result.group(2), result.group(3), input_options)[0]
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
@@ -1561,9 +1561,11 @@ def _get_ckan_url(site_url, dataset_id, resource_id, input_options):
         input_options (InputOptions): options for reading a dataset.
 
     Returns:
-        str: the direct-download URL for the CKAN dataset
+        list of str: the direct-download URL for the CKAN dataset
 
     """
+
+    result_urls = []
 
     if resource_id:
         # CKAN resource URL
@@ -1571,13 +1573,14 @@ def _get_ckan_url(site_url, dataset_id, resource_id, input_options):
         ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['url']
+            result_urls.append(url)
             logger.info("Converted CKAN resource URL to %s", url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
             raise HXLAuthorizationException(
                 "Not authorised to read CKAN resource (is the dataset public?): {}".format(
                     ckan_api_result['error']['message']
                 ),
-                url=url,
+                url=site_url,
                 is_ckan=True
             )
         else:
@@ -1585,21 +1588,23 @@ def _get_ckan_url(site_url, dataset_id, resource_id, input_options):
                 "Unable to read HDX resource: {}".format(
                     ckan_api_result['error']['message']
                 ),
-                url=url
+                url=site_url
             )
     else:
         # CKAN dataset (package) URL
         ckan_api_query = '{}/api/3/action/package_show?id={}'.format(site_url, dataset_id)
         ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result['success']:
-            url = ckan_api_result['result']['resources'][0]['url']
-            logger.info("Converted CKAN package URL to %s", url)
+            for resource in ckan_api_result['result']['resources']:
+                url = resource['url']
+                result_urls.append(url)
+                logger.info("Converted CKAN package URL to %s", url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
             raise HXLAuthorizationException(
                 "Not authorised to read CKAN dataset (is it public?): {}".format(
                     ckan_api_result['error']['message']
                 ),
-                url=url,
+                url=site_url,
                 is_ckan=True
             )
         else:
@@ -1607,10 +1612,10 @@ def _get_ckan_url(site_url, dataset_id, resource_id, input_options):
                 "Unable to read CKAN dataset: {}".format(
                     ckan_api_result['error']['message']
                 ),
-                url=url
+                url=site_url
             )
 
-    return url
+    return result_urls
     
 
 def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
