@@ -1538,7 +1538,7 @@ def _munge_url(url, input_options):
     result = re.match(GOOGLE_FILE_URL, url)
     if not result:
         result = re.match(GOOGLE_SHEETS_XLSX_URL, url)
-    if result:
+    if result and not re.search(r'/pub', url):
         url = 'https://drive.google.com/uc?export=download&id={}'.format(result.group(1))
         logger.info("Google Drive direct file download URL: %s", url)
         return url
