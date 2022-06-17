@@ -387,7 +387,7 @@ def make_input(raw_source, input_options=None):
 
             # back to usual
             url_or_filename = raw_source
-            (input, mime_type, file_ext, specified_encoding) = open_url_or_file(raw_source, input_options)
+            (input, mime_type, file_ext, specified_encoding, content_length,) = open_url_or_file(raw_source, input_options)
             input = wrap_stream(input)
 
             # figure out the character encoding
@@ -458,6 +458,7 @@ def open_url_or_file(url_or_filename, input_options):
     mime_type = None
     file_ext = None
     encoding = None
+    content_length = None
 
     # Try for file extension
     result = re.search(r'\.([A-Za-z0-9]{1,5})$', url_or_filename)
@@ -503,7 +504,7 @@ def open_url_or_file(url_or_filename, input_options):
             logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
 
-        content_type = response.headers['Content-type']
+        content_type = response.headers.get('Content-type')
         if content_type:
             result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
             if result:
@@ -512,12 +513,22 @@ def open_url_or_file(url_or_filename, input_options):
             else:
                 mime_type = content_type.lower()
 
-        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding)
+        content_length = response.headers.get('Content-length')
+        if content_length:
+            try:
+                content_length = long(content_length)
+            except:
+                content_length = None
+
+        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length,)
 
     elif input_options.allow_local:
         # Default to a local file, if allowed
         try:
-            return (io.open(url_or_filename, 'rb'), mime_type, file_ext, encoding)
+            info = os.stat(url_or_filename)
+            content_length = info.st_size
+            file = io.open(url_or_filename, 'rb')
+            return (file, mime_type, file_ext, encoding, content_length,)
         except Exception as e:
             logger.exception("Cannot open local HXL file %s (%s)", url_or_filename, str(e))
             raise e
