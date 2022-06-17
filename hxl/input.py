@@ -419,16 +419,19 @@ def make_input(raw_source, input_options=None):
             contents = None
 
             if fileno is not None:
+                 # it's already a file; don't make a new one
                 input.seek(0)
                 contents = mmap.mmap(fileno, 0)
             elif content_length is not None and content_length <= EXCEL_MEMORY_CUTOFF:
+                 # it's small-ish, so load into memory
                 contents = input.read()
             else:
+                # size unknown, so use a tempfile
                 tmpfile = make_tempfile(input)
                 contents = mmap.mmap(tmpfile.fileno(), 0)
 
             try:
-                # Is it really an XLSX file?
+                # Is it really an XLS(X) file?
                 logger.debug('Trying input from an Excel file')
                 return ExcelInput(contents, input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
             except xlrd.XLRDError:

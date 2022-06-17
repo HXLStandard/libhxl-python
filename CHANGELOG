@@ -3,13 +3,14 @@
 	- support optionally filling merged areas (XLS and XLSX only)
 	- support optionally scanning CKAN datasets for the first HXLated resource (in hxl.data(), not make_input())
 	- support Google Sheets interactive view URLs for XLSX files (but not tab identifiers)
+	- make Excel workbook handling more efficient
 	- add --encoding option to all command-line scripts (tested with CSV)
 	- add --expand-merged option to all comand-line scripts
 	- add --scan-ckan-resources option to all command-line scripts
-	- upgrade to xlrd3 version 1.1.0
 	- add hxl.input.InputOption object to hold all input options
 	- add info method to input objects to get general info about contents
 	- refactor input and model classes
+	- upgrade to xlrd3 version 1.1.0
 
 2022-02-28 Release 4.25
 	- remove discontinued "encoding" keyword for json.load (Python 3.9)
