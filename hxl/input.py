@@ -27,7 +27,7 @@ License:
 
 """
 
-import abc, collections, csv, hashlib, io, io_wrapper, json, jsonpath_ng.ext, logging, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
+import abc, collections, csv, hashlib, io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
 
 import hxl, hxl.filters
 import zipfile
@@ -61,6 +61,9 @@ __all__ = (
 ########################################################################
 # Constants
 ########################################################################
+
+# Numeric constants
+EXCEL_MEMORY_CUTOFF = 0x1000000 # max 16MB to load an Excel file into memory
 
 # Patterns for URL munging
 GOOGLE_DRIVE_URL = r'^https?://drive.google.com/open\?id=([0-9A-Za-z_-]+)$'
@@ -387,7 +390,7 @@ def make_input(raw_source, input_options=None):
 
             # back to usual
             url_or_filename = raw_source
-            (input, mime_type, file_ext, specified_encoding, content_length,) = open_url_or_file(raw_source, input_options)
+            (input, mime_type, file_ext, specified_encoding, content_length, fileno,) = open_url_or_file(raw_source, input_options)
             input = wrap_stream(input)
 
             # figure out the character encoding
@@ -410,21 +413,28 @@ def make_input(raw_source, input_options=None):
                 }
             ))
 
-        if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
-            tmpfile = make_tempfile(input)
-            return ExcelInput(input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
+        if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
-        if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
-            tmpfile = make_tempfile(input)
+            tmpfile = None
+            contents = None
+
+            if fileno is not None:
+                input.seek(0)
+                contents = mmap.mmap(fileno, 0)
+            elif content_length is not None and content_length <= EXCEL_MEMORY_CUTOFF:
+                contents = input.read()
+            else:
+                tmpfile = make_tempfile(input)
+                contents = mmap.mmap(tmpfile.fileno(), 0)
 
             try:
-                # Is the zip file really an XLSX file?
+                # Is it really an XLSX file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
+                return ExcelInput(contents, input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
-                    zf = zipfile.ZipFile(tmpfile, "r")
+                    zf = zipfile.ZipFile(io.BytesIO(contents), "r")
                     for name in zf.namelist():
                         if os.path.splitext(name)[1].lower()==".csv":
                             return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), input_options)
@@ -456,6 +466,7 @@ def open_url_or_file(url_or_filename, input_options):
           file_ext (string or None)
           encoding (string or None)
           content_length (long or None)
+          fileno (int)
 
     Raises:
         IOError: if there's an error opening the data stream
@@ -464,6 +475,7 @@ def open_url_or_file(url_or_filename, input_options):
     file_ext = None
     encoding = None
     content_length = None
+    fileno = None
 
     # Try for file extension
     result = re.search(r'\.([A-Za-z0-9]{1,5})$', url_or_filename)
@@ -525,15 +537,16 @@ def open_url_or_file(url_or_filename, input_options):
             except:
                 content_length = None
 
-        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length,)
+        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
 
     elif input_options.allow_local:
         # Default to a local file, if allowed
         try:
             info = os.stat(url_or_filename)
             content_length = info.st_size
-            file = io.open(url_or_filename, 'rb')
-            return (file, mime_type, file_ext, encoding, content_length,)
+            file = io.open(url_or_filename, 'rb+')
+            fileno = file.fileno()
+            return (file, mime_type, file_ext, encoding, content_length, fileno,)
         except Exception as e:
             logger.exception("Cannot open local HXL file %s (%s)", url_or_filename, str(e))
             raise e
@@ -1069,27 +1082,24 @@ class ExcelInput(AbstractInput):
 
     """
 
-    def __init__(self, input_options, tmpfile=None, contents=None, url_or_filename=None):
+    def __init__(self, contents, input_options, tmpfile, url_or_filename=None):
         """
 
         One of tmpfile or contents must be specified.
 
         Args:
+            contents (buffer or mmap): contents of the Excel file
             input_options (InputOptions): options for reading a dataset.
-            tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents or None
-            contents (byte buffer): file contents in memory or None
+            tmpfile (tempfile.NamedTemporaryFile): temporary file object (keep to avoid garbage collection)
             url_or_filename (string): the original URL or filename or None
         """
         super().__init__(input_options)
         self.url_or_filename = url_or_filename
         self.is_repeatable = True
-        self.tmpfile = tmpfile # prevent garbage collection
         self.contents = contents
+        self.tmpfile = tmpfile # prevent garbage collection
 
-        if self.tmpfile:
-            self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
-        else:
-            self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
+        self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
 
         sheet_index = self.input_options.sheet_index
         if sheet_index is None:
