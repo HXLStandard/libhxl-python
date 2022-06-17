@@ -422,8 +422,8 @@ def make_input(raw_source, input_options=None):
                  # it's already a file; don't make a new one
                 input.seek(0)
                 contents = mmap.mmap(fileno, 0)
-            elif content_length is not None and content_length <= EXCEL_MEMORY_CUTOFF:
-                 # it's small-ish, so load into memory
+            elif content_length and content_length <= EXCEL_MEMORY_CUTOFF:
+                # it's small-ish, so load into memory
                 contents = input.read()
             else:
                 # size unknown, so use a tempfile
@@ -524,7 +524,7 @@ def open_url_or_file(url_or_filename, input_options):
             logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
 
-        content_type = response.headers.get('Content-type')
+        content_type = response.headers.get('content-type')
         if content_type:
             result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
             if result:
@@ -533,10 +533,10 @@ def open_url_or_file(url_or_filename, input_options):
             else:
                 mime_type = content_type.lower()
 
-        content_length = response.headers.get('Content-length')
-        if content_length:
+        content_length = response.headers.get('content-length')
+        if content_length is not None:
             try:
-                content_length = long(content_length)
+                content_length = int(content_length)
             except:
                 content_length = None
 
