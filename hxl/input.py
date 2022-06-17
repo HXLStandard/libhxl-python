@@ -450,7 +450,12 @@ def open_url_or_file(url_or_filename, input_options):
         input_options (InputOptions): options for reading a dataset.
 
     Returns:
-        io.IOBase: an I/O stream for reading.
+        sequence of
+          input (io.IOBase)
+          mime_type (string or None)
+          file_ext (string or None)
+          encoding (string or None)
+          content_length (long or None)
 
     Raises:
         IOError: if there's an error opening the data stream
