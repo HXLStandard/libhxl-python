@@ -412,7 +412,7 @@ def make_input(raw_source, input_options=None):
 
         if match_sigs(sig, XLS_SIGS): # legacy XLS Excel workbook
             tmpfile = make_tempfile(input)
-            return ExcelInput(tmpfile, input_options, url_or_filename=url_or_filename)
+            return ExcelInput(input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
 
         if match_sigs(sig, XLSX_SIGS): # superset of ZIP_SIGS - could be zipfile or XLSX Excel workbook
             tmpfile = make_tempfile(input)
@@ -420,7 +420,7 @@ def make_input(raw_source, input_options=None):
             try:
                 # Is the zip file really an XLSX file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(tmpfile, input_options, url_or_filename=url_or_filename)
+                return ExcelInput(input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -1069,17 +1069,27 @@ class ExcelInput(AbstractInput):
 
     """
 
-    def __init__(self, tmpfile, input_options, url_or_filename=None):
+    def __init__(self, input_options, tmpfile=None, contents=None, url_or_filename=None):
         """
+
+        One of tmpfile or contents must be specified.
+
         Args:
-            tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents
             input_options (InputOptions): options for reading a dataset.
+            tmpfile (tempfile.NamedTemporaryFile): temporary file object holding the contents or None
+            contents (byte buffer): file contents in memory or None
+            url_or_filename (string): the original URL or filename or None
         """
         super().__init__(input_options)
         self.url_or_filename = url_or_filename
-        self.tmpfile = tmpfile # prevent garbage collection
         self.is_repeatable = True
-        self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
+        self.tmpfile = tmpfile # prevent garbage collection
+        self.contents = contents
+
+        if self.tmpfile:
+            self._workbook = xlrd.open_workbook(filename=tmpfile.name, on_demand=True, ragged_rows=True)
+        else:
+            self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
 
         sheet_index = self.input_options.sheet_index
         if sheet_index is None:
