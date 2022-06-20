@@ -611,13 +611,6 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         metavar='tagpattern,...',
         type=hxl.model.TagPattern.parse_list,
         )
-    group.add_argument(
-        '--use-merged',
-        help='Use XLS(X) merged areas instead of tag patterns; not allowed with --tag',
-        action='store_const',
-        const=True,
-        default=False
-    )
     add_queries_arg(parser, 'Fill only in rows that match at least one query.')
 
     args = parser.parse_args(args)
@@ -625,7 +618,7 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
-        filter = hxl.filters.FillDataFilter(source, patterns=args.tag, queries=args.query, use_merged=args.use_merged)
+        filter = hxl.filters.FillDataFilter(source, patterns=args.tag, queries=args.query)
         hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
     return EXIT_OK
