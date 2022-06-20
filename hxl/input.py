@@ -379,6 +379,8 @@ def make_input(raw_source, input_options=None):
         file_ext = None
         encoding = input_options.encoding
         url_or_filename = None
+        fileno = None
+        content_length = None
 
         if hasattr(raw_source, 'read'):
             # it's an input stream
