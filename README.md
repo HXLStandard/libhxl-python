@@ -5,10 +5,9 @@ Python support library for the Humanitarian Exchange Language (HXL)
 data standard.  The library requires Python 3 (versions prior to 4.6
 also supported Python 2.7).
 
-About HXL: http://hxlstandard.org
+**API docs:** https://hxlstandard.github.io/libhxl-python/ (and in the ``docs/`` folder)
 
-More-detailed documentation is available in the wiki: https://github.com/HXLStandard/libhxl-python/wiki
-
+**HXL standard:** http://hxlstandard.org
 
 # Usage
 
@@ -40,6 +39,15 @@ for line in hxl.data(sys.stdin).cache().gen_csv():
     print(line)
 ```
 
+To open a local file rather than a URL, use the _allow_local_ property
+of the _InputOptions_ class:
+
+```
+import hxl
+
+dataset = hxl.data("dataset.xlsx", hxl.InputOptions(allow_local=True)
+```
+
 
 ## Filters
 
@@ -61,80 +69,11 @@ url = 'http://example.org/data.csv'
 result = hxl.data(url).with_rows('#sector!=WASH').count('#org')
 ```
 
-The following filters are available:
-
-<table>
-  <thead>
-    <th>Filter method</th>
-    <th>Description</th>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>.append(append_sources, add_columns=True, queries=[])</code></td>
-      <td>Append a second HXL dataset to the current one, lining up columns.</td>
-    </tr>
-    <tr>
-      <td><code>.cache()</code></td>
-      <td>Cache an in-memory version of the dataset (for processing multiple times).</td>
-    </tr>
-    <tr>
-      <td><code>.dedup(patterns=[], queries=[])</code></td>
-      <td>Deduplicate the rows in a dataset, optionally looking only at specific columns.</td>
-    </tr>
-    <tr>
-      <td><code>.with_columns(whitelist)</code></td>
-      <td>Include only columns that match the whitelisted tag pattern(s), e.g. "#org+impl".</td>
-    </tr>
-    <tr>
-      <td><code>.without_columns(blacklist)</code></td>
-      <td>Include all columns <em>except</em> those that match the blacklisted tag patterns.</td>
-    </tr>
-    <tr>
-      <td><code>.with_rows(queries, mask=[])</code></td>
-      <td>Include only rows that match at least one of the queries, e.g. "#sector=WASH". Optionally ignore rows that don't match a mask pattern.</td>
-    </tr>
-    <tr>
-      <td><code>.without_rows(queries, mask=[])</code></td>
-      <td>Exclude rows that match at least one of the queries, e.g. "#sector=WASH". Optionally ignore rows that don't match a mask pattern.</td>
-    </tr>
-    <tr>
-      <td><code>.sort(keys=None, reverse=False)</code></td>
-      <td>Sort the rows, optionally using the pattern(s) provided as sort keys. Set _reverse_ to True for a descending sort.</td>
-    </tr>
-    <tr>
-      <td><code>.count(patterns=[], aggregators=None, queries=[])</code></td>
-      <td>Count the number of value combinations that appear for the pattern(s), e.g. ['#sector', '#org']. Optionally perform other aggregations, such as sums or averages.</td>
-    </tr>
-    <tr>
-      <td><code>.replace_data(original, replacement, pattern=None, use_regex=False, queries=[])</code></td>
-      <td>Replace values in a HXL dataset.</td>
-    </tr>
-    <tr>
-      <td><code>.replace_data_map(map_source, queries=[])</code></td>
-      <td>Replace values in a HXL dataset using a replacement map in another HXL dataset.</td>
-    </tr>
-    <tr>
-      <td><code>.add_columns(specs, before=False)</code></td>
-      <td>Add columns with fixed values to the dataset, e.g. "Country#country=Kenya" to add a new column #country with the text header "Country" and the value "Kenya" in every row.</td>
-    </tr>
-    <tr>
-      <td><code>.rename_columns(specs)</code></td>
-      <td>Change the header text and HXL hashtags for one or more columns.</td>
-    </tr>
-    <tr>
-      <td><code>.clean_data(whitespace=[], upper=[], lower=[], date=[], number=[], queries=[])</code></td>
-      <td>Clean whitespace, normalise dates and numbers, etc., optionally limited to specific columns.</td>
-    </tr>
-    <tr>
-      <td><code>.merge_data(merge_source, keys, tags, replace=False, overwrite=False, queries=[])</code></td>
-      <td>Merge values horizontally from a second dataset, based on shared keys (like a SQL join).</td>
-    </tr>
-    <tr>
-      <td><code>.explode(header_attribute='header', value_attribute='value')</code></td>
-      <td>Explode a "wide" dataset into a "long" dataset, using the HXL +label attribute.</td>
-    </tr>
-  </tbody>
-</table>
+For more on filters see the API documentation for the
+[hxl.model.Dataset](https://hxlstandard.github.io/libhxl-python/model.html#hxl.model.Dataset)
+class and the
+[hxl.filters](https://hxlstandard.github.io/libhxl-python/filters.html)
+module.
 
 ## Sinks
 
@@ -163,6 +102,12 @@ def my_callback(error_info):
 
 is_valid = hxl.data(url).validate(schema='my-schema.csv', callback=my_callback)
 ```
+
+For more information on validation, see the API documentation for the
+[hxl.validation](https://hxlstandard.github.io/libhxl-python/validation.html)
+module and the format documentation for [HXL
+schemas](https://github.com/HXLStandard/hxl-proxy/wiki/HXL-schemas).
+
 
 ### Generators
 
@@ -234,6 +179,30 @@ from any Python application, and will be able to call scripts like
 _hxlvalidate_ from the command line.
 
 
+# Command-line scripts
+
+The filters are also available as command-line scripts, installed with
+the library. For example,
+
+```
+$ hxlcount -t country dataset.csv
+```
+
+Will perform the same action as
+
+```
+import hxl
+
+hxl.data("dataset.csv", hxl.InputOptions(allow_local=True)).count("country").gen_csv()
+```
+
+See the API documentation for the
+[hxl.scripts](https://hxlstandard.github.io/libhxl-python/scripts.html)
+module for more information about the command-line scripts
+available. All scripts have an ``-h`` option that gives usage
+information.
+
+
 # Makefile
 
 There is also a generic Makefile that automates many tasks, including
@@ -261,34 +230,3 @@ make test-install
 
 Test a clean installation to verify there are no missing dependencies,
 etc.
-
-```
-make close-issue
-```
-
-Merge the current git issue branch into the dev branch and delete the
-issue branch.
-
-```
-make push-dev
-```
-
-Push the git dev branch to upstream.
-
-```
-make merge-test
-```
-
-Merge the git dev branch into the test branch and push to upstream.
-
-```
-make merge-master
-```
-
-Merge the git test branch into the master branch and push to upstream.
-
-```
-make etags
-```
-
-(Re)build the TAGS file that Emacs uses for global search and replace.

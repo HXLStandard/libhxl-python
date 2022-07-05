@@ -77,6 +77,9 @@ test-install:
 api-docs: $(VENV)
 	. $(VENV) && rm -rf docs/* && pdoc3 -o docs/ --html hxl && mv docs/hxl/* docs/ && rmdir docs/hxl/
 
+browse-docs:
+	firefox docs/index.html
+
 # (re)generate emacs TAGS file
 etags:
 	find hxl tests -name '*.py' -o -name '*.csv' | xargs etags

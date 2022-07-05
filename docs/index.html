@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>hxl API documentation</title>
-<meta name="description" content="Support library for the Humanitarian Exchange Language (HXL), version 1.0 …" />
+<meta name="description" content="Support library for the Humanitarian Exchange Language (HXL), version 1.1 …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,91 +22,146 @@
 <h1 class="title">Package <code>hxl</code></h1>
 </header>
 <section id="section-intro">
-<p>Support library for the Humanitarian Exchange Language (HXL), version 1.0.</p>
+<p>Support library for the Humanitarian Exchange Language (HXL), version 1.1.</p>
 <p>This library provides support for parsing, validating, cleaning, and
-transforming humanitarian datasets that follow the HXL standard. Its
-use will be familiar to developers who have worked with libraries like
-U{JQuery<a href="https://jquery.com">https://jquery.com</a>}.
-Here's an example::</p>
-<p>import hxl
-data = hxl.data('data.xlsx', True).with_rows('org=UNICEF').without_columns('contact').count('country')</p>
+transforming humanitarian datasets that follow the <a href="https://hxlstandard.org">HXL
+standard</a>. Its use will be familiar to
+developers who have worked with libraries like
+<a href="https://jquery.com">JQuery</a>.</p>
+<h3 id="example">Example</h3>
+<pre><code>import hxl
+data = hxl.data('data.xlsx', True).with_rows('org=UNICEF').without_columns('contact').count('country')
+</code></pre>
 <p>This two-line script performs the following actions:</p>
 <ol>
 <li>
-<p>Load and parse the spreadsheet C{data.xlsx} (the library can also
-load from any URL, and understands how to read Google
-spreadsheets or U{CKAN<a href="http://ckan.org">http://ckan.org</a>} resources).</p>
+<p>Load and parse the spreadsheet <code>data.xlsx</code> (the library can
+also load from any URL, and understands how to read Google
+spreadsheets or <a href="http://ckan.org">CKAN</a> resources).</p>
 </li>
 <li>
 <p>Filter out all rows where the value "UNICEF" doesn't appear under
-the C{#org} (organisation) hashtag.</p>
+the <code>#org</code> (organisation) hashtag.</p>
 </li>
 <li>
 <p>Strip out personally-identifiable information by removing all
-columns with the C{#contact} hashtag (e.g. C{#contact+name},
-C{#contact+phone}, C{#contact+email}).</p>
+columns with the <code>#contact</code> hashtag (e.g. <code>#contact+name</code> or
+<code>#contact+phone</code> or <code>#contact+email</code>).</p>
 </li>
 <li>
 <p>Produce a report showing the number of times each unique
-C{#country} appears in the resulting sheet (e.g. to count the number
-of activities being conducted by UNICEF in each country).</p>
+<code>#country</code> appears in the resulting sheet (e.g. to count the
+number of activities being conducted by UNICEF in each country).</p>
 </li>
 </ol>
-<p>To get started, read the documentation for the L{hxl.data} function
-and the L{hxl.model.Dataset} class. The various filters are also
-available as command-line scripts, so you could perform the same
-actions as above in a shell script like this::</p>
-<p>$ cat data.xlsx | hxlselect -q 'org=UNICEF' | hxlcut -x contact | hxlcount -t country</p>
-<p>@author: David Megginson
-@organization: UNOCHA
-@license: Public Domain
-@date: Started August 2014
-@see: U{<a href="http://hxlstandard.org}">http://hxlstandard.org}</a> for the HXL data standard
-@see: U{<a href="https://proxy.hxlstandard.org}">https://proxy.hxlstandard.org}</a> for web-based deployment of this library</p>
+<h3 id="command-line-scripts">Command-line scripts</h3>
+<p>The various filters are also available
+as command-line scripts, so you could perform the same actions as
+above in a shell script like this:</p>
+<pre><code>$ cat data.xlsx | hxlselect -q 'org=UNICEF' | hxlcut -x contact | hxlcount -t country
+</code></pre>
+<p>For more information about scripts, see the documentation for
+<code><a title="hxl.scripts" href="scripts.html">hxl.scripts</a></code>, or invoke any script with the <code>-h</code> option.</p>
+<h3 id="imports">Imports</h3>
+<p>Several identifiers are imported into this top-level package for
+typing convenience, including <code><a title="hxl.model.TagPattern" href="model.html#hxl.model.TagPattern">TagPattern</a></code>,
+<code><a title="hxl.model.Dataset" href="model.html#hxl.model.Dataset">Dataset</a></code>, <code><a title="hxl.model.Column" href="model.html#hxl.model.Column">Column</a></code>, <code><a title="hxl.model.Row" href="model.html#hxl.model.Row">Row</a></code>,
+<code><a title="hxl.model.RowQuery" href="model.html#hxl.model.RowQuery">RowQuery</a></code>, <code><a title="hxl.input.data" href="input.html#hxl.input.data">data()</a></code>, <code><a title="hxl.input.tagger" href="input.html#hxl.input.tagger">tagger()</a></code>,
+<code><a title="hxl.input.HXLParseException" href="input.html#hxl.input.HXLParseException">HXLParseException</a></code>, <code><a title="hxl.input.write_hxl" href="input.html#hxl.input.write_hxl">write_hxl()</a></code>,
+<code><a title="hxl.input.make_input" href="input.html#hxl.input.make_input">make_input()</a></code>, <code><a title="hxl.input.InputOptions" href="input.html#hxl.input.InputOptions">InputOptions</a></code>,
+<code><a title="hxl.input.from_spec" href="input.html#hxl.input.from_spec">from_spec()</a></code>, <code><a title="hxl.validation.schema" href="validation.html#hxl.validation.schema">schema()</a></code>,
+<code><a title="hxl.validation.validate" href="validation.html#hxl.validation.validate">validate()</a></code>, and
+<code><a title="hxl.validation.HXLValidationException" href="validation.html#hxl.validation.HXLValidationException">HXLValidationException</a></code>.</p>
+<h3 id="next-steps">Next steps</h3>
+<p>To get started, read the documentation for the <code><a title="hxl.input.data" href="input.html#hxl.input.data">data()</a></code> function and
+the <code><a title="hxl.model.Dataset" href="model.html#hxl.model.Dataset">Dataset</a></code> class. </p>
+<h3 id="about-this-module">About this module</h3>
+<p><strong>Author:</strong> David Megginson</p>
+<p><strong>Organisation:</strong> UN OCHA</p>
+<p><strong>License:</strong> Public Domain</p>
+<p><strong>Started:</strong> Started August 2014</p>
+<p><strong>GitHub:</strong> <a href="https://github.com/HXLStandard/libhxl-python">https://github.com/HXLStandard/libhxl-python</a></p>
+<p><strong>PyPi:</strong> <a href="https://pypi.org/project/libhxl/">https://pypi.org/project/libhxl/</a></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Support library for the Humanitarian Exchange Language (HXL), version 1.0.
+<pre><code class="python">&#34;&#34;&#34;Support library for the Humanitarian Exchange Language (HXL), version 1.1.
 
 This library provides support for parsing, validating, cleaning, and
-transforming humanitarian datasets that follow the HXL standard. Its
-use will be familiar to developers who have worked with libraries like
-U{JQuery&lt;https://jquery.com&gt;}.  Here&#39;s an example::
+transforming humanitarian datasets that follow the [HXL
+standard](https://hxlstandard.org). Its use will be familiar to
+developers who have worked with libraries like
+[JQuery](https://jquery.com).
 
-  import hxl
-  data = hxl.data(&#39;data.xlsx&#39;, True).with_rows(&#39;org=UNICEF&#39;).without_columns(&#39;contact&#39;).count(&#39;country&#39;)
+### Example
+
+```
+import hxl
+data = hxl.data(&#39;data.xlsx&#39;, True).with_rows(&#39;org=UNICEF&#39;).without_columns(&#39;contact&#39;).count(&#39;country&#39;)
+```
 
 This two-line script performs the following actions:
 
-  1. Load and parse the spreadsheet C{data.xlsx} (the library can also
-     load from any URL, and understands how to read Google
-     spreadsheets or U{CKAN&lt;http://ckan.org&gt;} resources).
+  1. Load and parse the spreadsheet ``data.xlsx`` (the library can
+     also load from any URL, and understands how to read Google
+     spreadsheets or [CKAN](http://ckan.org) resources).
 
   2. Filter out all rows where the value &#34;UNICEF&#34; doesn&#39;t appear under
-     the C{#org} (organisation) hashtag.
+     the ``#org`` (organisation) hashtag.
 
   3. Strip out personally-identifiable information by removing all
-     columns with the C{#contact} hashtag (e.g. C{#contact+name},
-     C{#contact+phone}, C{#contact+email}).
+     columns with the ``#contact`` hashtag (e.g. ``#contact+name`` or
+     ``#contact+phone`` or ``#contact+email``).
 
   4. Produce a report showing the number of times each unique
-     C{#country} appears in the resulting sheet (e.g. to count the number
-     of activities being conducted by UNICEF in each country).
+     ``#country`` appears in the resulting sheet (e.g. to count the
+     number of activities being conducted by UNICEF in each country).
 
-To get started, read the documentation for the L{hxl.data} function
-and the L{hxl.model.Dataset} class. The various filters are also
-available as command-line scripts, so you could perform the same
-actions as above in a shell script like this::
+### Command-line scripts
 
-  $ cat data.xlsx | hxlselect -q &#39;org=UNICEF&#39; | hxlcut -x contact | hxlcount -t country
+The various filters are also available
+as command-line scripts, so you could perform the same actions as
+above in a shell script like this:
 
-@author: David Megginson
-@organization: UNOCHA
-@license: Public Domain
-@date: Started August 2014
-@see: U{http://hxlstandard.org} for the HXL data standard
-@see: U{https://proxy.hxlstandard.org} for web-based deployment of this library
+```
+$ cat data.xlsx | hxlselect -q &#39;org=UNICEF&#39; | hxlcut -x contact | hxlcount -t country
+```
+
+For more information about scripts, see the documentation for
+`hxl.scripts`, or invoke any script with the ``-h`` option.
+
+### Imports
+
+Several identifiers are imported into this top-level package for
+typing convenience, including `hxl.model.TagPattern`,
+`hxl.model.Dataset`, `hxl.model.Column`, `hxl.model.Row`,
+`hxl.model.RowQuery`, `hxl.input.data`, `hxl.input.tagger`,
+`hxl.input.HXLParseException`, `hxl.input.write_hxl`,
+`hxl.input.make_input`, `hxl.input.InputOptions`,
+`hxl.input.from_spec`, `hxl.validation.schema`,
+`hxl.validation.validate`, and
+`hxl.validation.HXLValidationException`.
+
+### Next steps
+
+To get started, read the documentation for the `hxl.input.data` function and
+the `hxl.model.Dataset` class. 
+
+### About this module
+
+**Author:** David Megginson
+
+**Organisation:** UN OCHA
+
+**License:** Public Domain
+
+**Started:** Started August 2014
+
+**GitHub:** https://github.com/HXLStandard/libhxl-python
+
+**PyPi:** https://pypi.org/project/libhxl/
+
 &#34;&#34;&#34;
 
 import sys
@@ -274,7 +329,13 @@ Started October 2014 …</p></div>
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#example">Example</a></li>
+<li><a href="#command-line-scripts">Command-line scripts</a></li>
+<li><a href="#imports">Imports</a></li>
+<li><a href="#next-steps">Next steps</a></li>
+<li><a href="#about-this-module">About this module</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
