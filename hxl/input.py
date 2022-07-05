@@ -411,7 +411,7 @@ def make_input(raw_source, input_options=None):
                 {
                     'input': input,
                     'source': raw_source,
-                    'munged': _munge_url(raw_source, input_options) if str(raw_source).startswith('http') else None
+                    'munged': munge_url(raw_source, input_options) if str(raw_source).startswith('http') else None
                 }
             ))
 
@@ -510,7 +510,7 @@ def open_url_or_file(url_or_filename, input_options):
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
-            url = _munge_url(url_or_filename, input_options)
+            url = munge_url(url_or_filename, input_options)
             response = requests.get(
                 url,
                 stream=True,
@@ -1518,13 +1518,17 @@ def from_spec(spec, allow_local_ok=False):
 ########################################################################
 
 
-def _munge_url(url, input_options):
-    """ Munge a URL to get at underlying data for well-known types.
+def munge_url(url, input_options):
+    """Munge a URL to get at underlying data for well-known types.
 
     For example, if it's an HDX dataset, figure out the download
     link for the first resource. If it's a Kobo survey, create an
     export and get the download link (given an appropriate
     authorization header).
+
+    This function ignores InputOptions.scan_ckan_resources -- the
+    scanning happens in hxl.input.data(). So it's not exactly
+    equivalent to the URL that you would get via data().
 
     Args:
         url (str): the original URL to munge
