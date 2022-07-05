@@ -1391,7 +1391,7 @@ class ColumnFilter(AbstractStreamingFilter):
 
 
 class CountFilter(AbstractCachingFilter):
-    """Composable filter class to aggregate rows in a HXL dataset.
+    """Composable filter class to aggregate rows in a HXL dataset (like a pivot table)
 
     This class supports the L{hxl.model.Dataset.count} convenience
     method and the L{hxl.scripts.hxlcount} command-line script.

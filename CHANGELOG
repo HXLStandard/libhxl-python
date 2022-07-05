@@ -1,5 +1,6 @@
 Release 4.26
 	- make hxl.input.munge_url() public
+	- remove default tags for hxlcount script so that it can just count lines of data
 
 2022-06-28 Release 4.25.1
 	- support optionally filling merged areas (XLS and XLSX only)
