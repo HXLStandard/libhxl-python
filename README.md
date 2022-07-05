@@ -45,7 +45,7 @@ of the _InputOptions_ class:
 ```
 import hxl
 
-dataset = hxl.data("dataset.xlsx", hxl.InputOptions(allow_local=True)
+dataset = hxl.data("dataset.xlsx", hxl.InputOptions(allow_local=True))
 ```
 
 
