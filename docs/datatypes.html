@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hxl.datatypes API documentation</title>
+<meta name="description" content="Utility functions for testing and normalising scalar-ish data types …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hxl.datatypes</code></h1>
+</header>
+<section id="section-intro">
+<p>Utility functions for testing and normalising scalar-ish data types</p>
+<p>Other modules in libhxl use these functions for consistent type
+checking, conversion, and normalisation.</p>
+<h2 id="examples">Examples</h2>
+<pre><code>s = hxl.datatypes.normalise(&quot;   This IS a String  &quot;) # =&gt; &quot;this is a string&quot;
+s = hxl.datatypes.normalise_whitespace(&quot;   a  b\nc&quot;) # =&gt; &quot;a b c&quot;
+s = hxl.datatypes.normalise_date(&quot;1/13/2020&quot;) # =&gt; &quot;2020-01-13&quot;
+hxl.datatypes.is_empty(&quot;     &quot;) # =&gt; True
+type = hxl.datatypes.typeof(&quot;     &quot;) # =&gt; &quot;empty&quot;
+</code></pre>
+<h2 id="author">Author</h2>
+<p>David Megginson</p>
+<h2 id="license">License</h2>
+<p>Public Domain</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Utility functions for testing and normalising scalar-ish data types
+
+Other modules in libhxl use these functions for consistent type
+checking, conversion, and normalisation.
+
+Examples:
+    ```
+    s = hxl.datatypes.normalise(&#34;   This IS a String  &#34;) # =&gt; &#34;this is a string&#34;
+    s = hxl.datatypes.normalise_whitespace(&#34;   a  b\\nc&#34;) # =&gt; &#34;a b c&#34;
+    s = hxl.datatypes.normalise_date(&#34;1/13/2020&#34;) # =&gt; &#34;2020-01-13&#34;
+    hxl.datatypes.is_empty(&#34;     &#34;) # =&gt; True
+    type = hxl.datatypes.typeof(&#34;     &#34;) # =&gt; &#34;empty&#34;
+    ```
+
+Author:
+    David Megginson
+
+License:
+    Public Domain
+
+&#34;&#34;&#34;
+
+import collections, datetime, dateutil.parser, json, logging, re, six, unidecode
+
+__all__ = [&#34;TOKEN_PATTERN&#34;, &#34;normalise&#34;, &#34;typeof&#34;, &#34;flatten&#34;, &#34;is_truthy&#34;, &#34;is_empty&#34;, &#34;is_string&#34;, &#34;is_token&#34;, &#34;normalise_space&#34;, &#34;normalise_string&#34;, &#34;is_number&#34;, &#34;normalise_number&#34;, &#34;is_date&#34;, &#34;normalise_date&#34;, &#34;is_dict&#34;, &#34;is_list&#34;]
+
+logger = logging.getLogger(__name__)
+
+
+
+########################################################################
+# Constants
+########################################################################
+
+TOKEN_PATTERN = r&#39;[A-Za-z][_0-9A-Za-z]*&#39;
+&#34;&#34;&#34;A regular expression matching a single string token.
+&#34;&#34;&#34;
+
+_WHITESPACE_PATTERN = re.compile(r&#39;\s+&#39;, re.MULTILINE)
+
+_ISO_DATE_PATTERN = re.compile(
+    r&#39;^(?P&lt;year&gt;[12]\d\d\d)(?:Q(?P&lt;quarter&gt;[1-4])|W(?P&lt;week&gt;\d\d?)|-(?P&lt;month&gt;\d\d?)(?:-(?P&lt;day&gt;\d\d?))?)?$&#39;,
+    re.IGNORECASE
+)
+
+_SQL_DATETIME_PATTERN = re.compile(
+    r&#39;^(?P&lt;year&gt;[12]\d\d\d)-(?P&lt;month&gt;\d\d?)-(?P&lt;day&gt;\d\d?) \d\d?:\d\d?:\d\d?(?P&lt;week&gt;)?(?P&lt;quarter&gt;)?$&#39;
+)
+
+_DEFAULT_DATE_1 = datetime.datetime(2015, 1, 1)
+
+_DEFAULT_DATE_2 = datetime.datetime(2016, 3, 3)
+
+
+
+########################################################################
+# Functions
+########################################################################
+
+def normalise(value, col=None, dayfirst=True):
+    &#34;&#34;&#34;Intelligently normalise a value, optionally using the HXL hashtag and attributes for hints
+
+    Attempt to guess the value&#39;s type using duck typing and
+    (optionally) hints from the HXL hashtag, then product a string
+    containing a standard representation of a date or number (if
+    appropriate), or a string with whitespace normalised.
+
+    Args:
+        value: the value to convert to a normalised string
+        col (hxl.model.Column): an optional Column object associated with the string (for hints)
+        dayfirst (bool): hint for whether to default to DD-MM-YYYY or MM-DD-YYY when ambiguous.
+
+    Returns:
+        str: A normalised string version of the value provided.
+
+    &#34;&#34;&#34;
+    # TODO add lat/lon
+
+    if col and col.tag == &#39;#date&#39;:
+        try:
+            return normalise_date(value, dayfirst=dayfirst)
+        except ValueError:
+            pass
+
+    # fall through
+    try:
+        return normalise_number(value)
+    except ValueError:
+        return normalise_string(value)
+
+
+def typeof(value, col=None):
+    &#34;&#34;&#34;Use duck typing and HXL hinting to guess of a value
+
+    Args:
+        value: the value to check
+        col (hxl.model.Column): an optional Column object for hinting (via the hashtag and attributes)
+
+    Returns:
+        str: one of the strings &#34;date&#34;, &#34;number&#34;, &#34;empty&#34;, or &#34;string&#34;
+
+    &#34;&#34;&#34;
+    if col and col.tag == &#39;#date&#39; and is_date(value):
+        return &#39;date&#39;
+    elif is_number(value):
+        return &#39;number&#39;
+    elif is_empty(value):
+        return &#39;empty&#39;
+    else:
+        return &#39;string&#39;
+
+
+def flatten(value, use_json=True, separator=&#34; | &#34;):
+    &#34;&#34;&#34;Flatten potential lists and dictionaries
+
+    If use_json is false, then remove hierarchies, and create a single list
+    separated with &#34; | &#34;, and will use dict keys rather than values.
+
+    Args:
+        value: the value to flatten (may be a list)
+        use_json (bool): if True (default), encode top-level lists as JSON
+        separator (str): the string to use as a separator, if use_json is false
+
+    Returns:
+        str: a string version of the value
+
+    &#34;&#34;&#34;
+    # keep it simple for now
+    if value is None:
+        return &#39;&#39;
+    elif is_list(value) or is_dict(value):
+        if use_json:
+            return json.dumps(value)
+        else:
+            return &#34; | &#34;.join([flatten(item, False) for item in value])
+    else:
+        return str(value)
+
+    
+def is_truthy(value):
+    &#34;&#34;&#34;Loosely check for a boolean-type true value
+
+    Accepts values such as &#34;1&#34;, &#34;yes&#34;, &#34;t&#34;, &#34;true&#34;, etc
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value appears truthy
+
+    &#34;&#34;&#34;
+    return normalise_string(value) in [&#39;y&#39;, &#39;yes&#39;, &#39;t&#39;, &#39;true&#39;, &#39;1&#39;]
+
+
+def is_empty(value):
+    &#34;&#34;&#34;Test for a functionally-empty value.
+
+    None, empty string, or whitespace only counts as empty; anything else doesn&#39;t.
+
+    Args:
+        value: value to test
+
+    Returns:
+        bool: True if the value is functionally empty
+
+    &#34;&#34;&#34;
+    return (value is None or value == &#39;&#39; or str(value).isspace())
+
+
+def is_string(value):
+    &#34;&#34;&#34;Test if a value is already a string
+
+    Looks for an actual string data type.
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value is a string type.
+
+    &#34;&#34;&#34;
+    return isinstance(value, six.string_types)
+
+
+def is_token(value):
+    &#34;&#34;&#34;Test if a value is a valid HXL token
+
+    A token is the string that may appear after &#34;#&#34; for a hashtag, or
+    &#34;+&#34; for an attribute.  It must begin with a letter (A-Z, a-z),
+    followed by letters, numbers, or underscore (&#34;_&#34;). Internal
+    spaces, accented/non-Roman characters, and space or other
+    punctuation are not allowed.
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value is a token
+
+    &#34;&#34;&#34;
+    return is_string(value) and re.fullmatch(TOKEN_PATTERN, value)
+
+
+def normalise_space(value):
+    &#34;&#34;&#34;Normalise whitespace only in a string
+
+    This method will convert the input value to a string first, then
+    remove any leading or trailing whitespace, and replace all
+    sequences of internal whitespace (including line breaks) with a
+    single space character.
+
+    Note: this does not perform other normalisations (date, etc), but
+    simply calls the str() function on the value provided.
+
+    Args:
+        value: the value to normalise
+
+    Returns:
+        str: a string representation of the original value, with whitespace normalised.
+
+    &#34;&#34;&#34;
+    if is_empty(value):
+        return &#39;&#39;
+    else:
+        value = str(value).strip().replace(&#34;\n&#34;, &#34; &#34;)
+        return re.sub(
+            _WHITESPACE_PATTERN,
+            &#39; &#39;,
+            value
+        )
+
+
+def normalise_string(value):
+    &#34;&#34;&#34;Normalise a string.
+
+    Remove all leading and trailing whitespace. Convert to lower
+    case. Replace all internal whitespace (including lineends) with a
+    single space. Replace None with &#39;&#39;.
+
+    The input value will be forced to a string using str()
+
+    Args:
+        value: the string to normalise
+
+    Returns:
+        str: the normalised string
+
+    &#34;&#34;&#34;
+    if value is None:
+        value = &#39;&#39;
+    else:
+        value = str(value)
+    return normalise_space(unidecode.unidecode(value)).lower()
+
+
+def is_number(value):
+    &#34;&#34;&#34;By duck typing, test if a value contains something recognisable as a number.
+
+    Args:
+        value: the value (string, int, float, etc) to test
+
+    Returns:
+        bool: True if usable as a number (via normalise_number())
+
+    &#34;&#34;&#34;
+    try:
+        float(value)
+        return True
+    except:
+        return False
+
+
+def normalise_number(value):
+    &#34;&#34;&#34;Attempt to convert a value to a number.
+
+    Will convert to int type if it has no decimal places.
+
+    Args:
+        value: the value (string, int, float, etc) to convert.
+
+    Returns:
+        int: an integer value if there are no decimal places
+        float: a floating point value if there were decimal places
+
+    Raises:
+        ValueError: if the value cannot be converted
+
+    &#34;&#34;&#34;
+    try:
+        n = float(value)
+        if n == int(n):
+            return int(n)
+        else:
+            return n
+    except:
+        raise ValueError(&#34;Cannot convert to number: {}&#34;.format(value))
+
+
+def is_date(value):
+    &#34;&#34;&#34;Test if a value contains something recognisable as a date.
+
+    Args:
+        value: the value (string, etc) to test
+
+    Returns:
+        True if usable as a date
+
+    &#34;&#34;&#34;
+    try:
+        normalise_date(value)
+        return True
+    except ValueError:
+        return False
+
+
+def normalise_date(value, dayfirst=True):
+    &#34;&#34;&#34;Normalise a string as a date.
+
+    This function will take a variety of different date formats and
+    attempt to convert them to an ISO 8601 date, such as
+    &#34;2020-06-01&#34;. It also will use a non-ISO format for quarter years,
+    such as &#34;2020Q2&#34;.
+
+    Args:
+        value: the value to normalise as a date
+        dayfirst (bool): if the date is ambiguous, assume the day comes before the month
+
+    Returns:
+        str: the date in ISO 8601 format or the extended quarters syntax
+    
+    Raises:
+        ValueError: if the value cannot be parsed as a date
+
+    &#34;&#34;&#34;
+
+    def make_date_string(year, quarter=None, month=None, week=None, day=None):
+        if quarter:
+            # *not* real ISO 8601
+            quarter = int(quarter)
+            if quarter &lt; 1 or quarter &gt; 4:
+                raise ValueError(&#34;Illegal Quarter number: {}&#34;.format(quarter))
+            return &#39;{:04d}Q{:01d}&#39;.format(int(year), int(quarter))
+        elif week:
+            week = int(week)
+            if week &lt; 1 or week &gt; 53:
+                raise ValueError(&#34;Illegal week number: {}&#34;.format(week))
+            return &#39;{:04d}W{:02d}&#39;.format(int(year), int(week))
+        elif month:
+            month = int(month)
+            if month &lt; 1 or month &gt; 12:
+                raise ValueError(&#34;Illegal month number: {}&#34;.format(month))
+            if day:
+                day = int(day)
+                if day &lt; 1 or day &gt; 31 or (month in [4, 6, 9, 11] and day &gt; 30) or (month==2 and day&gt;29):
+                    raise ValueError(&#34;Illegal day {} for month {}&#34;.format(day, month))
+                return &#39;{:04d}-{:02d}-{:02d}&#39;.format(int(year), int(month), int(day))
+            else:
+                return &#39;{:04d}-{:02d}&#39;.format(int(year), int(month))
+        else:
+            return &#39;{:04d}&#39;.format(int(year))
+
+    # First, try our quick ISO date pattern, extended to support quarter notation
+    value = normalise_space(value)
+    result = _ISO_DATE_PATTERN.match(value)
+    if not result:
+        result = _SQL_DATETIME_PATTERN.match(value)
+    if result:
+        return make_date_string(
+            result.group(&#39;year&#39;),
+            quarter=result.group(&#39;quarter&#39;),
+            month=result.group(&#39;month&#39;),
+            week=result.group(&#39;week&#39;),
+            day=result.group(&#39;day&#39;)
+        )
+
+    # Next, check for a timestamp, which will crash the datetime module
+    if value.isnumeric() and len(value) &gt;= 10:
+        if len(value) &gt;= 16:
+            timestamp = int(value) / 1000000 # nanoseconds
+        if len(value) &gt;= 13:
+            timestamp = int(value) / 1000 # milliseconds
+        else:
+            timestamp = int(value) # seconds
+        d = datetime.datetime.utcfromtimestamp(timestamp)
+        return d.date().isoformat()
+
+    # revert to full date parsing
+    # we parse the date twice, to detect any default values Python might have filled in
+    date1 = dateutil.parser.parse(value, default=_DEFAULT_DATE_1, dayfirst=dayfirst)
+    date2 = dateutil.parser.parse(value, default=_DEFAULT_DATE_2, dayfirst=dayfirst)
+    day = date1.day if date1.day==date2.day else None
+    month = date1.month if date1.month==date2.month else None
+    year = date1.year if date1.year==date2.year else None
+
+    # do some quick validation
+    if year is None:
+        if month is not None:
+            year = datetime.datetime.now().year
+        else:
+            raise ValueError(&#34;Will not provide default year unless month is present: {}&#34;.format(value))
+    if month is None and day is not None:
+        raise ValueError(&#34;Will not provide default month: {}&#34;.format(value))
+
+    return make_date_string(year=year, month=month, day=day)
+
+
+def is_dict(value):
+    &#34;&#34;&#34;Test if a value is a Python dict.
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value is a Python dict or similar map.
+
+    &#34;&#34;&#34;
+    return isinstance(value, collections.abc.Mapping)
+
+
+def is_list(value):
+    &#34;&#34;&#34;Test if a value is a Python sequence (other than a string)
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the values is a non-string sequence.
+
+    &#34;&#34;&#34;
+    return isinstance(value, collections.abc.Sequence) and not isinstance(value, six.string_types)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="hxl.datatypes.TOKEN_PATTERN"><code class="name">var <span class="ident">TOKEN_PATTERN</span></code></dt>
+<dd>
+<div class="desc"><p>A regular expression matching a single string token.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hxl.datatypes.flatten"><code class="name flex">
+<span>def <span class="ident">flatten</span></span>(<span>value, use_json=True, separator=' | ')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Flatten potential lists and dictionaries</p>
+<p>If use_json is false, then remove hierarchies, and create a single list
+separated with " | ", and will use dict keys rather than values.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to flatten (may be a list)</dd>
+<dt><strong><code>use_json</code></strong> :&ensp;<code>bool</code></dt>
+<dd>if True (default), encode top-level lists as JSON</dd>
+<dt><strong><code>separator</code></strong> :&ensp;<code>str</code></dt>
+<dd>the string to use as a separator, if use_json is false</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>a string version of the value</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def flatten(value, use_json=True, separator=&#34; | &#34;):
+    &#34;&#34;&#34;Flatten potential lists and dictionaries
+
+    If use_json is false, then remove hierarchies, and create a single list
+    separated with &#34; | &#34;, and will use dict keys rather than values.
+
+    Args:
+        value: the value to flatten (may be a list)
+        use_json (bool): if True (default), encode top-level lists as JSON
+        separator (str): the string to use as a separator, if use_json is false
+
+    Returns:
+        str: a string version of the value
+
+    &#34;&#34;&#34;
+    # keep it simple for now
+    if value is None:
+        return &#39;&#39;
+    elif is_list(value) or is_dict(value):
+        if use_json:
+            return json.dumps(value)
+        else:
+            return &#34; | &#34;.join([flatten(item, False) for item in value])
+    else:
+        return str(value)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_date"><code class="name flex">
+<span>def <span class="ident">is_date</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test if a value contains something recognisable as a date.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value (string, etc) to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>True if usable as a date</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_date(value):
+    &#34;&#34;&#34;Test if a value contains something recognisable as a date.
+
+    Args:
+        value: the value (string, etc) to test
+
+    Returns:
+        True if usable as a date
+
+    &#34;&#34;&#34;
+    try:
+        normalise_date(value)
+        return True
+    except ValueError:
+        return False</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_dict"><code class="name flex">
+<span>def <span class="ident">is_dict</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test if a value is a Python dict.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the value is a Python dict or similar map.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_dict(value):
+    &#34;&#34;&#34;Test if a value is a Python dict.
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value is a Python dict or similar map.
+
+    &#34;&#34;&#34;
+    return isinstance(value, collections.abc.Mapping)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_empty"><code class="name flex">
+<span>def <span class="ident">is_empty</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test for a functionally-empty value.</p>
+<p>None, empty string, or whitespace only counts as empty; anything else doesn't.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>value to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the value is functionally empty</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_empty(value):
+    &#34;&#34;&#34;Test for a functionally-empty value.
+
+    None, empty string, or whitespace only counts as empty; anything else doesn&#39;t.
+
+    Args:
+        value: value to test
+
+    Returns:
+        bool: True if the value is functionally empty
+
+    &#34;&#34;&#34;
+    return (value is None or value == &#39;&#39; or str(value).isspace())</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_list"><code class="name flex">
+<span>def <span class="ident">is_list</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test if a value is a Python sequence (other than a string)</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the values is a non-string sequence.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_list(value):
+    &#34;&#34;&#34;Test if a value is a Python sequence (other than a string)
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the values is a non-string sequence.
+
+    &#34;&#34;&#34;
+    return isinstance(value, collections.abc.Sequence) and not isinstance(value, six.string_types)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_number"><code class="name flex">
+<span>def <span class="ident">is_number</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>By duck typing, test if a value contains something recognisable as a number.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value (string, int, float, etc) to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if usable as a number (via normalise_number())</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_number(value):
+    &#34;&#34;&#34;By duck typing, test if a value contains something recognisable as a number.
+
+    Args:
+        value: the value (string, int, float, etc) to test
+
+    Returns:
+        bool: True if usable as a number (via normalise_number())
+
+    &#34;&#34;&#34;
+    try:
+        float(value)
+        return True
+    except:
+        return False</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_string"><code class="name flex">
+<span>def <span class="ident">is_string</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test if a value is already a string</p>
+<p>Looks for an actual string data type.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the value is a string type.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_string(value):
+    &#34;&#34;&#34;Test if a value is already a string
+
+    Looks for an actual string data type.
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value is a string type.
+
+    &#34;&#34;&#34;
+    return isinstance(value, six.string_types)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_token"><code class="name flex">
+<span>def <span class="ident">is_token</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test if a value is a valid HXL token</p>
+<p>A token is the string that may appear after "#" for a hashtag, or
+"+" for an attribute.
+It must begin with a letter (A-Z, a-z),
+followed by letters, numbers, or underscore ("_"). Internal
+spaces, accented/non-Roman characters, and space or other
+punctuation are not allowed.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the value is a token</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_token(value):
+    &#34;&#34;&#34;Test if a value is a valid HXL token
+
+    A token is the string that may appear after &#34;#&#34; for a hashtag, or
+    &#34;+&#34; for an attribute.  It must begin with a letter (A-Z, a-z),
+    followed by letters, numbers, or underscore (&#34;_&#34;). Internal
+    spaces, accented/non-Roman characters, and space or other
+    punctuation are not allowed.
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value is a token
+
+    &#34;&#34;&#34;
+    return is_string(value) and re.fullmatch(TOKEN_PATTERN, value)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.is_truthy"><code class="name flex">
+<span>def <span class="ident">is_truthy</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Loosely check for a boolean-type true value</p>
+<p>Accepts values such as "1", "yes", "t", "true", etc</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to test</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the value appears truthy</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_truthy(value):
+    &#34;&#34;&#34;Loosely check for a boolean-type true value
+
+    Accepts values such as &#34;1&#34;, &#34;yes&#34;, &#34;t&#34;, &#34;true&#34;, etc
+
+    Args:
+        value: the value to test
+
+    Returns:
+        bool: True if the value appears truthy
+
+    &#34;&#34;&#34;
+    return normalise_string(value) in [&#39;y&#39;, &#39;yes&#39;, &#39;t&#39;, &#39;true&#39;, &#39;1&#39;]</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.normalise"><code class="name flex">
+<span>def <span class="ident">normalise</span></span>(<span>value, col=None, dayfirst=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Intelligently normalise a value, optionally using the HXL hashtag and attributes for hints</p>
+<p>Attempt to guess the value's type using duck typing and
+(optionally) hints from the HXL hashtag, then product a string
+containing a standard representation of a date or number (if
+appropriate), or a string with whitespace normalised.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to convert to a normalised string</dd>
+<dt><strong><code>col</code></strong> :&ensp;<code><a title="hxl.model.Column" href="model.html#hxl.model.Column">Column</a></code></dt>
+<dd>an optional Column object associated with the string (for hints)</dd>
+<dt><strong><code>dayfirst</code></strong> :&ensp;<code>bool</code></dt>
+<dd>hint for whether to default to DD-MM-YYYY or MM-DD-YYY when ambiguous.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>A normalised string version of the value provided.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise(value, col=None, dayfirst=True):
+    &#34;&#34;&#34;Intelligently normalise a value, optionally using the HXL hashtag and attributes for hints
+
+    Attempt to guess the value&#39;s type using duck typing and
+    (optionally) hints from the HXL hashtag, then product a string
+    containing a standard representation of a date or number (if
+    appropriate), or a string with whitespace normalised.
+
+    Args:
+        value: the value to convert to a normalised string
+        col (hxl.model.Column): an optional Column object associated with the string (for hints)
+        dayfirst (bool): hint for whether to default to DD-MM-YYYY or MM-DD-YYY when ambiguous.
+
+    Returns:
+        str: A normalised string version of the value provided.
+
+    &#34;&#34;&#34;
+    # TODO add lat/lon
+
+    if col and col.tag == &#39;#date&#39;:
+        try:
+            return normalise_date(value, dayfirst=dayfirst)
+        except ValueError:
+            pass
+
+    # fall through
+    try:
+        return normalise_number(value)
+    except ValueError:
+        return normalise_string(value)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.normalise_date"><code class="name flex">
+<span>def <span class="ident">normalise_date</span></span>(<span>value, dayfirst=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Normalise a string as a date.</p>
+<p>This function will take a variety of different date formats and
+attempt to convert them to an ISO 8601 date, such as
+"2020-06-01". It also will use a non-ISO format for quarter years,
+such as "2020Q2".</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to normalise as a date</dd>
+<dt><strong><code>dayfirst</code></strong> :&ensp;<code>bool</code></dt>
+<dd>if the date is ambiguous, assume the day comes before the month</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>the date in ISO 8601 format or the extended quarters syntax</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if the value cannot be parsed as a date</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_date(value, dayfirst=True):
+    &#34;&#34;&#34;Normalise a string as a date.
+
+    This function will take a variety of different date formats and
+    attempt to convert them to an ISO 8601 date, such as
+    &#34;2020-06-01&#34;. It also will use a non-ISO format for quarter years,
+    such as &#34;2020Q2&#34;.
+
+    Args:
+        value: the value to normalise as a date
+        dayfirst (bool): if the date is ambiguous, assume the day comes before the month
+
+    Returns:
+        str: the date in ISO 8601 format or the extended quarters syntax
+    
+    Raises:
+        ValueError: if the value cannot be parsed as a date
+
+    &#34;&#34;&#34;
+
+    def make_date_string(year, quarter=None, month=None, week=None, day=None):
+        if quarter:
+            # *not* real ISO 8601
+            quarter = int(quarter)
+            if quarter &lt; 1 or quarter &gt; 4:
+                raise ValueError(&#34;Illegal Quarter number: {}&#34;.format(quarter))
+            return &#39;{:04d}Q{:01d}&#39;.format(int(year), int(quarter))
+        elif week:
+            week = int(week)
+            if week &lt; 1 or week &gt; 53:
+                raise ValueError(&#34;Illegal week number: {}&#34;.format(week))
+            return &#39;{:04d}W{:02d}&#39;.format(int(year), int(week))
+        elif month:
+            month = int(month)
+            if month &lt; 1 or month &gt; 12:
+                raise ValueError(&#34;Illegal month number: {}&#34;.format(month))
+            if day:
+                day = int(day)
+                if day &lt; 1 or day &gt; 31 or (month in [4, 6, 9, 11] and day &gt; 30) or (month==2 and day&gt;29):
+                    raise ValueError(&#34;Illegal day {} for month {}&#34;.format(day, month))
+                return &#39;{:04d}-{:02d}-{:02d}&#39;.format(int(year), int(month), int(day))
+            else:
+                return &#39;{:04d}-{:02d}&#39;.format(int(year), int(month))
+        else:
+            return &#39;{:04d}&#39;.format(int(year))
+
+    # First, try our quick ISO date pattern, extended to support quarter notation
+    value = normalise_space(value)
+    result = _ISO_DATE_PATTERN.match(value)
+    if not result:
+        result = _SQL_DATETIME_PATTERN.match(value)
+    if result:
+        return make_date_string(
+            result.group(&#39;year&#39;),
+            quarter=result.group(&#39;quarter&#39;),
+            month=result.group(&#39;month&#39;),
+            week=result.group(&#39;week&#39;),
+            day=result.group(&#39;day&#39;)
+        )
+
+    # Next, check for a timestamp, which will crash the datetime module
+    if value.isnumeric() and len(value) &gt;= 10:
+        if len(value) &gt;= 16:
+            timestamp = int(value) / 1000000 # nanoseconds
+        if len(value) &gt;= 13:
+            timestamp = int(value) / 1000 # milliseconds
+        else:
+            timestamp = int(value) # seconds
+        d = datetime.datetime.utcfromtimestamp(timestamp)
+        return d.date().isoformat()
+
+    # revert to full date parsing
+    # we parse the date twice, to detect any default values Python might have filled in
+    date1 = dateutil.parser.parse(value, default=_DEFAULT_DATE_1, dayfirst=dayfirst)
+    date2 = dateutil.parser.parse(value, default=_DEFAULT_DATE_2, dayfirst=dayfirst)
+    day = date1.day if date1.day==date2.day else None
+    month = date1.month if date1.month==date2.month else None
+    year = date1.year if date1.year==date2.year else None
+
+    # do some quick validation
+    if year is None:
+        if month is not None:
+            year = datetime.datetime.now().year
+        else:
+            raise ValueError(&#34;Will not provide default year unless month is present: {}&#34;.format(value))
+    if month is None and day is not None:
+        raise ValueError(&#34;Will not provide default month: {}&#34;.format(value))
+
+    return make_date_string(year=year, month=month, day=day)</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.normalise_number"><code class="name flex">
+<span>def <span class="ident">normalise_number</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Attempt to convert a value to a number.</p>
+<p>Will convert to int type if it has no decimal places.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value (string, int, float, etc) to convert.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>an integer value if there are no decimal places</dd>
+<dt><code>float</code></dt>
+<dd>a floating point value if there were decimal places</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if the value cannot be converted</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_number(value):
+    &#34;&#34;&#34;Attempt to convert a value to a number.
+
+    Will convert to int type if it has no decimal places.
+
+    Args:
+        value: the value (string, int, float, etc) to convert.
+
+    Returns:
+        int: an integer value if there are no decimal places
+        float: a floating point value if there were decimal places
+
+    Raises:
+        ValueError: if the value cannot be converted
+
+    &#34;&#34;&#34;
+    try:
+        n = float(value)
+        if n == int(n):
+            return int(n)
+        else:
+            return n
+    except:
+        raise ValueError(&#34;Cannot convert to number: {}&#34;.format(value))</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.normalise_space"><code class="name flex">
+<span>def <span class="ident">normalise_space</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Normalise whitespace only in a string</p>
+<p>This method will convert the input value to a string first, then
+remove any leading or trailing whitespace, and replace all
+sequences of internal whitespace (including line breaks) with a
+single space character.</p>
+<p>Note: this does not perform other normalisations (date, etc), but
+simply calls the str() function on the value provided.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to normalise</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>a string representation of the original value, with whitespace normalised.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_space(value):
+    &#34;&#34;&#34;Normalise whitespace only in a string
+
+    This method will convert the input value to a string first, then
+    remove any leading or trailing whitespace, and replace all
+    sequences of internal whitespace (including line breaks) with a
+    single space character.
+
+    Note: this does not perform other normalisations (date, etc), but
+    simply calls the str() function on the value provided.
+
+    Args:
+        value: the value to normalise
+
+    Returns:
+        str: a string representation of the original value, with whitespace normalised.
+
+    &#34;&#34;&#34;
+    if is_empty(value):
+        return &#39;&#39;
+    else:
+        value = str(value).strip().replace(&#34;\n&#34;, &#34; &#34;)
+        return re.sub(
+            _WHITESPACE_PATTERN,
+            &#39; &#39;,
+            value
+        )</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.normalise_string"><code class="name flex">
+<span>def <span class="ident">normalise_string</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Normalise a string.</p>
+<p>Remove all leading and trailing whitespace. Convert to lower
+case. Replace all internal whitespace (including lineends) with a
+single space. Replace None with ''.</p>
+<p>The input value will be forced to a string using str()</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the string to normalise</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>the normalised string</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_string(value):
+    &#34;&#34;&#34;Normalise a string.
+
+    Remove all leading and trailing whitespace. Convert to lower
+    case. Replace all internal whitespace (including lineends) with a
+    single space. Replace None with &#39;&#39;.
+
+    The input value will be forced to a string using str()
+
+    Args:
+        value: the string to normalise
+
+    Returns:
+        str: the normalised string
+
+    &#34;&#34;&#34;
+    if value is None:
+        value = &#39;&#39;
+    else:
+        value = str(value)
+    return normalise_space(unidecode.unidecode(value)).lower()</code></pre>
+</details>
+</dd>
+<dt id="hxl.datatypes.typeof"><code class="name flex">
+<span>def <span class="ident">typeof</span></span>(<span>value, col=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Use duck typing and HXL hinting to guess of a value</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>the value to check</dd>
+<dt><strong><code>col</code></strong> :&ensp;<code><a title="hxl.model.Column" href="model.html#hxl.model.Column">Column</a></code></dt>
+<dd>an optional Column object for hinting (via the hashtag and attributes)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>one of the strings "date", "number", "empty", or "string"</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def typeof(value, col=None):
+    &#34;&#34;&#34;Use duck typing and HXL hinting to guess of a value
+
+    Args:
+        value: the value to check
+        col (hxl.model.Column): an optional Column object for hinting (via the hashtag and attributes)
+
+    Returns:
+        str: one of the strings &#34;date&#34;, &#34;number&#34;, &#34;empty&#34;, or &#34;string&#34;
+
+    &#34;&#34;&#34;
+    if col and col.tag == &#39;#date&#39; and is_date(value):
+        return &#39;date&#39;
+    elif is_number(value):
+        return &#39;number&#39;
+    elif is_empty(value):
+        return &#39;empty&#39;
+    else:
+        return &#39;string&#39;</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hxl" href="index.html">hxl</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="hxl.datatypes.TOKEN_PATTERN" href="#hxl.datatypes.TOKEN_PATTERN">TOKEN_PATTERN</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="hxl.datatypes.flatten" href="#hxl.datatypes.flatten">flatten</a></code></li>
+<li><code><a title="hxl.datatypes.is_date" href="#hxl.datatypes.is_date">is_date</a></code></li>
+<li><code><a title="hxl.datatypes.is_dict" href="#hxl.datatypes.is_dict">is_dict</a></code></li>
+<li><code><a title="hxl.datatypes.is_empty" href="#hxl.datatypes.is_empty">is_empty</a></code></li>
+<li><code><a title="hxl.datatypes.is_list" href="#hxl.datatypes.is_list">is_list</a></code></li>
+<li><code><a title="hxl.datatypes.is_number" href="#hxl.datatypes.is_number">is_number</a></code></li>
+<li><code><a title="hxl.datatypes.is_string" href="#hxl.datatypes.is_string">is_string</a></code></li>
+<li><code><a title="hxl.datatypes.is_token" href="#hxl.datatypes.is_token">is_token</a></code></li>
+<li><code><a title="hxl.datatypes.is_truthy" href="#hxl.datatypes.is_truthy">is_truthy</a></code></li>
+<li><code><a title="hxl.datatypes.normalise" href="#hxl.datatypes.normalise">normalise</a></code></li>
+<li><code><a title="hxl.datatypes.normalise_date" href="#hxl.datatypes.normalise_date">normalise_date</a></code></li>
+<li><code><a title="hxl.datatypes.normalise_number" href="#hxl.datatypes.normalise_number">normalise_number</a></code></li>
+<li><code><a title="hxl.datatypes.normalise_space" href="#hxl.datatypes.normalise_space">normalise_space</a></code></li>
+<li><code><a title="hxl.datatypes.normalise_string" href="#hxl.datatypes.normalise_string">normalise_string</a></code></li>
+<li><code><a title="hxl.datatypes.typeof" href="#hxl.datatypes.typeof">typeof</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

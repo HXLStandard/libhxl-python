@@ -1,0 +1,3083 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hxl.scripts API documentation</title>
+<meta name="description" content="Console scripts
+David Megginson
+April 2015 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hxl.scripts</code></h1>
+</header>
+<section id="section-intro">
+<p>Console scripts
+David Megginson
+April 2015</p>
+<p>This is a big, ugly module to support the libhxl
+console scripts, including (mainly) argument parsing.</p>
+<p>License: Public Domain
+Documentation: <a href="https://github.com/HXLStandard/libhxl-python/wiki">https://github.com/HXLStandard/libhxl-python/wiki</a></p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+Console scripts
+David Megginson
+April 2015
+
+This is a big, ugly module to support the libhxl
+console scripts, including (mainly) argument parsing.
+
+License: Public Domain
+Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+&#34;&#34;&#34;
+
+from __future__ import print_function
+
+import argparse, json, logging, os, re, requests, sys
+
+# Do not import hxl, to avoid circular imports
+import hxl.converters, hxl.filters, hxl.input
+
+logger = logging.getLogger(__name__)
+
+
+# In Python2, sys.stdin is a byte stream; in Python3, it&#39;s a text stream
+STDIN = sys.stdin.buffer
+
+# Posix exit codes
+
+EXIT_OK = 0
+EXIT_ERROR = 1
+EXIT_SYNTAX = 2
+
+    
+#
+# Console script entry points
+#
+
+def hxladd():
+    &#34;&#34;&#34;Console script for hxladd.&#34;&#34;&#34;
+    run_script(hxladd_main)
+
+def hxlappend():
+    &#34;&#34;&#34;Console script for hxlappend.&#34;&#34;&#34;
+    run_script(hxlappend_main)
+
+def hxlclean():
+    &#34;&#34;&#34;Console script for hxlclean&#34;&#34;&#34;
+    run_script(hxlclean_main)
+
+def hxlcount():
+    &#34;&#34;&#34;Console script for hxlcount.&#34;&#34;&#34;
+    run_script(hxlcount_main)
+
+def hxlcut():
+    &#34;&#34;&#34;Console script for hxlcut.&#34;&#34;&#34;
+    run_script(hxlcut_main)
+
+def hxldedup():
+    &#34;&#34;&#34;Console script for hxldedup.&#34;&#34;&#34;
+    run_script(hxldedup_main)
+
+def hxlhash():
+    &#34;&#34;&#34;Console script for hxlhash.&#34;&#34;&#34;
+    run_script(hxlhash_main)
+
+def hxlmerge():
+    &#34;&#34;&#34;Console script for hxlmerge.&#34;&#34;&#34;
+    run_script(hxlmerge_main)
+
+def hxlrename():
+    &#34;&#34;&#34;Console script for hxlrename.&#34;&#34;&#34;
+    run_script(hxlrename_main)
+
+def hxlreplace():
+    &#34;&#34;&#34;Console script for hxlreplace.&#34;&#34;&#34;
+    run_script(hxlreplace_main)
+
+def hxlfill():
+    &#34;&#34;&#34;Console script for hxlreplace.&#34;&#34;&#34;
+    run_script(hxlfill_main)
+
+def hxlexpand():
+    &#34;&#34;&#34;Console script for hxlexpand.&#34;&#34;&#34;
+    run_script(hxlexpand_main)
+
+def hxlexplode():
+    &#34;&#34;&#34;Console script for hxlexplode.&#34;&#34;&#34;
+    run_script(hxlexplode_main)
+
+def hxlimplode():
+    &#34;&#34;&#34;Console script for hxlimplode.&#34;&#34;&#34;
+    run_script(hxlimplode_main)
+
+def hxlselect():
+    &#34;&#34;&#34;Console script for hxlselect.&#34;&#34;&#34;
+    run_script(hxlselect_main)
+
+def hxlsort():
+    &#34;&#34;&#34;Console script for hxlsort.&#34;&#34;&#34;
+    run_script(hxlsort_main)
+
+def hxlspec():
+    &#34;&#34;&#34;Console script for hxlspec.&#34;&#34;&#34;
+    run_script(hxlspec_main)
+
+def hxltag():
+    &#34;&#34;&#34;Console script for hxltag.&#34;&#34;&#34;
+    run_script(hxltag_main)
+
+def hxlvalidate():
+    &#34;&#34;&#34;Console script for hxlvalidate.&#34;&#34;&#34;
+    run_script(hxlvalidate_main)
+
+
+#
+# Main scripts for command-line tools.
+#
+
+def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxladd with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Add new columns with constant values to a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-s&#39;,
+        &#39;--spec&#39;,
+        help=&#39;Constant value to add to each row (may repeat option)&#39;,
+        metavar=&#39;header#&lt;tag&gt;=&lt;value&gt;&#39;,
+        action=&#39;append&#39;,
+        required=True
+        )
+    parser.add_argument(
+        &#39;-b&#39;,
+        &#39;--before&#39;,
+        help=&#39;Add new columns before existing ones rather than after them.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+        
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.AddColumnsFilter(source, specs=args.spec, before=args.before)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlappend with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Concatenate two HXL datasets&#39;)
+    # repeatable argument
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--append&#39;,
+        help=&#39;HXL file to append (may repeat option).&#39;,
+        metavar=&#39;file_or_url&#39;,
+        action=&#39;append&#39;,
+        default=[]
+        )
+    parser.add_argument(
+        &#39;-l&#39;,
+        &#39;--list&#39;,
+        help=&#39;URL or filename of list of URLs (may repeat option). Will appear after sources in -a options.&#39;,
+        action=&#39;append&#39;,
+        default=[]
+        )
+    parser.add_argument(
+        &#39;-x&#39;,
+        &#39;--exclude-extra-columns&#39;,
+        help=&#39;Don not add extra columns not in the original dataset.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    add_queries_arg(parser, &#39;From --append datasets, include only rows matching at least one query.&#39;)
+        
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    append_sources = []
+    for append_source in args.append:
+        append_sources.append(hxl.data(append_source, True))
+    for list_source in args.list:
+        for append_source in hxl.filters.AppendFilter.parse_external_source_list(hxl.data(list_source, True)):
+            append_sources.append(hxl.data(append_source, True))
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.AppendFilter(
+            source,
+            append_sources=append_sources,
+            add_columns=(not args.exclude_extra_columns),
+            queries=args.query
+        )
+        hxl.input.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlclean with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Clean data in a HXL file.&#39;)
+    parser.add_argument(
+        &#39;-w&#39;,
+        &#39;--whitespace&#39;,
+        help=&#39;Comma-separated list of tag patterns for whitespace normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-u&#39;,
+        &#39;--upper&#39;,
+        help=&#39;Comma-separated list of tag patterns for uppercase conversion.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-l&#39;,
+        &#39;--lower&#39;,
+        help=&#39;Comma-separated list of tag patterns for lowercase conversion.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-d&#39;,
+        &#39;--date&#39;,
+        help=&#39;Comma-separated list of tag patterns for date normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;--date-format&#39;,
+        help=&#39;Date formatting string in strftime format (defaults to %%Y-%%m-%%d).&#39;,
+        default=None,
+        metavar=&#39;format&#39;,
+        )
+    parser.add_argument(
+        &#39;-n&#39;,
+        &#39;--number&#39;,
+        help=&#39;Comma-separated list of tag patternss for number normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;--number-format&#39;,
+        help=&#39;Number formatting string in printf format (without leading %%).&#39;,
+        default=None,
+        metavar=&#39;format&#39;,
+        )
+    parser.add_argument(
+        &#39;--latlon&#39;,
+        help=&#39;Comma-separated list of tag patterns for lat/lon normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-p&#39;,
+        &#39;--purge&#39;,
+        help=&#39;Purge unparseable dates, numbers, and lat/lon during cleaning.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    add_queries_arg(parser, &#39;Clean only rows matching at least one query.&#39;)
+
+    args = parser.parse_args(args)
+    
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+
+        filter = hxl.filters.CleanDataFilter(
+            source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
+            date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,
+            latlon=args.latlon, purge=args.purge, queries=args.query
+        )
+        hxl.input.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlcount with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    # Command-line arguments
+    parser = make_args(&#39;Generate aggregate counts for a HXL dataset&#39;)
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of column tags to count.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list,
+        default=&#39;loc,org,sector,adm1,adm2,adm3&#39;
+        )
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--aggregator&#39;,
+        help=&#39;Aggregator statement&#39;,
+        metavar=&#39;statement&#39;,
+        action=&#39;append&#39;,
+        type=hxl.filters.Aggregator.parse,
+        default=[]
+        )
+    add_queries_arg(parser, &#39;Count only rows that match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.CountFilter(source, patterns=args.tags, aggregators=args.aggregator, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args(&#39;Cut columns from a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-i&#39;,
+        &#39;--include&#39;,
+        help=&#39;Comma-separated list of column tags to include&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-x&#39;,
+        &#39;--exclude&#39;,
+        help=&#39;Comma-separated list of column tags to exclude&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-s&#39;,
+        &#39;--skip-untagged&#39;,
+        help=&#34;Skip columns without HXL hashtags&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ColumnFilter(source, args.include, args.exclude, args.skip_untagged)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args(&#39;Remove duplicate rows from a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of column tags to use for deduplication (by default, use all values).&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    add_queries_arg(parser, &#39;Leave rows alone if they don\&#39;t match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.DeduplicationFilter(source, args.tags, args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args(
+        &#39;Generate an MD5 hash for a HXL dataset (or just its header rows).&#39;,
+        hxl_output=False
+    )
+    parser.add_argument(
+        &#39;-H&#39;,
+        &#39;--headers-only&#39;,
+        help=&#39;Hash only the header and hashtag rows.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source:
+        if args.headers_only:
+            print(source.columns_hash)
+        else:
+            print(source.data_hash)
+
+    return EXIT_OK
+
+
+def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlmerge with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Merge part of one HXL dataset into another.&#39;)
+    parser.add_argument(
+        &#39;-m&#39;,
+        &#39;--merge&#39;,
+        help=&#39;HXL file to write (if omitted, use standard output).&#39;,
+        metavar=&#39;filename&#39;,
+        required=True
+        )
+    parser.add_argument(
+        &#39;-k&#39;,
+        &#39;--keys&#39;,
+        help=&#39;HXL tag(s) to use as a shared key.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of column tags to include from the merge dataset.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--replace&#39;,
+        help=&#39;Replace empty values in existing columns (when available) instead of adding new ones.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#39;-O&#39;,
+        &#39;--overwrite&#39;,
+        help=&#39;Used with --replace, overwrite existing values.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    add_queries_arg(parser, &#39;Merged data only from rows that match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, hxl.InputOptions(allow_local=True)) if args.merge else None as merge_source:
+        filter = hxl.filters.MergeDataFilter(
+            source, merge_source=merge_source,
+            keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
+            queries=args.query
+        )
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlrename with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Rename and retag columns in a HXL dataset&#39;)
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--rename&#39;,
+        help=&#39;Rename an old tag to a new one, with an optional new text header (may repeat option).&#39;,
+        action=&#39;append&#39;,
+        metavar=&#39;#?&lt;original_tag&gt;:&lt;Text header&gt;?#?&lt;new_tag&gt;&#39;,
+        default=[],
+        type=hxl.filters.RenameFilter.parse_rename
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.RenameFilter(source, args.rename)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlreplace with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Replace strings in a HXL dataset&#39;)
+
+    inline_group = parser.add_argument_group(&#39;Inline replacement&#39;)
+    map_group = parser.add_argument_group(&#39;External substitution map&#39;)
+
+    inline_group.add_argument(
+        &#39;-p&#39;,
+        &#39;--pattern&#39;,
+        help=&#39;String or regular expression to search for&#39;,
+        nargs=&#39;?&#39;
+        )
+    inline_group.add_argument(
+        &#39;-s&#39;,
+        &#39;--substitution&#39;,
+        help=&#39;Replacement string&#39;,
+        nargs=&#39;?&#39;
+        )
+    inline_group.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Tag patterns to match&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    inline_group.add_argument(
+        &#39;-r&#39;,
+        &#39;--regex&#39;,
+        help=&#39;Use a regular expression instead of a string&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    map_group.add_argument(
+        &#39;-m&#39;,
+        &#39;--map&#39;,
+        help=&#39;Filename or URL of a mapping table using the tags #x_pattern (required), #x_substitution (required), #x_tag (optional), and #x_regex (optional), corresponding to the inline options above, for multiple substitutions.&#39;,
+        metavar=&#39;PATH&#39;,
+        nargs=&#39;?&#39;
+        )
+
+    add_queries_arg(parser, &#39;Replace only in rows that match at least one query.&#39;)
+    
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        if args.map:
+            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, True))
+        else:
+            replacements = []
+        if args.pattern:
+            for tag in args.tags:
+                replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
+        filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlfill with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Fill empty cells in a HXL dataset&#39;)
+
+    group = parser.add_mutually_exclusive_group(required=False)
+
+    group.add_argument(
+        &#39;-t&#39;,
+        &#39;--tag&#39;,
+        help=&#39;Fill empty cells only in matching columns (default: fill in all); not allowed with --use-merged&#39;,
+        metavar=&#39;tagpattern,...&#39;,
+        type=hxl.model.TagPattern.parse_list,
+        )
+    add_queries_arg(parser, &#39;Fill only in rows that match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.FillDataFilter(source, patterns=args.tag, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlexpand with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Expand lists in cells by repeating rows&#39;)
+
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of tag patterns for columns with lists to expand&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list,
+        nargs=&#34;?&#34;
+        )
+
+    parser.add_argument(
+        &#34;-s&#34;,
+        &#39;--separator&#39;,
+        help=&#39;string separating list items (defaults to &#34;|&#34;)&#39;,
+        metavar=&#39;string&#39;,
+        default=&#34;|&#34;
+        )
+
+    parser.add_argument(
+        &#34;-c&#34;,
+        &#39;--correlate&#39;,
+        help=&#39;correlate list values instead of producing a cartesian product&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+
+    add_queries_arg(parser, &#39;Limit list expansion to rows matching at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ExpandListsFilter(source, patterns=args.tags, separator=args.separator, correlate=args.correlate, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlexplode with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Explode a wide dataset into a long dataset&#39;)
+
+    parser.add_argument(
+        &#39;-H&#39;,
+        &#39;--header-att&#39;,
+        help=&#39;attribute to add to the label column (defaults to &#34;label&#34;)&#39;,
+        metavar=&#39;att&#39;,
+        default=&#34;label&#34;
+        )
+
+    parser.add_argument(
+        &#39;-V&#39;,
+        &#39;--value-att&#39;,
+        help=&#39;attribute to add to the value column (defaults to &#34;value&#34;)&#39;,
+        metavar=&#39;tagpattern&#39;,
+        default=&#34;value&#34;
+        )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value_att)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlexplode with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Implode a long dataset into a wide dataset.&#39;)
+
+    parser.add_argument(
+        &#39;-L&#39;,
+        &#39;--label&#39;,
+        help=&#39;HXL tag pattern for the label column&#39;,
+        metavar=&#39;tagpattern&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse,
+        )
+
+    parser.add_argument(
+        &#39;-V&#39;,
+        &#39;--value&#39;,
+        help=&#39;HXL tag pattern for the value column&#39;,
+        metavar=&#39;tagpattern&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse,
+        )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label, value_pattern=args.value)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlselect with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    # Command-line arguments
+    parser = make_args(&#39;Filter rows in a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-q&#39;,
+        &#39;--query&#39;,
+        help=&#39;Query expression for selecting rows (may repeat option for logical OR). &lt;op&gt; may be =, !=, &lt;, &lt;=, &gt;, &gt;=, ~, or !~&#39;,
+        action=&#39;append&#39;,
+        metavar=&#39;&lt;tagspec&gt;&lt;op&gt;&lt;value&gt;&#39;,
+        required=True
+        )
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--reverse&#39;,
+        help=&#39;Show only lines *not* matching criteria&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.RowFilter(source, queries=args.query, reverse=args.reverse)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlcut with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Sort a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of tags to for columns to use as sort keys.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--reverse&#39;,
+        help=&#39;Flag to reverse sort order.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.SortFilter(source, args.tags, args.reverse)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34; Run hxlspec with command-line arguments.
+
+    Args:
+        args (list): a list of command-line arguments
+        stdin (io.IOBase): alternative standard input (mainly for testing)
+        stdout (io.IOBase): alternative standard output (mainly for testing)
+        stderr (io.IOBase): alternative standard error (mainly for testing)
+
+    &#34;&#34;&#34;
+
+    def get_json (url_or_filename):
+        
+        if not url_or_filename:
+            return json.load(stdin)
+
+        if re.match(r&#39;^(?:https?|s?ftp)://&#39;, url_or_filename.lower()):
+            headers = make_headers(args)
+            response = requests.get(url_or_filename, verify=(not args.ignore_certs), headers=headers)
+            response.raise_for_status()
+            return response.json()
+        else:
+            with open(url_or_filename, &#34;r&#34;) as input:
+                return json.load(input)
+    
+    parser = make_args(&#39;Process a HXL JSON spec&#39;)
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    spec = get_json(args.infile)
+    source = hxl.input.from_spec(spec, allow_local_ok=True)
+
+    with make_output(args, stdout) as output:
+        hxl.input.write_hxl(output.output, source, show_tags=not args.strip_tags)
+
+
+def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxltag with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Add HXL tags to a raw CSV file.&#39;)
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--match-all&#39;,
+        help=&#39;Match the entire header text (not just a substring)&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    parser.add_argument(
+        &#39;-m&#39;,
+        &#39;--map&#39;,
+        help=&#39;Mapping expression&#39;,
+        required=True,
+        action=&#39;append&#39;,
+        metavar=&#39;Header Text#tag&#39;,
+        type=hxl.converters.Tagger.parse_spec
+        )
+    parser.add_argument(
+        &#39;-d&#39;,
+        &#39;--default-tag&#39;,
+        help=&#39;Default tag for non-matching columns&#39;,
+        metavar=&#39;#tag&#39;,
+        type=hxl.model.Column.parse
+    )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
+        tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag, match_all=args.match_all)
+        hxl.input.write_hxl(output.output, hxl.input.data(tagger), show_tags=not args.strip_tags)
+
+    return EXIT_OK
+
+
+def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlvalidate with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Validate a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-s&#39;,
+        &#39;--schema&#39;,
+        help=&#39;Schema file for validating the HXL dataset (if omitted, use the default core schema).&#39;,
+        metavar=&#39;schema&#39;,
+        default=None
+    )
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--all&#39;,
+        help=&#39;Include all rows in the output, including those without errors&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#39;-e&#39;,
+        &#39;--error-level&#39;,
+        help=&#39;Minimum error level to show (defaults to &#34;info&#34;) &#39;,
+        choices=[&#39;info&#39;, &#39;warning&#39;, &#39;error&#39;],
+        metavar=&#39;info|warning|error&#39;,
+        default=&#39;info&#39;
+    )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
+
+        class Counter:
+            infos = 0
+            warnings = 0
+            errors = 0
+
+        def callback(e):
+            &#34;&#34;&#34;Show a validation error message.&#34;&#34;&#34;
+            if e.rule.severity == &#39;info&#39;:
+                if args.error_level != &#39;info&#39;:
+                    return
+                Counter.infos += 1
+            elif e.rule.severity == &#39;warning&#39;:
+                if args.error_level == &#39;error&#39;:
+                    return
+                Counter.warnings += 1
+            else:
+                Counter.errors += 1
+
+            message = &#39;[{}] &#39;.format(e.rule.severity)
+            if e.row:
+                if e.rule:
+                    message += &#34;{},{}: &#34;.format(e.row.row_number + 1, e.rule.tag_pattern)
+                else:
+                    message += &#34;{}: &#34;.format(e.row.row_number + 1)
+            elif e.rule:
+                message += &#34;&lt;dataset&gt;,{}: &#34;.format(e.rule.tag_pattern)
+            else:
+                message += &#34;&lt;dataset&gt;: &#34;
+            if e.value:
+                message += &#39;&#34;{}&#34; &#39;.format(e.value)
+            if e.message:
+                message += e.message
+            message += &#34;\n&#34;
+            output.write(message)
+
+        output.write(&#34;Validating {} with schema {} ...\n&#34;.format(args.infile or &#34;&lt;standard input&gt;&#34;, args.schema or &#34;&lt;default&gt;&#34;))
+        source = hxl.input.data(input)
+        if args.schema:
+            with make_input(args, None, args.schema) as schema_input:
+                schema = hxl.schema(schema_input, callback=callback)
+        else:
+            schema = hxl.schema(callback=callback)
+
+        schema.validate(source)
+
+        if args.error_level == &#39;info&#39;:
+            output.write(&#34;{:,} error(s), {:,} warnings, {:,} suggestions\n&#34;.format(Counter.errors, Counter.warnings, Counter.infos))
+        elif args.error_level == &#39;warning&#39;:
+            output.write(&#34;{:,} error(s), {:,} warnings\n&#34;.format(Counter.errors, Counter.warnings))
+        else:
+            output.write(&#34;{:,} error(s)\n&#34;.format(Counter.errors))
+            
+        if Counter.errors &gt; 0:
+            output.write(&#34;Validation failed.\n&#34;)
+            return EXIT_ERROR
+        else:
+            output.write(&#34;Validation succeeded.\n&#34;)
+            return EXIT_OK
+
+#
+# Utility functions
+#
+
+def run_script(func):
+    &#34;&#34;&#34;Try running a command-line script, with exception handling.&#34;&#34;&#34;
+    try:
+        sys.exit(func(sys.argv[1:], STDIN, sys.stdout))
+    except KeyboardInterrupt:
+        logger.error(&#34;Interrupted&#34;)
+        sys.exit(EXIT_ERROR)
+
+def make_args(description, hxl_output=True):
+    &#34;&#34;&#34;Set up parser with default arguments.
+    @param description: usage description to show
+    @param hxl_output: if True (default), include options for HXL output.
+    @returns: an argument parser, partly set up.
+    &#34;&#34;&#34;
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        &#39;infile&#39;,
+        help=&#39;HXL file to read (if omitted, use standard input).&#39;,
+        nargs=&#39;?&#39;
+        )
+    if hxl_output:
+        parser.add_argument(
+            &#39;outfile&#39;,
+            help=&#39;HXL file to write (if omitted, use standard output).&#39;,
+            nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--encoding&#39;,
+        help=&#39;Specify the character encoding of the input&#39;,
+        metavar=&#39;string&#39;,
+        nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--sheet&#39;,
+        help=&#39;Select sheet from a workbook (1 is first sheet)&#39;,
+        metavar=&#39;number&#39;,
+        type=int,
+        nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--selector&#39;,
+        help=&#39;JSONPath expression for starting point in JSON input&#39;,
+        metavar=&#39;path&#39;,
+        nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--http-header&#39;,
+        help=&#39;Custom HTTP header to send with request&#39;,
+        metavar=&#39;header&#39;,
+        action=&#39;append&#39;
+    )
+    if hxl_output:
+        parser.add_argument(
+            &#39;--remove-headers&#39;,
+            help=&#39;Strip text headers from the CSV output&#39;,
+            action=&#39;store_const&#39;,
+            const=True,
+            default=False
+        )
+        parser.add_argument(
+            &#39;--strip-tags&#39;,
+            help=&#39;Strip HXL tags from the CSV output&#39;,
+            action=&#39;store_const&#39;,
+            const=True,
+            default=False
+        )
+    parser.add_argument(
+        &#34;--ignore-certs&#34;,
+        help=&#34;Don&#39;t verify SSL connections (useful for self-signed)&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#34;--expand-merged&#34;,
+        help=&#34;Expand merged areas by repeating the value (Excel only)&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#34;--scan-ckan-resources&#34;,
+        help=&#34;For a CKAN dataset URL, scan all CKAN resources for one that&#39;s HXLated&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#39;--log&#39;,
+        help=&#39;Set minimum logging level&#39;,
+        metavar=&#39;debug|info|warning|error|critical|none&#39;,
+        choices=[&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;],
+        default=&#39;error&#39;
+    )
+    return parser
+
+def add_queries_arg(parser, help=&#39;Apply only to rows matching at least one query.&#39;):
+    parser.add_argument(
+        &#39;-q&#39;,
+        &#39;--query&#39;,
+        help=help,
+        metavar=&#39;&lt;tagspec&gt;&lt;op&gt;&lt;value&gt;&#39;,
+        action=&#39;append&#39;
+    )
+    return parser
+
+
+def do_common_args(args):
+    &#34;&#34;&#34;Process standard args&#34;&#34;&#34;
+    logging.basicConfig(format=&#39;%(levelname)s (%(name)s): %(message)s&#39;, level=args.log.upper())
+
+
+def make_source(args, stdin=STDIN):
+    &#34;&#34;&#34;Create a HXL input source.&#34;&#34;&#34;
+
+    infile = args.infile
+    if infile is None:
+        infile = stdin
+
+    return hxl.input.data(infile, make_input_options(args))
+
+
+def make_input(args, stdin=sys.stdin, url_or_filename=None):
+    &#34;&#34;&#34;Create an input object&#34;&#34;&#34;
+
+    if url_or_filename is None:
+        url_or_filename = args.infile
+
+    # JSONPath selector
+    selector = args.selector
+
+    return hxl.input.make_input(
+        url_or_filename or stdin,
+        make_input_options(args),
+    )
+
+def make_input_options(args):
+
+    sheet_index = args.sheet
+    if sheet_index is not None:
+        sheet_index -= 1
+
+    http_headers = make_headers(args)
+        
+    return hxl.input.InputOptions(
+        sheet_index=sheet_index,
+        selector=args.selector,
+        allow_local=True,
+        http_headers=http_headers,
+        verify_ssl=(not args.ignore_certs),
+        encoding=args.encoding,
+        expand_merged=args.expand_merged,
+        scan_ckan_resources=args.scan_ckan_resources,
+    )
+
+
+def make_output(args, stdout=sys.stdout):
+    &#34;&#34;&#34;Create an output stream.&#34;&#34;&#34;
+    if args.outfile:
+        return FileOutput(args.outfile)
+    else:
+        return StreamOutput(stdout)
+
+
+def make_headers (args):
+    # get custom headers
+    header_strings = []
+    header = os.environ.get(&#34;HXL_HTTP_HEADER&#34;)
+    if header is not None:
+        header_strings.append(header)
+    if args.http_header is not None:
+        header_strings += args.http_header
+    http_headers = {}
+    for header in header_strings:
+        parts = header.partition(&#39;:&#39;)
+        http_headers[parts[0].strip()] = parts[2].strip()
+    return http_headers
+    
+
+class FileOutput(object):
+
+    def __init__(self, filename):
+        self.output = open(filename, &#39;w&#39;)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, value, type, traceback):
+        self.output.close()
+
+class StreamOutput(object):
+
+    def __init__(self, output):
+        self.output = output
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, value, type, traceback):
+        pass
+
+    def write(self, s):
+        self.output.write(s)
+            
+    </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hxl.scripts.add_queries_arg"><code class="name flex">
+<span>def <span class="ident">add_queries_arg</span></span>(<span>parser, help='Apply only to rows matching at least one query.')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_queries_arg(parser, help=&#39;Apply only to rows matching at least one query.&#39;):
+    parser.add_argument(
+        &#39;-q&#39;,
+        &#39;--query&#39;,
+        help=help,
+        metavar=&#39;&lt;tagspec&gt;&lt;op&gt;&lt;value&gt;&#39;,
+        action=&#39;append&#39;
+    )
+    return parser</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.do_common_args"><code class="name flex">
+<span>def <span class="ident">do_common_args</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process standard args</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_common_args(args):
+    &#34;&#34;&#34;Process standard args&#34;&#34;&#34;
+    logging.basicConfig(format=&#39;%(levelname)s (%(name)s): %(message)s&#39;, level=args.log.upper())</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxladd"><code class="name flex">
+<span>def <span class="ident">hxladd</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxladd.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxladd():
+    &#34;&#34;&#34;Console script for hxladd.&#34;&#34;&#34;
+    run_script(hxladd_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxladd_main"><code class="name flex">
+<span>def <span class="ident">hxladd_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxladd with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxladd with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Add new columns with constant values to a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-s&#39;,
+        &#39;--spec&#39;,
+        help=&#39;Constant value to add to each row (may repeat option)&#39;,
+        metavar=&#39;header#&lt;tag&gt;=&lt;value&gt;&#39;,
+        action=&#39;append&#39;,
+        required=True
+        )
+    parser.add_argument(
+        &#39;-b&#39;,
+        &#39;--before&#39;,
+        help=&#39;Add new columns before existing ones rather than after them.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+        
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.AddColumnsFilter(source, specs=args.spec, before=args.before)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlappend"><code class="name flex">
+<span>def <span class="ident">hxlappend</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlappend.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlappend():
+    &#34;&#34;&#34;Console script for hxlappend.&#34;&#34;&#34;
+    run_script(hxlappend_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlappend_main"><code class="name flex">
+<span>def <span class="ident">hxlappend_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlappend with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlappend with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Concatenate two HXL datasets&#39;)
+    # repeatable argument
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--append&#39;,
+        help=&#39;HXL file to append (may repeat option).&#39;,
+        metavar=&#39;file_or_url&#39;,
+        action=&#39;append&#39;,
+        default=[]
+        )
+    parser.add_argument(
+        &#39;-l&#39;,
+        &#39;--list&#39;,
+        help=&#39;URL or filename of list of URLs (may repeat option). Will appear after sources in -a options.&#39;,
+        action=&#39;append&#39;,
+        default=[]
+        )
+    parser.add_argument(
+        &#39;-x&#39;,
+        &#39;--exclude-extra-columns&#39;,
+        help=&#39;Don not add extra columns not in the original dataset.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    add_queries_arg(parser, &#39;From --append datasets, include only rows matching at least one query.&#39;)
+        
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    append_sources = []
+    for append_source in args.append:
+        append_sources.append(hxl.data(append_source, True))
+    for list_source in args.list:
+        for append_source in hxl.filters.AppendFilter.parse_external_source_list(hxl.data(list_source, True)):
+            append_sources.append(hxl.data(append_source, True))
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.AppendFilter(
+            source,
+            append_sources=append_sources,
+            add_columns=(not args.exclude_extra_columns),
+            queries=args.query
+        )
+        hxl.input.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlclean"><code class="name flex">
+<span>def <span class="ident">hxlclean</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlclean</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlclean():
+    &#34;&#34;&#34;Console script for hxlclean&#34;&#34;&#34;
+    run_script(hxlclean_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlclean_main"><code class="name flex">
+<span>def <span class="ident">hxlclean_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlclean with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlclean with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Clean data in a HXL file.&#39;)
+    parser.add_argument(
+        &#39;-w&#39;,
+        &#39;--whitespace&#39;,
+        help=&#39;Comma-separated list of tag patterns for whitespace normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-u&#39;,
+        &#39;--upper&#39;,
+        help=&#39;Comma-separated list of tag patterns for uppercase conversion.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-l&#39;,
+        &#39;--lower&#39;,
+        help=&#39;Comma-separated list of tag patterns for lowercase conversion.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-d&#39;,
+        &#39;--date&#39;,
+        help=&#39;Comma-separated list of tag patterns for date normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;--date-format&#39;,
+        help=&#39;Date formatting string in strftime format (defaults to %%Y-%%m-%%d).&#39;,
+        default=None,
+        metavar=&#39;format&#39;,
+        )
+    parser.add_argument(
+        &#39;-n&#39;,
+        &#39;--number&#39;,
+        help=&#39;Comma-separated list of tag patternss for number normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;--number-format&#39;,
+        help=&#39;Number formatting string in printf format (without leading %%).&#39;,
+        default=None,
+        metavar=&#39;format&#39;,
+        )
+    parser.add_argument(
+        &#39;--latlon&#39;,
+        help=&#39;Comma-separated list of tag patterns for lat/lon normalisation.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-p&#39;,
+        &#39;--purge&#39;,
+        help=&#39;Purge unparseable dates, numbers, and lat/lon during cleaning.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    add_queries_arg(parser, &#39;Clean only rows matching at least one query.&#39;)
+
+    args = parser.parse_args(args)
+    
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+
+        filter = hxl.filters.CleanDataFilter(
+            source, whitespace=args.whitespace, upper=args.upper, lower=args.lower,
+            date=args.date, date_format=args.date_format, number=args.number, number_format=args.number_format,
+            latlon=args.latlon, purge=args.purge, queries=args.query
+        )
+        hxl.input.write_hxl(output.output, filter, show_headers=not args.remove_headers, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlcount"><code class="name flex">
+<span>def <span class="ident">hxlcount</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlcount.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlcount():
+    &#34;&#34;&#34;Console script for hxlcount.&#34;&#34;&#34;
+    run_script(hxlcount_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlcount_main"><code class="name flex">
+<span>def <span class="ident">hxlcount_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlcount with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlcount with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    # Command-line arguments
+    parser = make_args(&#39;Generate aggregate counts for a HXL dataset&#39;)
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of column tags to count.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list,
+        default=&#39;loc,org,sector,adm1,adm2,adm3&#39;
+        )
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--aggregator&#39;,
+        help=&#39;Aggregator statement&#39;,
+        metavar=&#39;statement&#39;,
+        action=&#39;append&#39;,
+        type=hxl.filters.Aggregator.parse,
+        default=[]
+        )
+    add_queries_arg(parser, &#39;Count only rows that match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.CountFilter(source, patterns=args.tags, aggregators=args.aggregator, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlcut"><code class="name flex">
+<span>def <span class="ident">hxlcut</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlcut.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlcut():
+    &#34;&#34;&#34;Console script for hxlcut.&#34;&#34;&#34;
+    run_script(hxlcut_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlcut_main"><code class="name flex">
+<span>def <span class="ident">hxlcut_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args(&#39;Cut columns from a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-i&#39;,
+        &#39;--include&#39;,
+        help=&#39;Comma-separated list of column tags to include&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-x&#39;,
+        &#39;--exclude&#39;,
+        help=&#39;Comma-separated list of column tags to exclude&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-s&#39;,
+        &#39;--skip-untagged&#39;,
+        help=&#34;Skip columns without HXL hashtags&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ColumnFilter(source, args.include, args.exclude, args.skip_untagged)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxldedup"><code class="name flex">
+<span>def <span class="ident">hxldedup</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxldedup.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxldedup():
+    &#34;&#34;&#34;Console script for hxldedup.&#34;&#34;&#34;
+    run_script(hxldedup_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxldedup_main"><code class="name flex">
+<span>def <span class="ident">hxldedup_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args(&#39;Remove duplicate rows from a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of column tags to use for deduplication (by default, use all values).&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    add_queries_arg(parser, &#39;Leave rows alone if they don\&#39;t match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.DeduplicationFilter(source, args.tags, args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlexpand"><code class="name flex">
+<span>def <span class="ident">hxlexpand</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlexpand.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlexpand():
+    &#34;&#34;&#34;Console script for hxlexpand.&#34;&#34;&#34;
+    run_script(hxlexpand_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlexpand_main"><code class="name flex">
+<span>def <span class="ident">hxlexpand_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlexpand with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlexpand with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Expand lists in cells by repeating rows&#39;)
+
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of tag patterns for columns with lists to expand&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list,
+        nargs=&#34;?&#34;
+        )
+
+    parser.add_argument(
+        &#34;-s&#34;,
+        &#39;--separator&#39;,
+        help=&#39;string separating list items (defaults to &#34;|&#34;)&#39;,
+        metavar=&#39;string&#39;,
+        default=&#34;|&#34;
+        )
+
+    parser.add_argument(
+        &#34;-c&#34;,
+        &#39;--correlate&#39;,
+        help=&#39;correlate list values instead of producing a cartesian product&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+
+    add_queries_arg(parser, &#39;Limit list expansion to rows matching at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ExpandListsFilter(source, patterns=args.tags, separator=args.separator, correlate=args.correlate, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlexplode"><code class="name flex">
+<span>def <span class="ident">hxlexplode</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlexplode.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlexplode():
+    &#34;&#34;&#34;Console script for hxlexplode.&#34;&#34;&#34;
+    run_script(hxlexplode_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlexplode_main"><code class="name flex">
+<span>def <span class="ident">hxlexplode_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlexplode with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlexplode with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Explode a wide dataset into a long dataset&#39;)
+
+    parser.add_argument(
+        &#39;-H&#39;,
+        &#39;--header-att&#39;,
+        help=&#39;attribute to add to the label column (defaults to &#34;label&#34;)&#39;,
+        metavar=&#39;att&#39;,
+        default=&#34;label&#34;
+        )
+
+    parser.add_argument(
+        &#39;-V&#39;,
+        &#39;--value-att&#39;,
+        help=&#39;attribute to add to the value column (defaults to &#34;value&#34;)&#39;,
+        metavar=&#39;tagpattern&#39;,
+        default=&#34;value&#34;
+        )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ExplodeFilter(source, header_attribute=args.header_att, value_attribute=args.value_att)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlfill"><code class="name flex">
+<span>def <span class="ident">hxlfill</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlreplace.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlfill():
+    &#34;&#34;&#34;Console script for hxlreplace.&#34;&#34;&#34;
+    run_script(hxlfill_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlfill_main"><code class="name flex">
+<span>def <span class="ident">hxlfill_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlfill with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlfill with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Fill empty cells in a HXL dataset&#39;)
+
+    group = parser.add_mutually_exclusive_group(required=False)
+
+    group.add_argument(
+        &#39;-t&#39;,
+        &#39;--tag&#39;,
+        help=&#39;Fill empty cells only in matching columns (default: fill in all); not allowed with --use-merged&#39;,
+        metavar=&#39;tagpattern,...&#39;,
+        type=hxl.model.TagPattern.parse_list,
+        )
+    add_queries_arg(parser, &#39;Fill only in rows that match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.FillDataFilter(source, patterns=args.tag, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlhash"><code class="name flex">
+<span>def <span class="ident">hxlhash</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlhash.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlhash():
+    &#34;&#34;&#34;Console script for hxlhash.&#34;&#34;&#34;
+    run_script(hxlhash_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlhash_main"><code class="name flex">
+<span>def <span class="ident">hxlhash_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    parser = make_args(
+        &#39;Generate an MD5 hash for a HXL dataset (or just its header rows).&#39;,
+        hxl_output=False
+    )
+    parser.add_argument(
+        &#39;-H&#39;,
+        &#39;--headers-only&#39;,
+        help=&#39;Hash only the header and hashtag rows.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source:
+        if args.headers_only:
+            print(source.columns_hash)
+        else:
+            print(source.data_hash)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlimplode"><code class="name flex">
+<span>def <span class="ident">hxlimplode</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlimplode.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlimplode():
+    &#34;&#34;&#34;Console script for hxlimplode.&#34;&#34;&#34;
+    run_script(hxlimplode_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlimplode_main"><code class="name flex">
+<span>def <span class="ident">hxlimplode_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlexplode with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlexplode with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Implode a long dataset into a wide dataset.&#39;)
+
+    parser.add_argument(
+        &#39;-L&#39;,
+        &#39;--label&#39;,
+        help=&#39;HXL tag pattern for the label column&#39;,
+        metavar=&#39;tagpattern&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse,
+        )
+
+    parser.add_argument(
+        &#39;-V&#39;,
+        &#39;--value&#39;,
+        help=&#39;HXL tag pattern for the value column&#39;,
+        metavar=&#39;tagpattern&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse,
+        )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.ImplodeFilter(source, label_pattern=args.label, value_pattern=args.value)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlmerge"><code class="name flex">
+<span>def <span class="ident">hxlmerge</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlmerge.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlmerge():
+    &#34;&#34;&#34;Console script for hxlmerge.&#34;&#34;&#34;
+    run_script(hxlmerge_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlmerge_main"><code class="name flex">
+<span>def <span class="ident">hxlmerge_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlmerge with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlmerge with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Merge part of one HXL dataset into another.&#39;)
+    parser.add_argument(
+        &#39;-m&#39;,
+        &#39;--merge&#39;,
+        help=&#39;HXL file to write (if omitted, use standard output).&#39;,
+        metavar=&#39;filename&#39;,
+        required=True
+        )
+    parser.add_argument(
+        &#39;-k&#39;,
+        &#39;--keys&#39;,
+        help=&#39;HXL tag(s) to use as a shared key.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of column tags to include from the merge dataset.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        required=True,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--replace&#39;,
+        help=&#39;Replace empty values in existing columns (when available) instead of adding new ones.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#39;-O&#39;,
+        &#39;--overwrite&#39;,
+        help=&#39;Used with --replace, overwrite existing values.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    add_queries_arg(parser, &#39;Merged data only from rows that match at least one query.&#39;)
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, hxl.InputOptions(allow_local=True)) if args.merge else None as merge_source:
+        filter = hxl.filters.MergeDataFilter(
+            source, merge_source=merge_source,
+            keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
+            queries=args.query
+        )
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlrename"><code class="name flex">
+<span>def <span class="ident">hxlrename</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlrename.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlrename():
+    &#34;&#34;&#34;Console script for hxlrename.&#34;&#34;&#34;
+    run_script(hxlrename_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlrename_main"><code class="name flex">
+<span>def <span class="ident">hxlrename_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlrename with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlrename with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Rename and retag columns in a HXL dataset&#39;)
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--rename&#39;,
+        help=&#39;Rename an old tag to a new one, with an optional new text header (may repeat option).&#39;,
+        action=&#39;append&#39;,
+        metavar=&#39;#?&lt;original_tag&gt;:&lt;Text header&gt;?#?&lt;new_tag&gt;&#39;,
+        default=[],
+        type=hxl.filters.RenameFilter.parse_rename
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.RenameFilter(source, args.rename)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlreplace"><code class="name flex">
+<span>def <span class="ident">hxlreplace</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlreplace.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlreplace():
+    &#34;&#34;&#34;Console script for hxlreplace.&#34;&#34;&#34;
+    run_script(hxlreplace_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlreplace_main"><code class="name flex">
+<span>def <span class="ident">hxlreplace_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlreplace with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlreplace with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Replace strings in a HXL dataset&#39;)
+
+    inline_group = parser.add_argument_group(&#39;Inline replacement&#39;)
+    map_group = parser.add_argument_group(&#39;External substitution map&#39;)
+
+    inline_group.add_argument(
+        &#39;-p&#39;,
+        &#39;--pattern&#39;,
+        help=&#39;String or regular expression to search for&#39;,
+        nargs=&#39;?&#39;
+        )
+    inline_group.add_argument(
+        &#39;-s&#39;,
+        &#39;--substitution&#39;,
+        help=&#39;Replacement string&#39;,
+        nargs=&#39;?&#39;
+        )
+    inline_group.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Tag patterns to match&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    inline_group.add_argument(
+        &#39;-r&#39;,
+        &#39;--regex&#39;,
+        help=&#39;Use a regular expression instead of a string&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    map_group.add_argument(
+        &#39;-m&#39;,
+        &#39;--map&#39;,
+        help=&#39;Filename or URL of a mapping table using the tags #x_pattern (required), #x_substitution (required), #x_tag (optional), and #x_regex (optional), corresponding to the inline options above, for multiple substitutions.&#39;,
+        metavar=&#39;PATH&#39;,
+        nargs=&#39;?&#39;
+        )
+
+    add_queries_arg(parser, &#39;Replace only in rows that match at least one query.&#39;)
+    
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        if args.map:
+            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, True))
+        else:
+            replacements = []
+        if args.pattern:
+            for tag in args.tags:
+                replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
+        filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlselect"><code class="name flex">
+<span>def <span class="ident">hxlselect</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlselect.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlselect():
+    &#34;&#34;&#34;Console script for hxlselect.&#34;&#34;&#34;
+    run_script(hxlselect_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlselect_main"><code class="name flex">
+<span>def <span class="ident">hxlselect_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlselect with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlselect with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    # Command-line arguments
+    parser = make_args(&#39;Filter rows in a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-q&#39;,
+        &#39;--query&#39;,
+        help=&#39;Query expression for selecting rows (may repeat option for logical OR). &lt;op&gt; may be =, !=, &lt;, &lt;=, &gt;, &gt;=, ~, or !~&#39;,
+        action=&#39;append&#39;,
+        metavar=&#39;&lt;tagspec&gt;&lt;op&gt;&lt;value&gt;&#39;,
+        required=True
+        )
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--reverse&#39;,
+        help=&#39;Show only lines *not* matching criteria&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.RowFilter(source, queries=args.query, reverse=args.reverse)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlsort"><code class="name flex">
+<span>def <span class="ident">hxlsort</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlsort.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlsort():
+    &#34;&#34;&#34;Console script for hxlsort.&#34;&#34;&#34;
+    run_script(hxlsort_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlsort_main"><code class="name flex">
+<span>def <span class="ident">hxlsort_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlcut with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlcut with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Sort a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-t&#39;,
+        &#39;--tags&#39;,
+        help=&#39;Comma-separated list of tags to for columns to use as sort keys.&#39;,
+        metavar=&#39;tag,tag...&#39;,
+        type=hxl.model.TagPattern.parse_list
+        )
+    parser.add_argument(
+        &#39;-r&#39;,
+        &#39;--reverse&#39;,
+        help=&#39;Flag to reverse sort order.&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_source(args, stdin) as source, make_output(args, stdout) as output:
+        filter = hxl.filters.SortFilter(source, args.tags, args.reverse)
+        hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlspec"><code class="name flex">
+<span>def <span class="ident">hxlspec</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlspec.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlspec():
+    &#34;&#34;&#34;Console script for hxlspec.&#34;&#34;&#34;
+    run_script(hxlspec_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlspec_main"><code class="name flex">
+<span>def <span class="ident">hxlspec_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlspec with command-line arguments.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>args</code></strong> :&ensp;<code>list</code></dt>
+<dd>a list of command-line arguments</dd>
+<dt><strong><code>stdin</code></strong> :&ensp;<code>io.IOBase</code></dt>
+<dd>alternative standard input (mainly for testing)</dd>
+<dt><strong><code>stdout</code></strong> :&ensp;<code>io.IOBase</code></dt>
+<dd>alternative standard output (mainly for testing)</dd>
+<dt><strong><code>stderr</code></strong> :&ensp;<code>io.IOBase</code></dt>
+<dd>alternative standard error (mainly for testing)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34; Run hxlspec with command-line arguments.
+
+    Args:
+        args (list): a list of command-line arguments
+        stdin (io.IOBase): alternative standard input (mainly for testing)
+        stdout (io.IOBase): alternative standard output (mainly for testing)
+        stderr (io.IOBase): alternative standard error (mainly for testing)
+
+    &#34;&#34;&#34;
+
+    def get_json (url_or_filename):
+        
+        if not url_or_filename:
+            return json.load(stdin)
+
+        if re.match(r&#39;^(?:https?|s?ftp)://&#39;, url_or_filename.lower()):
+            headers = make_headers(args)
+            response = requests.get(url_or_filename, verify=(not args.ignore_certs), headers=headers)
+            response.raise_for_status()
+            return response.json()
+        else:
+            with open(url_or_filename, &#34;r&#34;) as input:
+                return json.load(input)
+    
+    parser = make_args(&#39;Process a HXL JSON spec&#39;)
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    spec = get_json(args.infile)
+    source = hxl.input.from_spec(spec, allow_local_ok=True)
+
+    with make_output(args, stdout) as output:
+        hxl.input.write_hxl(output.output, source, show_tags=not args.strip_tags)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxltag"><code class="name flex">
+<span>def <span class="ident">hxltag</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxltag.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxltag():
+    &#34;&#34;&#34;Console script for hxltag.&#34;&#34;&#34;
+    run_script(hxltag_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxltag_main"><code class="name flex">
+<span>def <span class="ident">hxltag_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxltag with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxltag with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Add HXL tags to a raw CSV file.&#39;)
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--match-all&#39;,
+        help=&#39;Match the entire header text (not just a substring)&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+        )
+    parser.add_argument(
+        &#39;-m&#39;,
+        &#39;--map&#39;,
+        help=&#39;Mapping expression&#39;,
+        required=True,
+        action=&#39;append&#39;,
+        metavar=&#39;Header Text#tag&#39;,
+        type=hxl.converters.Tagger.parse_spec
+        )
+    parser.add_argument(
+        &#39;-d&#39;,
+        &#39;--default-tag&#39;,
+        help=&#39;Default tag for non-matching columns&#39;,
+        metavar=&#39;#tag&#39;,
+        type=hxl.model.Column.parse
+    )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
+        tagger = hxl.converters.Tagger(input, args.map, default_tag=args.default_tag, match_all=args.match_all)
+        hxl.input.write_hxl(output.output, hxl.input.data(tagger), show_tags=not args.strip_tags)
+
+    return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlvalidate"><code class="name flex">
+<span>def <span class="ident">hxlvalidate</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Console script for hxlvalidate.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlvalidate():
+    &#34;&#34;&#34;Console script for hxlvalidate.&#34;&#34;&#34;
+    run_script(hxlvalidate_main)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.hxlvalidate_main"><code class="name flex">
+<span>def <span class="ident">hxlvalidate_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run hxlvalidate with command-line arguments.
+@param args A list of arguments, excluding the script name
+@param stdin Standard input for the script
+@param stdout Standard output for the script
+@param stderr Standard error for the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34;
+    Run hxlvalidate with command-line arguments.
+    @param args A list of arguments, excluding the script name
+    @param stdin Standard input for the script
+    @param stdout Standard output for the script
+    @param stderr Standard error for the script
+    &#34;&#34;&#34;
+
+    parser = make_args(&#39;Validate a HXL dataset.&#39;)
+    parser.add_argument(
+        &#39;-s&#39;,
+        &#39;--schema&#39;,
+        help=&#39;Schema file for validating the HXL dataset (if omitted, use the default core schema).&#39;,
+        metavar=&#39;schema&#39;,
+        default=None
+    )
+    parser.add_argument(
+        &#39;-a&#39;,
+        &#39;--all&#39;,
+        help=&#39;Include all rows in the output, including those without errors&#39;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#39;-e&#39;,
+        &#39;--error-level&#39;,
+        help=&#39;Minimum error level to show (defaults to &#34;info&#34;) &#39;,
+        choices=[&#39;info&#39;, &#39;warning&#39;, &#39;error&#39;],
+        metavar=&#39;info|warning|error&#39;,
+        default=&#39;info&#39;
+    )
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
+
+        class Counter:
+            infos = 0
+            warnings = 0
+            errors = 0
+
+        def callback(e):
+            &#34;&#34;&#34;Show a validation error message.&#34;&#34;&#34;
+            if e.rule.severity == &#39;info&#39;:
+                if args.error_level != &#39;info&#39;:
+                    return
+                Counter.infos += 1
+            elif e.rule.severity == &#39;warning&#39;:
+                if args.error_level == &#39;error&#39;:
+                    return
+                Counter.warnings += 1
+            else:
+                Counter.errors += 1
+
+            message = &#39;[{}] &#39;.format(e.rule.severity)
+            if e.row:
+                if e.rule:
+                    message += &#34;{},{}: &#34;.format(e.row.row_number + 1, e.rule.tag_pattern)
+                else:
+                    message += &#34;{}: &#34;.format(e.row.row_number + 1)
+            elif e.rule:
+                message += &#34;&lt;dataset&gt;,{}: &#34;.format(e.rule.tag_pattern)
+            else:
+                message += &#34;&lt;dataset&gt;: &#34;
+            if e.value:
+                message += &#39;&#34;{}&#34; &#39;.format(e.value)
+            if e.message:
+                message += e.message
+            message += &#34;\n&#34;
+            output.write(message)
+
+        output.write(&#34;Validating {} with schema {} ...\n&#34;.format(args.infile or &#34;&lt;standard input&gt;&#34;, args.schema or &#34;&lt;default&gt;&#34;))
+        source = hxl.input.data(input)
+        if args.schema:
+            with make_input(args, None, args.schema) as schema_input:
+                schema = hxl.schema(schema_input, callback=callback)
+        else:
+            schema = hxl.schema(callback=callback)
+
+        schema.validate(source)
+
+        if args.error_level == &#39;info&#39;:
+            output.write(&#34;{:,} error(s), {:,} warnings, {:,} suggestions\n&#34;.format(Counter.errors, Counter.warnings, Counter.infos))
+        elif args.error_level == &#39;warning&#39;:
+            output.write(&#34;{:,} error(s), {:,} warnings\n&#34;.format(Counter.errors, Counter.warnings))
+        else:
+            output.write(&#34;{:,} error(s)\n&#34;.format(Counter.errors))
+            
+        if Counter.errors &gt; 0:
+            output.write(&#34;Validation failed.\n&#34;)
+            return EXIT_ERROR
+        else:
+            output.write(&#34;Validation succeeded.\n&#34;)
+            return EXIT_OK</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.make_args"><code class="name flex">
+<span>def <span class="ident">make_args</span></span>(<span>description, hxl_output=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set up parser with default arguments.
+@param description: usage description to show
+@param hxl_output: if True (default), include options for HXL output.
+@returns: an argument parser, partly set up.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_args(description, hxl_output=True):
+    &#34;&#34;&#34;Set up parser with default arguments.
+    @param description: usage description to show
+    @param hxl_output: if True (default), include options for HXL output.
+    @returns: an argument parser, partly set up.
+    &#34;&#34;&#34;
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        &#39;infile&#39;,
+        help=&#39;HXL file to read (if omitted, use standard input).&#39;,
+        nargs=&#39;?&#39;
+        )
+    if hxl_output:
+        parser.add_argument(
+            &#39;outfile&#39;,
+            help=&#39;HXL file to write (if omitted, use standard output).&#39;,
+            nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--encoding&#39;,
+        help=&#39;Specify the character encoding of the input&#39;,
+        metavar=&#39;string&#39;,
+        nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--sheet&#39;,
+        help=&#39;Select sheet from a workbook (1 is first sheet)&#39;,
+        metavar=&#39;number&#39;,
+        type=int,
+        nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--selector&#39;,
+        help=&#39;JSONPath expression for starting point in JSON input&#39;,
+        metavar=&#39;path&#39;,
+        nargs=&#39;?&#39;
+        )
+    parser.add_argument(
+        &#39;--http-header&#39;,
+        help=&#39;Custom HTTP header to send with request&#39;,
+        metavar=&#39;header&#39;,
+        action=&#39;append&#39;
+    )
+    if hxl_output:
+        parser.add_argument(
+            &#39;--remove-headers&#39;,
+            help=&#39;Strip text headers from the CSV output&#39;,
+            action=&#39;store_const&#39;,
+            const=True,
+            default=False
+        )
+        parser.add_argument(
+            &#39;--strip-tags&#39;,
+            help=&#39;Strip HXL tags from the CSV output&#39;,
+            action=&#39;store_const&#39;,
+            const=True,
+            default=False
+        )
+    parser.add_argument(
+        &#34;--ignore-certs&#34;,
+        help=&#34;Don&#39;t verify SSL connections (useful for self-signed)&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#34;--expand-merged&#34;,
+        help=&#34;Expand merged areas by repeating the value (Excel only)&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#34;--scan-ckan-resources&#34;,
+        help=&#34;For a CKAN dataset URL, scan all CKAN resources for one that&#39;s HXLated&#34;,
+        action=&#39;store_const&#39;,
+        const=True,
+        default=False
+    )
+    parser.add_argument(
+        &#39;--log&#39;,
+        help=&#39;Set minimum logging level&#39;,
+        metavar=&#39;debug|info|warning|error|critical|none&#39;,
+        choices=[&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;],
+        default=&#39;error&#39;
+    )
+    return parser</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.make_headers"><code class="name flex">
+<span>def <span class="ident">make_headers</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_headers (args):
+    # get custom headers
+    header_strings = []
+    header = os.environ.get(&#34;HXL_HTTP_HEADER&#34;)
+    if header is not None:
+        header_strings.append(header)
+    if args.http_header is not None:
+        header_strings += args.http_header
+    http_headers = {}
+    for header in header_strings:
+        parts = header.partition(&#39;:&#39;)
+        http_headers[parts[0].strip()] = parts[2].strip()
+    return http_headers</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.make_input"><code class="name flex">
+<span>def <span class="ident">make_input</span></span>(<span>args, stdin=sys.stdin, url_or_filename=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create an input object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_input(args, stdin=sys.stdin, url_or_filename=None):
+    &#34;&#34;&#34;Create an input object&#34;&#34;&#34;
+
+    if url_or_filename is None:
+        url_or_filename = args.infile
+
+    # JSONPath selector
+    selector = args.selector
+
+    return hxl.input.make_input(
+        url_or_filename or stdin,
+        make_input_options(args),
+    )</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.make_input_options"><code class="name flex">
+<span>def <span class="ident">make_input_options</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_input_options(args):
+
+    sheet_index = args.sheet
+    if sheet_index is not None:
+        sheet_index -= 1
+
+    http_headers = make_headers(args)
+        
+    return hxl.input.InputOptions(
+        sheet_index=sheet_index,
+        selector=args.selector,
+        allow_local=True,
+        http_headers=http_headers,
+        verify_ssl=(not args.ignore_certs),
+        encoding=args.encoding,
+        expand_merged=args.expand_merged,
+        scan_ckan_resources=args.scan_ckan_resources,
+    )</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.make_output"><code class="name flex">
+<span>def <span class="ident">make_output</span></span>(<span>args, stdout=sys.stdout)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create an output stream.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_output(args, stdout=sys.stdout):
+    &#34;&#34;&#34;Create an output stream.&#34;&#34;&#34;
+    if args.outfile:
+        return FileOutput(args.outfile)
+    else:
+        return StreamOutput(stdout)</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.make_source"><code class="name flex">
+<span>def <span class="ident">make_source</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a HXL input source.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_source(args, stdin=STDIN):
+    &#34;&#34;&#34;Create a HXL input source.&#34;&#34;&#34;
+
+    infile = args.infile
+    if infile is None:
+        infile = stdin
+
+    return hxl.input.data(infile, make_input_options(args))</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.run_script"><code class="name flex">
+<span>def <span class="ident">run_script</span></span>(<span>func)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Try running a command-line script, with exception handling.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_script(func):
+    &#34;&#34;&#34;Try running a command-line script, with exception handling.&#34;&#34;&#34;
+    try:
+        sys.exit(func(sys.argv[1:], STDIN, sys.stdout))
+    except KeyboardInterrupt:
+        logger.error(&#34;Interrupted&#34;)
+        sys.exit(EXIT_ERROR)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="hxl.scripts.FileOutput"><code class="flex name class">
+<span>class <span class="ident">FileOutput</span></span>
+<span>(</span><span>filename)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FileOutput(object):
+
+    def __init__(self, filename):
+        self.output = open(filename, &#39;w&#39;)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, value, type, traceback):
+        self.output.close()</code></pre>
+</details>
+</dd>
+<dt id="hxl.scripts.StreamOutput"><code class="flex name class">
+<span>class <span class="ident">StreamOutput</span></span>
+<span>(</span><span>output)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StreamOutput(object):
+
+    def __init__(self, output):
+        self.output = output
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, value, type, traceback):
+        pass
+
+    def write(self, s):
+        self.output.write(s)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="hxl.scripts.StreamOutput.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, s)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, s):
+    self.output.write(s)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hxl" href="index.html">hxl</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="hxl.scripts.add_queries_arg" href="#hxl.scripts.add_queries_arg">add_queries_arg</a></code></li>
+<li><code><a title="hxl.scripts.do_common_args" href="#hxl.scripts.do_common_args">do_common_args</a></code></li>
+<li><code><a title="hxl.scripts.hxladd" href="#hxl.scripts.hxladd">hxladd</a></code></li>
+<li><code><a title="hxl.scripts.hxladd_main" href="#hxl.scripts.hxladd_main">hxladd_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlappend" href="#hxl.scripts.hxlappend">hxlappend</a></code></li>
+<li><code><a title="hxl.scripts.hxlappend_main" href="#hxl.scripts.hxlappend_main">hxlappend_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlclean" href="#hxl.scripts.hxlclean">hxlclean</a></code></li>
+<li><code><a title="hxl.scripts.hxlclean_main" href="#hxl.scripts.hxlclean_main">hxlclean_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlcount" href="#hxl.scripts.hxlcount">hxlcount</a></code></li>
+<li><code><a title="hxl.scripts.hxlcount_main" href="#hxl.scripts.hxlcount_main">hxlcount_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlcut" href="#hxl.scripts.hxlcut">hxlcut</a></code></li>
+<li><code><a title="hxl.scripts.hxlcut_main" href="#hxl.scripts.hxlcut_main">hxlcut_main</a></code></li>
+<li><code><a title="hxl.scripts.hxldedup" href="#hxl.scripts.hxldedup">hxldedup</a></code></li>
+<li><code><a title="hxl.scripts.hxldedup_main" href="#hxl.scripts.hxldedup_main">hxldedup_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlexpand" href="#hxl.scripts.hxlexpand">hxlexpand</a></code></li>
+<li><code><a title="hxl.scripts.hxlexpand_main" href="#hxl.scripts.hxlexpand_main">hxlexpand_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlexplode" href="#hxl.scripts.hxlexplode">hxlexplode</a></code></li>
+<li><code><a title="hxl.scripts.hxlexplode_main" href="#hxl.scripts.hxlexplode_main">hxlexplode_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlfill" href="#hxl.scripts.hxlfill">hxlfill</a></code></li>
+<li><code><a title="hxl.scripts.hxlfill_main" href="#hxl.scripts.hxlfill_main">hxlfill_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlhash" href="#hxl.scripts.hxlhash">hxlhash</a></code></li>
+<li><code><a title="hxl.scripts.hxlhash_main" href="#hxl.scripts.hxlhash_main">hxlhash_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlimplode" href="#hxl.scripts.hxlimplode">hxlimplode</a></code></li>
+<li><code><a title="hxl.scripts.hxlimplode_main" href="#hxl.scripts.hxlimplode_main">hxlimplode_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlmerge" href="#hxl.scripts.hxlmerge">hxlmerge</a></code></li>
+<li><code><a title="hxl.scripts.hxlmerge_main" href="#hxl.scripts.hxlmerge_main">hxlmerge_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlrename" href="#hxl.scripts.hxlrename">hxlrename</a></code></li>
+<li><code><a title="hxl.scripts.hxlrename_main" href="#hxl.scripts.hxlrename_main">hxlrename_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlreplace" href="#hxl.scripts.hxlreplace">hxlreplace</a></code></li>
+<li><code><a title="hxl.scripts.hxlreplace_main" href="#hxl.scripts.hxlreplace_main">hxlreplace_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlselect" href="#hxl.scripts.hxlselect">hxlselect</a></code></li>
+<li><code><a title="hxl.scripts.hxlselect_main" href="#hxl.scripts.hxlselect_main">hxlselect_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlsort" href="#hxl.scripts.hxlsort">hxlsort</a></code></li>
+<li><code><a title="hxl.scripts.hxlsort_main" href="#hxl.scripts.hxlsort_main">hxlsort_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlspec" href="#hxl.scripts.hxlspec">hxlspec</a></code></li>
+<li><code><a title="hxl.scripts.hxlspec_main" href="#hxl.scripts.hxlspec_main">hxlspec_main</a></code></li>
+<li><code><a title="hxl.scripts.hxltag" href="#hxl.scripts.hxltag">hxltag</a></code></li>
+<li><code><a title="hxl.scripts.hxltag_main" href="#hxl.scripts.hxltag_main">hxltag_main</a></code></li>
+<li><code><a title="hxl.scripts.hxlvalidate" href="#hxl.scripts.hxlvalidate">hxlvalidate</a></code></li>
+<li><code><a title="hxl.scripts.hxlvalidate_main" href="#hxl.scripts.hxlvalidate_main">hxlvalidate_main</a></code></li>
+<li><code><a title="hxl.scripts.make_args" href="#hxl.scripts.make_args">make_args</a></code></li>
+<li><code><a title="hxl.scripts.make_headers" href="#hxl.scripts.make_headers">make_headers</a></code></li>
+<li><code><a title="hxl.scripts.make_input" href="#hxl.scripts.make_input">make_input</a></code></li>
+<li><code><a title="hxl.scripts.make_input_options" href="#hxl.scripts.make_input_options">make_input_options</a></code></li>
+<li><code><a title="hxl.scripts.make_output" href="#hxl.scripts.make_output">make_output</a></code></li>
+<li><code><a title="hxl.scripts.make_source" href="#hxl.scripts.make_source">make_source</a></code></li>
+<li><code><a title="hxl.scripts.run_script" href="#hxl.scripts.run_script">run_script</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="hxl.scripts.FileOutput" href="#hxl.scripts.FileOutput">FileOutput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="hxl.scripts.StreamOutput" href="#hxl.scripts.StreamOutput">StreamOutput</a></code></h4>
+<ul class="">
+<li><code><a title="hxl.scripts.StreamOutput.write" href="#hxl.scripts.StreamOutput.write">write</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

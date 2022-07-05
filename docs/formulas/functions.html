@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hxl.formulas.functions API documentation</title>
+<meta name="description" content="Functions that can run inside a formula" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hxl.formulas.functions</code></h1>
+</header>
+<section id="section-intro">
+<p>Functions that can run inside a formula</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Functions that can run inside a formula
+&#34;&#34;&#34;
+
+import logging, collections
+import hxl.datatypes
+import datetime
+
+logger = logging.getLogger(__name__)
+
+#
+# Operators (not directly callable as functions, but see below)
+#
+
+def const(row, args, multiple=False):
+    &#34;&#34;&#34;A constant value (returns itself).
+    &#34;&#34;&#34;
+    return args[0]
+
+def tagref(row, args):
+    &#34;&#34;&#34;A single tag pattern standing alone.
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    &#34;&#34;&#34;
+    return row.get(args[0])
+
+def add(row, args, multiple=False):
+    &#34;&#34;&#34;An addition statement
+    X + Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the sum of the arguments
+    &#34;&#34;&#34;
+    result = 0
+    for arg in _deref(row, args, multiple):
+        result += _num(arg)
+    return result
+
+def subtract(row, args, multiple=False):
+    &#34;&#34;&#34;A subtraction statement
+    X - Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the result of subtracting all of the following arguments from the first one
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        result -= _num(arg)
+    return result
+
+def multiply(row, args, multiple=False):
+    &#34;&#34;&#34;A multiplication statement
+    X * Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the product of the arguments
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        result *= _num(arg)
+    return result
+
+def divide(row, args, multiple=False):
+    &#34;&#34;&#34;A division statement
+    X / Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the result of dividing the first argument by all of the following ones, in order.
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        v = _num(arg) # avoid DIV0
+        if v:
+            result = result / v
+        else:
+            return &#39;NaN&#39;
+    return result
+
+def modulo(row, args, multiple=False):
+    &#34;&#34;&#34;A modulo division statement
+    X / Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the remainder from dividing the first argument by all of the following ones, in order.
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        v = _num(arg) # avoid DIV0
+        if v:
+            result = result % v
+    return result
+
+
+#
+# User-callable functions
+#
+
+def function(row, args):
+    &#34;&#34;&#34;Execute a named function
+    function(arg, arg...)
+    @param row: the HXL data row
+    @param args: the arguments parsed (the first one is the function name)
+    @returns: the result of executing the function on the arguments
+    &#34;&#34;&#34;
+    f = FUNCTIONS.get(args[0])
+    if f:
+        return f(row, args[1:], True)
+    else:
+        logger.error(&#34;Unknown function %s&#34;, args[0])
+        return &#39;&#39;
+
+def do_min(row, args, multiple=True):
+    &#34;&#34;&#34;Find the minimum value in the list.
+    If they&#39;re all numbers (or empty), use numeric comparison.
+    Otherwise, use lexical comparison (case- and space-insensitive)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the minimum value
+    &#34;&#34;&#34;
+
+    values = _deref(row, args, multiple)
+
+    # first, try a numbery comparison
+    try:
+        min_value = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_number(value)
+                if min_value is None or min_value &gt; value:
+                    min_value = value
+        return min_value
+    # if that fails, revert to lexical
+    except:
+        min_value = None
+        min_value_norm = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                norm = hxl.datatypes.normalise_string(value)
+                if min_value_norm is None or norm &lt; min_value_norm:
+                    min_value_norm = norm
+                    min_value = value
+        return min_value
+
+def do_max(row, args, multiple=True):
+    &#34;&#34;&#34;Find the maximum value in the list.
+    If they&#39;re all numbers (or empty), use numeric comparison.
+    Otherwise, use lexical comparison (case- and space-insensitive)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the maximum value
+    &#34;&#34;&#34;
+
+    values = _deref(row, args, multiple)
+
+    # first, try a numbery comparison
+    try:
+        max_value = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_number(value)
+                if max_value is None or max_value &lt; value:
+                    max_value = value
+        return max_value
+    # if that fails, revert to lexical
+    except:
+        max_value = None
+        max_value_norm = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                norm = hxl.datatypes.normalise_string(value)
+                if max_value_norm is None or norm &gt; max_value_norm:
+                    max_value_norm = norm
+                    max_value = value
+        return max_value
+
+def do_average(row, args, multiple=True):
+    &#34;&#34;&#34;Calculate the average (mean) of the arguments
+    Ignores any cell that does not contain a number.
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the mean of all numeric arguments, or empty string if none found
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+
+    total = 0
+    count = 0
+
+    # look for numbers
+    for value in values:
+        try:
+            total += hxl.datatypes.normalise_number(value)
+            count += 1
+        except:
+            pass # not a number
+
+    # if there were no numbers, don&#39;t return a result
+    if count &gt; 0:
+        return total / count
+    else:
+        return &#39;&#39;
+
+def do_round(row, args, multiple=False):
+    &#34;&#34;&#34;Round a single value to the nearest integer.
+    @param row: the HXL data row
+    @param args: the function argument (name removed from start)
+    @returns: the first argument, rounded if it&#39;s a number, or unchanged otherwise
+    &#34;&#34;&#34;
+    values = _deref(row, args, False)
+    if len(values) &gt; 1:
+        logger.warning(&#34;Ignoring extra arguments to round(): %s&#34;, str(values[1:]))
+    try:
+        return round(values[0])
+    except:
+        logger.warning(&#34;Trying to round non-numeric value %s&#34;, values[0])
+        return values[0]
+    
+def do_join(row, args, multiple=True):
+    &#34;&#34;&#34;Join values with the separator provided.
+    Also joins empty values (for consistency)
+    USAGE: join(sep, value1[, ...])
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: all of the arguments, joined together
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    separator = values[0]
+    return separator.join(values[1:])
+
+
+def do_today(row, args, multiple=False):
+    &#34;&#34;&#34;Return the current date (UTC) in ISO format YYYY-mm-dd
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the current UTC date in ISO YYYY-mm-dd format
+    &#34;&#34;&#34;
+    return datetime.datetime.utcnow().strftime(&#39;%Y-%m-%d&#39;)
+
+
+def do_datedif(row, args, multiple=False):
+    &#34;&#34;&#34;Calculate the difference between the first date and the second.
+    The optional internal units arg determines the unit of measurement.
+    USAGE: datedif(date1, date2[, unit])
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the difference between the dates as an integer.
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    if len(values) == 2:
+        unit = &#39;D&#39;
+    elif len(values) == 3:
+        unit = str(values[2]).upper()
+    else:
+        logger.error(&#34;Wrong number of arguments to datedif()&#34;)
+        return &#39;&#39;
+    try:
+        date1 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[0]), &#39;%Y-%m-%d&#39;)
+    except:
+        logger.error(&#34;Can&#39;t parse date: %s&#34;, values[0])
+        return &#39;&#39;
+    try:
+        date2 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[1]), &#39;%Y-%m-%d&#39;)
+    except:
+        logger.error(&#34;Can&#39;t parse date: %s&#34;, values[1])
+        return &#39;&#39;
+    diff = date2-date1
+    if unit == &#39;Y&#39;:
+        return int(abs(diff.days/365))
+    elif unit == &#39;M&#39;:
+        return abs(int(round(diff.days/30)))
+    elif unit == &#39;W&#39;:
+        return abs(int(round(diff.days/7)))
+    elif unit == &#39;D&#39;:
+        return abs(diff.days)
+    else:
+        logger.error(&#34;Unrecognised unit % for datediff()&#34;, unit)
+        return &#39;&#39;
+
+
+def do_toupper(row, args, multiple=False):
+    &#34;&#34;&#34;Convert the value to a string in upper case
+    USAGE: toupper(value)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the value as an upper-case string
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    return str(values[0]).upper()
+
+
+def do_tolower(row, args, multiple=False):
+    &#34;&#34;&#34;Convert the value to a string in lower case
+    USAGE: tolower(value)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the value as an upper-case string
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    return str(values[0]).lower()
+
+
+FUNCTIONS = {
+    &#39;sum&#39;: lambda row, args, multiple: add(row, args, multiple),
+    &#39;product&#39;: lambda row, args, multiple: multiply(row, args, multiple),
+    &#39;min&#39;: do_min,
+    &#39;max&#39;: do_max,
+    &#39;average&#39;: do_average,
+    &#39;round&#39;: do_round,
+    &#39;join&#39;: do_join,
+    &#39;today&#39;: do_today,
+    &#39;datedif&#39;: do_datedif,
+    &#39;toupper&#39;: do_toupper,
+    &#39;tolower&#39;: do_tolower,
+}
+&#34;&#34;&#34;Master table of user-callable functions&#34;&#34;&#34;
+
+
+#
+# Internal helpers
+#
+
+def _deref(row, args, multiple=False):
+    &#34;&#34;&#34;Dereference a term.
+    If it&#39;s a two-element list with a function and a list, recurse.
+    If it&#39;s a tag pattern, look it up in the row and replace with value(s)
+    If it&#39;s already a literal (number or string), leave it alone.
+    @param row: a hxl.model.Row object
+    @param args: a list of arguments to dereference (may be tag patterns or literals)
+    @param multiple: if true, return all matches for a tag pattern
+    @return: always a list (may be empty)
+    &#34;&#34;&#34;
+    result = []
+
+    for arg in args:
+        if isinstance(arg, collections.abc.Sequence) and callable(arg[0]):
+            # it&#39;s a function and args: recurse
+            if arg[0] == tagref:
+                result += _deref(row, arg[1], multiple)
+            else:
+                result.append(arg[0](row, arg[1]))
+        elif isinstance(arg, hxl.model.TagPattern):
+            # it&#39;s a tag pattern: look up matching values in the row
+            if multiple:
+                result += row.get_all(arg)
+            else:
+                result.append(row.get(arg))
+        else:
+            # it&#39;s a literal: leave it alone
+            result.append(arg)
+
+
+    return result
+
+def _num(arg):
+    &#34;&#34;&#34;Convert to a number if possible.
+    Otherwise, return zero and log a warning.
+    &#34;&#34;&#34;
+    if not arg:
+        return 0
+    try:
+        return hxl.datatypes.normalise_number(arg)
+    except (ValueError, TypeError):
+        logger.warning(&#34;Cannot convert %s to a number for calculated field&#34;, arg)
+        return 0</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="hxl.formulas.functions.FUNCTIONS"><code class="name">var <span class="ident">FUNCTIONS</span></code></dt>
+<dd>
+<div class="desc"><p>Master table of user-callable functions</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hxl.formulas.functions.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An addition statement
+X + Y
+@param row: the HXL data row
+@param args: the arguments parsed
+@param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+@returns: the sum of the arguments</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(row, args, multiple=False):
+    &#34;&#34;&#34;An addition statement
+    X + Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the sum of the arguments
+    &#34;&#34;&#34;
+    result = 0
+    for arg in _deref(row, args, multiple):
+        result += _num(arg)
+    return result</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.const"><code class="name flex">
+<span>def <span class="ident">const</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A constant value (returns itself).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def const(row, args, multiple=False):
+    &#34;&#34;&#34;A constant value (returns itself).
+    &#34;&#34;&#34;
+    return args[0]</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.divide"><code class="name flex">
+<span>def <span class="ident">divide</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A division statement
+X / Y
+@param row: the HXL data row
+@param args: the arguments parsed
+@param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+@returns: the result of dividing the first argument by all of the following ones, in order.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def divide(row, args, multiple=False):
+    &#34;&#34;&#34;A division statement
+    X / Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the result of dividing the first argument by all of the following ones, in order.
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        v = _num(arg) # avoid DIV0
+        if v:
+            result = result / v
+        else:
+            return &#39;NaN&#39;
+    return result</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_average"><code class="name flex">
+<span>def <span class="ident">do_average</span></span>(<span>row, args, multiple=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate the average (mean) of the arguments
+Ignores any cell that does not contain a number.
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the mean of all numeric arguments, or empty string if none found</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_average(row, args, multiple=True):
+    &#34;&#34;&#34;Calculate the average (mean) of the arguments
+    Ignores any cell that does not contain a number.
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the mean of all numeric arguments, or empty string if none found
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+
+    total = 0
+    count = 0
+
+    # look for numbers
+    for value in values:
+        try:
+            total += hxl.datatypes.normalise_number(value)
+            count += 1
+        except:
+            pass # not a number
+
+    # if there were no numbers, don&#39;t return a result
+    if count &gt; 0:
+        return total / count
+    else:
+        return &#39;&#39;</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_datedif"><code class="name flex">
+<span>def <span class="ident">do_datedif</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate the difference between the first date and the second.
+The optional internal units arg determines the unit of measurement.
+USAGE: datedif(date1, date2[, unit])
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the difference between the dates as an integer.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_datedif(row, args, multiple=False):
+    &#34;&#34;&#34;Calculate the difference between the first date and the second.
+    The optional internal units arg determines the unit of measurement.
+    USAGE: datedif(date1, date2[, unit])
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the difference between the dates as an integer.
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    if len(values) == 2:
+        unit = &#39;D&#39;
+    elif len(values) == 3:
+        unit = str(values[2]).upper()
+    else:
+        logger.error(&#34;Wrong number of arguments to datedif()&#34;)
+        return &#39;&#39;
+    try:
+        date1 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[0]), &#39;%Y-%m-%d&#39;)
+    except:
+        logger.error(&#34;Can&#39;t parse date: %s&#34;, values[0])
+        return &#39;&#39;
+    try:
+        date2 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[1]), &#39;%Y-%m-%d&#39;)
+    except:
+        logger.error(&#34;Can&#39;t parse date: %s&#34;, values[1])
+        return &#39;&#39;
+    diff = date2-date1
+    if unit == &#39;Y&#39;:
+        return int(abs(diff.days/365))
+    elif unit == &#39;M&#39;:
+        return abs(int(round(diff.days/30)))
+    elif unit == &#39;W&#39;:
+        return abs(int(round(diff.days/7)))
+    elif unit == &#39;D&#39;:
+        return abs(diff.days)
+    else:
+        logger.error(&#34;Unrecognised unit % for datediff()&#34;, unit)
+        return &#39;&#39;</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_join"><code class="name flex">
+<span>def <span class="ident">do_join</span></span>(<span>row, args, multiple=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Join values with the separator provided.
+Also joins empty values (for consistency)
+USAGE: join(sep, value1[, &hellip;])
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: all of the arguments, joined together</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_join(row, args, multiple=True):
+    &#34;&#34;&#34;Join values with the separator provided.
+    Also joins empty values (for consistency)
+    USAGE: join(sep, value1[, ...])
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: all of the arguments, joined together
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    separator = values[0]
+    return separator.join(values[1:])</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_max"><code class="name flex">
+<span>def <span class="ident">do_max</span></span>(<span>row, args, multiple=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the maximum value in the list.
+If they're all numbers (or empty), use numeric comparison.
+Otherwise, use lexical comparison (case- and space-insensitive)
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the maximum value</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_max(row, args, multiple=True):
+    &#34;&#34;&#34;Find the maximum value in the list.
+    If they&#39;re all numbers (or empty), use numeric comparison.
+    Otherwise, use lexical comparison (case- and space-insensitive)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the maximum value
+    &#34;&#34;&#34;
+
+    values = _deref(row, args, multiple)
+
+    # first, try a numbery comparison
+    try:
+        max_value = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_number(value)
+                if max_value is None or max_value &lt; value:
+                    max_value = value
+        return max_value
+    # if that fails, revert to lexical
+    except:
+        max_value = None
+        max_value_norm = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                norm = hxl.datatypes.normalise_string(value)
+                if max_value_norm is None or norm &gt; max_value_norm:
+                    max_value_norm = norm
+                    max_value = value
+        return max_value</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_min"><code class="name flex">
+<span>def <span class="ident">do_min</span></span>(<span>row, args, multiple=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the minimum value in the list.
+If they're all numbers (or empty), use numeric comparison.
+Otherwise, use lexical comparison (case- and space-insensitive)
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the minimum value</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_min(row, args, multiple=True):
+    &#34;&#34;&#34;Find the minimum value in the list.
+    If they&#39;re all numbers (or empty), use numeric comparison.
+    Otherwise, use lexical comparison (case- and space-insensitive)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the minimum value
+    &#34;&#34;&#34;
+
+    values = _deref(row, args, multiple)
+
+    # first, try a numbery comparison
+    try:
+        min_value = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                value = hxl.datatypes.normalise_number(value)
+                if min_value is None or min_value &gt; value:
+                    min_value = value
+        return min_value
+    # if that fails, revert to lexical
+    except:
+        min_value = None
+        min_value_norm = None
+        for value in values:
+            if not hxl.datatypes.is_empty(value):
+                norm = hxl.datatypes.normalise_string(value)
+                if min_value_norm is None or norm &lt; min_value_norm:
+                    min_value_norm = norm
+                    min_value = value
+        return min_value</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_round"><code class="name flex">
+<span>def <span class="ident">do_round</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Round a single value to the nearest integer.
+@param row: the HXL data row
+@param args: the function argument (name removed from start)
+@returns: the first argument, rounded if it's a number, or unchanged otherwise</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_round(row, args, multiple=False):
+    &#34;&#34;&#34;Round a single value to the nearest integer.
+    @param row: the HXL data row
+    @param args: the function argument (name removed from start)
+    @returns: the first argument, rounded if it&#39;s a number, or unchanged otherwise
+    &#34;&#34;&#34;
+    values = _deref(row, args, False)
+    if len(values) &gt; 1:
+        logger.warning(&#34;Ignoring extra arguments to round(): %s&#34;, str(values[1:]))
+    try:
+        return round(values[0])
+    except:
+        logger.warning(&#34;Trying to round non-numeric value %s&#34;, values[0])
+        return values[0]</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_today"><code class="name flex">
+<span>def <span class="ident">do_today</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return the current date (UTC) in ISO format YYYY-mm-dd
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the current UTC date in ISO YYYY-mm-dd format</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_today(row, args, multiple=False):
+    &#34;&#34;&#34;Return the current date (UTC) in ISO format YYYY-mm-dd
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the current UTC date in ISO YYYY-mm-dd format
+    &#34;&#34;&#34;
+    return datetime.datetime.utcnow().strftime(&#39;%Y-%m-%d&#39;)</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_tolower"><code class="name flex">
+<span>def <span class="ident">do_tolower</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert the value to a string in lower case
+USAGE: tolower(value)
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the value as an upper-case string</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_tolower(row, args, multiple=False):
+    &#34;&#34;&#34;Convert the value to a string in lower case
+    USAGE: tolower(value)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the value as an upper-case string
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    return str(values[0]).lower()</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.do_toupper"><code class="name flex">
+<span>def <span class="ident">do_toupper</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert the value to a string in upper case
+USAGE: toupper(value)
+@param row: the HXL data row
+@param args: the function arguments (name removed from start)
+@returns: the value as an upper-case string</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_toupper(row, args, multiple=False):
+    &#34;&#34;&#34;Convert the value to a string in upper case
+    USAGE: toupper(value)
+    @param row: the HXL data row
+    @param args: the function arguments (name removed from start)
+    @returns: the value as an upper-case string
+    &#34;&#34;&#34;
+    values = _deref(row, args, multiple)
+    return str(values[0]).upper()</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.function"><code class="name flex">
+<span>def <span class="ident">function</span></span>(<span>row, args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Execute a named function
+function(arg, arg&hellip;)
+@param row: the HXL data row
+@param args: the arguments parsed (the first one is the function name)
+@returns: the result of executing the function on the arguments</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def function(row, args):
+    &#34;&#34;&#34;Execute a named function
+    function(arg, arg...)
+    @param row: the HXL data row
+    @param args: the arguments parsed (the first one is the function name)
+    @returns: the result of executing the function on the arguments
+    &#34;&#34;&#34;
+    f = FUNCTIONS.get(args[0])
+    if f:
+        return f(row, args[1:], True)
+    else:
+        logger.error(&#34;Unknown function %s&#34;, args[0])
+        return &#39;&#39;</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.modulo"><code class="name flex">
+<span>def <span class="ident">modulo</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A modulo division statement
+X / Y
+@param row: the HXL data row
+@param args: the arguments parsed
+@param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+@returns: the remainder from dividing the first argument by all of the following ones, in order.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def modulo(row, args, multiple=False):
+    &#34;&#34;&#34;A modulo division statement
+    X / Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the remainder from dividing the first argument by all of the following ones, in order.
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        v = _num(arg) # avoid DIV0
+        if v:
+            result = result % v
+    return result</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.multiply"><code class="name flex">
+<span>def <span class="ident">multiply</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A multiplication statement
+X * Y
+@param row: the HXL data row
+@param args: the arguments parsed
+@param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+@returns: the product of the arguments</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def multiply(row, args, multiple=False):
+    &#34;&#34;&#34;A multiplication statement
+    X * Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the product of the arguments
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        result *= _num(arg)
+    return result</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.subtract"><code class="name flex">
+<span>def <span class="ident">subtract</span></span>(<span>row, args, multiple=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A subtraction statement
+X - Y
+@param row: the HXL data row
+@param args: the arguments parsed
+@param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+@returns: the result of subtracting all of the following arguments from the first one</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def subtract(row, args, multiple=False):
+    &#34;&#34;&#34;A subtraction statement
+    X - Y
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    @param multiple: if true, allow tag patterns to expand to multiple values (used only for function form, not operator form)
+    @returns: the result of subtracting all of the following arguments from the first one
+    &#34;&#34;&#34;
+    args = _deref(row, args, multiple)
+    result = _num(args[0]) if len(args) &gt; 0 else 0
+    for arg in args[1:]:
+        result -= _num(arg)
+    return result</code></pre>
+</details>
+</dd>
+<dt id="hxl.formulas.functions.tagref"><code class="name flex">
+<span>def <span class="ident">tagref</span></span>(<span>row, args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A single tag pattern standing alone.
+@param row: the HXL data row
+@param args: the arguments parsed</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tagref(row, args):
+    &#34;&#34;&#34;A single tag pattern standing alone.
+    @param row: the HXL data row
+    @param args: the arguments parsed
+    &#34;&#34;&#34;
+    return row.get(args[0])</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hxl.formulas" href="index.html">hxl.formulas</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="hxl.formulas.functions.FUNCTIONS" href="#hxl.formulas.functions.FUNCTIONS">FUNCTIONS</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="hxl.formulas.functions.add" href="#hxl.formulas.functions.add">add</a></code></li>
+<li><code><a title="hxl.formulas.functions.const" href="#hxl.formulas.functions.const">const</a></code></li>
+<li><code><a title="hxl.formulas.functions.divide" href="#hxl.formulas.functions.divide">divide</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_average" href="#hxl.formulas.functions.do_average">do_average</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_datedif" href="#hxl.formulas.functions.do_datedif">do_datedif</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_join" href="#hxl.formulas.functions.do_join">do_join</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_max" href="#hxl.formulas.functions.do_max">do_max</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_min" href="#hxl.formulas.functions.do_min">do_min</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_round" href="#hxl.formulas.functions.do_round">do_round</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_today" href="#hxl.formulas.functions.do_today">do_today</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_tolower" href="#hxl.formulas.functions.do_tolower">do_tolower</a></code></li>
+<li><code><a title="hxl.formulas.functions.do_toupper" href="#hxl.formulas.functions.do_toupper">do_toupper</a></code></li>
+<li><code><a title="hxl.formulas.functions.function" href="#hxl.formulas.functions.function">function</a></code></li>
+<li><code><a title="hxl.formulas.functions.modulo" href="#hxl.formulas.functions.modulo">modulo</a></code></li>
+<li><code><a title="hxl.formulas.functions.multiply" href="#hxl.formulas.functions.multiply">multiply</a></code></li>
+<li><code><a title="hxl.formulas.functions.subtract" href="#hxl.formulas.functions.subtract">subtract</a></code></li>
+<li><code><a title="hxl.formulas.functions.tagref" href="#hxl.formulas.functions.tagref">tagref</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

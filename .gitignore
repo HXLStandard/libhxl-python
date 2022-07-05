@@ -1,13 +1,12 @@
-*.pyc
 *.egg
-TAGS
+*.pyc
 /.eggs
 /.pypirc
 /build
 /dist
-/docs
-/libhxl.egg-info
 /hxl/formulas/parser.out
 /hxl/formulas/parsetab.py
+/libhxl.egg-info
 /profile
 /venv
+TAGS
