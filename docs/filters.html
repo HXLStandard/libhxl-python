@@ -1447,7 +1447,7 @@ class ColumnFilter(AbstractStreamingFilter):
 
 
 class CountFilter(AbstractCachingFilter):
-    &#34;&#34;&#34;Composable filter class to aggregate rows in a HXL dataset.
+    &#34;&#34;&#34;Composable filter class to aggregate rows in a HXL dataset (like a pivot table)
 
     This class supports the L{hxl.model.Dataset.count} convenience
     method and the L{hxl.scripts.hxlcount} command-line script.
@@ -5854,7 +5854,7 @@ dataset::</p>
 <span>(</span><span>source, patterns, aggregators=None, queries=[])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Composable filter class to aggregate rows in a HXL dataset.</p>
+<div class="desc"><p>Composable filter class to aggregate rows in a HXL dataset (like a pivot table)</p>
 <p>This class supports the L{hxl.model.Dataset.count} convenience
 method and the L{hxl.scripts.hxlcount} command-line script.</p>
 <p>This is a L{caching filter<AbstractCachingFilter>} that performs
@@ -5885,7 +5885,7 @@ If the caller does not supply any aggregators, use "count() as Count#meta+count"
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CountFilter(AbstractCachingFilter):
-    &#34;&#34;&#34;Composable filter class to aggregate rows in a HXL dataset.
+    &#34;&#34;&#34;Composable filter class to aggregate rows in a HXL dataset (like a pivot table)
 
     This class supports the L{hxl.model.Dataset.count} convenience
     method and the L{hxl.scripts.hxlcount} command-line script.

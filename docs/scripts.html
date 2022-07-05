@@ -355,7 +355,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         help=&#39;Comma-separated list of column tags to count.&#39;,
         metavar=&#39;tag,tag...&#39;,
         type=hxl.model.TagPattern.parse_list,
-        default=&#39;loc,org,sector,adm1,adm2,adm3&#39;
+        default=None,
         )
     parser.add_argument(
         &#39;-a&#39;,
@@ -1606,7 +1606,7 @@ class StreamOutput(object):
         help=&#39;Comma-separated list of column tags to count.&#39;,
         metavar=&#39;tag,tag...&#39;,
         type=hxl.model.TagPattern.parse_list,
-        default=&#39;loc,org,sector,adm1,adm2,adm3&#39;
+        default=None,
         )
     parser.add_argument(
         &#39;-a&#39;,
