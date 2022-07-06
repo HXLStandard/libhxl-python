@@ -9,7 +9,7 @@ also supported Python 2.7).
 
 **HXL standard:** http://hxlstandard.org
 
-# Quick start
+## Quick start
 
 From the command line (or inside a Python3 virtual environment):
 
@@ -30,9 +30,9 @@ for line in data.gen_csv():
     print(line)
 ```
 
-# Usage
+## Usage
 
-## Reading from a data source
+### Reading from a data source
 
 The _hxl.data()_ function reads HXL from a file object, filename, URL,
 or list of arrays and makes it available for processing, much like
@@ -60,7 +60,7 @@ class:
 dataset = hxl.data("dataset.xlsx", hxl.InputOptions(allow_local=True))
 ```
 
-### Input caching
+#### Input caching
 
 libhxl uses the Python
 [requests](http://docs.python-requests.org/en/master/) library for
@@ -75,7 +75,7 @@ plugin, like this:
 The default caching backend is a sqlite database at the location specied.
 
 
-## Filter chains
+### Filter chains
 
 You can filters to transform the output, and chain them as
 needed. Transformation is lazy, and uses the minimum memory
@@ -128,7 +128,7 @@ If you include a callback, you can collect details about the errors and warnings
 
 ```
 def my_callback(error_info):
-    # error_info is a HXLValidationException
+    ## error_info is a HXLValidationException
     sys.stderr.write(error_info)
 
 is_valid = hxl.data(url).validate(schema='my-schema.csv', callback=my_callback)
@@ -140,7 +140,7 @@ module and the format documentation for [HXL
 schemas](https://github.com/HXLStandard/hxl-proxy/wiki/HXL-schemas).
 
 
-# Command-line scripts
+## Command-line scripts
 
 The filters are also available as command-line scripts, installed with
 the library. For example,
@@ -164,7 +164,7 @@ available. All scripts have an ``-h`` option that gives usage
 information.
 
 
-# Installation
+## Installation
 
 This repository includes a standard Python `setup.py` script for
 installing the library and scripts (applications) on your system. In a
@@ -186,7 +186,7 @@ from any Python application, and will be able to call scripts like
 _hxlvalidate_ from the command line.
 
 
-# Makefile
+## Makefile
 
 There is also a generic Makefile that automates many tasks, including
 setting up a Python virtual environment for testing. The Python3 venv
@@ -214,7 +214,7 @@ make test-install
 Test a clean installation to verify there are no missing dependencies,
 etc.
 
-# License
+## License
 
 libhxl-python is released into the Public Domain, and comes with NO
 WARRANTY. See [LICENSE.md](./LICENSE.md) for details.
