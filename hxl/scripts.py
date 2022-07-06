@@ -1,13 +1,49 @@
-"""
-Console scripts
+"""Console scripts
 David Megginson
 April 2015
 
-This is a big, ugly module to support the libhxl
-console scripts, including (mainly) argument parsing.
+This module implements the command-line scripts for HXL
+processing. Most of them produce HXL output that another command can
+use as input, so you can chain them together into a pipeline, e.g.
 
-License: Public Domain
-Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+```
+$ cat dataset.csv | hxlselect -q "#org=UNICEF" | hxlsort -t "#value+committed" > output.csv
+```
+
+The following scripts are available:
+
+* **hxladd** - add new columns with a constant or computed value (`hxl.scripts.hxladd_main`)
+* **hxlappend** - concatenate two or more HXL datasets (`hxl.scripts.hxlappend_main`)
+* **hxlclean** - clean data by standardising formats (`hxl.scripts.hxlclean_main`)
+* **hxlcount** - generate aggregate counts, similar to a spreadsheet pivot table (`hxl.scripts.hxlcount_main`)
+* **hxlcut** - remove columns (`hxl.scripts.hxlcut_main`)
+* **hxldedup** - remove duplicate rows from a HXL dataset (`hxl.scripts.hxldedup_main`)
+* **hxlexpand** - expand lists in cells by repeating rows (`hxl.scripts.hxlexpand_main`)
+* **hxlexplode** - convert wide data into long data (`hxl.scripts.hxlexplode_main`)
+* **hxlfill** - fill empty cells (`hxl.scripts.hxlfill_main`)
+* **hxlimplode** - convert wide data into long data (`hxl.scripts.hxlimplode_main`)
+* **hxlhash** - generate an MD5 hash for a whole datasets or just its header rows (`hxl.scripts.hxlhash_main`)
+* **hxlmerge** - merge columns from one dataset into another, similar to SQL join (`hxl.scripts.hxlmerge_main`)
+* **hxlrename** - rename and retag columns (`hxl.scripts.hxlrename_main`)
+* **hxlreplace** - replace values in the data (`hxl.scripts.hxlreplace_main`)
+* **hxlselect** - filter rows (`hxl.scripts.hxlselect_main`)
+* **hxlsort** - sort rows (`hxl.scripts.hxlsort_main`)
+* **hxlspec** - process a HXL JSON spec (`hxl.scripts.hxlspec_main`)
+* **hxltag** - add tags to a non-HXLated file (`hxl.scripts.hxltag_main`)
+* **hxlvalidate** - validate a dataset against a schema `hxl.scripts.hxlvalidate_main`
+
+The ``-h`` option will provide more information about each script.
+
+### About this module
+
+**Author:** David Megginson
+
+**Organisation:** UN OCHA
+
+**License:** Public Domain
+
+**Started:** April 2015
+
 """
 
 from __future__ import print_function
@@ -118,13 +154,16 @@ def hxlvalidate():
 def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxladd with command-line arguments.
+
+    Add new columns with a constant or computed value.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     """
 
-    parser = make_args('Add new columns with constant values to a HXL dataset.')
+    parser = make_args('Add new columns with constant or computed values to a HXL dataset.')
     parser.add_argument(
         '-s',
         '--spec',
@@ -156,6 +195,9 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlappend with command-line arguments.
+
+    Concatenate two or more HXL datasets.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -215,13 +257,16 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlclean with command-line arguments.
+
+    Clean data by standardising formats.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     """
 
-    parser = make_args('Clean data in a HXL file.')
+    parser = make_args('Clean data in a HXL file by standardising formats.')
     parser.add_argument(
         '-w',
         '--whitespace',
@@ -304,6 +349,9 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlcount with command-line arguments.
+
+    Generate aggregate counts, similar to a spreadsheet pivot table.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -311,7 +359,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
 
     # Command-line arguments
-    parser = make_args('Generate aggregate counts for a HXL dataset')
+    parser = make_args('Generate aggregate counts for a HXL dataset, similar to a spreadsheet pivot table')
     parser.add_argument(
         '-t',
         '--tags',
@@ -341,9 +389,13 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     return EXIT_OK
 
-
 def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
-    parser = make_args('Cut columns from a HXL dataset.')
+    """ Run hxlcut with command-line arguments.
+
+    Remove columns.
+    
+    """
+    parser = make_args('Remove columns from a HXL dataset.')
     parser.add_argument(
         '-i',
         '--include',
@@ -378,6 +430,11 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """ Run hxldedup with command-line arguments.
+
+    Remove duplicate rows from a HXL dataset.
+
+    """
     parser = make_args('Remove duplicate rows from a HXL dataset.')
     parser.add_argument(
         '-t',
@@ -400,6 +457,13 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """ Run hxlhash with command-line arguments.
+
+    Generate an MD5 hash for a whole dataset or just its header rows.
+
+    Does _not_ produce HXL output.
+
+    """
     parser = make_args(
         'Generate an MD5 hash for a HXL dataset (or just its header rows).',
         hxl_output=False
@@ -429,13 +493,16 @@ def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlmerge with command-line arguments.
+
+    Merge columns from one HXL dataset into another (similar to SQL join).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     """
 
-    parser = make_args('Merge part of one HXL dataset into another.')
+    parser = make_args('Merge columns from one HXL dataset into another (similar to SQL join).')
     parser.add_argument(
         '-m',
         '--merge',
@@ -495,6 +562,9 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlrename with command-line arguments.
+
+    Rename and retag columns.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -525,6 +595,9 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlreplace with command-line arguments.
+
+    Replace values in the data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -594,6 +667,9 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlfill with command-line arguments.
+
+    Fill empty cells.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -627,6 +703,9 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlexpand with command-line arguments.
+
+    Expand lists in cells by repeating rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -677,6 +756,9 @@ def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlexplode with command-line arguments.
+
+    Convert wide data into long data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -715,6 +797,9 @@ def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlexplode with command-line arguments.
+
+    Convert long data into wide data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -755,6 +840,9 @@ def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlselect with command-line arguments.
+
+    Filter rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -793,6 +881,9 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlcut with command-line arguments.
+
+    Sort rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -828,6 +919,8 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """ Run hxlspec with command-line arguments.
+
+    Process a HXL JSON spec.
 
     Args:
         args (list): a list of command-line arguments
@@ -866,6 +959,9 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxltag with command-line arguments.
+
+    Add tags to a non-HXLated file (accepts non-HXL input).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -911,6 +1007,9 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
     Run hxlvalidate with command-line arguments.
+
+    Validate a dataset against a schema (produces non-HXL output).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script

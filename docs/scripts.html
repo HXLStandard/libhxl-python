@@ -27,24 +27,89 @@ April 2015 …" />
 <p>Console scripts
 David Megginson
 April 2015</p>
-<p>This is a big, ugly module to support the libhxl
-console scripts, including (mainly) argument parsing.</p>
-<p>License: Public Domain
-Documentation: <a href="https://github.com/HXLStandard/libhxl-python/wiki">https://github.com/HXLStandard/libhxl-python/wiki</a></p>
+<p>This module implements the command-line scripts for HXL
+processing. Most of them produce HXL output that another command can
+use as input, so you can chain them together into a pipeline, e.g.</p>
+<pre><code>$ cat dataset.csv | hxlselect -q &quot;#org=UNICEF&quot; | hxlsort -t &quot;#value+committed&quot; &gt; output.csv
+</code></pre>
+<p>The following scripts are available:</p>
+<ul>
+<li><strong>hxladd</strong> - add new columns with a constant or computed value (<code><a title="hxl.scripts.hxladd_main" href="#hxl.scripts.hxladd_main">hxladd_main()</a></code>)</li>
+<li><strong>hxlappend</strong> - concatenate two or more HXL datasets (<code><a title="hxl.scripts.hxlappend_main" href="#hxl.scripts.hxlappend_main">hxlappend_main()</a></code>)</li>
+<li><strong>hxlclean</strong> - clean data by standardising formats (<code><a title="hxl.scripts.hxlclean_main" href="#hxl.scripts.hxlclean_main">hxlclean_main()</a></code>)</li>
+<li><strong>hxlcount</strong> - generate aggregate counts, similar to a spreadsheet pivot table (<code><a title="hxl.scripts.hxlcount_main" href="#hxl.scripts.hxlcount_main">hxlcount_main()</a></code>)</li>
+<li><strong>hxlcut</strong> - remove columns (<code><a title="hxl.scripts.hxlcut_main" href="#hxl.scripts.hxlcut_main">hxlcut_main()</a></code>)</li>
+<li><strong>hxldedup</strong> - remove duplicate rows from a HXL dataset (<code><a title="hxl.scripts.hxldedup_main" href="#hxl.scripts.hxldedup_main">hxldedup_main()</a></code>)</li>
+<li><strong>hxlexpand</strong> - expand lists in cells by repeating rows (<code><a title="hxl.scripts.hxlexpand_main" href="#hxl.scripts.hxlexpand_main">hxlexpand_main()</a></code>)</li>
+<li><strong>hxlexplode</strong> - convert wide data into long data (<code><a title="hxl.scripts.hxlexplode_main" href="#hxl.scripts.hxlexplode_main">hxlexplode_main()</a></code>)</li>
+<li><strong>hxlfill</strong> - fill empty cells (<code><a title="hxl.scripts.hxlfill_main" href="#hxl.scripts.hxlfill_main">hxlfill_main()</a></code>)</li>
+<li><strong>hxlimplode</strong> - convert wide data into long data (<code><a title="hxl.scripts.hxlimplode_main" href="#hxl.scripts.hxlimplode_main">hxlimplode_main()</a></code>)</li>
+<li><strong>hxlhash</strong> - generate an MD5 hash for a whole datasets or just its header rows (<code><a title="hxl.scripts.hxlhash_main" href="#hxl.scripts.hxlhash_main">hxlhash_main()</a></code>)</li>
+<li><strong>hxlmerge</strong> - merge columns from one dataset into another, similar to SQL join (<code><a title="hxl.scripts.hxlmerge_main" href="#hxl.scripts.hxlmerge_main">hxlmerge_main()</a></code>)</li>
+<li><strong>hxlrename</strong> - rename and retag columns (<code><a title="hxl.scripts.hxlrename_main" href="#hxl.scripts.hxlrename_main">hxlrename_main()</a></code>)</li>
+<li><strong>hxlreplace</strong> - replace values in the data (<code><a title="hxl.scripts.hxlreplace_main" href="#hxl.scripts.hxlreplace_main">hxlreplace_main()</a></code>)</li>
+<li><strong>hxlselect</strong> - filter rows (<code><a title="hxl.scripts.hxlselect_main" href="#hxl.scripts.hxlselect_main">hxlselect_main()</a></code>)</li>
+<li><strong>hxlsort</strong> - sort rows (<code><a title="hxl.scripts.hxlsort_main" href="#hxl.scripts.hxlsort_main">hxlsort_main()</a></code>)</li>
+<li><strong>hxlspec</strong> - process a HXL JSON spec (<code><a title="hxl.scripts.hxlspec_main" href="#hxl.scripts.hxlspec_main">hxlspec_main()</a></code>)</li>
+<li><strong>hxltag</strong> - add tags to a non-HXLated file (<code><a title="hxl.scripts.hxltag_main" href="#hxl.scripts.hxltag_main">hxltag_main()</a></code>)</li>
+<li><strong>hxlvalidate</strong> - validate a dataset against a schema <code><a title="hxl.scripts.hxlvalidate_main" href="#hxl.scripts.hxlvalidate_main">hxlvalidate_main()</a></code></li>
+</ul>
+<p>The <code>-h</code> option will provide more information about each script.</p>
+<h3 id="about-this-module">About this module</h3>
+<p><strong>Author:</strong> David Megginson</p>
+<p><strong>Organisation:</strong> UN OCHA</p>
+<p><strong>License:</strong> Public Domain</p>
+<p><strong>Started:</strong> April 2015</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;
-Console scripts
+<pre><code class="python">&#34;&#34;&#34;Console scripts
 David Megginson
 April 2015
 
-This is a big, ugly module to support the libhxl
-console scripts, including (mainly) argument parsing.
+This module implements the command-line scripts for HXL
+processing. Most of them produce HXL output that another command can
+use as input, so you can chain them together into a pipeline, e.g.
 
-License: Public Domain
-Documentation: https://github.com/HXLStandard/libhxl-python/wiki
+```
+$ cat dataset.csv | hxlselect -q &#34;#org=UNICEF&#34; | hxlsort -t &#34;#value+committed&#34; &gt; output.csv
+```
+
+The following scripts are available:
+
+* **hxladd** - add new columns with a constant or computed value (`hxl.scripts.hxladd_main`)
+* **hxlappend** - concatenate two or more HXL datasets (`hxl.scripts.hxlappend_main`)
+* **hxlclean** - clean data by standardising formats (`hxl.scripts.hxlclean_main`)
+* **hxlcount** - generate aggregate counts, similar to a spreadsheet pivot table (`hxl.scripts.hxlcount_main`)
+* **hxlcut** - remove columns (`hxl.scripts.hxlcut_main`)
+* **hxldedup** - remove duplicate rows from a HXL dataset (`hxl.scripts.hxldedup_main`)
+* **hxlexpand** - expand lists in cells by repeating rows (`hxl.scripts.hxlexpand_main`)
+* **hxlexplode** - convert wide data into long data (`hxl.scripts.hxlexplode_main`)
+* **hxlfill** - fill empty cells (`hxl.scripts.hxlfill_main`)
+* **hxlimplode** - convert wide data into long data (`hxl.scripts.hxlimplode_main`)
+* **hxlhash** - generate an MD5 hash for a whole datasets or just its header rows (`hxl.scripts.hxlhash_main`)
+* **hxlmerge** - merge columns from one dataset into another, similar to SQL join (`hxl.scripts.hxlmerge_main`)
+* **hxlrename** - rename and retag columns (`hxl.scripts.hxlrename_main`)
+* **hxlreplace** - replace values in the data (`hxl.scripts.hxlreplace_main`)
+* **hxlselect** - filter rows (`hxl.scripts.hxlselect_main`)
+* **hxlsort** - sort rows (`hxl.scripts.hxlsort_main`)
+* **hxlspec** - process a HXL JSON spec (`hxl.scripts.hxlspec_main`)
+* **hxltag** - add tags to a non-HXLated file (`hxl.scripts.hxltag_main`)
+* **hxlvalidate** - validate a dataset against a schema `hxl.scripts.hxlvalidate_main`
+
+The ``-h`` option will provide more information about each script.
+
+### About this module
+
+**Author:** David Megginson
+
+**Organisation:** UN OCHA
+
+**License:** Public Domain
+
+**Started:** April 2015
+
 &#34;&#34;&#34;
 
 from __future__ import print_function
@@ -155,13 +220,16 @@ def hxlvalidate():
 def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxladd with command-line arguments.
+
+    Add new columns with a constant or computed value.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     &#34;&#34;&#34;
 
-    parser = make_args(&#39;Add new columns with constant values to a HXL dataset.&#39;)
+    parser = make_args(&#39;Add new columns with constant or computed values to a HXL dataset.&#39;)
     parser.add_argument(
         &#39;-s&#39;,
         &#39;--spec&#39;,
@@ -193,6 +261,9 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlappend with command-line arguments.
+
+    Concatenate two or more HXL datasets.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -252,13 +323,16 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlclean with command-line arguments.
+
+    Clean data by standardising formats.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     &#34;&#34;&#34;
 
-    parser = make_args(&#39;Clean data in a HXL file.&#39;)
+    parser = make_args(&#39;Clean data in a HXL file by standardising formats.&#39;)
     parser.add_argument(
         &#39;-w&#39;,
         &#39;--whitespace&#39;,
@@ -341,6 +415,9 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlcount with command-line arguments.
+
+    Generate aggregate counts, similar to a spreadsheet pivot table.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -348,7 +425,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
 
     # Command-line arguments
-    parser = make_args(&#39;Generate aggregate counts for a HXL dataset&#39;)
+    parser = make_args(&#39;Generate aggregate counts for a HXL dataset, similar to a spreadsheet pivot table&#39;)
     parser.add_argument(
         &#39;-t&#39;,
         &#39;--tags&#39;,
@@ -378,9 +455,13 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     return EXIT_OK
 
-
 def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
-    parser = make_args(&#39;Cut columns from a HXL dataset.&#39;)
+    &#34;&#34;&#34; Run hxlcut with command-line arguments.
+
+    Remove columns.
+    
+    &#34;&#34;&#34;
+    parser = make_args(&#39;Remove columns from a HXL dataset.&#39;)
     parser.add_argument(
         &#39;-i&#39;,
         &#39;--include&#39;,
@@ -415,6 +496,11 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34; Run hxldedup with command-line arguments.
+
+    Remove duplicate rows from a HXL dataset.
+
+    &#34;&#34;&#34;
     parser = make_args(&#39;Remove duplicate rows from a HXL dataset.&#39;)
     parser.add_argument(
         &#39;-t&#39;,
@@ -437,6 +523,13 @@ def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 
 def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34; Run hxlhash with command-line arguments.
+
+    Generate an MD5 hash for a whole dataset or just its header rows.
+
+    Does _not_ produce HXL output.
+
+    &#34;&#34;&#34;
     parser = make_args(
         &#39;Generate an MD5 hash for a HXL dataset (or just its header rows).&#39;,
         hxl_output=False
@@ -466,13 +559,16 @@ def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlmerge with command-line arguments.
+
+    Merge columns from one HXL dataset into another (similar to SQL join).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     &#34;&#34;&#34;
 
-    parser = make_args(&#39;Merge part of one HXL dataset into another.&#39;)
+    parser = make_args(&#39;Merge columns from one HXL dataset into another (similar to SQL join).&#39;)
     parser.add_argument(
         &#39;-m&#39;,
         &#39;--merge&#39;,
@@ -532,6 +628,9 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlrename with command-line arguments.
+
+    Rename and retag columns.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -562,6 +661,9 @@ def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlreplace with command-line arguments.
+
+    Replace values in the data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -631,6 +733,9 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlfill with command-line arguments.
+
+    Fill empty cells.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -664,6 +769,9 @@ def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlexpand with command-line arguments.
+
+    Expand lists in cells by repeating rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -714,6 +822,9 @@ def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlexplode with command-line arguments.
+
+    Convert wide data into long data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -752,6 +863,9 @@ def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlexplode with command-line arguments.
+
+    Convert long data into wide data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -792,6 +906,9 @@ def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlselect with command-line arguments.
+
+    Filter rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -830,6 +947,9 @@ def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlcut with command-line arguments.
+
+    Sort rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -865,6 +985,8 @@ def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
 def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34; Run hxlspec with command-line arguments.
+
+    Process a HXL JSON spec.
 
     Args:
         args (list): a list of command-line arguments
@@ -903,6 +1025,9 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxltag with command-line arguments.
+
+    Add tags to a non-HXLated file (accepts non-HXL input).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -948,6 +1073,9 @@ def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlvalidate with command-line arguments.
+
+    Validate a dataset against a schema (produces non-HXL output).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -1313,8 +1441,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxladd_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxladd with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxladd with command-line arguments.</p>
+<p>Add new columns with a constant or computed value.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1325,13 +1454,16 @@ class StreamOutput(object):
 <pre><code class="python">def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxladd with command-line arguments.
+
+    Add new columns with a constant or computed value.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     &#34;&#34;&#34;
 
-    parser = make_args(&#39;Add new columns with constant values to a HXL dataset.&#39;)
+    parser = make_args(&#39;Add new columns with constant or computed values to a HXL dataset.&#39;)
     parser.add_argument(
         &#39;-s&#39;,
         &#39;--spec&#39;,
@@ -1378,8 +1510,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlappend_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlappend with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlappend with command-line arguments.</p>
+<p>Concatenate two or more HXL datasets.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1390,6 +1523,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlappend with command-line arguments.
+
+    Concatenate two or more HXL datasets.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -1464,8 +1600,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlclean_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlclean with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlclean with command-line arguments.</p>
+<p>Clean data by standardising formats.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1476,13 +1613,16 @@ class StreamOutput(object):
 <pre><code class="python">def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlclean with command-line arguments.
+
+    Clean data by standardising formats.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     &#34;&#34;&#34;
 
-    parser = make_args(&#39;Clean data in a HXL file.&#39;)
+    parser = make_args(&#39;Clean data in a HXL file by standardising formats.&#39;)
     parser.add_argument(
         &#39;-w&#39;,
         &#39;--whitespace&#39;,
@@ -1580,8 +1720,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlcount_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlcount with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlcount with command-line arguments.</p>
+<p>Generate aggregate counts, similar to a spreadsheet pivot table.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1592,6 +1733,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlcount with command-line arguments.
+
+    Generate aggregate counts, similar to a spreadsheet pivot table.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -1599,7 +1743,7 @@ class StreamOutput(object):
     &#34;&#34;&#34;
 
     # Command-line arguments
-    parser = make_args(&#39;Generate aggregate counts for a HXL dataset&#39;)
+    parser = make_args(&#39;Generate aggregate counts for a HXL dataset, similar to a spreadsheet pivot table&#39;)
     parser.add_argument(
         &#39;-t&#39;,
         &#39;--tags&#39;,
@@ -1648,13 +1792,19 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlcut_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Run hxlcut with command-line arguments.</p>
+<p>Remove columns.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
-    parser = make_args(&#39;Cut columns from a HXL dataset.&#39;)
+    &#34;&#34;&#34; Run hxlcut with command-line arguments.
+
+    Remove columns.
+    
+    &#34;&#34;&#34;
+    parser = make_args(&#39;Remove columns from a HXL dataset.&#39;)
     parser.add_argument(
         &#39;-i&#39;,
         &#39;--include&#39;,
@@ -1706,12 +1856,18 @@ class StreamOutput(object):
 <span>def <span class="ident">hxldedup_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Run hxldedup with command-line arguments.</p>
+<p>Remove duplicate rows from a HXL dataset.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def hxldedup_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34; Run hxldedup with command-line arguments.
+
+    Remove duplicate rows from a HXL dataset.
+
+    &#34;&#34;&#34;
     parser = make_args(&#39;Remove duplicate rows from a HXL dataset.&#39;)
     parser.add_argument(
         &#39;-t&#39;,
@@ -1751,8 +1907,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlexpand_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlexpand with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlexpand with command-line arguments.</p>
+<p>Expand lists in cells by repeating rows.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1763,6 +1920,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlexpand_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlexpand with command-line arguments.
+
+    Expand lists in cells by repeating rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -1828,8 +1988,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlexplode_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlexplode with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlexplode with command-line arguments.</p>
+<p>Convert wide data into long data.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1840,6 +2001,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlexplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlexplode with command-line arguments.
+
+    Convert wide data into long data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -1893,8 +2057,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlfill_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlfill with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlfill with command-line arguments.</p>
+<p>Fill empty cells.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -1905,6 +2070,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlfill_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlfill with command-line arguments.
+
+    Fill empty cells.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -1953,12 +2121,21 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlhash_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Run hxlhash with command-line arguments.</p>
+<p>Generate an MD5 hash for a whole dataset or just its header rows.</p>
+<p>Does <em>not</em> produce HXL output.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    &#34;&#34;&#34; Run hxlhash with command-line arguments.
+
+    Generate an MD5 hash for a whole dataset or just its header rows.
+
+    Does _not_ produce HXL output.
+
+    &#34;&#34;&#34;
     parser = make_args(
         &#39;Generate an MD5 hash for a HXL dataset (or just its header rows).&#39;,
         hxl_output=False
@@ -2003,8 +2180,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlimplode_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlexplode with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlexplode with command-line arguments.</p>
+<p>Convert long data into wide data.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2015,6 +2193,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlimplode_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlexplode with command-line arguments.
+
+    Convert long data into wide data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -2070,8 +2251,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlmerge_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlmerge with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlmerge with command-line arguments.</p>
+<p>Merge columns from one HXL dataset into another (similar to SQL join).</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2082,13 +2264,16 @@ class StreamOutput(object):
 <pre><code class="python">def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlmerge with command-line arguments.
+
+    Merge columns from one HXL dataset into another (similar to SQL join).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
     @param stderr Standard error for the script
     &#34;&#34;&#34;
 
-    parser = make_args(&#39;Merge part of one HXL dataset into another.&#39;)
+    parser = make_args(&#39;Merge columns from one HXL dataset into another (similar to SQL join).&#39;)
     parser.add_argument(
         &#39;-m&#39;,
         &#39;--merge&#39;,
@@ -2163,8 +2348,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlrename_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlrename with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlrename with command-line arguments.</p>
+<p>Rename and retag columns.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2175,6 +2361,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlrename_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlrename with command-line arguments.
+
+    Rename and retag columns.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -2220,8 +2409,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlreplace_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlreplace with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlreplace with command-line arguments.</p>
+<p>Replace values in the data.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2232,6 +2422,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlreplace with command-line arguments.
+
+    Replace values in the data.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -2316,8 +2509,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlselect_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlselect with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlselect with command-line arguments.</p>
+<p>Filter rows.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2328,6 +2522,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlselect_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlselect with command-line arguments.
+
+    Filter rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -2381,8 +2578,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlsort_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlcut with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlcut with command-line arguments.</p>
+<p>Sort rows.</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2393,6 +2591,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlsort_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlcut with command-line arguments.
+
+    Sort rows.
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -2445,6 +2646,7 @@ class StreamOutput(object):
 </code></dt>
 <dd>
 <div class="desc"><p>Run hxlspec with command-line arguments.</p>
+<p>Process a HXL JSON spec.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>args</code></strong> :&ensp;<code>list</code></dt>
@@ -2462,6 +2664,8 @@ class StreamOutput(object):
 </summary>
 <pre><code class="python">def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34; Run hxlspec with command-line arguments.
+
+    Process a HXL JSON spec.
 
     Args:
         args (list): a list of command-line arguments
@@ -2515,8 +2719,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxltag_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxltag with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxltag with command-line arguments.</p>
+<p>Add tags to a non-HXLated file (accepts non-HXL input).</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2527,6 +2732,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxltag with command-line arguments.
+
+    Add tags to a non-HXLated file (accepts non-HXL input).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -2587,8 +2795,9 @@ class StreamOutput(object):
 <span>def <span class="ident">hxlvalidate_main</span></span>(<span>args, stdin=&lt;_io.BufferedReader name=&#x27;&lt;stdin&gt;&#x27;&gt;, stdout=sys.stdout, stderr=sys.stderr)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Run hxlvalidate with command-line arguments.
-@param args A list of arguments, excluding the script name
+<div class="desc"><p>Run hxlvalidate with command-line arguments.</p>
+<p>Validate a dataset against a schema (produces non-HXL output).</p>
+<p>@param args A list of arguments, excluding the script name
 @param stdin Standard input for the script
 @param stdout Standard output for the script
 @param stderr Standard error for the script</p></div>
@@ -2599,6 +2808,9 @@ class StreamOutput(object):
 <pre><code class="python">def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
     Run hxlvalidate with command-line arguments.
+
+    Validate a dataset against a schema (produces non-HXL output).
+
     @param args A list of arguments, excluding the script name
     @param stdin Standard input for the script
     @param stdout Standard output for the script
@@ -3001,7 +3213,9 @@ class StreamOutput(object):
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#about-this-module">About this module</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3>Super-module</h3>
