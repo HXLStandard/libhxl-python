@@ -50,7 +50,7 @@ close-issue:
 	git checkout dev && git merge -m "Merge to dev" "$(BRANCH)" && git branch -d "$(BRANCH)"
 
 # push the dev branch to origin
-push-dev:
+push-dev: api-docs
 	git checkout dev && git push
 
 # merge the dev branch into test and push both to origin
