@@ -9,11 +9,34 @@ also supported Python 2.7).
 
 **HXL standard:** http://hxlstandard.org
 
+# Quick start
+
+From the command line (or inside a Python3 virtual environment):
+
+```
+$ pip3 install libhxl
+```
+
+In your code:
+
+```
+import hxl
+
+url = "https://github.com/HXLStandard/libhxl-python/blob/main/tests/files/test_io/input-valid.csv"
+
+data = hxl.data(url).with_rows("#sector=WASH").sort("#country")
+
+for line in data.gen_csv():
+    print(line)
+```
+
 # Usage
+
+## Reading from a data source
 
 The _hxl.data()_ function reads HXL from a file object, filename, URL,
 or list of arrays and makes it available for processing, much like
-``$()`` in JQuery:
+``$()`` in JQuery. The following will read HXLated data from standard input:
 
 ```
 import sys
@@ -22,51 +45,45 @@ import hxl
 dataset = hxl.data(sys.stdin)
 ```
 
-You can add additional methods to process the data.  This example
-shows an identity transformation in a pipeline (See "Generators",
-below):
+Most commonly, you will open a dataset via a URL:
 
 ```
-for line in hxl.data(sys.stdin).gen_csv():
-    print(line)
+dataset = hxl.data("https://example.org/dataset.url"
 ```
 
-This is the Same transformation, but loading the entire dataset into
-memory as an intermediate step (see "Filters", below):
+To open a local file rather than a URL, use the _allow\_local_ property
+of the
+[InputOptions](https://hxlstandard.github.io/libhxl-python/input.html#hxl.input.InputOptions)
+class:
 
 ```
-for line in hxl.data(sys.stdin).cache().gen_csv():
-    print(line)
-```
-
-To open a local file rather than a URL, use the _allow_local_ property
-of the _InputOptions_ class:
-
-```
-import hxl
-
 dataset = hxl.data("dataset.xlsx", hxl.InputOptions(allow_local=True))
 ```
 
+### Input caching
 
-## Filters
+libhxl uses the Python
+[requests](http://docs.python-requests.org/en/master/) library for
+opening URLs. If you want to enable caching (for example, to avoid
+beating up on your source with repeated requests), your code can use
+the [requests_cache](https://pypi.python.org/pypi/requests-cache)
+plugin, like this:
 
-There are a number of filters that you can apply in a stream after a
-HXL dataset.  This example uses the _with_rows()_ filter to find every
-row that has a #sector of "WASH" and print the organisation mentioned
-in the row:
+    import requests_cache
+    requests_cache.install_cache('demo_cache', expire_after=3600)
+
+The default caching backend is a sqlite database at the location specied.
+
+
+## Filter chains
+
+You can filters to transform the output, and chain them as
+needed. Transformation is lazy, and uses the minimum memory
+possible. For example, this command selects only data rows where the
+country is "Somalia", sorted by the organisation:
 
 ```
-for row in hxl.data(sys.stdin).with_rows('#sector=WASH'):
-    print('The organisation is {}'.format(row.get('#org')))
-```
-
-This example removes the WASH sector from the results, then counts the
-number of times each organisation appears in the remaining rows:
-
-```
-url = 'http://example.org/data.csv'
-result = hxl.data(url).with_rows('#sector!=WASH').count('#org')
+transformed = hxl.data(url).with_rows("#country=Somalia").sort("#org")
 ```
 
 For more on filters see the API documentation for the
@@ -75,13 +92,27 @@ class and the
 [hxl.filters](https://hxlstandard.github.io/libhxl-python/filters.html)
 module.
 
-## Sinks
 
-Sinks take a HXL stream and convert it into something that's not HXL.
+### Generators
+
+Generators allow the re-serialising of HXL data, returning something that works like an iterator.  Example:
+
+```
+for line in hxl.data(url).gen_csv():
+    print(line)
+```
+
+The following generators are available (you can use the parameters to turn the text headers and HXL tags on or off):
+
+Generator method | Description
+-- | --
+[gen_raw()](https://hxlstandard.github.io/libhxl-python/model.html#hxl.model.Dataset.gen_raw) | Generate arrays of strings, one row at a time.
+[gen_csv()](https://hxlstandard.github.io/libhxl-python/model.html#hxl.model.Dataset.gen_csv) | Generate encoded CSV rows, one row at a time.
+[gen_json()](https://hxlstandard.github.io/libhxl-python/model.html#hxl.model.Dataset.gen_json) | Generate JSON output, either as rows or as JSON objects with the HXL hashtags as property names.
 
 ### Validation
 
-To validate a HXL dataset against a schema (also in HXL), use the ``validate`` sink:
+To validate a HXL dataset against a schema (also in HXL), use the [validate()](https://hxlstandard.github.io/libhxl-python/model.html#hxl.model.Dataset.validate) method at the end of the filter chain:
 
 ```
 is_valid = hxl.data(url).validate('my-schema.csv')
@@ -109,76 +140,6 @@ module and the format documentation for [HXL
 schemas](https://github.com/HXLStandard/hxl-proxy/wiki/HXL-schemas).
 
 
-### Generators
-
-Generators allow the re-serialising of HXL data, returning something that works like an iterator.  Example:
-
-```
-for line in hxl.data(url).gen_csv():
-    print(line)
-```
-
-The following generators are available (you can use the parameters to turn the text headers and HXL tags on or off):
-
-<table>
-  <thead>
-    <th>Generator method</th>
-    <th>Description</th>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Dataset.gen_raw(show_headers=True, show_tags=True)</code></td>
-      <td>Generate arrays of strings, one row at a time.</td>
-    </tr>
-    <tr>
-      <td><code>Dataset.gen_csv(show_headers=True, show_tags=True)</code></td>
-      <td>Generate encoded CSV rows, one row at a time.</td>
-    </tr>
-    <tr>
-      <td><code>Dataset.gen_json(show_headers=True, show_tags=True)</code></td>
-      <td>Generate encoded JSON rows, one row at a time.</td>
-    </tr>
-  </tbody>
-</table>
-
-
-## Caching
-
-libhxl uses the Python
-[requests](http://docs.python-requests.org/en/master/) library for
-opening URLs. If you want to enable caching (for example, to avoid
-beating up on your source with repeated requests), your code can use
-the [requests_cache](https://pypi.python.org/pypi/requests-cache)
-plugin, like this:
-
-    import requests_cache
-    requests_cache.install_cache('demo_cache', expire_after=3600)
-
-The default caching backend is a sqlite database at the location specied.
-
-
-# Installation
-
-This repository includes a standard Python `setup.py` script for
-installing the library and scripts (applications) on your system. In a
-Unix-like operating system, you can install using the following
-command:
-
-```
-python setup.py install
-```
-
-If you don't need to install from source, try simply
-
-```
-pip install libhxl
-```
-
-Once you've installed, you will be able to include the HXL libraries
-from any Python application, and will be able to call scripts like
-_hxlvalidate_ from the command line.
-
-
 # Command-line scripts
 
 The filters are also available as command-line scripts, installed with
@@ -201,6 +162,28 @@ See the API documentation for the
 module for more information about the command-line scripts
 available. All scripts have an ``-h`` option that gives usage
 information.
+
+
+# Installation
+
+This repository includes a standard Python `setup.py` script for
+installing the library and scripts (applications) on your system. In a
+Unix-like operating system, you can install using the following
+command:
+
+```
+python setup.py install
+```
+
+If you don't need to install from source, try simply
+
+```
+pip install libhxl
+```
+
+Once you've installed, you will be able to include the HXL libraries
+from any Python application, and will be able to call scripts like
+_hxlvalidate_ from the command line.
 
 
 # Makefile
@@ -230,3 +213,8 @@ make test-install
 
 Test a clean installation to verify there are no missing dependencies,
 etc.
+
+# License
+
+libhxl-python is released into the Public Domain, and comes with NO
+WARRANTY. See [LICENSE.md](./LICENSE.md) for details.
