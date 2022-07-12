@@ -12,25 +12,25 @@ $ cat dataset.csv | hxlselect -q "#org=UNICEF" | hxlsort -t "#value+committed" >
 
 The following scripts are available:
 
-* **hxladd** - add new columns with a constant or computed value (`hxl.scripts.hxladd_main`)
-* **hxlappend** - concatenate two or more HXL datasets (`hxl.scripts.hxlappend_main`)
-* **hxlclean** - clean data by standardising formats (`hxl.scripts.hxlclean_main`)
-* **hxlcount** - generate aggregate counts, similar to a spreadsheet pivot table (`hxl.scripts.hxlcount_main`)
-* **hxlcut** - remove columns (`hxl.scripts.hxlcut_main`)
-* **hxldedup** - remove duplicate rows from a HXL dataset (`hxl.scripts.hxldedup_main`)
-* **hxlexpand** - expand lists in cells by repeating rows (`hxl.scripts.hxlexpand_main`)
-* **hxlexplode** - convert wide data into long data (`hxl.scripts.hxlexplode_main`)
-* **hxlfill** - fill empty cells (`hxl.scripts.hxlfill_main`)
-* **hxlimplode** - convert wide data into long data (`hxl.scripts.hxlimplode_main`)
-* **hxlhash** - generate an MD5 hash for a whole datasets or just its header rows (`hxl.scripts.hxlhash_main`)
-* **hxlmerge** - merge columns from one dataset into another, similar to SQL join (`hxl.scripts.hxlmerge_main`)
-* **hxlrename** - rename and retag columns (`hxl.scripts.hxlrename_main`)
-* **hxlreplace** - replace values in the data (`hxl.scripts.hxlreplace_main`)
-* **hxlselect** - filter rows (`hxl.scripts.hxlselect_main`)
-* **hxlsort** - sort rows (`hxl.scripts.hxlsort_main`)
-* **hxlspec** - process a HXL JSON spec (`hxl.scripts.hxlspec_main`)
-* **hxltag** - add tags to a non-HXLated file (`hxl.scripts.hxltag_main`)
-* **hxlvalidate** - validate a dataset against a schema `hxl.scripts.hxlvalidate_main`
+* `hxladd` - add new columns with a constant or computed value
+* `hxlappend` - concatenate two or more HXL datasets
+* `hxlclean` - clean data by standardising formats
+* `hxlcount` - generate aggregate counts, similar to a spreadsheet pivot table
+* `hxlcut` - remove columns
+* `hxldedup` - remove duplicate rows from a HXL dataset
+* `hxlexpand` - expand lists in cells by repeating rows
+* `hxlexplode` - convert wide data into long data
+* `hxlfill` - fill empty cells
+* `hxlimplode` - convert wide data into long data
+* `hxlhash` - generate an MD5 hash for a whole datasets or just its header rows
+* `hxlmerge` - merge columns from one dataset into another, similar to SQL join
+* `hxlrename` - rename and retag columns
+* `hxlreplace` - replace values in the data
+* `hxlselect` - filter rows
+* `hxlsort` - sort rows
+* `hxlspec` - process a HXL JSON spec
+* `hxltag` - add tags to a non-HXLated file
+* `hxlvalidate` - validate a dataset against a schema
 
 The ``-h`` option will provide more information about each script.
 
@@ -55,9 +55,31 @@ import hxl.converters, hxl.filters, hxl.input
 
 logger = logging.getLogger(__name__)
 
+__all__ = (
+    'hxladd',
+    'hxlappend',
+    'hxlclean',
+    'hxlcount',
+    'hxlcut',
+    'hxldedup',
+    'hxlexpand',
+    'hxlexplode',
+    'hxlfill',
+    'hxlimplode',
+    'hxlhash',
+    'hxlmerge',
+    'hxlrename',
+    'hxlreplace',
+    'hxlselect',
+    'hxlsort',
+    'hxlspec',
+    'hxltag',
+    'hxlvalidate',
+)
 
-# In Python2, sys.stdin is a byte stream; in Python3, it's a text stream
+
 STDIN = sys.stdin.buffer
+""" Constant: standard input (Python3) """
 
 # Posix exit codes
 
@@ -70,80 +92,965 @@ EXIT_SYNTAX = 2
 # Console script entry points
 #
 
+
 def hxladd():
-    """Console script for hxladd."""
+    """ Entry point for hxladd console script
+``` none
+usage: hxladd [-h] [--encoding [string]] [--sheet [number]]
+              [--selector [path]] [--http-header header]
+              [--remove-headers] [--strip-tags] [--ignore-certs]
+              [--expand-merged] [--scan-ckan-resources]
+              [--log debug|info|warning|error|critical|none] -s
+              header#<tag>=<value> [-b]
+              [infile] [outfile]
+
+Add new columns with constant or computed values to a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -s header#<tag>=<value>, --spec header#<tag>=<value>
+                        Constant value to add to each row (may repeat
+                        option)
+  -b, --before          Add new columns before existing ones rather than
+                        after them.
+```
+
+"""
     run_script(hxladd_main)
 
+
 def hxlappend():
-    """Console script for hxlappend."""
+    """ Entry point for hxlappend console script
+``` none
+usage: hxlappend [-h] [--encoding [string]] [--sheet [number]]
+                 [--selector [path]] [--http-header header]
+                 [--remove-headers] [--strip-tags] [--ignore-certs]
+                 [--expand-merged] [--scan-ckan-resources]
+                 [--log debug|info|warning|error|critical|none]
+                 [-a file_or_url] [-l LIST] [-x]
+                 [-q <tagspec><op><value>]
+                 [infile] [outfile]
+
+Concatenate two HXL datasets
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -a file_or_url, --append file_or_url
+                        HXL file to append (may repeat option).
+  -l LIST, --list LIST  URL or filename of list of URLs (may repeat
+                        option). Will appear after sources in -a options.
+  -x, --exclude-extra-columns
+                        Don not add extra columns not in the original
+                        dataset.
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        From --append datasets, include only rows
+                        matching at least one query.
+```
+
+    """
     run_script(hxlappend_main)
 
+
 def hxlclean():
-    """Console script for hxlclean"""
+    """ Entry point for hxlclean console script
+``` none
+usage: hxlclean [-h] [--encoding [string]] [--sheet [number]]
+                [--selector [path]] [--http-header header]
+                [--remove-headers] [--strip-tags] [--ignore-certs]
+                [--expand-merged] [--scan-ckan-resources]
+                [--log debug|info|warning|error|critical|none]
+                [-w tag,tag...] [-u tag,tag...] [-l tag,tag...]
+                [-d tag,tag...] [--date-format format] [-n tag,tag...]
+                [--number-format format] [--latlon tag,tag...] [-p]
+                [-q <tagspec><op><value>]
+                [infile] [outfile]
+
+Clean data in a HXL file by standardising formats.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -w tag,tag..., --whitespace tag,tag...
+                        Comma-separated list of tag patterns for
+                        whitespace normalisation.
+  -u tag,tag..., --upper tag,tag...
+                        Comma-separated list of tag patterns for
+                        uppercase conversion.
+  -l tag,tag..., --lower tag,tag...
+                        Comma-separated list of tag patterns for
+                        lowercase conversion.
+  -d tag,tag..., --date tag,tag...
+                        Comma-separated list of tag patterns for date
+                        normalisation.
+  --date-format format  Date formatting string in strftime format
+                        (defaults to %Y-%m-%d).
+  -n tag,tag..., --number tag,tag...
+                        Comma-separated list of tag patternss for number
+                        normalisation.
+  --number-format format
+                        Number formatting string in printf format
+                        (without leading %).
+  --latlon tag,tag...   Comma-separated list of tag patterns for lat/lon
+                        normalisation.
+  -p, --purge           Purge unparseable dates, numbers, and lat/lon
+                        during cleaning.
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Clean only rows matching at least one query.
+```
+
+"""
     run_script(hxlclean_main)
 
+
 def hxlcount():
-    """Console script for hxlcount."""
+    """ Entry point for hxlcount console script
+``` none
+usage: hxlcount [-h] [--encoding [string]] [--sheet [number]]
+                [--selector [path]] [--http-header header]
+                [--remove-headers] [--strip-tags] [--ignore-certs]
+                [--expand-merged] [--scan-ckan-resources]
+                [--log debug|info|warning|error|critical|none]
+                [-t tag,tag...] [-a statement] [-q <tagspec><op><value>]
+                [infile] [outfile]
+
+Generate aggregate counts for a HXL dataset, similar to a spreadsheet
+pivot table
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -t tag,tag..., --tags tag,tag...
+                        Comma-separated list of column tags to count.
+  -a statement, --aggregator statement
+                        Aggregator statement
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Count only rows that match at least one query.
+```
+
+"""
     run_script(hxlcount_main)
 
+
 def hxlcut():
-    """Console script for hxlcut."""
+    """ Entry point for hxlcut console script
+``` none
+usage: hxlcut [-h] [--encoding [string]] [--sheet [number]]
+              [--selector [path]] [--http-header header]
+              [--remove-headers] [--strip-tags] [--ignore-certs]
+              [--expand-merged] [--scan-ckan-resources]
+              [--log debug|info|warning|error|critical|none]
+              [-i tag,tag...] [-x tag,tag...] [-s]
+              [infile] [outfile]
+
+Remove columns from a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -i tag,tag..., --include tag,tag...
+                        Comma-separated list of column tags to include
+  -x tag,tag..., --exclude tag,tag...
+                        Comma-separated list of column tags to exclude
+  -s, --skip-untagged   Skip columns without HXL hashtags
+```
+
+"""
     run_script(hxlcut_main)
 
+    
 def hxldedup():
-    """Console script for hxldedup."""
+    """ Entry point for hxldedup console script
+``` none
+usage: hxldedup [-h] [--encoding [string]] [--sheet [number]]
+                [--selector [path]] [--http-header header]
+                [--remove-headers] [--strip-tags] [--ignore-certs]
+                [--expand-merged] [--scan-ckan-resources]
+                [--log debug|info|warning|error|critical|none]
+                [-t tag,tag...] [-q <tagspec><op><value>]
+                [infile] [outfile]
+
+Remove duplicate rows from a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -t tag,tag..., --tags tag,tag...
+                        Comma-separated list of column tags to use for
+                        deduplication (by default, use all values).
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Leave rows alone if they don't match at least one
+                        query.
+```
+
+"""
     run_script(hxldedup_main)
 
+
 def hxlhash():
-    """Console script for hxlhash."""
+    """ Entry point for hxlhash console script
+``` none
+usage: hxlhash [-h] [--encoding [string]] [--sheet [number]]
+               [--selector [path]] [--http-header header]
+               [--ignore-certs] [--expand-merged] [--scan-ckan-resources]
+               [--log debug|info|warning|error|critical|none] [-H]
+               [infile]
+
+Generate an MD5 hash for a HXL dataset (or just its header rows).
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -H, --headers-only    Hash only the header and hashtag rows.
+```
+
+"""
     run_script(hxlhash_main)
 
+
 def hxlmerge():
-    """Console script for hxlmerge."""
+    """ Entry point for hxlmerge console script
+``` none
+usage: hxlmerge [-h] [--encoding [string]] [--sheet [number]]
+                [--selector [path]] [--http-header header]
+                [--remove-headers] [--strip-tags] [--ignore-certs]
+                [--expand-merged] [--scan-ckan-resources]
+                [--log debug|info|warning|error|critical|none] -m
+                filename -k tag,tag... -t tag,tag... [-r] [-O]
+                [-q <tagspec><op><value>]
+                [infile] [outfile]
+
+Merge columns from one HXL dataset into another (similar to SQL join).
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -m filename, --merge filename
+                        HXL file to write (if omitted, use standard
+                        output).
+  -k tag,tag..., --keys tag,tag...
+                        HXL tag(s) to use as a shared key.
+  -t tag,tag..., --tags tag,tag...
+                        Comma-separated list of column tags to include
+                        from the merge dataset.
+  -r, --replace         Replace empty values in existing columns (when
+                        available) instead of adding new ones.
+  -O, --overwrite       Used with --replace, overwrite existing values.
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Merged data only from rows that match at least
+                        one query.
+```
+
+"""
     run_script(hxlmerge_main)
 
+
 def hxlrename():
-    """Console script for hxlrename."""
+    """ Entry point for hxlrename console script
+``` none
+usage: hxlrename [-h] [--encoding [string]] [--sheet [number]]
+                 [--selector [path]] [--http-header header]
+                 [--remove-headers] [--strip-tags] [--ignore-certs]
+                 [--expand-merged] [--scan-ckan-resources]
+                 [--log debug|info|warning|error|critical|none]
+                 [-r #?<original_tag>:<Text header>?#?<new_tag>]
+                 [infile] [outfile]
+
+Rename and retag columns in a HXL dataset
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -r #?<original_tag>:<Text header>?#?<new_tag>, --rename #?<original_tag>:<Text header>?#?<new_tag>
+                        Rename an old tag to a new one, with an optional
+                        new text header (may repeat option).
+```
+
+"""
     run_script(hxlrename_main)
 
+
 def hxlreplace():
-    """Console script for hxlreplace."""
+    """ Entry point for hxlreplace console script
+``` none
+usage: hxlreplace [-h] [--encoding [string]] [--sheet [number]]
+                  [--selector [path]] [--http-header header]
+                  [--remove-headers] [--strip-tags] [--ignore-certs]
+                  [--expand-merged] [--scan-ckan-resources]
+                  [--log debug|info|warning|error|critical|none]
+                  [-p [PATTERN]] [-s [SUBSTITUTION]] [-t tag,tag...] [-r]
+                  [-m [PATH]] [-q <tagspec><op><value>]
+                  [infile] [outfile]
+
+Replace strings in a HXL dataset
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Replace only in rows that match at least one
+                        query.
+
+Inline replacement:
+  -p [PATTERN], --pattern [PATTERN]
+                        String or regular expression to search for
+  -s [SUBSTITUTION], --substitution [SUBSTITUTION]
+                        Replacement string
+  -t tag,tag..., --tags tag,tag...
+                        Tag patterns to match
+  -r, --regex           Use a regular expression instead of a string
+
+External substitution map:
+  -m [PATH], --map [PATH]
+                        Filename or URL of a mapping table using the tags
+                        #x_pattern (required), #x_substitution
+                        (required), #x_tag (optional), and #x_regex
+                        (optional), corresponding to the inline options
+                        above, for multiple substitutions.
+```
+
+"""
     run_script(hxlreplace_main)
 
 def hxlfill():
-    """Console script for hxlreplace."""
+    """ Entry point for hxlfill console script
+``` none
+usage: hxlfill [-h] [--encoding [string]] [--sheet [number]]
+               [--selector [path]] [--http-header header]
+               [--remove-headers] [--strip-tags] [--ignore-certs]
+               [--expand-merged] [--scan-ckan-resources]
+               [--log debug|info|warning|error|critical|none]
+               [-t tagpattern,...] [-q <tagspec><op><value>]
+               [infile] [outfile]
+
+Fill empty cells in a HXL dataset
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -t tagpattern,..., --tag tagpattern,...
+                        Fill empty cells only in matching columns
+                        (default: fill in all); not allowed with --use-
+                        merged
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Fill only in rows that match at least one query.
+```
+
+"""
     run_script(hxlfill_main)
 
+
 def hxlexpand():
-    """Console script for hxlexpand."""
+    """ Entry point for hxlexpand console script
+``` none
+usage: hxlexpand [-h] [--encoding [string]] [--sheet [number]]
+                 [--selector [path]] [--http-header header]
+                 [--remove-headers] [--strip-tags] [--ignore-certs]
+                 [--expand-merged] [--scan-ckan-resources]
+                 [--log debug|info|warning|error|critical|none]
+                 [-t [tag,tag...]] [-s string] [-c]
+                 [-q <tagspec><op><value>]
+                 [infile] [outfile]
+
+Expand lists in cells by repeating rows
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -t [tag,tag...], --tags [tag,tag...]
+                        Comma-separated list of tag patterns for columns
+                        with lists to expand
+  -s string, --separator string
+                        string separating list items (defaults to "|")
+  -c, --correlate       correlate list values instead of producing a
+                        cartesian product
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Limit list expansion to rows matching at least
+                        one query.
+```
+
+"""
     run_script(hxlexpand_main)
 
+
 def hxlexplode():
-    """Console script for hxlexplode."""
+    """ Entry point for hxlexplode console script 
+``` none
+usage: hxlexplode [-h] [--encoding [string]] [--sheet [number]]
+                  [--selector [path]] [--http-header header]
+                  [--remove-headers] [--strip-tags] [--ignore-certs]
+                  [--expand-merged] [--scan-ckan-resources]
+                  [--log debug|info|warning|error|critical|none] [-H att]
+                  [-V tagpattern]
+                  [infile] [outfile]
+
+Explode a wide dataset into a long dataset
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -H att, --header-att att
+                        attribute to add to the label column (defaults to
+                        "label")
+  -V tagpattern, --value-att tagpattern
+                        attribute to add to the value column (defaults to
+                        "value")
+```
+
+"""
     run_script(hxlexplode_main)
 
+
 def hxlimplode():
-    """Console script for hxlimplode."""
+    """ Entry point for hxlimplode console script
+``` none
+usage: hxlimplode [-h] [--encoding [string]] [--sheet [number]]
+                  [--selector [path]] [--http-header header]
+                  [--remove-headers] [--strip-tags] [--ignore-certs]
+                  [--expand-merged] [--scan-ckan-resources]
+                  [--log debug|info|warning|error|critical|none] -L
+                  tagpattern -V tagpattern
+                  [infile] [outfile]
+
+Implode a long dataset into a wide dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -L tagpattern, --label tagpattern
+                        HXL tag pattern for the label column
+  -V tagpattern, --value tagpattern
+                        HXL tag pattern for the value column
+```
+
+"""
     run_script(hxlimplode_main)
 
+
 def hxlselect():
-    """Console script for hxlselect."""
+    """ Entry point for hxlselect console script
+``` none
+usage: hxlselect [-h] [--encoding [string]] [--sheet [number]]
+                 [--selector [path]] [--http-header header]
+                 [--remove-headers] [--strip-tags] [--ignore-certs]
+                 [--expand-merged] [--scan-ckan-resources]
+                 [--log debug|info|warning|error|critical|none] -q
+                 <tagspec><op><value> [-r]
+                 [infile] [outfile]
+
+Filter rows in a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -q <tagspec><op><value>, --query <tagspec><op><value>
+                        Query expression for selecting rows (may repeat
+                        option for logical OR). <op> may be =, !=, <, <=,
+                        >, >=, ~, or !~
+  -r, --reverse         Show only lines *not* matching criteria
+```
+
+"""
     run_script(hxlselect_main)
 
+
 def hxlsort():
-    """Console script for hxlsort."""
+    """ Entry point for hxlsort console script
+``` none
+usage: hxlsort [-h] [--encoding [string]] [--sheet [number]]
+               [--selector [path]] [--http-header header]
+               [--remove-headers] [--strip-tags] [--ignore-certs]
+               [--expand-merged] [--scan-ckan-resources]
+               [--log debug|info|warning|error|critical|none]
+               [-t tag,tag...] [-r]
+               [infile] [outfile]
+
+Sort a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -t tag,tag..., --tags tag,tag...
+                        Comma-separated list of tags to for columns to
+                        use as sort keys.
+  -r, --reverse         Flag to reverse sort order.
+```
+
+"""
     run_script(hxlsort_main)
 
+
 def hxlspec():
-    """Console script for hxlspec."""
+    """ Entry point for hxlspec console script
+``` none
+usage: hxlspec [-h] [--encoding [string]] [--sheet [number]]
+               [--selector [path]] [--http-header header]
+               [--remove-headers] [--strip-tags] [--ignore-certs]
+               [--expand-merged] [--scan-ckan-resources]
+               [--log debug|info|warning|error|critical|none]
+               [infile] [outfile]
+
+Process a HXL JSON spec
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+```
+
+"""
     run_script(hxlspec_main)
 
+
 def hxltag():
-    """Console script for hxltag."""
+    """ Entry point for hxltag console script
+``` none
+usage: hxltag [-h] [--encoding [string]] [--sheet [number]]
+              [--selector [path]] [--http-header header]
+              [--remove-headers] [--strip-tags] [--ignore-certs]
+              [--expand-merged] [--scan-ckan-resources]
+              [--log debug|info|warning|error|critical|none] [-a] -m
+              Header Text#tag [-d #tag]
+              [infile] [outfile]
+
+Add HXL tags to a raw CSV file.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -a, --match-all       Match the entire header text (not just a
+                        substring)
+  -m Header Text#tag, --map Header Text#tag
+                        Mapping expression
+  -d #tag, --default-tag #tag
+                        Default tag for non-matching columns
+```
+
+"""
     run_script(hxltag_main)
 
+
 def hxlvalidate():
-    """Console script for hxlvalidate."""
+    """ Entry point for hxlvalidate console script
+``` none
+usage: hxlvalidate [-h] [--encoding [string]] [--sheet [number]]
+                   [--selector [path]] [--http-header header]
+                   [--remove-headers] [--strip-tags] [--ignore-certs]
+                   [--expand-merged] [--scan-ckan-resources]
+                   [--log debug|info|warning|error|critical|none]
+                   [-s schema] [-a] [-e info|warning|error]
+                   [infile] [outfile]
+
+Validate a HXL dataset.
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+  outfile               HXL file to write (if omitted, use standard
+                        output).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --remove-headers      Strip text headers from the CSV output
+  --strip-tags          Strip HXL tags from the CSV output
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+  -s schema, --schema schema
+                        Schema file for validating the HXL dataset (if
+                        omitted, use the default core schema).
+  -a, --all             Include all rows in the output, including those
+                        without errors
+  -e info|warning|error, --error-level info|warning|error
+                        Minimum error level to show (defaults to "info")
+```
+
+"""
     run_script(hxlvalidate_main)
 
 
