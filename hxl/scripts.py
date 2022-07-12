@@ -6,31 +6,10 @@ This module implements the command-line scripts for HXL
 processing. Most of them produce HXL output that another command can
 use as input, so you can chain them together into a pipeline, e.g.
 
+``` shell
+$ cat dataset.csv | hxlselect -q "#org=UNICEF" \\
+  | hxlsort -t "#value+committed" > output.csv
 ```
-$ cat dataset.csv | hxlselect -q "#org=UNICEF" | hxlsort -t "#value+committed" > output.csv
-```
-
-The following scripts are available:
-
-* `hxladd` - add new columns with a constant or computed value
-* `hxlappend` - concatenate two or more HXL datasets
-* `hxlclean` - clean data by standardising formats
-* `hxlcount` - generate aggregate counts, similar to a spreadsheet pivot table
-* `hxlcut` - remove columns
-* `hxldedup` - remove duplicate rows from a HXL dataset
-* `hxlexpand` - expand lists in cells by repeating rows
-* `hxlexplode` - convert wide data into long data
-* `hxlfill` - fill empty cells
-* `hxlimplode` - convert wide data into long data
-* `hxlhash` - generate an MD5 hash for a whole datasets or just its header rows
-* `hxlmerge` - merge columns from one dataset into another, similar to SQL join
-* `hxlrename` - rename and retag columns
-* `hxlreplace` - replace values in the data
-* `hxlselect` - filter rows
-* `hxlsort` - sort rows
-* `hxlspec` - process a HXL JSON spec
-* `hxltag` - add tags to a non-HXLated file
-* `hxlvalidate` - validate a dataset against a schema
 
 The ``-h`` option will provide more information about each script.
 
@@ -53,8 +32,12 @@ import argparse, json, logging, os, re, requests, sys
 # Do not import hxl, to avoid circular imports
 import hxl.converters, hxl.filters, hxl.input
 
+
 logger = logging.getLogger(__name__)
 
+
+# Export only the script entry points
+# (add any new scripts here)
 __all__ = (
     'hxladd',
     'hxlappend',

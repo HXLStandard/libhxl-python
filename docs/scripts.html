@@ -30,30 +30,9 @@ April 2015</p>
 <p>This module implements the command-line scripts for HXL
 processing. Most of them produce HXL output that another command can
 use as input, so you can chain them together into a pipeline, e.g.</p>
-<pre><code>$ cat dataset.csv | hxlselect -q &quot;#org=UNICEF&quot; | hxlsort -t &quot;#value+committed&quot; &gt; output.csv
+<pre><code class="language-shell">$ cat dataset.csv | hxlselect -q &quot;#org=UNICEF&quot; \
+  | hxlsort -t &quot;#value+committed&quot; &gt; output.csv
 </code></pre>
-<p>The following scripts are available:</p>
-<ul>
-<li><code><a title="hxl.scripts.hxladd" href="#hxl.scripts.hxladd">hxladd()</a></code> - add new columns with a constant or computed value</li>
-<li><code><a title="hxl.scripts.hxlappend" href="#hxl.scripts.hxlappend">hxlappend()</a></code> - concatenate two or more HXL datasets</li>
-<li><code><a title="hxl.scripts.hxlclean" href="#hxl.scripts.hxlclean">hxlclean()</a></code> - clean data by standardising formats</li>
-<li><code><a title="hxl.scripts.hxlcount" href="#hxl.scripts.hxlcount">hxlcount()</a></code> - generate aggregate counts, similar to a spreadsheet pivot table</li>
-<li><code><a title="hxl.scripts.hxlcut" href="#hxl.scripts.hxlcut">hxlcut()</a></code> - remove columns</li>
-<li><code><a title="hxl.scripts.hxldedup" href="#hxl.scripts.hxldedup">hxldedup()</a></code> - remove duplicate rows from a HXL dataset</li>
-<li><code><a title="hxl.scripts.hxlexpand" href="#hxl.scripts.hxlexpand">hxlexpand()</a></code> - expand lists in cells by repeating rows</li>
-<li><code><a title="hxl.scripts.hxlexplode" href="#hxl.scripts.hxlexplode">hxlexplode()</a></code> - convert wide data into long data</li>
-<li><code><a title="hxl.scripts.hxlfill" href="#hxl.scripts.hxlfill">hxlfill()</a></code> - fill empty cells</li>
-<li><code><a title="hxl.scripts.hxlimplode" href="#hxl.scripts.hxlimplode">hxlimplode()</a></code> - convert wide data into long data</li>
-<li><code><a title="hxl.scripts.hxlhash" href="#hxl.scripts.hxlhash">hxlhash()</a></code> - generate an MD5 hash for a whole datasets or just its header rows</li>
-<li><code><a title="hxl.scripts.hxlmerge" href="#hxl.scripts.hxlmerge">hxlmerge()</a></code> - merge columns from one dataset into another, similar to SQL join</li>
-<li><code><a title="hxl.scripts.hxlrename" href="#hxl.scripts.hxlrename">hxlrename()</a></code> - rename and retag columns</li>
-<li><code><a title="hxl.scripts.hxlreplace" href="#hxl.scripts.hxlreplace">hxlreplace()</a></code> - replace values in the data</li>
-<li><code><a title="hxl.scripts.hxlselect" href="#hxl.scripts.hxlselect">hxlselect()</a></code> - filter rows</li>
-<li><code><a title="hxl.scripts.hxlsort" href="#hxl.scripts.hxlsort">hxlsort()</a></code> - sort rows</li>
-<li><code><a title="hxl.scripts.hxlspec" href="#hxl.scripts.hxlspec">hxlspec()</a></code> - process a HXL JSON spec</li>
-<li><code><a title="hxl.scripts.hxltag" href="#hxl.scripts.hxltag">hxltag()</a></code> - add tags to a non-HXLated file</li>
-<li><code><a title="hxl.scripts.hxlvalidate" href="#hxl.scripts.hxlvalidate">hxlvalidate()</a></code> - validate a dataset against a schema</li>
-</ul>
 <p>The <code>-h</code> option will provide more information about each script.</p>
 <h3 id="about-this-module">About this module</h3>
 <p><strong>Author:</strong> David Megginson</p>
@@ -72,31 +51,10 @@ This module implements the command-line scripts for HXL
 processing. Most of them produce HXL output that another command can
 use as input, so you can chain them together into a pipeline, e.g.
 
+``` shell
+$ cat dataset.csv | hxlselect -q &#34;#org=UNICEF&#34; \\
+  | hxlsort -t &#34;#value+committed&#34; &gt; output.csv
 ```
-$ cat dataset.csv | hxlselect -q &#34;#org=UNICEF&#34; | hxlsort -t &#34;#value+committed&#34; &gt; output.csv
-```
-
-The following scripts are available:
-
-* `hxladd` - add new columns with a constant or computed value
-* `hxlappend` - concatenate two or more HXL datasets
-* `hxlclean` - clean data by standardising formats
-* `hxlcount` - generate aggregate counts, similar to a spreadsheet pivot table
-* `hxlcut` - remove columns
-* `hxldedup` - remove duplicate rows from a HXL dataset
-* `hxlexpand` - expand lists in cells by repeating rows
-* `hxlexplode` - convert wide data into long data
-* `hxlfill` - fill empty cells
-* `hxlimplode` - convert wide data into long data
-* `hxlhash` - generate an MD5 hash for a whole datasets or just its header rows
-* `hxlmerge` - merge columns from one dataset into another, similar to SQL join
-* `hxlrename` - rename and retag columns
-* `hxlreplace` - replace values in the data
-* `hxlselect` - filter rows
-* `hxlsort` - sort rows
-* `hxlspec` - process a HXL JSON spec
-* `hxltag` - add tags to a non-HXLated file
-* `hxlvalidate` - validate a dataset against a schema
 
 The ``-h`` option will provide more information about each script.
 
@@ -119,8 +77,12 @@ import argparse, json, logging, os, re, requests, sys
 # Do not import hxl, to avoid circular imports
 import hxl.converters, hxl.filters, hxl.input
 
+
 logger = logging.getLogger(__name__)
 
+
+# Export only the script entry points
+# (add any new scripts here)
 __all__ = (
     &#39;hxladd&#39;,
     &#39;hxlappend&#39;,
