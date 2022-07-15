@@ -184,7 +184,17 @@ HTML5_MIME_TYPES = [
 
 HTML5_SIGS = [
     b&#34;&lt;!DO&#34;,
-    b&#34;\n&lt;!D&#34;
+    b&#34;&lt;!do&#34;,
+    b&#34;\n&lt;!D&#34;,
+    b&#34;\n&lt;!d&#34;,
+    b&#34;&lt;HTM&#34;,
+    b&#34;&lt;htm&#34;,
+    b&#34;\n&lt;HT&#34;,
+    b&#34;\n&lt;ht&#34;,
+    b&#34;&lt;BOD&#34;,
+    b&#34;&lt;bod&#34;,
+    b&#34;\n&lt;BO&#34;,
+    b&#34;\n&lt;bo&#34;,
 ]
 
 
@@ -455,14 +465,14 @@ def make_input(raw_source, input_options=None):
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            logger.exception(hxl.HXLException(
-                &#34;Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.&#34;,
+            raise HXLIOException(
+                &#34;Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.&#34;,
                 {
                     &#39;input&#39;: input,
                     &#39;source&#39;: raw_source,
                     &#39;munged&#39;: munge_url(raw_source, input_options) if str(raw_source).startswith(&#39;http&#39;) else None
                 }
-            ))
+            )
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
@@ -2222,14 +2232,14 @@ for raw_row in input:
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            logger.exception(hxl.HXLException(
-                &#34;Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.&#34;,
+            raise HXLIOException(
+                &#34;Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.&#34;,
                 {
                     &#39;input&#39;: input,
                     &#39;source&#39;: raw_source,
                     &#39;munged&#39;: munge_url(raw_source, input_options) if str(raw_source).startswith(&#39;http&#39;) else None
                 }
-            ))
+            )
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
