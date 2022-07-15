@@ -55,6 +55,8 @@ FILE_JSON_SELECTOR = _resolve_file('./files/test_io/input-valid-json-selector.js
 FILE_MULTILINE = _resolve_file('./files/test_io/input-multiline.csv')
 FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
+FILE_NOTAG1 = _resolve_file('./files/test_io/input-notag1.html')
+FILE_NOTAG2 = _resolve_file('./files/test_io/input-notag2.html')
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
 URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
 URL_XLS = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/test/tests/files/test_io/input-valid.xls'
@@ -231,6 +233,17 @@ class TestUntaggedInput(unittest.TestCase):
                 ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca'],
                 ['003', 'Educación', 'Formación de enseñadores', 'UNICEF', '250', '300', 'Colombia', 'Chocó']
             ], list(input))
+
+    def test_html(self):
+        """ Reject HTML for tagging """
+
+        with self.assertRaises(hxl.input.HXLIOException):
+            input = hxl.make_input(FILE_NOTAG1, InputOptions(allow_local=True))
+            list(input)
+
+        with self.assertRaises(hxl.input.HXLIOException):
+            input = hxl.make_input(FILE_NOTAG2, InputOptions(allow_local=True))
+            list(input)
 
 class TestFunctions(unittest.TestCase):
 

@@ -135,7 +135,17 @@ HTML5_MIME_TYPES = [
 
 HTML5_SIGS = [
     b"<!DO",
-    b"\n<!D"
+    b"<!do",
+    b"\n<!D",
+    b"\n<!d",
+    b"<HTM",
+    b"<htm",
+    b"\n<HT",
+    b"\n<ht",
+    b"<BOD",
+    b"<bod",
+    b"\n<BO",
+    b"\n<bo",
 ]
 
 
@@ -406,14 +416,14 @@ def make_input(raw_source, input_options=None):
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            logger.exception(hxl.HXLException(
-                "Received HTML5 markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
+            raise HXLIOException(
+                "Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {
                     'input': input,
                     'source': raw_source,
                     'munged': munge_url(raw_source, input_options) if str(raw_source).startswith('http') else None
                 }
-            ))
+            )
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
