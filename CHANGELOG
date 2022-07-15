@@ -1,4 +1,4 @@
-Release 4.26
+2022-07-15 Release 4.25.2
 	- raise exception for HTML input (prevents tagger exploit in HXL Proxy)
 	- make hxl.input.munge_url() public
 	- remove default tags for hxlcount script so that it can just count lines of data
