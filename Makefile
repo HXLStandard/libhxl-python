@@ -51,15 +51,15 @@ close-issue:
 
 # push the dev branch to origin
 push-dev: api-docs
-	git checkout dev && git push
+	git checkout dev && git pull && git push
 
 # merge the dev branch into test and push both to origin
 merge-test: push-dev
-	git checkout test && git merge -m "Merge to test" dev && git push && git checkout dev
+	git checkout test && git pull && git merge -m "Merge to test" dev && git push && git checkout dev
 
 # merge the test branch into main and push both to origin
 merge-main: merge-test
-	git checkout main && git merge -m "Merge to main" test && git push && git checkout dev
+	git checkout main && git pull && git merge -m "Merge to main" test && git push && git checkout dev
 
 # do a cold install in a temporary virtual environment and run unit tests
 test-install: 

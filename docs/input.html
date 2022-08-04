@@ -617,7 +617,7 @@ def open_url_or_file(url_or_filename, input_options):
 
     else:
         # Forbidden to try local (allow_local is False), so give up.
-        logger.critical(&#39;Security settings forbid accessing local files or non http(s)/ftp(s) URL schemes: %s&#39;, url_or_filename)
+        logger.error(&#39;Security settings forbid accessing local files or non http(s)/ftp(s) URL schemes: %s&#39;, url_or_filename)
         raise HXLIOException(
             &#34;Only http(s) and (s)ftp URLs allowed: {}&#34;.format(url_or_filename),
             url=url_or_filename
