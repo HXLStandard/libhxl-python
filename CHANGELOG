@@ -1,6 +1,6 @@
-Release 4.26
+2022-08-05 Release 4.26
 	- use loglevel CRITICAL only for infrastructure failures
-	- don't put tracebacks in logging
+	- don't put tracebacks in logging (avoid logger.exception())
 
 2022-07-15 Release 4.25.2
 	- raise exception for HTML input (prevents tagger exploit in HXL Proxy)
