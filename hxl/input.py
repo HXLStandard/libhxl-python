@@ -533,7 +533,7 @@ def open_url_or_file(url_or_filename, input_options):
             else:
                 response.raise_for_status()
         except Exception as e:
-            logger.exception("Cannot open URL %s (%s)", url_or_filename, str(e))
+            logger.error("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
 
         content_type = response.headers.get('content-type')
@@ -563,7 +563,7 @@ def open_url_or_file(url_or_filename, input_options):
             fileno = file.fileno()
             return (file, mime_type, file_ext, encoding, content_length, fileno,)
         except Exception as e:
-            logger.exception("Cannot open local HXL file %s (%s)", url_or_filename, str(e))
+            logger.error("Cannot open local HXL file %s (%s)", url_or_filename, str(e))
             raise e
 
     else:
