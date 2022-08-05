@@ -2298,7 +2298,6 @@ class JSONPathFilter(AbstractStreamingFilter):
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
-                    logger.exception(e)
                     logger.warning(&#34;Skipping invalid JSON expression &#39;%s&#39;&#34;, values[i])
 
         return values
@@ -7322,7 +7321,6 @@ Optionally restrict to specific columns and/or rows</p>
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
-                    logger.exception(e)
                     logger.warning(&#34;Skipping invalid JSON expression &#39;%s&#39;&#34;, values[i])
 
         return values
