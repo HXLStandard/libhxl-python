@@ -66,17 +66,19 @@ test-install:
 	rm -rf venv-test && python3 -m venv venv-test && . venv-test/bin/activate && python setup.py install && python setup.py test
 	rm -rf venv-test # make sure we clean up
 
-# make a PyPi release
-#upload-pypi: $(VENV)
-#	. $(VENV) && python setup.py sdist upload
-# need to upload with twine:
-# $ python setup.py sdist
-# $ twine upload dist/libhxl-4.xx*
+# Make sure we're in sync with upstream (merge down rather than up, in case main or test have changed)
+sync:
+	git checkout main && git pull && git push && git checkout test && git pull && git merge main && git push && git checkout dev && git pull && git merge test && git push
+
+# publish a new release on PyPi
+publish-pypi: $(VENV)
+	. $(VENV) && pip install twine && rm -rf dist/* && python setup.py sdist && twine upload dist/*
 
 # generate API documentation
 api-docs: $(VENV)
 	. $(VENV) && rm -rf docs/* && pdoc3 -o docs/ --html hxl && mv docs/hxl/* docs/ && rmdir docs/hxl/
 
+# browse the API docs
 browse-docs:
 	firefox docs/index.html
 
