@@ -1544,10 +1544,9 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         if args.map:
             replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, True))
         else:
-            replacements = []
-        if args.pattern:
-            for tag in args.tags:
-                replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
+            replacements = [
+                hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex)
+            ]
         filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
         hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
