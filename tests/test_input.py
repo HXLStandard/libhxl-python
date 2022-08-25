@@ -237,6 +237,10 @@ class TestUntaggedInput(unittest.TestCase):
     def test_html(self):
         """ Reject HTML for tagging """
 
+        with self.assertRaises(hxl.input.HXLHTMLException):
+            input = hxl.make_input("https://example.org")
+            list(input)
+
         with self.assertRaises(hxl.input.HXLIOException):
             input = hxl.make_input(FILE_NOTAG1, InputOptions(allow_local=True))
             list(input)

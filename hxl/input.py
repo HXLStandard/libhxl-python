@@ -416,7 +416,7 @@ def make_input(raw_source, input_options=None):
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            raise HXLIOException(
+            raise HXLHTMLException(
                 "Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
                 {
                     'input': input,
@@ -592,6 +592,17 @@ class HXLIOException(hxl.HXLException, IOError):
         """
         super().__init__(message)
         self.url = url
+
+
+class HXLHTMLException(HXLIOException):
+    """ Found HTML markup instead of data on the web
+    """
+    def __init__(self, message, url):
+        """ Args:
+          message (str): the error message
+          url (str): the URL that caused the error
+        """
+        super().__init__(message, url)
 
 
 class HXLAuthorizationException(HXLIOException):
