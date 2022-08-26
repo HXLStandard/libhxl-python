@@ -418,11 +418,7 @@ def make_input(raw_source, input_options=None):
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
             raise HXLHTMLException(
                 "Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.",
-                {
-                    'input': input,
-                    'source': raw_source,
-                    'munged': munge_url(raw_source, input_options) if str(raw_source).startswith('http') else None
-                }
+                url = input
             )
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
