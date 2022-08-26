@@ -107,7 +107,7 @@ class HXLException(Exception):
         """Additional properties related to the error."""
 
     def __str__(self):
-        return "<HXLException: " + str(self.message) + ">"
+        return "<{}: {}>".format(type(self).__name__, str(self.message))
 
 import hxl.geo
 import hxl.datatypes
