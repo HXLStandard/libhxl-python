@@ -474,8 +474,7 @@ options:
   --log debug|info|warning|error|critical|none
                         Set minimum logging level
   -m filename, --merge filename
-                        HXL file to write (if omitted, use standard
-                        output).
+                        HXL file or URL to merge
   -k tag,tag..., --keys tag,tag...
                         HXL tag(s) to use as a shared key.
   -t tag,tag..., --tags tag,tag...
@@ -1396,7 +1395,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         '-m',
         '--merge',
-        help='HXL file to write (if omitted, use standard output).',
+        help='HXL file or URL to merge',
         metavar='filename',
         required=True
         )
