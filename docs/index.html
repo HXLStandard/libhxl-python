@@ -195,7 +195,7 @@ class HXLException(Exception):
         &#34;&#34;&#34;Additional properties related to the error.&#34;&#34;&#34;
 
     def __str__(self):
-        return &#34;&lt;HXLException: &#34; + str(self.message) + &#34;&gt;&#34;
+        return &#34;&lt;{}: {}&gt;&#34;.format(type(self).__name__, str(self.message))
 
 import hxl.geo
 import hxl.datatypes
@@ -298,7 +298,7 @@ Started October 2014 …</p></div>
         &#34;&#34;&#34;Additional properties related to the error.&#34;&#34;&#34;
 
     def __str__(self):
-        return &#34;&lt;HXLException: &#34; + str(self.message) + &#34;&gt;&#34;</code></pre>
+        return &#34;&lt;{}: {}&gt;&#34;.format(type(self).__name__, str(self.message))</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">

@@ -519,8 +519,7 @@ options:
   --log debug|info|warning|error|critical|none
                         Set minimum logging level
   -m filename, --merge filename
-                        HXL file to write (if omitted, use standard
-                        output).
+                        HXL file or URL to merge
   -k tag,tag..., --keys tag,tag...
                         HXL tag(s) to use as a shared key.
   -t tag,tag..., --tags tag,tag...
@@ -1441,7 +1440,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         &#39;-m&#39;,
         &#39;--merge&#39;,
-        help=&#39;HXL file to write (if omitted, use standard output).&#39;,
+        help=&#39;HXL file or URL to merge&#39;,
         metavar=&#39;filename&#39;,
         required=True
         )
@@ -1589,10 +1588,9 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         if args.map:
             replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, True))
         else:
-            replacements = []
-        if args.pattern:
-            for tag in args.tags:
-                replacements.append(hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, tag, args.regex))
+            replacements = [
+                hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex)
+            ]
         filter = hxl.filters.ReplaceDataFilter(source, replacements, queries=args.query)
         hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
 
@@ -3426,8 +3424,7 @@ options:
   --log debug|info|warning|error|critical|none
                         Set minimum logging level
   -m filename, --merge filename
-                        HXL file to write (if omitted, use standard
-                        output).
+                        HXL file or URL to merge
   -k tag,tag..., --keys tag,tag...
                         HXL tag(s) to use as a shared key.
   -t tag,tag..., --tags tag,tag...
@@ -3483,8 +3480,7 @@ options:
   --log debug|info|warning|error|critical|none
                         Set minimum logging level
   -m filename, --merge filename
-                        HXL file to write (if omitted, use standard
-                        output).
+                        HXL file or URL to merge
   -k tag,tag..., --keys tag,tag...
                         HXL tag(s) to use as a shared key.
   -t tag,tag..., --tags tag,tag...

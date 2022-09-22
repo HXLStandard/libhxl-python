@@ -401,6 +401,18 @@ def normalise_date(value, dayfirst=True):
         else:
             return &#39;{:04d}&#39;.format(int(year))
 
+    # If it&#39;s a positive integer, try a quick conversion to days or seconds since epoch
+    try:
+        interval = int(value)
+        if interval &gt; 100000: # assume seconds for a big number
+            d = datetime.datetime.fromtimestamp(interval)
+            return d.strftime(&#34;%Y-%m-%d&#34;)
+        elif interval &gt;= 0: # assume days
+            d = datetime.datetime(1970, 1, 1) + datetime.timedelta(days=interval-1)
+            return d.strftime(&#34;%Y-%m-%d&#34;)
+    except ValueError:
+        pass
+
     # First, try our quick ISO date pattern, extended to support quarter notation
     value = normalise_space(value)
     result = _ISO_DATE_PATTERN.match(value)
@@ -954,6 +966,18 @@ such as "2020Q2".</p>
                 return &#39;{:04d}-{:02d}&#39;.format(int(year), int(month))
         else:
             return &#39;{:04d}&#39;.format(int(year))
+
+    # If it&#39;s a positive integer, try a quick conversion to days or seconds since epoch
+    try:
+        interval = int(value)
+        if interval &gt; 100000: # assume seconds for a big number
+            d = datetime.datetime.fromtimestamp(interval)
+            return d.strftime(&#34;%Y-%m-%d&#34;)
+        elif interval &gt;= 0: # assume days
+            d = datetime.datetime(1970, 1, 1) + datetime.timedelta(days=interval-1)
+            return d.strftime(&#34;%Y-%m-%d&#34;)
+    except ValueError:
+        pass
 
     # First, try our quick ISO date pattern, extended to support quarter notation
     value = normalise_space(value)

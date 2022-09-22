@@ -465,13 +465,9 @@ def make_input(raw_source, input_options=None):
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            raise HXLIOException(
+            raise HXLHTMLException(
                 &#34;Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.&#34;,
-                {
-                    &#39;input&#39;: input,
-                    &#39;source&#39;: raw_source,
-                    &#39;munged&#39;: munge_url(raw_source, input_options) if str(raw_source).startswith(&#39;http&#39;) else None
-                }
+                url = url_or_filename
             )
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
@@ -641,6 +637,17 @@ class HXLIOException(hxl.HXLException, IOError):
         &#34;&#34;&#34;
         super().__init__(message)
         self.url = url
+
+
+class HXLHTMLException(HXLIOException):
+    &#34;&#34;&#34; Found HTML markup instead of data on the web
+    &#34;&#34;&#34;
+    def __init__(self, message, url):
+        &#34;&#34;&#34; Args:
+          message (str): the error message
+          url (str): the URL that caused the error
+        &#34;&#34;&#34;
+        super().__init__(message, url)
 
 
 class HXLAuthorizationException(HXLIOException):
@@ -2232,13 +2239,9 @@ for raw_row in input:
         sig = input.peek(4)[:4]
 
         if (mime_type in HTML5_MIME_TYPES) or match_sigs(sig, HTML5_SIGS):
-            raise HXLIOException(
+            raise HXLHTMLException(
                 &#34;Received HTML markup.\nCheck that the resource (e.g. a Google Sheet) is publicly readable.&#34;,
-                {
-                    &#39;input&#39;: input,
-                    &#39;source&#39;: raw_source,
-                    &#39;munged&#39;: munge_url(raw_source, input_options) if str(raw_source).startswith(&#39;http&#39;) else None
-                }
+                url = url_or_filename
             )
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
@@ -3225,6 +3228,7 @@ Sometimes adding an <code>Authorization:</code> HTTP header with a token will he
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="hxl.input.HXLAuthorizationException" href="#hxl.input.HXLAuthorizationException">HXLAuthorizationException</a></li>
+<li>hxl.input.HXLHTMLException</li>
 <li><a title="hxl.input.HXLParseException" href="#hxl.input.HXLParseException">HXLParseException</a></li>
 <li>hxl.input.HXLTimeoutException</li>
 </ul>
