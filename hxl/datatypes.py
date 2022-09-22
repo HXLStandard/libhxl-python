@@ -359,6 +359,18 @@ def normalise_date(value, dayfirst=True):
         else:
             return '{:04d}'.format(int(year))
 
+    # If it's a positive integer, try a quick conversion to days or seconds since epoch
+    try:
+        interval = int(value)
+        if interval > 100000: # assume seconds for a big number
+            d = datetime.datetime.fromtimestamp(interval)
+            return d.strftime("%Y-%m-%d")
+        elif interval >= 0: # assume days
+            d = datetime.datetime(1970, 1, 1) + datetime.timedelta(days=interval-1)
+            return d.strftime("%Y-%m-%d")
+    except ValueError:
+        pass
+
     # First, try our quick ISO date pattern, extended to support quarter notation
     value = normalise_space(value)
     result = _ISO_DATE_PATTERN.match(value)
