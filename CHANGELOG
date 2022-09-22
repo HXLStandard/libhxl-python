@@ -1,5 +1,6 @@
 Release 4.27
 	- raise a HXLHTMLException (subclass of HXLIOException) when HTML markup found
+	- clean dates that are integers, assuming seconds or days since epoch
 
 2022-08-05 Release 4.26
 	- use loglevel CRITICAL only for infrastructure failures
