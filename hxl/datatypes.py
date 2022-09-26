@@ -365,10 +365,10 @@ def normalise_date(value, dayfirst=True):
         if interval > 100000: # assume seconds for a big number
             d = datetime.datetime.fromtimestamp(interval)
             return d.strftime("%Y-%m-%d")
-        elif interval >= 0: # assume days
+        elif interval >= 2200: # assume days (cut out for years)
             d = datetime.datetime(1970, 1, 1) + datetime.timedelta(days=interval-1)
             return d.strftime("%Y-%m-%d")
-    except ValueError:
+    except (ValueError, TypeError,):
         pass
 
     # First, try our quick ISO date pattern, extended to support quarter notation

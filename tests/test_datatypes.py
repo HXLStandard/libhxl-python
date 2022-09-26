@@ -127,6 +127,14 @@ class TestDates(unittest.TestCase):
         # Day alone is not OK
         with self.assertRaises(ValueError):
             hxl.datatypes.normalise_date('30')
+        
+    def test_epoch_seconds(self):
+        """ Seconds since epoch """
+        self.assertEqual('2022-09-26', hxl.datatypes.normalise_date('1664212110'))
+
+    def test_epoch_days(self):
+        """ Days since epoch """
+        self.assertEqual('2016-07-17', hxl.datatypes.normalise_date('17000'))
 
 
 class TestFlatten(unittest.TestCase):
