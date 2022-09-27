@@ -194,7 +194,7 @@ def data(data, input_options=None):
         if input_options and input_options.scan_ckan_resources:
             result = re.match(CKAN_URL, str(data))
             if result and not result.group(3): # no resource
-                input_logger.info("Using CKAN API to dereference %s", url)
+                input_logger.info("Using CKAN API to dereference %s", data)
                 resource_urls = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)
                 for resource_url in resource_urls:
                     try:
@@ -554,7 +554,8 @@ def open_url_or_file(url_or_filename, input_options):
             except:
                 content_length = None
 
-        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
+        # return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
+        return (io.BytesIO(response.content), mime_type, file_ext, encoding, content_length, fileno,)
 
     elif input_options.allow_local:
         # Default to a local file, if allowed
