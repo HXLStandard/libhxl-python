@@ -27,13 +27,12 @@ License:
 
 """
 
-import abc, collections, csv, hashlib, io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
-
 import hxl, hxl.filters
-import zipfile
-import os.path
-import urllib.parse
-import datetime, dateutil.parser
+
+import abc, collections, csv, datetime, dateutil.parser, hashlib, \
+    io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, \
+    os.path, re, requests, requests_cache, shutil, six, sys, \
+    tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -718,6 +717,7 @@ class InputOptions:
         self.scan_ckan_resources = scan_ckan_resources
 
 
+# Deprecated - will remove in future release
 class RequestResponseIOWrapper(io.RawIOBase):
     """Wrapper for a Response object from the requests library.  Streaming
     in requests is a bit broken: for example, if you're streaming, the
