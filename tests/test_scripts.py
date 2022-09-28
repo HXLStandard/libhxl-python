@@ -77,6 +77,18 @@ class TestAdd(BaseTest):
         self.assertOutput(['-b', '-s', 'date+reported=2015-03-31'], 'add-output-before.csv')
         self.assertOutput(['--before', '--spec', 'date+reported=2015-03-31'], 'add-output-before.csv')
 
+        
+class TestAppend(BaseTest):
+    """ Test the hxlappend command-line tool. """
+
+    def setUp(self):
+        self.function = hxl.scripts.hxlappend_main
+        self.input_file = 'input-simple.csv'
+
+    def test_append(self):
+        self.assertOutput(['-a', resolve_file('input-simple.csv')], 'append-dataset.csv')
+        self.assertOutput(['--append', resolve_file('input-simple.csv')], 'append-dataset.csv')
+
 
 class TestClean(BaseTest):
     """

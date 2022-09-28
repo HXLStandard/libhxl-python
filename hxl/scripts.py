@@ -70,7 +70,7 @@ EXIT_OK = 0
 EXIT_ERROR = 1
 EXIT_SYNTAX = 2
 
-    
+
 #
 # Console script entry points
 #
@@ -1126,10 +1126,10 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     append_sources = []
     for append_source in args.append:
-        append_sources.append(hxl.data(append_source, True))
+        append_sources.append(hxl.data(append_source, make_input_options(args)))
     for list_source in args.list:
-        for append_source in hxl.filters.AppendFilter.parse_external_source_list(hxl.data(list_source, True)):
-            append_sources.append(hxl.data(append_source, True))
+        for append_source in hxl.filters.AppendFilter.parse_external_source_list(hxl.data(list_source, make_input_options(args))):
+            append_sources.append(hxl.data(append_source, make_input_options(args)))
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         filter = hxl.filters.AppendFilter(
@@ -1541,7 +1541,7 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
         if args.map:
-            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, True))
+            replacements = hxl.filters.ReplaceDataFilter.Replacement.parse_map(hxl.input.data(args.map, make_input_options(args)))
         else:
             replacements = [
                 hxl.filters.ReplaceDataFilter.Replacement(args.pattern, args.substitution, args.tags, args.regex)
@@ -2174,7 +2174,8 @@ def make_headers (args):
         parts = header.partition(':')
         http_headers[parts[0].strip()] = parts[2].strip()
     return http_headers
-    
+
+
 
 class FileOutput(object):
 
