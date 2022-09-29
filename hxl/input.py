@@ -1179,11 +1179,15 @@ class ExcelInput(AbstractInput):
 
     def _find_hxl_sheet_index(self):
         """Scan for a tab containing a HXL dataset."""
+        logger.debug("No Excel sheet specified; scanning for HXL hashtags")
         for sheet_index in range(0, self._workbook.nsheets):
+            logger.debug("Trying Excel sheet %d for HXL hashtags", sheet_index)
             sheet = self._get_sheet(sheet_index)
             if self._get_columns(sheet):
+                logger.debug("Found HXL hashtags in Excel sheet %d", sheet_index)
                 return sheet_index
         # if no sheet has tags, default to the first one for now
+        logger.debug("No HXL hashtags found; defaulting to Excel sheet 0")
         return 0
 
     def _get_columns(self, sheet):
@@ -1399,12 +1403,16 @@ class HXLReader(hxl.model.Dataset):
         """
         Go fishing for the HXL hashtag row in the first 25 rows.
         """
+
+        logger.debug("Scanning first 25 rows for HXL hashtags")
         previous_row = []
         try:
             for n in range(0,25):
+                logger.debug("Looking for hashtags in row %d", n)
                 raw_row = self._get_row()
                 columns = hxl.model.Column.parse_list(raw_row, previous_row)
                 if columns is not None:
+                    logger.debug("HXL hashtags found in row %d", n)
                     return columns
                 previous_row = raw_row
         except StopIteration:
