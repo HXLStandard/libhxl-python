@@ -76,15 +76,17 @@ License:
 
 &#34;&#34;&#34;
 
-import abc, collections, csv, hashlib, io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, re, requests, requests_cache, shutil, six, sys, tempfile, time, xlrd3 as xlrd
-
 import hxl, hxl.filters
-import zipfile
-import os.path
-import urllib.parse
-import datetime, dateutil.parser
+
+import abc, collections, csv, datetime, dateutil.parser, hashlib, \
+    io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, \
+    os.path, re, requests, requests_cache, shutil, six, sys, \
+    tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
 logger = logging.getLogger(__name__)
+
+input_logger = logging.getLogger(&#34;hxl.REMOTE_ACCESS&#34;)
+&#34;&#34;&#34; Special logger for external resource access &#34;&#34;&#34;
 
 __all__ = (
     &#34;data&#34;,
@@ -240,6 +242,7 @@ def data(data, input_options=None):
         if input_options and input_options.scan_ckan_resources:
             result = re.match(CKAN_URL, str(data))
             if result and not result.group(3): # no resource
+                input_logger.info(&#34;Using CKAN API to dereference %s&#34;, data)
                 resource_urls = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)
                 for resource_url in resource_urls:
                     try:
@@ -566,6 +569,7 @@ def open_url_or_file(url_or_filename, input_options):
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
             url = munge_url(url_or_filename, input_options)
+            input_logger.info(&#34;Trying to open remote resource %s&#34;, url_or_filename)
             response = requests.get(
                 url,
                 stream=True,
@@ -573,6 +577,7 @@ def open_url_or_file(url_or_filename, input_options):
                 timeout=input_options.timeout,
                 headers=input_options.http_headers
             )
+            input_logger.info(&#34;Response status for %s is %d&#34;, url_or_filename, response.status_code)
             if (response.status_code == 403): # CKAN sends &#34;403 Forbidden&#34; for a private file
                 raise HXLAuthorizationException(&#34;Access not authorized&#34;, url=url)
             else:
@@ -597,7 +602,8 @@ def open_url_or_file(url_or_filename, input_options):
             except:
                 content_length = None
 
-        return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
+        # return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
+        return (io.BytesIO(response.content), mime_type, file_ext, encoding, content_length, fileno,)
 
     elif input_options.allow_local:
         # Default to a local file, if allowed
@@ -760,6 +766,7 @@ class InputOptions:
         self.scan_ckan_resources = scan_ckan_resources
 
 
+# Deprecated - will remove in future release
 class RequestResponseIOWrapper(io.RawIOBase):
     &#34;&#34;&#34;Wrapper for a Response object from the requests library.  Streaming
     in requests is a bit broken: for example, if you&#39;re streaming, the
@@ -952,11 +959,15 @@ class CSVInput(AbstractInput):
         lines = re.split(r&#39;\r?\n&#39;, sample)
 
         # first, try for a hashtag row
-        for line in lines:
+        logger.debug(&#34;No CSV delimiter specified; trying to autodetect by looking for a hashtag row&#34;)
+        for row_index, line in enumerate(lines):
             if &#39;#&#39; in line:
+                logger.debug(&#34;Row %d contains \&#34;#\&#34;&#34;, row_index)
                 for delim in CSVInput._DELIMITERS:
+                    logger.debug(&#34;Trying delimiter \&#34;%s\&#34;&#34;, delim)
                     fields = next(csv.reader([line], delimiter=delim))
                     if hxl.model.Column.parse_list(fields):
+                        logger.debug(&#34;Succeeded in parsing hashtags in row %d. Using \&#34;%s\&#34; as CSV delimiter&#34;, row_index, delim)
                         return delim
 
         # if that fails, return the delimiter that appears most often
@@ -968,6 +979,7 @@ class CSVInput(AbstractInput):
                 max_count = count
                 most_common_delim = delim
                     
+        logger.debug(&#34;Failed to parse a HXL hashtag row, so using most-common CSV delimiter \&#34;%s\&#34;&#34;, most_common_delim)
         return most_common_delim
     
 
@@ -1216,11 +1228,15 @@ class ExcelInput(AbstractInput):
 
     def _find_hxl_sheet_index(self):
         &#34;&#34;&#34;Scan for a tab containing a HXL dataset.&#34;&#34;&#34;
+        logger.debug(&#34;No Excel sheet specified; scanning for HXL hashtags&#34;)
         for sheet_index in range(0, self._workbook.nsheets):
+            logger.debug(&#34;Trying Excel sheet %d for HXL hashtags&#34;, sheet_index)
             sheet = self._get_sheet(sheet_index)
             if self._get_columns(sheet):
+                logger.debug(&#34;Found HXL hashtags in Excel sheet %d&#34;, sheet_index)
                 return sheet_index
         # if no sheet has tags, default to the first one for now
+        logger.debug(&#34;No HXL hashtags found; defaulting to Excel sheet 0&#34;)
         return 0
 
     def _get_columns(self, sheet):
@@ -1436,12 +1452,16 @@ class HXLReader(hxl.model.Dataset):
         &#34;&#34;&#34;
         Go fishing for the HXL hashtag row in the first 25 rows.
         &#34;&#34;&#34;
+
+        logger.debug(&#34;Scanning first 25 rows for HXL hashtags&#34;)
         previous_row = []
         try:
             for n in range(0,25):
+                logger.debug(&#34;Looking for hashtags in row %d&#34;, n)
                 raw_row = self._get_row()
                 columns = hxl.model.Column.parse_list(raw_row, previous_row)
                 if columns is not None:
+                    logger.debug(&#34;HXL hashtags found in row %d&#34;, n)
                     return columns
                 previous_row = raw_row
         except StopIteration:
@@ -1615,19 +1635,26 @@ def munge_url(url, input_options):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
+        input_logger.info(&#34;Using CKAN API to dereference %s&#34;, url)
         url = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)[0]
 
     # Is it a Google Drive &#34;open&#34; URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
     if result:
+        input_logger.info(&#34;HEAD request for Google Drive URL %s&#34;, url)
         response = requests.head(url)
         if response.is_redirect:
-            url = response.headers[&#39;Location&#39;]
-            logger.info(&#34;Following Google Drive redirect to %s&#34;, url)
+            new_url = response.headers[&#39;Location&#39;]
+            input_logger.info(&#34;Google Drive URL %s redirects to %s&#34;, url, new_url)
+            logger.info(&#34;Following Google Drive redirect to %s&#34;, new_url)
+            url = new_url
+        else:
+            input_logger.info(&#34;No redirect found for Google Drive URL %s&#34;, url)
 
     # Is it a Kobo survey?
     result = re.match(KOBO_URL, url)
     if result:
+        input_logger.info(&#34;Using KOBO API to dereference %s&#34;, url)
         max_export_age_seconds = 4 * 60 * 60 # 4 hours; TODO: make configurable
         url = _get_kobo_url(result.group(1), url, input_options, max_export_age_seconds)
 
@@ -1639,10 +1666,13 @@ def munge_url(url, input_options):
     result = re.match(GOOGLE_SHEETS_URL, url)
     if result and not re.search(r&#39;/pub&#39;, url):
         if result.group(2):
-            url = &#39;https://docs.google.com/spreadsheets/d/{0}/export?format=csv&amp;gid={1}&#39;.format(result.group(1), result.group(2))
+            new_url = &#39;https://docs.google.com/spreadsheets/d/{0}/export?format=csv&amp;gid={1}&#39;.format(result.group(1), result.group(2))
+            input_logger.info(&#34;Rewriting Google Sheets URL %s to %s&#34;, url, new_url)
+            url = new_url
         else:
-            url = &#39;https://docs.google.com/spreadsheets/d/{0}/export?format=csv&#39;.format(result.group(1))
-        logger.info(&#34;Google Sheets CSV export URL: %s&#34;, url)
+            new_url = &#39;https://docs.google.com/spreadsheets/d/{0}/export?format=csv&#39;.format(result.group(1))
+            input_logger.info(&#34;Rewriting Google Sheets URL %s to %s&#34;, url, new_url)
+            url = new_url
         return url
 
     # Is it a Google Drive *file*?
@@ -1703,11 +1733,12 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     if resource_id:
         # CKAN resource URL
         ckan_api_query = &#39;{}/api/3/action/resource_show?id={}&#39;.format(site_url, resource_id)
+        input_logger.info(&#34;Trying CKAN API call to %s&#34;, ckan_api_query)
         ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result[&#39;success&#39;]:
             url = ckan_api_result[&#39;result&#39;][&#39;url&#39;]
+            input_logger.info(&#34;Found candidate URL for CKAN dataset: %s&#34;, url)
             result_urls.append(url)
-            logger.info(&#34;Converted CKAN resource URL to %s&#34;, url)
         elif ckan_api_result[&#39;error&#39;][&#39;__type&#39;] == &#39;Authorization Error&#39;:
             raise HXLAuthorizationException(
                 &#34;Not authorised to read CKAN resource (is the dataset public?): {}&#34;.format(
@@ -1730,8 +1761,8 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
         if ckan_api_result[&#39;success&#39;]:
             for resource in ckan_api_result[&#39;result&#39;][&#39;resources&#39;]:
                 url = resource[&#39;url&#39;]
+                input_logger.info(&#34;Found candidate URL for CKAN dataset: %s&#34;, url)
                 result_urls.append(url)
-                logger.info(&#34;Converted CKAN package URL to %s&#34;, url)
         elif ckan_api_result[&#39;error&#39;][&#39;__type&#39;] == &#39;Authorization Error&#39;:
             raise HXLAuthorizationException(
                 &#34;Not authorised to read CKAN dataset (is it public?): {}&#34;.format(
@@ -1775,12 +1806,14 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     params = {
         &#34;q&#34;: &#34;source:{}&#34;.format(asset_id)
     }
+    input_logger.info(&#34;Trying Kobo dataset %s&#34;, asset_id)
     response = requests.get(
         &#34;https://kobo.humanitarianresponse.info/exports/&#34;,
         verify=input_options.verify_ssl,
         headers=input_options.http_headers,
         params=params
     )
+    input_logger.info(&#34;Result for Kobo dataset %s: %d&#34;, asset_id, response.status_code)
     # check for errors
     if (response.status_code == 403): # CKAN sends &#34;403 Forbidden&#34; for a private file
         raise HXLAuthorizationException(&#34;Access not authorized&#34;, url=url)
@@ -1799,7 +1832,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
             logger.info(&#34;Reusing existing Kobo export for %s: %s&#34;, asset_id, export[&#39;result&#39;])
             return export[&#39;result&#39;]
 
-    logger.info(&#34;Generating new Kobo export for %s&#34;, asset_id)
+    input_logger.info(&#34;Generating new Kobo export for %s&#34;, asset_id)
 
     # 2. Create the export in Kobo
     params = {
@@ -1816,7 +1849,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         headers=http_headers,
         data=params
     )
-
+    input_logger.info(&#34;Response for generating Kobo export for %s: %d&#34;, asset_id, response.status_code)
     # check for errors
     if (response.status_code == 403): # CKAN sends &#34;403 Forbidden&#34; for a private file
         raise HXLAuthorizationException(&#34;Access not authorized&#34;, url=url)
@@ -1830,11 +1863,13 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     fail_counter = 0
     while True:
         with requests_cache.disabled():
+            input_logger.info(&#34;Getting info for Kobo export %s&#34;, info_url)
             response = requests.get(
                 info_url,
                 verify=input_options.verify_ssl,
                 headers=http_headers
             )
+            input_logger.info(&#34;Response for Kobo info %s: %d&#34;, info_url, response.status_code)
 
         # check for errors
         if (response.status_code == 403): # CKAN sends &#34;403 Forbidden&#34; for a private file
@@ -1934,6 +1969,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         if input_options and input_options.scan_ckan_resources:
             result = re.match(CKAN_URL, str(data))
             if result and not result.group(3): # no resource
+                input_logger.info(&#34;Using CKAN API to dereference %s&#34;, data)
                 resource_urls = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)
                 for resource_url in resource_urls:
                     try:
@@ -2809,11 +2845,15 @@ alone.</p>
         lines = re.split(r&#39;\r?\n&#39;, sample)
 
         # first, try for a hashtag row
-        for line in lines:
+        logger.debug(&#34;No CSV delimiter specified; trying to autodetect by looking for a hashtag row&#34;)
+        for row_index, line in enumerate(lines):
             if &#39;#&#39; in line:
+                logger.debug(&#34;Row %d contains \&#34;#\&#34;&#34;, row_index)
                 for delim in CSVInput._DELIMITERS:
+                    logger.debug(&#34;Trying delimiter \&#34;%s\&#34;&#34;, delim)
                     fields = next(csv.reader([line], delimiter=delim))
                     if hxl.model.Column.parse_list(fields):
+                        logger.debug(&#34;Succeeded in parsing hashtags in row %d. Using \&#34;%s\&#34; as CSV delimiter&#34;, row_index, delim)
                         return delim
 
         # if that fails, return the delimiter that appears most often
@@ -2825,6 +2865,7 @@ alone.</p>
                 max_count = count
                 most_common_delim = delim
                     
+        logger.debug(&#34;Failed to parse a HXL hashtag row, so using most-common CSV delimiter \&#34;%s\&#34;&#34;, most_common_delim)
         return most_common_delim</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -2962,11 +3003,15 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
 
     def _find_hxl_sheet_index(self):
         &#34;&#34;&#34;Scan for a tab containing a HXL dataset.&#34;&#34;&#34;
+        logger.debug(&#34;No Excel sheet specified; scanning for HXL hashtags&#34;)
         for sheet_index in range(0, self._workbook.nsheets):
+            logger.debug(&#34;Trying Excel sheet %d for HXL hashtags&#34;, sheet_index)
             sheet = self._get_sheet(sheet_index)
             if self._get_columns(sheet):
+                logger.debug(&#34;Found HXL hashtags in Excel sheet %d&#34;, sheet_index)
                 return sheet_index
         # if no sheet has tags, default to the first one for now
+        logger.debug(&#34;No HXL hashtags found; defaulting to Excel sheet 0&#34;)
         return 0
 
     def _get_columns(self, sheet):
@@ -3401,12 +3446,16 @@ that's available for iteration and filter chaining.</p>
         &#34;&#34;&#34;
         Go fishing for the HXL hashtag row in the first 25 rows.
         &#34;&#34;&#34;
+
+        logger.debug(&#34;Scanning first 25 rows for HXL hashtags&#34;)
         previous_row = []
         try:
             for n in range(0,25):
+                logger.debug(&#34;Looking for hashtags in row %d&#34;, n)
                 raw_row = self._get_row()
                 columns = hxl.model.Column.parse_list(raw_row, previous_row)
                 if columns is not None:
+                    logger.debug(&#34;HXL hashtags found in row %d&#34;, n)
                     return columns
                 previous_row = raw_row
         except StopIteration:
