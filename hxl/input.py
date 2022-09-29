@@ -910,11 +910,15 @@ class CSVInput(AbstractInput):
         lines = re.split(r'\r?\n', sample)
 
         # first, try for a hashtag row
-        for line in lines:
+        logger.debug("No CSV delimiter specified; trying to autodetect by looking for a hashtag row")
+        for row_index, line in enumerate(lines):
             if '#' in line:
+                logger.debug("Row %d contains \"#\"", row_index)
                 for delim in CSVInput._DELIMITERS:
+                    logger.debug("Trying delimiter \"%s\"", delim)
                     fields = next(csv.reader([line], delimiter=delim))
                     if hxl.model.Column.parse_list(fields):
+                        logger.debug("Succeeded in parsing hashtags in row %d. Using \"%s\" as CSV delimiter", row_index, delim)
                         return delim
 
         # if that fails, return the delimiter that appears most often
@@ -926,6 +930,7 @@ class CSVInput(AbstractInput):
                 max_count = count
                 most_common_delim = delim
                     
+        logger.debug("Failed to parse a HXL hashtag row, so using most-common CSV delimiter \"%s\"", most_common_delim)
         return most_common_delim
     
 
