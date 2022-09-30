@@ -1,8 +1,11 @@
-Release 4.27
+2022-09-30 Release 4.27
 	- raise a HXLHTMLException (subclass of HXLIOException) when HTML markup found
 	- clean dates that are integers, assuming seconds or days since epoch (with cutouts for years and month days)
 	- bypass RequestResponseIOWrapper, because it's causing grief; need to make sure content still gets uncompressed
 	- fix input options for secondary datasets in scripts (e.g. an appended or joined dataset)
+	- more debug logging about HXL hashtag detection
+	- add a new logger to hxl.REMOTE_ACCESS specifically for external URL access
+	- various command-line script updates and fixes
 
 2022-08-05 Release 4.26
 	- use loglevel CRITICAL only for infrastructure failures
