@@ -7,7 +7,7 @@ Examples:
     ```
     # Read a HXL-hashtagged dataset
     dataset = hxl.input.data("http://example.org/hxl-example.csv")
-    
+
     # Read a non-HXL dataset and add hashtags
     specs = [['Cluster', '#sector'], ["Province", "#adm1+name"]]
     tagged_data = hxl.input.tagger("http://example.org/non-hxl-example.csv", specs)
@@ -36,7 +36,8 @@ import abc, collections, csv, datetime, dateutil.parser, hashlib, \
 
 logger = logging.getLogger(__name__)
 
-input_logger = logging.getLogger("hxl.REMOTE_ACCESS")
+import structlog
+input_logger = structlog.wrap_logger(logging.getLogger('hxl.REMOTE_ACCESS'))
 """ Special logger for external resource access """
 
 __all__ = (
@@ -202,10 +203,10 @@ def data(data, input_options=None):
                         return source
                     except:
                         pass
-        
+
         return HXLReader(make_input(data, input_options))
 
-    
+
 def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
     """Open an untagged data source and add hashtags.
 
@@ -251,7 +252,7 @@ def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
         )
     )
 
-    
+
 def write_hxl(output, source, show_headers=True, show_tags=True):
     """Serialize a HXL dataset to an output stream in CSV format.
 
@@ -265,12 +266,12 @@ def write_hxl(output, source, show_headers=True, show_tags=True):
 
     Raises:
         IOError: if there's a problem writing the output
-    
+
     """
     for line in source.gen_csv(show_headers, show_tags):
         output.write(line)
 
-        
+
 def write_json(output, source, show_headers=True, show_tags=True, use_objects=False):
     """Serialize a HXL dataset to an output stream.
 
@@ -317,7 +318,7 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
 
     Raises:
         IOError: if there's a problem writing the output
-    
+
     """
     for line in source.gen_json(show_headers, show_tags, use_objects):
         output.write(line)
@@ -511,16 +512,16 @@ def open_url_or_file(url_or_filename, input_options):
             # forbid localhost
             if hostname == "localhost":
                 raise HXLIOException("Security settings forbid accessing localhost")
-                
+
             # forbid localhost
             if hostname.endswith(".localdomain"):
                 raise HXLIOException("Security settings forbid accessing hostnames ending in .localdomain: {}", hostname)
-                
+
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
             url = munge_url(url_or_filename, input_options)
-            input_logger.info("Trying to open remote resource %s", url_or_filename)
+            input_logger.info(f'Trying to open remote resource {url_or_filename}', whom="world", more_than_a_string=[1, 2, 3])
             response = requests.get(
                 url,
                 stream=True,
@@ -528,7 +529,7 @@ def open_url_or_file(url_or_filename, input_options):
                 timeout=input_options.timeout,
                 headers=input_options.http_headers
             )
-            input_logger.info("Response status for %s is %d", url_or_filename, response.status_code)
+            input_logger.info(f'Response status for {url_or_filename} is {response.status_code}', whom="world", more_than_a_string=[1, 2, 3, 4])
             if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
                 raise HXLAuthorizationException("Access not authorized", url=url)
             else:
@@ -612,7 +613,7 @@ class HXLAuthorizationException(HXLIOException):
 
     This exception means that the library was not allowed to read the remote resource.
     Sometimes adding an ``Authorization:`` HTTP header with a token will help.
-    
+
     """
     def __init__(self, message, url, is_ckan=False):
         """
@@ -628,7 +629,7 @@ class HXLAuthorizationException(HXLIOException):
 
 class HXLParseException(HXLIOException):
     """A parsing error in a HXL dataset.
-    
+
     This exception means that something was wrong with the HXL tagging
     (or similar). The ``message`` will contain details, and if
     possible, there will be a column and row number to help the user
@@ -642,7 +643,7 @@ class HXLParseException(HXLIOException):
             source_row_number (int): the row number in the raw source data, if known.
             source_column_number (int): the column number in the raw source data, if known.
             url (str): the URL of the source data, if relevant.
-        
+
         """
         super().__init__(message, url)
         self.source_row_number = source_row_number
@@ -674,7 +675,7 @@ class HXLTagsNotFoundException(HXLParseException):
         Args:
             message (str): the error message
             url (str): the URL of the source data, if available
-        
+
         """
         super().__init__(message, url)
 
@@ -832,7 +833,7 @@ class AbstractInput(object):
         - hashtag hash (MD5 string, or null if not HXLated)
 
         (Currently supported only for Excel.)
-        
+
         """
         raise NotImplementedError()
 
@@ -875,7 +876,7 @@ class CSVInput(AbstractInput):
 
         # guess the delimiter
         delimiter = CSVInput._detect_delimiter(input, input_options.encoding or "utf-8")
-        
+
         self._input = io.TextIOWrapper(input, encoding=input_options.encoding, errors="replace")
         self._reader = csv.reader(self._input, delimiter=delimiter)
 
@@ -906,7 +907,7 @@ class CSVInput(AbstractInput):
             except Exception as e:
                 continue
             break
-        
+
         lines = re.split(r'\r?\n', sample)
 
         # first, try for a hashtag row
@@ -929,10 +930,10 @@ class CSVInput(AbstractInput):
             if count > max_count:
                 max_count = count
                 most_common_delim = delim
-                    
+
         logger.debug("Failed to parse a HXL hashtag row, so using most-common CSV delimiter \"%s\"", most_common_delim)
         return most_common_delim
-    
+
 
 class JSONInput(AbstractInput):
     """Iterable: Read raw JSON rows from an input stream.
@@ -1045,7 +1046,7 @@ class JSONInput(AbstractInput):
     def _search_data(self, data):
         """Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)
         @param data: top level of the JSON data to search
-        @returns: the 
+        @returns: the
         """
 
         if hxl.datatypes.is_list(data):
@@ -1074,7 +1075,7 @@ class JSONInput(AbstractInput):
         def __init__(self, outer):
             self.outer = outer
             self._iterator = iter(self.outer.json_data)
-            
+
         def __next__(self):
             """Return the next row in a tabular view of the data."""
             if self.outer.show_headers:
@@ -1138,7 +1139,7 @@ class ExcelInput(AbstractInput):
         sheet_index = self.input_options.sheet_index
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
-            
+
         self._sheet = self._get_sheet(sheet_index)
         self.merged_values = {}
 
@@ -1152,7 +1153,7 @@ class ExcelInput(AbstractInput):
             for value in raw_row:
                 md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
             return md5.hexdigest()
-            
+
         result = {
             "url_or_filename": self.url_or_filename,
             "format": "XLSX" if self._workbook.biff_version == 0 else "XLS",
@@ -1243,7 +1244,7 @@ class ExcelInput(AbstractInput):
     def _do_expand (self, row_num, col_num, value):
         """ Repeat a value in a merged section, if necessary.
         """
-        
+
         if self.input_options.expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
@@ -1265,7 +1266,7 @@ class ExcelInput(AbstractInput):
             self.outer = outer
             self._row_index = 0
             self._col_max = 0
-            
+
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
                 row = []
@@ -1296,7 +1297,7 @@ class ExcelInput(AbstractInput):
                             '',
                         )
                     )
-                    
+
                 self._row_index += 1
                 return row
             else:
@@ -1354,7 +1355,7 @@ class HXLReader(hxl.model.Dataset):
         self._iter = iter(self._input)
         self._columns = None
         self._source_row_number = -1 # TODO this belongs in the iterator
-        
+
     def __enter__(self):
         """Context-start support."""
         if self._input:
@@ -1426,7 +1427,7 @@ class HXLReader(hxl.model.Dataset):
 
     class _HXLIter:
         """Internal iterator class"""
-        
+
         def __init__(self, outer):
             self.outer = outer
             self.row_number = -1
@@ -1483,11 +1484,11 @@ def from_spec(spec, allow_local_ok=False):
     Example:
     ```
     "recipe:" [
-        { 
+        {
             "filter": "with_rows",
             "queries": ["org=unicef"]
         },
-        { 
+        {
             "filter": "count",
             "tags": "adm1+name"
         }
@@ -1495,7 +1496,7 @@ def from_spec(spec, allow_local_ok=False):
     ```
 
     """
-    
+
     if isinstance(spec, six.string_types):
         # a JSON string (parse it first)
         spec = json.loads(spec)
@@ -1662,7 +1663,7 @@ def munge_url(url, input_options):
 
 def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     """Look up a CKAN download URL starting from a dataset or resource page
-    
+
     If the link is to a dataset page, try the first resource. If it's
     to a resource page, look up the resource's download link. Either
     dataset_id or resource_id is required (will prefer resource_id
@@ -1731,7 +1732,7 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
             )
 
     return result_urls
-    
+
 
 def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     """ Create an export for a Kobo survey, then return the download link.
@@ -1806,7 +1807,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         raise HXLAuthorizationException("Access not authorized", url=url)
     else:
         response.raise_for_status()
-        
+
     info_url = response.json().get("url")
 
     # 3. Look up the data record for the export to get the download URL
