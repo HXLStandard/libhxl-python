@@ -151,6 +151,25 @@ HTML5_SIGS = [
     b"\n<bo",
 ]
 
+def logup(msg, props={}, level="info"):
+    """
+    Adds the function name on the fly for the log
+
+    Args:
+        msg: the actual log message
+        props: additional properties for the log
+
+    """
+    props['function'] = sys._getframe(1).f_code.co_name
+    levels = {
+        "critical": 50,
+        "error": 40,
+        "warning": 30,
+        "info": 20,
+        "debug": 10
+    }
+    input_logger.log(level=levels[level], event=msg, **props)
+    # logger.log(levels[level],msg, extra={'props': props})
 
 ########################################################################
 # Exported functions
@@ -194,7 +213,7 @@ def data(data, input_options=None):
         if input_options and input_options.scan_ckan_resources:
             result = re.match(CKAN_URL, str(data))
             if result and not result.group(3): # no resource
-                input_logger.info("Using CKAN API to dereference %s", data)
+                logup("Using CKAN API to dereference", {'data': data})
                 resource_urls = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)
                 for resource_url in resource_urls:
                     try:
@@ -521,7 +540,7 @@ def open_url_or_file(url_or_filename, input_options):
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
             url = munge_url(url_or_filename, input_options)
-            input_logger.info(f'Trying to open remote resource {url_or_filename}', whom="world", more_than_a_string=[1, 2, 3])
+            logup(f'Trying to open remote resource', {'url': url})
             response = requests.get(
                 url,
                 stream=True,
@@ -529,12 +548,14 @@ def open_url_or_file(url_or_filename, input_options):
                 timeout=input_options.timeout,
                 headers=input_options.http_headers
             )
-            input_logger.info(f'Response status for {url_or_filename} is {response.status_code}', whom="world", more_than_a_string=[1, 2, 3, 4])
+            logup(f'Request finished', {'status': response.status_code})
+
             if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
                 raise HXLAuthorizationException("Access not authorized", url=url)
             else:
                 response.raise_for_status()
         except Exception as e:
+            logup(f'Cannot open URL', {'error': str(e)}, level="error")
             logger.error("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
 
@@ -1587,26 +1608,26 @@ def munge_url(url, input_options):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        input_logger.info("Using CKAN API to dereference %s", url)
+        logup("Using CKAN API to dereference", {'url': url})
         url = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)[0]
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
     if result:
-        input_logger.info("HEAD request for Google Drive URL %s", url)
+        logup("HEAD request for Google Drive URL", {'url': url})
         response = requests.head(url)
         if response.is_redirect:
             new_url = response.headers['Location']
-            input_logger.info("Google Drive URL %s redirects to %s", url, new_url)
+            logup("Google Drive URL redirects", {'url': url, 'new_url': new_url})
             logger.info("Following Google Drive redirect to %s", new_url)
             url = new_url
         else:
-            input_logger.info("No redirect found for Google Drive URL %s", url)
+            logup("No redirect found for Google Drive URL", {'url': url})
 
     # Is it a Kobo survey?
     result = re.match(KOBO_URL, url)
     if result:
-        input_logger.info("Using KOBO API to dereference %s", url)
+        logup("Using KOBO API to dereference", {'url': url})
         max_export_age_seconds = 4 * 60 * 60 # 4 hours; TODO: make configurable
         url = _get_kobo_url(result.group(1), url, input_options, max_export_age_seconds)
 
@@ -1619,11 +1640,11 @@ def munge_url(url, input_options):
     if result and not re.search(r'/pub', url):
         if result.group(2):
             new_url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
-            input_logger.info("Rewriting Google Sheets URL %s to %s", url, new_url)
+            logup("Rewriting Google Sheets URL", {'url':url, 'new_url': new_url})
             url = new_url
         else:
             new_url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
-            input_logger.info("Rewriting Google Sheets URL %s to %s", url, new_url)
+            logup("Rewriting Google Sheets URL", {'url': url, 'new_url': new_url})
             url = new_url
         return url
 
@@ -1685,26 +1706,30 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     if resource_id:
         # CKAN resource URL
         ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(site_url, resource_id)
-        input_logger.info("Trying CKAN API call to %s", ckan_api_query)
+        logup("Trying CKAN API call to", {'query': ckan_api_query})
         ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['url']
-            input_logger.info("Found candidate URL for CKAN dataset: %s", url)
+            logup("Found candidate URL for CKAN dataset", {'url': url})
             result_urls.append(url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
+            err = ckan_api_result['error']['message']
+            event = "Not authorised to read CKAN resource (is the dataset public?)"
+            url = site_url
+            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLAuthorizationException(
-                "Not authorised to read CKAN resource (is the dataset public?): {}".format(
-                    ckan_api_result['error']['message']
-                ),
-                url=site_url,
+                "{}: {}".format(event, err),
+                url=url,
                 is_ckan=True
             )
         else:
+            err = ckan_api_result['error']['message']
+            event = "Unable to read HDX resource"
+            url = site_url
+            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLIOException(
-                "Unable to read HDX resource: {}".format(
-                    ckan_api_result['error']['message']
-                ),
-                url=site_url
+                "{}: {}".format(event, err),
+                url=url
             )
     else:
         # CKAN dataset (package) URL
@@ -1713,22 +1738,26 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
         if ckan_api_result['success']:
             for resource in ckan_api_result['result']['resources']:
                 url = resource['url']
-                input_logger.info("Found candidate URL for CKAN dataset: %s", url)
+                logup("Found candidate URL for CKAN dataset", {'url': url})
                 result_urls.append(url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
+            err = ckan_api_result['error']['message']
+            event = "Not authorised to read CKAN dataset (is it public?)"
+            url = site_url
+            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLAuthorizationException(
-                "Not authorised to read CKAN dataset (is it public?): {}".format(
-                    ckan_api_result['error']['message']
-                ),
-                url=site_url,
+                "{}: {}".format(event, err),
+                url=url,
                 is_ckan=True
             )
         else:
+            err = ckan_api_result['error']['message']
+            event = "Unable to read CKAN dataset"
+            url = site_url
+            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLIOException(
-                "Unable to read CKAN dataset: {}".format(
-                    ckan_api_result['error']['message']
-                ),
-                url=site_url
+                "{}: {}".format(event, err),
+                url=url
             )
 
     return result_urls
@@ -1758,14 +1787,14 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     params = {
         "q": "source:{}".format(asset_id)
     }
-    input_logger.info("Trying Kobo dataset %s", asset_id)
+    logup("Trying Kobo dataset", {'asset_id': asset_id})
     response = requests.get(
         "https://kobo.humanitarianresponse.info/exports/",
         verify=input_options.verify_ssl,
         headers=input_options.http_headers,
         params=params
     )
-    input_logger.info("Result for Kobo dataset %s: %d", asset_id, response.status_code)
+    logup("Result for Kobo dataset", {'status': response.status_code, 'asset_id': asset_id})
     # check for errors
     if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
         raise HXLAuthorizationException("Access not authorized", url=url)
@@ -1781,10 +1810,11 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
 
         # if less than four hours, and has a URL, use it (and stop here)
         if export.get('result') and (age_in_seconds < max_export_age_seconds):
+            logup("Reusing existing Kobo export", {'result': export['result'], 'asset_id': asset_id})
             logger.info("Reusing existing Kobo export for %s: %s", asset_id, export['result'])
             return export['result']
 
-    input_logger.info("Generating new Kobo export for %s", asset_id)
+    logup("Generating new Kobo export", {'asset_id': asset_id})
 
     # 2. Create the export in Kobo
     params = {
@@ -1801,7 +1831,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         headers=http_headers,
         data=params
     )
-    input_logger.info("Response for generating Kobo export for %s: %d", asset_id, response.status_code)
+    logup("Response for generating Kobo export", {'status': response.status_code, 'asset_id': asset_id})
     # check for errors
     if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
         raise HXLAuthorizationException("Access not authorized", url=url)
@@ -1815,13 +1845,13 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     fail_counter = 0
     while True:
         with requests_cache.disabled():
-            input_logger.info("Getting info for Kobo export %s", info_url)
+            logup("Getting info for Kobo export", {'info_url': info_url})
             response = requests.get(
                 info_url,
                 verify=input_options.verify_ssl,
                 headers=http_headers
             )
-            input_logger.info("Response for Kobo info %s: %d", info_url, response.status_code)
+            logup("Response for Kobo info", {'info_url': info_url, 'status': response.status_code})
 
         # check for errors
         if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
