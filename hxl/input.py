@@ -548,7 +548,9 @@ def open_url_or_file(url_or_filename, input_options):
                 timeout=input_options.timeout,
                 headers=input_options.http_headers
             )
-            logup(f'Request finished', {'status': response.status_code})
+            # logging duration of the request
+            # TODO: copy paaste in other places please.
+            logup(f'Request finished', {'status': response.status_code, 'duration': round(response.elapsed.total_seconds(), 3)})
 
             if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
                 raise HXLAuthorizationException("Access not authorized", url=url)
