@@ -563,8 +563,11 @@ def open_url_or_file(url_or_filename, input_options):
                     else:
                         mime_type = content_type.lower()
 
-                content_length = int(response.headers.get('content-length', sum(len(chunk) for chunk in response.iter_content(8196))))
-                log_this['content_length'] = content_length
+                # nope, the response is consumed before doing anything with it.
+                # content_length = int(response.headers.get('content-length', sum(len(chunk) for chunk in response.iter_content(8196))))
+                content_length = int(response.headers.get('content-length', 0))
+                if content_length > 0:
+                    log_this['content_length'] = content_length
 
                 # logging duration of the request
                 # TODO: copy paste in other places please.
