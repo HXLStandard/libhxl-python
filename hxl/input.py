@@ -34,11 +34,9 @@ import abc, collections, csv, datetime, dateutil.parser, hashlib, \
     os.path, re, requests, requests_cache, shutil, six, sys, \
     tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
-logger = logging.getLogger(__name__)
+from hxl.util import logup
 
-import structlog
-input_logger = structlog.wrap_logger(logging.getLogger('hxl.REMOTE_ACCESS'))
-""" Special logger for external resource access """
+logger = logging.getLogger(__name__)
 
 __all__ = (
     "data",
@@ -150,26 +148,6 @@ HTML5_SIGS = [
     b"\n<BO",
     b"\n<bo",
 ]
-
-def logup(msg, props={}, level="info"):
-    """
-    Adds the function name on the fly for the log
-
-    Args:
-        msg: the actual log message
-        props: additional properties for the log
-
-    """
-    props['function'] = sys._getframe(1).f_code.co_name
-    levels = {
-        "critical": 50,
-        "error": 40,
-        "warning": 30,
-        "info": 20,
-        "debug": 10
-    }
-    input_logger.log(level=levels[level], event=msg, **props)
-    # logger.log(levels[level],msg, extra={'props': props})
 
 ########################################################################
 # Exported functions
@@ -577,9 +555,6 @@ def open_url_or_file(url_or_filename, input_options):
                     raise HXLAuthorizationException("Access not authorized", url=url)
                 else:
                     response.raise_for_status()
-
-                content_type = response.headers.get('content-type')
-                content_length = response.headers.get('content-length')
 
         except Exception as e:
             logup(f'Cannot open URL', {'error': str(e)}, level="error")
