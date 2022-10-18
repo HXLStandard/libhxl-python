@@ -7,3 +7,4 @@ unidecode
 python-io-wrapper>=0.2
 jsonpath-ng
 ply
+structlog==22.1.0

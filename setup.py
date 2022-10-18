@@ -27,7 +27,8 @@ setup(
         'unidecode',
         'python-io-wrapper>=0.2',
         'jsonpath_ng',
-        'ply'
+        'ply',
+        'structlog==22.1.0',
     ],
     packages=['hxl', 'hxl.formulas'],
     package_data={'hxl': ['*.json']},
