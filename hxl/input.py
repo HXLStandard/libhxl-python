@@ -541,41 +541,52 @@ def open_url_or_file(url_or_filename, input_options):
         try:
             url = munge_url(url_or_filename, input_options)
             logup(f'Trying to open remote resource', {'url': url})
-            response = requests.get(
+            # see https://requests.readthedocs.io/en/latest/user/advanced/#body-content-workflow
+            with requests.get(
                 url,
                 stream=True,
                 verify=input_options.verify_ssl,
                 timeout=input_options.timeout,
                 headers=input_options.http_headers
-            )
-            # logging duration of the request
-            # TODO: copy paaste in other places please.
-            logup(f'Request finished', {'status': response.status_code, 'duration': round(response.elapsed.total_seconds(), 3)})
+            ) as response:
+                log_this = {
+                    'status': response.status_code,
+                    'duration': round(response.elapsed.total_seconds(), 3),
+                }
+                content_type = response.headers.get('content-type')
+                if content_type:
+                    log_this['content_type'] = content_type
+                    result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
+                    if result:
+                        mime_type = result.group(1).lower()
+                        encoding = result.group(2).lower()
+                    else:
+                        mime_type = content_type.lower()
 
-            if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
-                raise HXLAuthorizationException("Access not authorized", url=url)
-            else:
-                response.raise_for_status()
+                content_length = response.headers.get('content-length')
+                if content_length is not None:
+                    try:
+                        content_length = int(content_length)
+                        log_this['content_length'] = content_length
+                    except:
+                        content_length = None
+
+                # logging duration of the request
+                # TODO: copy paste in other places please.
+                logup(f'Request finished', log_this)
+
+                if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+                    raise HXLAuthorizationException("Access not authorized", url=url)
+                else:
+                    response.raise_for_status()
+
+                content_type = response.headers.get('content-type')
+                content_length = response.headers.get('content-length')
+
         except Exception as e:
             logup(f'Cannot open URL', {'error': str(e)}, level="error")
             logger.error("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
-
-        content_type = response.headers.get('content-type')
-        if content_type:
-            result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
-            if result:
-                mime_type = result.group(1).lower()
-                encoding = result.group(2).lower()
-            else:
-                mime_type = content_type.lower()
-
-        content_length = response.headers.get('content-length')
-        if content_length is not None:
-            try:
-                content_length = int(content_length)
-            except:
-                content_length = None
 
         # return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
         return (io.BytesIO(response.content), mime_type, file_ext, encoding, content_length, fileno,)
