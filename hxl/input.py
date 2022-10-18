@@ -7,7 +7,7 @@ Examples:
     ```
     # Read a HXL-hashtagged dataset
     dataset = hxl.input.data("http://example.org/hxl-example.csv")
-
+    
     # Read a non-HXL dataset and add hashtags
     specs = [['Cluster', '#sector'], ["Province", "#adm1+name"]]
     tagged_data = hxl.input.tagger("http://example.org/non-hxl-example.csv", specs)
@@ -29,12 +29,12 @@ License:
 
 import hxl, hxl.filters
 
+from hxl.util import logup
+
 import abc, collections, csv, datetime, dateutil.parser, hashlib, \
     io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, \
     os.path, re, requests, requests_cache, shutil, six, sys, \
     tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
-
-from hxl.util import logup
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +149,7 @@ HTML5_SIGS = [
     b"\n<bo",
 ]
 
+
 ########################################################################
 # Exported functions
 ########################################################################
@@ -191,7 +192,7 @@ def data(data, input_options=None):
         if input_options and input_options.scan_ckan_resources:
             result = re.match(CKAN_URL, str(data))
             if result and not result.group(3): # no resource
-                logup("Using CKAN API to dereference", {'data': data})
+                logup(f"Using CKAN API to dereference", {"url": data})
                 resource_urls = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)
                 for resource_url in resource_urls:
                     try:
@@ -200,10 +201,10 @@ def data(data, input_options=None):
                         return source
                     except:
                         pass
-
+        
         return HXLReader(make_input(data, input_options))
 
-
+    
 def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
     """Open an untagged data source and add hashtags.
 
@@ -249,7 +250,7 @@ def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
         )
     )
 
-
+    
 def write_hxl(output, source, show_headers=True, show_tags=True):
     """Serialize a HXL dataset to an output stream in CSV format.
 
@@ -263,12 +264,12 @@ def write_hxl(output, source, show_headers=True, show_tags=True):
 
     Raises:
         IOError: if there's a problem writing the output
-
+    
     """
     for line in source.gen_csv(show_headers, show_tags):
         output.write(line)
 
-
+        
 def write_json(output, source, show_headers=True, show_tags=True, use_objects=False):
     """Serialize a HXL dataset to an output stream.
 
@@ -315,7 +316,7 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
 
     Raises:
         IOError: if there's a problem writing the output
-
+    
     """
     for line in source.gen_json(show_headers, show_tags, use_objects):
         output.write(line)
@@ -509,57 +510,47 @@ def open_url_or_file(url_or_filename, input_options):
             # forbid localhost
             if hostname == "localhost":
                 raise HXLIOException("Security settings forbid accessing localhost")
-
+                
             # forbid localhost
             if hostname.endswith(".localdomain"):
                 raise HXLIOException("Security settings forbid accessing hostnames ending in .localdomain: {}", hostname)
-
+                
         # It looks like a URL
         file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
         try:
             url = munge_url(url_or_filename, input_options)
-            logup(f'Trying to open remote resource', {'url': url})
-            # see https://requests.readthedocs.io/en/latest/user/advanced/#body-content-workflow
-            with requests.get(
+            logup("Trying to open remote resource", {"url": url_or_filename})
+            response = requests.get(
                 url,
                 stream=True,
                 verify=input_options.verify_ssl,
                 timeout=input_options.timeout,
                 headers=input_options.http_headers
-            ) as response:
-                log_this = {
-                    'status': response.status_code,
-                    'duration': round(response.elapsed.total_seconds(), 3),
-                }
-                content_type = response.headers.get('content-type')
-                if content_type:
-                    log_this['content_type'] = content_type
-                    result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
-                    if result:
-                        mime_type = result.group(1).lower()
-                        encoding = result.group(2).lower()
-                    else:
-                        mime_type = content_type.lower()
-
-                # nope, the response is consumed before doing anything with it.
-                # content_length = int(response.headers.get('content-length', sum(len(chunk) for chunk in response.iter_content(8196))))
-                content_length = int(response.headers.get('content-length', 0))
-                if content_length > 0:
-                    log_this['content_length'] = content_length
-
-                # logging duration of the request
-                # TODO: copy paste in other places please.
-                logup(f'Request finished', log_this)
-
-                if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
-                    raise HXLAuthorizationException("Access not authorized", url=url)
-                else:
-                    response.raise_for_status()
-
+            )
+            logup("Response status", {"url": url_or_filename, "status": response.status_code})
+            if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
+                raise HXLAuthorizationException("Access not authorized", url=url)
+            else:
+                response.raise_for_status()
         except Exception as e:
-            logup(f'Cannot open URL', {'error': str(e)}, level="error")
             logger.error("Cannot open URL %s (%s)", url_or_filename, str(e))
             raise e
+
+        content_type = response.headers.get('content-type')
+        if content_type:
+            result = re.match(r'^(\S+)\s*;\s*charset=(\S+)$', content_type)
+            if result:
+                mime_type = result.group(1).lower()
+                encoding = result.group(2).lower()
+            else:
+                mime_type = content_type.lower()
+
+        content_length = response.headers.get('content-length')
+        if content_length is not None:
+            try:
+                content_length = int(content_length)
+            except:
+                content_length = None
 
         # return (RequestResponseIOWrapper(response), mime_type, file_ext, encoding, content_length, fileno,)
         return (io.BytesIO(response.content), mime_type, file_ext, encoding, content_length, fileno,)
@@ -620,7 +611,7 @@ class HXLAuthorizationException(HXLIOException):
 
     This exception means that the library was not allowed to read the remote resource.
     Sometimes adding an ``Authorization:`` HTTP header with a token will help.
-
+    
     """
     def __init__(self, message, url, is_ckan=False):
         """
@@ -636,7 +627,7 @@ class HXLAuthorizationException(HXLIOException):
 
 class HXLParseException(HXLIOException):
     """A parsing error in a HXL dataset.
-
+    
     This exception means that something was wrong with the HXL tagging
     (or similar). The ``message`` will contain details, and if
     possible, there will be a column and row number to help the user
@@ -650,7 +641,7 @@ class HXLParseException(HXLIOException):
             source_row_number (int): the row number in the raw source data, if known.
             source_column_number (int): the column number in the raw source data, if known.
             url (str): the URL of the source data, if relevant.
-
+        
         """
         super().__init__(message, url)
         self.source_row_number = source_row_number
@@ -682,7 +673,7 @@ class HXLTagsNotFoundException(HXLParseException):
         Args:
             message (str): the error message
             url (str): the URL of the source data, if available
-
+        
         """
         super().__init__(message, url)
 
@@ -840,7 +831,7 @@ class AbstractInput(object):
         - hashtag hash (MD5 string, or null if not HXLated)
 
         (Currently supported only for Excel.)
-
+        
         """
         raise NotImplementedError()
 
@@ -883,7 +874,7 @@ class CSVInput(AbstractInput):
 
         # guess the delimiter
         delimiter = CSVInput._detect_delimiter(input, input_options.encoding or "utf-8")
-
+        
         self._input = io.TextIOWrapper(input, encoding=input_options.encoding, errors="replace")
         self._reader = csv.reader(self._input, delimiter=delimiter)
 
@@ -914,7 +905,7 @@ class CSVInput(AbstractInput):
             except Exception as e:
                 continue
             break
-
+        
         lines = re.split(r'\r?\n', sample)
 
         # first, try for a hashtag row
@@ -937,10 +928,10 @@ class CSVInput(AbstractInput):
             if count > max_count:
                 max_count = count
                 most_common_delim = delim
-
+                    
         logger.debug("Failed to parse a HXL hashtag row, so using most-common CSV delimiter \"%s\"", most_common_delim)
         return most_common_delim
-
+    
 
 class JSONInput(AbstractInput):
     """Iterable: Read raw JSON rows from an input stream.
@@ -1053,7 +1044,7 @@ class JSONInput(AbstractInput):
     def _search_data(self, data):
         """Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)
         @param data: top level of the JSON data to search
-        @returns: the
+        @returns: the 
         """
 
         if hxl.datatypes.is_list(data):
@@ -1082,7 +1073,7 @@ class JSONInput(AbstractInput):
         def __init__(self, outer):
             self.outer = outer
             self._iterator = iter(self.outer.json_data)
-
+            
         def __next__(self):
             """Return the next row in a tabular view of the data."""
             if self.outer.show_headers:
@@ -1146,7 +1137,7 @@ class ExcelInput(AbstractInput):
         sheet_index = self.input_options.sheet_index
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
-
+            
         self._sheet = self._get_sheet(sheet_index)
         self.merged_values = {}
 
@@ -1160,7 +1151,7 @@ class ExcelInput(AbstractInput):
             for value in raw_row:
                 md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
             return md5.hexdigest()
-
+            
         result = {
             "url_or_filename": self.url_or_filename,
             "format": "XLSX" if self._workbook.biff_version == 0 else "XLS",
@@ -1251,7 +1242,7 @@ class ExcelInput(AbstractInput):
     def _do_expand (self, row_num, col_num, value):
         """ Repeat a value in a merged section, if necessary.
         """
-
+        
         if self.input_options.expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
@@ -1273,7 +1264,7 @@ class ExcelInput(AbstractInput):
             self.outer = outer
             self._row_index = 0
             self._col_max = 0
-
+            
         def __next__(self):
             if self._row_index < self.outer._sheet.nrows:
                 row = []
@@ -1304,7 +1295,7 @@ class ExcelInput(AbstractInput):
                             '',
                         )
                     )
-
+                    
                 self._row_index += 1
                 return row
             else:
@@ -1362,7 +1353,7 @@ class HXLReader(hxl.model.Dataset):
         self._iter = iter(self._input)
         self._columns = None
         self._source_row_number = -1 # TODO this belongs in the iterator
-
+        
     def __enter__(self):
         """Context-start support."""
         if self._input:
@@ -1434,7 +1425,7 @@ class HXLReader(hxl.model.Dataset):
 
     class _HXLIter:
         """Internal iterator class"""
-
+        
         def __init__(self, outer):
             self.outer = outer
             self.row_number = -1
@@ -1491,11 +1482,11 @@ def from_spec(spec, allow_local_ok=False):
     Example:
     ```
     "recipe:" [
-        {
+        { 
             "filter": "with_rows",
             "queries": ["org=unicef"]
         },
-        {
+        { 
             "filter": "count",
             "tags": "adm1+name"
         }
@@ -1503,7 +1494,7 @@ def from_spec(spec, allow_local_ok=False):
     ```
 
     """
-
+    
     if isinstance(spec, six.string_types):
         # a JSON string (parse it first)
         spec = json.loads(spec)
@@ -1594,26 +1585,24 @@ def munge_url(url, input_options):
     # Is it a CKAN resource? (Assumes the v.3 API for now)
     result = re.match(CKAN_URL, url)
     if result:
-        logup("Using CKAN API to dereference", {'url': url})
+        logup("Using CKAN API to dereference", {"url": url})
         url = _get_ckan_urls(result.group(1), result.group(2), result.group(3), input_options)[0]
 
     # Is it a Google Drive "open" URL?
     result = re.match(GOOGLE_DRIVE_URL, url)
     if result:
-        logup("HEAD request for Google Drive URL", {'url': url})
+        logup("HEAD request for Google Drive URL", {"url": url})
         response = requests.head(url)
         if response.is_redirect:
             new_url = response.headers['Location']
-            logup("Google Drive URL redirects", {'url': url, 'new_url': new_url})
+            logup("Google Drive redirect", {"url": url, "redirect": new_url})
             logger.info("Following Google Drive redirect to %s", new_url)
             url = new_url
-        else:
-            logup("No redirect found for Google Drive URL", {'url': url})
 
     # Is it a Kobo survey?
     result = re.match(KOBO_URL, url)
     if result:
-        logup("Using KOBO API to dereference", {'url': url})
+        logup("Using KOBO API to dereference", {"url": url})
         max_export_age_seconds = 4 * 60 * 60 # 4 hours; TODO: make configurable
         url = _get_kobo_url(result.group(1), url, input_options, max_export_age_seconds)
 
@@ -1626,11 +1615,11 @@ def munge_url(url, input_options):
     if result and not re.search(r'/pub', url):
         if result.group(2):
             new_url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}'.format(result.group(1), result.group(2))
-            logup("Rewriting Google Sheets URL", {'url':url, 'new_url': new_url})
+            logup("Rewriting Google Sheets URL", {"url": url, "rewrite_url": new_url})
             url = new_url
         else:
             new_url = 'https://docs.google.com/spreadsheets/d/{0}/export?format=csv'.format(result.group(1))
-            logup("Rewriting Google Sheets URL", {'url': url, 'new_url': new_url})
+            logup("Rewriting Google Sheets URL", {"url": url, "rewrite_url": new_url})
             url = new_url
         return url
 
@@ -1670,7 +1659,7 @@ def munge_url(url, input_options):
 
 def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     """Look up a CKAN download URL starting from a dataset or resource page
-
+    
     If the link is to a dataset page, try the first resource. If it's
     to a resource page, look up the resource's download link. Either
     dataset_id or resource_id is required (will prefer resource_id
@@ -1692,30 +1681,26 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     if resource_id:
         # CKAN resource URL
         ckan_api_query = '{}/api/3/action/resource_show?id={}'.format(site_url, resource_id)
-        logup("Trying CKAN API call to", {'query': ckan_api_query})
+        logup("Trying CKAN API call", {"url": ckan_api_query})
         ckan_api_result = requests.get(ckan_api_query, verify=input_options.verify_ssl, headers=input_options.http_headers).json()
         if ckan_api_result['success']:
             url = ckan_api_result['result']['url']
-            logup("Found candidate URL for CKAN dataset", {'url': url})
+            logup("Found candidate URL for CKAN dataset", {"url": url})
             result_urls.append(url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
-            err = ckan_api_result['error']['message']
-            event = "Not authorised to read CKAN resource (is the dataset public?)"
-            url = site_url
-            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLAuthorizationException(
-                "{}: {}".format(event, err),
-                url=url,
+                "Not authorised to read CKAN resource (is the dataset public?): {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=site_url,
                 is_ckan=True
             )
         else:
-            err = ckan_api_result['error']['message']
-            event = "Unable to read HDX resource"
-            url = site_url
-            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLIOException(
-                "{}: {}".format(event, err),
-                url=url
+                "Unable to read HDX resource: {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=site_url
             )
     else:
         # CKAN dataset (package) URL
@@ -1724,30 +1709,26 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
         if ckan_api_result['success']:
             for resource in ckan_api_result['result']['resources']:
                 url = resource['url']
-                logup("Found candidate URL for CKAN dataset", {'url': url})
+                logup("Found candidate URL for CKAN dataset", {"url": url})
                 result_urls.append(url)
         elif ckan_api_result['error']['__type'] == 'Authorization Error':
-            err = ckan_api_result['error']['message']
-            event = "Not authorised to read CKAN dataset (is it public?)"
-            url = site_url
-            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLAuthorizationException(
-                "{}: {}".format(event, err),
-                url=url,
+                "Not authorised to read CKAN dataset (is it public?): {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=site_url,
                 is_ckan=True
             )
         else:
-            err = ckan_api_result['error']['message']
-            event = "Unable to read CKAN dataset"
-            url = site_url
-            logup(event, {'url': url, 'error': err}, level="error")
             raise HXLIOException(
-                "{}: {}".format(event, err),
-                url=url
+                "Unable to read CKAN dataset: {}".format(
+                    ckan_api_result['error']['message']
+                ),
+                url=site_url
             )
 
     return result_urls
-
+    
 
 def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     """ Create an export for a Kobo survey, then return the download link.
@@ -1773,14 +1754,14 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     params = {
         "q": "source:{}".format(asset_id)
     }
-    logup("Trying Kobo dataset", {'asset_id': asset_id})
+    logup("Trying Kobo dataset", {"url": asset_id})
     response = requests.get(
         "https://kobo.humanitarianresponse.info/exports/",
         verify=input_options.verify_ssl,
         headers=input_options.http_headers,
         params=params
     )
-    logup("Result for Kobo dataset", {'status': response.status_code, 'asset_id': asset_id})
+    logup("Result for Kobo dataset", {"asset_id": asset_id, "status": response.status_code})
     # check for errors
     if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
         raise HXLAuthorizationException("Access not authorized", url=url)
@@ -1796,11 +1777,10 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
 
         # if less than four hours, and has a URL, use it (and stop here)
         if export.get('result') and (age_in_seconds < max_export_age_seconds):
-            logup("Reusing existing Kobo export", {'result': export['result'], 'asset_id': asset_id})
-            logger.info("Reusing existing Kobo export for %s: %s", asset_id, export['result'])
+            logup("Reusing existing Kobo export", {"asset_id": asset_id, "export": export['result']})
             return export['result']
 
-    logup("Generating new Kobo export", {'asset_id': asset_id})
+    logup("Generating new Kobo export", {"asset_id": asset_id})
 
     # 2. Create the export in Kobo
     params = {
@@ -1817,13 +1797,13 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         headers=http_headers,
         data=params
     )
-    logup("Response for generating Kobo export", {'status': response.status_code, 'asset_id': asset_id})
+    logup("Generated Kobo export", {"asset_id": asset_id, "status": response.status_code})
     # check for errors
     if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file
         raise HXLAuthorizationException("Access not authorized", url=url)
     else:
         response.raise_for_status()
-
+        
     info_url = response.json().get("url")
 
     # 3. Look up the data record for the export to get the download URL
@@ -1831,13 +1811,13 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     fail_counter = 0
     while True:
         with requests_cache.disabled():
-            logup("Getting info for Kobo export", {'info_url': info_url})
+            logup("Getting info for Kobo export", {"url": info_url})
             response = requests.get(
                 info_url,
                 verify=input_options.verify_ssl,
                 headers=http_headers
             )
-            logup("Response for Kobo info", {'info_url': info_url, 'status': response.status_code})
+            logup("Response for Kobo info", {"url": info_url, "status": response.status_code})
 
         # check for errors
         if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file

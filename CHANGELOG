@@ -1,3 +1,8 @@
+Release 4.28
+	- use structlog module
+	- add hxl.util.logup function to include function name in log message
+	- switch to logup in input module
+
 2022-09-30 Release 4.27
 	- raise a HXLHTMLException (subclass of HXLIOException) when HTML markup found
 	- clean dates that are integers, assuming seconds or days since epoch (with cutouts for years and month days)
