@@ -3,6 +3,8 @@ import ply.yacc as yacc
 import hxl.model
 import hxl.formulas.functions as f
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 from hxl.formulas.lexer import tokens
@@ -70,6 +72,7 @@ def p_args_empty(p):
 
 # Error rule for syntax errors
 def p_error(p):
+    logup('Syntax error', {"err": str(p)}, level='error')
     logger.error("Syntax error: %s", str(p))
 
 parser = yacc.yacc()

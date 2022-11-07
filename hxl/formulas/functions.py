@@ -5,6 +5,8 @@ import logging, collections
 import hxl.datatypes
 import datetime
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 #
@@ -114,6 +116,7 @@ def function(row, args):
     if f:
         return f(row, args[1:], True)
     else:
+        logup('Unknown function', {"function": args[0]}, level='error')
         logger.error("Unknown function %s", args[0])
         return ''
 
@@ -215,13 +218,15 @@ def do_round(row, args, multiple=False):
     """
     values = _deref(row, args, False)
     if len(values) > 1:
+        logup('Ignoring extra arguments to round()', {"args": str(values[1:])}, level='warning')
         logger.warning("Ignoring extra arguments to round(): %s", str(values[1:]))
     try:
         return round(values[0])
     except:
+        logup('Trying to round non-numeric value', {"value": str(values[0])}, level='warning')
         logger.warning("Trying to round non-numeric value %s", values[0])
         return values[0]
-    
+
 def do_join(row, args, multiple=True):
     """Join values with the separator provided.
     Also joins empty values (for consistency)
@@ -258,16 +263,19 @@ def do_datedif(row, args, multiple=False):
     elif len(values) == 3:
         unit = str(values[2]).upper()
     else:
+        logup('Wrong number of arguments to datedif()', level='error')
         logger.error("Wrong number of arguments to datedif()")
         return ''
     try:
         date1 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[0]), '%Y-%m-%d')
     except:
+        logup("Can't parse date", {"date": str(values[0])}, level='error')
         logger.error("Can't parse date: %s", values[0])
         return ''
     try:
         date2 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[1]), '%Y-%m-%d')
     except:
+        logup("Can't parse date", {"date": str(values[1])}, level='error')
         logger.error("Can't parse date: %s", values[1])
         return ''
     diff = date2-date1
@@ -280,7 +288,8 @@ def do_datedif(row, args, multiple=False):
     elif unit == 'D':
         return abs(diff.days)
     else:
-        logger.error("Unrecognised unit % for datediff()", unit)
+        logup('Unrecognised unit for datediff()', {"unit": str(unit)}, level='error')
+        logger.error("Unrecognised unit %s for datediff()", str(unit))
         return ''
 
 
@@ -367,5 +376,6 @@ def _num(arg):
     try:
         return hxl.datatypes.normalise_number(arg)
     except (ValueError, TypeError):
+        logup('Cannot convert to a number for calculated field', {"arg": arg}, level='warning')
         logger.warning("Cannot convert %s to a number for calculated field", arg)
         return 0

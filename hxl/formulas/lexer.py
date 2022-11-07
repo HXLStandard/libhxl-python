@@ -2,6 +2,8 @@
 import logging
 import ply.lex as lex, json
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 tokens = (
@@ -41,15 +43,16 @@ def t_STRING(t):
 
 def t_FLOAT(t):
     r'\d+\.\d+'
-    t.value = float(t.value)    
+    t.value = float(t.value)
     return t
 
 def t_INT(t):
     r'\d+'
-    t.value = int(t.value)    
+    t.value = int(t.value)
     return t
 
 def t_error(t):
+    logup('Illegal character', {"char": t.value[0]}, level='error')
     logger.error("Illegal character '%s'", t.value[0])
     t.lexer.skip(1)
 
