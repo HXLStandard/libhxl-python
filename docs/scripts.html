@@ -1305,7 +1305,7 @@ def hxlcount_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     parser.add_argument(
         &#39;-a&#39;,
         &#39;--aggregator&#39;,
-        help=&#39;Aggregator statement&#39;,
+        help=&#39;Aggregator statement. Aggregators are count(), sum(), average(), min(), max(), and concat() (e.g. &#34;sum(#affected+f) as Total Girls In Need#affected+f+total&#34;)&#39;,
         metavar=&#39;statement&#39;,
         action=&#39;append&#39;,
         type=hxl.filters.Aggregator.parse,
