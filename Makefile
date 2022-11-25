@@ -43,7 +43,11 @@ build-venv: $(VENV)
 
 # (re)build the virtual environment if it's missing, or whenever setup.py changes
 $(VENV): setup.py requirements.txt
-	rm -rf venv && python3 -m venv venv && . $(VENV) && pip3 install -r requirements.txt && python setup.py develop && pip install pdoc3
+	rm -rf venv \
+		&& python3 -m venv venv \
+		&& . $(VENV) && pip3 install -r requirements.txt \
+		&& python setup.py develop \
+		&& pip install pdoc3
 
 # close the current issue branch and merge into dev
 close-issue:
