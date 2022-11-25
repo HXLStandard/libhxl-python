@@ -40,6 +40,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 import hxl, hxl.formulas.eval as feval
 import abc, copy, dateutil.parser, itertools, json, jsonpath_ng.ext, logging, re, six, sys
 
+from hxl.util import logup
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
     example).
 
     Subclassing works like this::
-    
+
       class MyFilter(hxl.filters.AbstractBaseFilter):
 
           def __init__(self, source):
@@ -179,7 +180,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
         """
         raise NotImplementedError("No static _load method implemented.")
 
-    
+
 class AbstractStreamingFilter(AbstractBaseFilter):
     """Abstract base class for streaming filters.
 
@@ -236,7 +237,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
         rows on the fly, without having to keep a copy of the entire
         dataset in memory.
 
-        @param row: the original L{hxl.model.Row} object.  
+        @param row: the original L{hxl.model.Row} object.
         @returns: A list of string values (I{not} a Row object) or
         C{None} to skip the row.
         @see: L{AbstractBaseFilter.filter_columns}
@@ -264,7 +265,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
             return self
 
         def __next__(self):
-            """Return the next filtered row of data.  
+            """Return the next filtered row of data.
 
             Uses the L{AbstractStreamingFilter.filter_row} method. The
             returned row is always a new object, so that if the client
@@ -347,7 +348,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
 
     def filter_rows(self):
         """Filter all of the data together.
-        
+
         This method returns raw lists and strings, not objects from
         the L{hxl.model} module; for example, it could return the
         following for a three-row dataset::
@@ -356,7 +357,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
 
         The I{AbstractCachingFilter} class will construct the
         appropriate objects around the data.
-        
+
         @returns: a list of lists of strings, one list for each row.
         @see: L{AbstractBaseFilter.filter_columns}
         """
@@ -395,7 +396,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
                 self.values_iter = iter(self.outer._saved_rows)
             self.row_number += 1
             return hxl.model.Row(self.outer.columns, next(self.values_iter), self.row_number)
-        
+
 
 #
 # Utility classes
@@ -466,6 +467,7 @@ class Aggregator(object):
         # Numbers only for sum and average
         datatype = hxl.datatypes.typeof(value, self.pattern)
         if self.type in ['sum', 'average'] and datatype != 'number':
+            logup("Cannot use as a numeric value for aggregation; skipping.", {"value": value}, level='error')
             logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
             return
 
@@ -512,7 +514,7 @@ class Aggregator(object):
 
     TAG_PATTERN = r'#?{token}(?:\s*[+-]{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for a tag pattern"""
-    
+
     COL_PATTERN = r'#{token}(?:\s*\+{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for an output column pattern"""
 
@@ -714,7 +716,7 @@ class AppendFilter(AbstractBaseFilter):
     """Composable filter class to concatenate two datasets.
 
     Usage::
-    
+
         filter = AppendFilter(hxl.data(url), hxl.data(url2))
 
     This filter concatenates a second dataset to the end of the first
@@ -846,7 +848,7 @@ class AppendFilter(AbstractBaseFilter):
         def __init__(self, outer):
             """@param outer: reference to outer object"""
             self.outer = outer
-            
+
             self._iterator = iter(outer.source)
             self._column_map = {i: i for i in range(len(self.outer.source.columns))}
             self._is_source = True
@@ -900,7 +902,7 @@ class AppendFilter(AbstractBaseFilter):
                 if append_source:
                     append_sources.append(append_source)
         return append_sources
-        
+
     @staticmethod
     def _load(source, spec):
         """Create an AppendFilter from a dict spec.
@@ -913,7 +915,7 @@ class AppendFilter(AbstractBaseFilter):
             )
         else:
             append_sources = req_arg(spec, 'append_sources')
-            
+
         return AppendFilter(
             source=source,
             append_sources=append_sources,
@@ -1043,7 +1045,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         format (remove commas or spaces between thousands, and use "."
         as the decimal separator).
       - B{latlon}: attempt to normalise latitude and longitude values.
-      
+
     For each type of cleaning, you specify one or more L{tag
     patterns<hxl.model.TagPattern>} to which the cleaning applies (you
     may use string representations instead of creating the objects),
@@ -1128,7 +1130,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         """
         ddmm_count = 0
         mmdd_count = 0
-        
+
         # prescan columns to speed things up
         indices = []
         for i, column in enumerate(self.source.columns):
@@ -1150,7 +1152,7 @@ class CleanDataFilter(AbstractStreamingFilter):
 
         return (ddmm_count >= mmdd_count)
 
-    
+
     def _clean_value(self, value, column):
         """Clean a single value, using the column def for guidance.
         @returns: a single cleaned value
@@ -1179,6 +1181,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                     if self.date_format is not None:
                         value = dateutil.parser.parse(value).strftime(self.date_format)
                 except ValueError:
+                    logup("Cannot use as a date", {"value": value}, level='warning')
                     logger.warning('Cannot parse %s as a date', str(value))
                     if self.purge:
                         value = ''
@@ -1207,7 +1210,8 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if n is not None:
                     value = n
                 else:
-                    logger.warning('Cannot parse {} as a number', str(value))
+                    logup('Cannot parse as a number', {"value": value}, level='warning')
+                    logger.warning('Cannot parse %s as a number', str(value))
                     if self.purge:
                         value = ''
 
@@ -1218,6 +1222,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if lat is not None:
                     value = format(lat, '0.4f')
                 else:
+                    logup('Cannot parse as a latitude', {"value": value}, level='warning')
                     logger.warning('Cannot parse %s as a latitude', str(value))
                     if self.purge:
                         value = ''
@@ -1226,6 +1231,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if lon is not None:
                     value = format(lon, '0.4f')
                 else:
+                    logup('Cannot parse as a longitude', {"value": value}, level='warning')
                     logger.warning('Cannot parse %s as a longitude', str(value))
                     if self.purge:
                         value = ''
@@ -1234,10 +1240,11 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if coord is not None:
                     value = '{:.4f},{:.4f}'.format(coord[0], coord[1])
                 else:
+                    logup('Cannot parse as geographical coordinates', {"value": value}, level='warning')
                     logger.warning('Cannot parse %s as geographical coordinates', str(value))
                     if self.purge:
                         value = ''
-        
+
         return value
 
     def _match_patterns(self, patterns, column):
@@ -1344,7 +1351,7 @@ class ColumnFilter(AbstractStreamingFilter):
         is an include list, it must be in that list; if there is an
         exclude list, it must not be in that list.
 
-        @param column: the L{hxl.model.Column} to test 
+        @param column: the L{hxl.model.Column} to test
         @returns: True if the column should be included
 
         """
@@ -1453,7 +1460,7 @@ class CountFilter(AbstractCachingFilter):
         # Add generated columns
         for aggregator in self.aggregators:
             columns.append(aggregator.column)
-            
+
         return columns
 
     def filter_rows(self):
@@ -1466,7 +1473,7 @@ class CountFilter(AbstractCachingFilter):
             raw_data.append(
                 list(aggregate[0]) + [aggregator.value if aggregator.value is not None else '' for aggregator in aggregate[1]]
             )
-            
+
         return raw_data
 
     def _aggregate_data(self):
@@ -1658,7 +1665,7 @@ class ExpandListsFilter(AbstractBaseFilter):
                     # yield a new row
                     yield hxl.model.Row(self.columns, values)
 
-        
+
     @staticmethod
     def _load(source, spec):
         """New instance from a JSON-style dictionary.
@@ -1799,7 +1806,7 @@ class ImplodeFilter(AbstractBaseFilter):
     Cameroon,2014,150
     Cameroon,2015,120
 
-    will be converted to 
+    will be converted to
 
     Country,2015,2014,2013
     #country,#affected+label,#affected+label,#affected+label
@@ -1818,7 +1825,7 @@ class ImplodeFilter(AbstractBaseFilter):
         super(ImplodeFilter, self).__init__(source)
         self.label_pattern = label_pattern
         self.value_pattern = value_pattern
-        
+
         self.processed = False
         self.label_index = -1
         self.value_index = -1
@@ -1871,6 +1878,11 @@ class ImplodeFilter(AbstractBaseFilter):
                 if self.label_index == -1:
                     self.label_index = i
                 else:
+                    logup('[Implode filter] multiple columns match label pattern; using first match', {
+                        "pattern": self.label_pattern,
+                        "tag": self.source.columns[self.label_index].display_tag,
+                        "header": self.source.columns[self.label_index].header
+                    }, level='warning')
                     logger.warning(
                         "[Implode filter] multiple columns match label pattern %s; using first match %s (%s)",
                         self.label_pattern,
@@ -1881,16 +1893,17 @@ class ImplodeFilter(AbstractBaseFilter):
                 if self.value_index == -1:
                     self.value_index = i
                 else:
+                    logup('[Implode filter] multiple columns match value pattern; using first match', {
+                        "pattern": self.label_pattern
+                    }, level='warning')
                     logger.warning(
                         "[Implode filter] multiple columns match value pattern %s; using first match",
-                        self.value_pattern,
-                        self.source.columns[self.value_index].display_tag,
-                        self.source.columns[self.value_index].header
+                        self.value_pattern
                     )
 
         if self.label_index == -1:
             raise HXLFilterException("No matching label column for {}".format(self.label_pattern))
-        
+
         if self.value_index == -1:
             raise HXLFilterException("No matching value column for {}".format(self.value_pattern))
 
@@ -1921,10 +1934,11 @@ class ImplodeFilter(AbstractBaseFilter):
             if key not in self.rows:
                 self.rows[key] = {}
             if label in self.rows[key]:
+                logup('Multiple values in implode filter; using first match', {"value": label, "value_used": self.rows[key][label]}, level='error')
                 logger.error("Multiple values for %s in implode filter; using %s", label, self.rows[key][label])
             else:
                 self.rows[key][label] = value
-            
+
     @staticmethod
     def _load(source, spec):
         """Create an implode filter from a dict spec.
@@ -2001,7 +2015,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         """Dictionary of values from merge source, indexed by key."""
 
     def filter_columns(self):
-        """Filter the columns to add newly-merged ones.  
+        """Filter the columns to add newly-merged ones.
         Note: this is called only once, the first time someone
         accesses the Dataset.columns property, then the result is saved for future use.
         As a side effect, builds the _merge_indices specs for generating the merged data.
@@ -2010,10 +2024,10 @@ class MergeDataFilter(AbstractStreamingFilter):
 
         new_columns = list(self.source.columns)
         """The new column list to return."""
-        
+
         merge_column_index = len(self.source.columns)
         """Target index for merging into the output dataset"""
-            
+
         # Check every pattern
         for pattern in self.merge_tags:
 
@@ -2081,7 +2095,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         Uses *last* matching row for each key (top to bottom).
         @returns: a map of merge values
         """
-        
+
         self.columns # make sure we've created the _merge_indices map
 
         merge_values = {}
@@ -2201,7 +2215,7 @@ class RenameFilter(AbstractStreamingFilter):
             rename=req_arg(spec, 'specs')
         )
 
-    
+
 class JSONPathFilter(AbstractStreamingFilter):
     """Extract values from a JSON string expression using JSONPath
     See http://goessner.net/articles/JsonPath/
@@ -2230,7 +2244,7 @@ class JSONPathFilter(AbstractStreamingFilter):
         values = list(row.values)
 
         if hxl.model.RowQuery.match_list(row, self.queries):
-        
+
             for i in self._indices:
                 try:
                     expr = json.loads(values[i])
@@ -2242,10 +2256,11 @@ class JSONPathFilter(AbstractStreamingFilter):
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
+                    logup('Skipping invalid JSON expression', {"expression": str(values[i])}, level='warning')
                     logger.warning("Skipping invalid JSON expression '%s'", values[i])
 
         return values
-    
+
     @staticmethod
     def _load(source, spec):
         """Create a JSONPath filter from a dict spec.
@@ -2260,7 +2275,7 @@ class JSONPathFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, 'queries')
         )
 
-    
+
 class FillDataFilter(AbstractStreamingFilter):
     """Fill empty cells in a dataset.
     By default, fill all empty cells with the closest non-empty value in a previous row.
@@ -2293,7 +2308,7 @@ class FillDataFilter(AbstractStreamingFilter):
                 self._saved[i] = values[i]
             elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
                 values[i] = self._saved[i] if self._saved.get(i) else ''
-                    
+
         return values
 
     @staticmethod
@@ -2309,7 +2324,7 @@ class FillDataFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, 'queries'),
         )
 
-    
+
 class ReplaceDataFilter(AbstractStreamingFilter):
     """
     Composable filter class to replace values in a HXL dataset.
@@ -2433,7 +2448,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, 'queries', [])
         )
 
-        
+
 class RowCountFilter(AbstractStreamingFilter):
     """
     Composable filter class to count lines (and nothing else)
@@ -2441,7 +2456,7 @@ class RowCountFilter(AbstractStreamingFilter):
     The output is identical to the input; the line count is
     stored in the filter itself.  As a result, there is no corresponding
     command-line utility.
-    
+
     Usage:
 
     <pre>
@@ -2460,7 +2475,7 @@ class RowCountFilter(AbstractStreamingFilter):
         if hxl.model.RowQuery.match_list(row, self.queries):
             self.row_count += 1
         return row.values
-    
+
 
 class RowFilter(AbstractStreamingFilter):
     """
@@ -2509,7 +2524,7 @@ class RowFilter(AbstractStreamingFilter):
     @staticmethod
     def _load(source, spec):
         """Construct a row filter from a dict spec."""
-        
+
         reverse = False
         if spec.get('filter') == 'without_rows':
             reverse = True
@@ -2521,7 +2536,7 @@ class RowFilter(AbstractStreamingFilter):
             mask=opt_arg(spec, 'mask', [])
         )
 
-    
+
 class SortFilter(AbstractCachingFilter):
     """
     Composable filter class to sort a HXL dataset.
@@ -2712,12 +2727,12 @@ def from_recipe(source, recipe):
 
         # Create the filter
         source = loader(source, spec)
-        
+
     return source
 
 
 def list_product(lists, head=[]):
-    """Generate the cartesian product of a list of lists 
+    """Generate the cartesian product of a list of lists
     The elements of the result will be all possible combinations of the elements of
     the input lists.
     @param lists: a list of lists

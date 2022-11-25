@@ -4,6 +4,8 @@
 import logging
 import hxl.formulas.parser as p, hxl.formulas.lexer as l
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 def eval(row, formula):
@@ -16,6 +18,7 @@ def eval(row, formula):
     if statement:
         return statement[0](row, statement[1])
     else:
+        logup('Cannot parse formula', {"formula": formula}, level='error')
         logger.error("Cannot parse formula {{ {} }}".format(formula))
         return "**ERROR**"
 

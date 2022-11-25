@@ -347,7 +347,7 @@ options:
 """
     run_script(hxlcut_main)
 
-    
+
 def hxldedup():
     """ Entry point for hxldedup console script
 ``` none
@@ -705,7 +705,7 @@ options:
 
 
 def hxlexplode():
-    """ Entry point for hxlexplode console script 
+    """ Entry point for hxlexplode console script
 ``` none
 usage: hxlexplode [-h] [--encoding [string]] [--sheet [number]]
                   [--selector [path]] [--http-header header]
@@ -1069,7 +1069,7 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
-        
+
     args = parser.parse_args(args)
 
     do_common_args(args)
@@ -1119,7 +1119,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default=False
     )
     add_queries_arg(parser, 'From --append datasets, include only rows matching at least one query.')
-        
+
     args = parser.parse_args(args)
 
     do_common_args(args)
@@ -1220,7 +1220,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     add_queries_arg(parser, 'Clean only rows matching at least one query.')
 
     args = parser.parse_args(args)
-    
+
     do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
@@ -1282,7 +1282,7 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """ Run hxlcut with command-line arguments.
 
     Remove columns.
-    
+
     """
     parser = make_args('Remove columns from a HXL dataset.')
     parser.add_argument(
@@ -1440,7 +1440,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, hxl.InputOptions(allow_local=True)) if args.merge else None as merge_source:
         filter = hxl.filters.MergeDataFilter(
             source, merge_source=merge_source,
-            keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
+            keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite,
             queries=args.query
         )
         hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -1534,7 +1534,7 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
 
     add_queries_arg(parser, 'Replace only in rows that match at least one query.')
-    
+
     args = parser.parse_args(args)
 
     do_common_args(args)
@@ -1819,7 +1819,7 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     """
 
     def get_json (url_or_filename):
-        
+
         if not url_or_filename:
             return json.load(stdin)
 
@@ -1831,7 +1831,7 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         else:
             with open(url_or_filename, "r") as input:
                 return json.load(input)
-    
+
     parser = make_args('Process a HXL JSON spec')
     args = parser.parse_args(args)
 
@@ -1985,7 +1985,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             output.write("{:,} error(s), {:,} warnings\n".format(Counter.errors, Counter.warnings))
         else:
             output.write("{:,} error(s)\n".format(Counter.errors))
-            
+
         if Counter.errors > 0:
             output.write("Validation failed.\n")
             return EXIT_ERROR
@@ -2140,7 +2140,7 @@ def make_input_options(args):
         sheet_index -= 1
 
     http_headers = make_headers(args)
-        
+
     return hxl.input.InputOptions(
         sheet_index=sheet_index,
         selector=args.selector,
@@ -2201,5 +2201,5 @@ class StreamOutput(object):
 
     def write(self, s):
         self.output.write(s)
-            
-    
+
+
