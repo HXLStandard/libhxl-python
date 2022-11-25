@@ -2256,7 +2256,7 @@ class JSONPathFilter(AbstractStreamingFilter):
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
-                    logup('Skipping invalid JSON expression', {"expression": str(values[i])}, label='warning')
+                    logup('Skipping invalid JSON expression', {"expression": str(values[i])}, level='warning')
                     logger.warning("Skipping invalid JSON expression '%s'", values[i])
 
         return values
