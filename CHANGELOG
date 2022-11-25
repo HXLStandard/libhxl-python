@@ -1,7 +1,8 @@
-Release 4.28
+2022-11-25 Release 4.27.2
 	- use structlog module
 	- add hxl.util.logup function to include function name in log message
 	- switch to logup in input module
+	- add extra help text for hxlcount script
 
 2022-09-30 Release 4.27
 	- raise a HXLHTMLException (subclass of HXLIOException) when HTML markup found

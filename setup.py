@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='libhxl',
-    version="4.27",
+    version="4.27.2",
     description='Python support library for the Humanitarian Exchange Language (HXL). See http://hxlstandard.org and https://github.com/HXLStandard/libhxl-python',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -27,6 +27,7 @@ setup(
         'unidecode',
         'python-io-wrapper>=0.2',
         'jsonpath_ng',
+        'urllib3<1.27,>=1.21.1',
         'ply',
         'structlog==22.1.0',
     ],
