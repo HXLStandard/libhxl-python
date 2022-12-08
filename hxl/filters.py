@@ -468,7 +468,7 @@ class Aggregator(object):
         datatype = hxl.datatypes.typeof(value, self.pattern)
         if self.type in ['sum', 'average'] and datatype != 'number':
             logup("Cannot use as a numeric value for aggregation; skipping.", {"value": value}, level='info')
-            logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
+            logger.warning("Cannot use %s as a numeric value for aggregation; skipping.", value)
             return
 
         normalised = hxl.datatypes.normalise(value, self.pattern)
