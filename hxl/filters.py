@@ -467,7 +467,7 @@ class Aggregator(object):
         # Numbers only for sum and average
         datatype = hxl.datatypes.typeof(value, self.pattern)
         if self.type in ['sum', 'average'] and datatype != 'number':
-            logup("Cannot use as a numeric value for aggregation; skipping.", {"value": value}, level='error')
+            logup("Cannot use as a numeric value for aggregation; skipping.", {"value": value}, level='info')
             logger.error("Cannot use %s as a numeric value for aggregation; skipping.", value)
             return
 
@@ -1181,7 +1181,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                     if self.date_format is not None:
                         value = dateutil.parser.parse(value).strftime(self.date_format)
                 except ValueError:
-                    logup("Cannot use as a date", {"value": value}, level='warning')
+                    logup("Cannot use as a date", {"value": value}, level='info')
                     logger.warning('Cannot parse %s as a date', str(value))
                     if self.purge:
                         value = ''
@@ -1210,7 +1210,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if n is not None:
                     value = n
                 else:
-                    logup('Cannot parse as a number', {"value": value}, level='warning')
+                    logup('Cannot parse as a number', {"value": value}, level='info')
                     logger.warning('Cannot parse %s as a number', str(value))
                     if self.purge:
                         value = ''
@@ -1222,7 +1222,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if lat is not None:
                     value = format(lat, '0.4f')
                 else:
-                    logup('Cannot parse as a latitude', {"value": value}, level='warning')
+                    logup('Cannot parse as a latitude', {"value": value}, level='info')
                     logger.warning('Cannot parse %s as a latitude', str(value))
                     if self.purge:
                         value = ''
@@ -1231,7 +1231,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if lon is not None:
                     value = format(lon, '0.4f')
                 else:
-                    logup('Cannot parse as a longitude', {"value": value}, level='warning')
+                    logup('Cannot parse as a longitude', {"value": value}, level='info')
                     logger.warning('Cannot parse %s as a longitude', str(value))
                     if self.purge:
                         value = ''
@@ -1240,7 +1240,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if coord is not None:
                     value = '{:.4f},{:.4f}'.format(coord[0], coord[1])
                 else:
-                    logup('Cannot parse as geographical coordinates', {"value": value}, level='warning')
+                    logup('Cannot parse as geographical coordinates', {"value": value}, level='info')
                     logger.warning('Cannot parse %s as geographical coordinates', str(value))
                     if self.purge:
                         value = ''
@@ -1882,7 +1882,7 @@ class ImplodeFilter(AbstractBaseFilter):
                         "pattern": self.label_pattern,
                         "tag": self.source.columns[self.label_index].display_tag,
                         "header": self.source.columns[self.label_index].header
-                    }, level='warning')
+                    }, level='info')
                     logger.warning(
                         "[Implode filter] multiple columns match label pattern %s; using first match %s (%s)",
                         self.label_pattern,
@@ -1895,7 +1895,7 @@ class ImplodeFilter(AbstractBaseFilter):
                 else:
                     logup('[Implode filter] multiple columns match value pattern; using first match', {
                         "pattern": self.label_pattern
-                    }, level='warning')
+                    }, level='info')
                     logger.warning(
                         "[Implode filter] multiple columns match value pattern %s; using first match",
                         self.value_pattern
@@ -1934,7 +1934,7 @@ class ImplodeFilter(AbstractBaseFilter):
             if key not in self.rows:
                 self.rows[key] = {}
             if label in self.rows[key]:
-                logup('Multiple values in implode filter; using first match', {"value": label, "value_used": self.rows[key][label]}, level='error')
+                logup('Multiple values in implode filter; using first match', {"value": label, "value_used": self.rows[key][label]}, level='info')
                 logger.error("Multiple values for %s in implode filter; using %s", label, self.rows[key][label])
             else:
                 self.rows[key][label] = value
@@ -2256,7 +2256,7 @@ class JSONPathFilter(AbstractStreamingFilter):
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
-                    logup('Skipping invalid JSON expression', {"expression": str(values[i])}, level='warning')
+                    logup('Skipping invalid JSON expression', {"expression": str(values[i])}, level='info')
                     logger.warning("Skipping invalid JSON expression '%s'", values[i])
 
         return values
