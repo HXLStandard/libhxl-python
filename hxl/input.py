@@ -560,7 +560,7 @@ def open_url_or_file(url_or_filename, input_options):
         try:
             info = os.stat(url_or_filename)
             content_length = info.st_size
-            file = io.open(url_or_filename, 'rb+')
+            file = io.open(url_or_filename, 'rb')
             fileno = file.fileno()
             return (file, mime_type, file_ext, encoding, content_length, fileno,)
         except Exception as e:
