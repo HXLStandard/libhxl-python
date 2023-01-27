@@ -20,6 +20,7 @@ setup(
     url='http://hxlproject.org',
     install_requires=[
         'wheel',
+        'pytest',
         'requests>=2.11',
         'requests_cache',
         'python-dateutil',
