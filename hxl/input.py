@@ -32,7 +32,7 @@ import hxl, hxl.filters
 from hxl.util import logup
 
 import abc, collections, csv, datetime, dateutil.parser, hashlib, \
-    io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, \
+    io, io_wrapper, json, jsonpath_ng.ext, logging, \
     os.path, re, requests, requests_cache, shutil, six, sys, \
     tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
@@ -353,13 +353,6 @@ def make_input(raw_source, input_options=None):
 
     """
 
-    def make_tempfile(input):
-        tmpfile = tempfile.NamedTemporaryFile()
-        shutil.copyfileobj(input, tmpfile)
-        tmpfile.seek(0)
-        input.close()
-        return tmpfile # have to return the object, so it doesn't get garbage collected and delete the file
-
     def wrap_stream(stream):
         if hasattr(stream, 'peek'):
             # already buffered
@@ -425,25 +418,12 @@ def make_input(raw_source, input_options=None):
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
-            tmpfile = None
-            contents = None
-
-            if fileno is not None:
-                 # it's already a file; don't make a new one
-                input.seek(0)
-                contents = mmap.mmap(fileno, 0)
-            elif content_length and content_length <= EXCEL_MEMORY_CUTOFF:
-                # it's small-ish, so load into memory
-                contents = input.read()
-            else:
-                # size unknown, so use a tempfile
-                tmpfile = make_tempfile(input)
-                contents = mmap.mmap(tmpfile.fileno(), 0)
+            contents = input.read()
 
             try:
                 # Is it really an XLS(X) file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(contents, input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
+                return ExcelInput(contents, input_options, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -1099,38 +1079,20 @@ class ExcelInput(AbstractInput):
     workbook for the first sheet containing HXL hashtags; if that
     fails, will use the first sheet in the workbook.
 
-    Note that this requires a Python tempfile.TemporaryFile object,
-    with the Excel contents copied into it.
-
-    Example:
-    ```
-    tmpfile = tempfile.NamedTemporaryFile();
-    with open("data.xls", "r") as input:
-        shutil.copyfileobj(input, tmpfile)
-
-    with hxl.input.ExcelInput(tmpfile) as xlsx:
-        for raw_row in xlsx:
-            process_row(raw_row)
-    ```
-
     """
 
-    def __init__(self, contents, input_options, tmpfile, url_or_filename=None):
+    def __init__(self, contents, input_options, url_or_filename=None):
         """
 
-        One of tmpfile or contents must be specified.
-
         Args:
-            contents (buffer or mmap): contents of the Excel file
+            contents: contents of the Excel file
             input_options (InputOptions): options for reading a dataset.
-            tmpfile (tempfile.NamedTemporaryFile): temporary file object (keep to avoid garbage collection)
             url_or_filename (string): the original URL or filename or None
         """
         super().__init__(input_options)
         self.url_or_filename = url_or_filename
         self.is_repeatable = True
         self.contents = contents
-        self.tmpfile = tmpfile # prevent garbage collection
 
         self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
 
