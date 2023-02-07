@@ -29,7 +29,7 @@ setup(
         'jsonpath_ng',
         'urllib3<1.27,>=1.21.1',
         'ply',
-        'structlog==22.1.0',
+        'structlog',
     ],
     packages=['hxl', 'hxl.formulas'],
     package_data={'hxl': ['*.json']},
