@@ -200,6 +200,10 @@ class TestInput(unittest.TestCase):
         url = 'https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832'
         hxl.input.make_input(url, InputOptions(verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'}))
         hxl.data(url, InputOptions(verify_ssl=True, timeout=30, http_headers={'User-Agent': 'libhxl-python'}))
+
+    def test_file_object(self):
+        with open(FILE_CSV, 'r') as f:
+            self.assertIsNotNone(hxl.input.make_input(f))
         
 
 class TestUntaggedInput(unittest.TestCase):
