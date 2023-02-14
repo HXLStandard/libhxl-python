@@ -354,13 +354,18 @@ def make_input(raw_source, input_options=None):
     """
 
     def wrap_stream(stream):
+        if hasattr(stream, 'mode') and 'b' not in stream.mode and hasattr(stream, 'buffer'):
+            # if the stream has a rawio buffer, use it
+            stream = stream.buffer
         if hasattr(stream, 'peek'):
             # already buffered
             return stream
         else:
+            # need to wrap with a buffer
             stream = io_wrapper.RawIOWrapper(stream)
             return io.BufferedReader(io_wrapper.RawIOWrapper(stream))
 
+        
     def match_sigs(sig, sigs):
         for s in sigs:
             if sig.startswith(s):

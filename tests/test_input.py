@@ -203,7 +203,7 @@ class TestInput(unittest.TestCase):
 
     def test_file_object(self):
         with open(FILE_CSV, 'r') as f:
-            self.assertNotNull(hxl.input.make_input(f))
+            self.assertIsNotNone(hxl.input.make_input(f))
         
 
 class TestUntaggedInput(unittest.TestCase):
