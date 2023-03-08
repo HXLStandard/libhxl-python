@@ -57,6 +57,8 @@ FILE_FUZZY = _resolve_file('./files/test_io/input-fuzzy.csv')
 FILE_INVALID = _resolve_file('./files/test_io/input-invalid.csv')
 FILE_NOTAG1 = _resolve_file('./files/test_io/input-notag1.html')
 FILE_NOTAG2 = _resolve_file('./files/test_io/input-notag2.html')
+FILE_BINARY_INVALID = _resolve_file('./files/test_io/input-invalid.png')
+
 URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
 URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
 URL_XLS = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/test/tests/files/test_io/input-valid.xls'
@@ -99,6 +101,11 @@ class TestInput(unittest.TestCase):
         """Expect a HXLIOException, not a meaningless TypeError"""
         with self.assertRaises(hxl.input.HXLIOException):
             make_input(FILE_ZIP_INVALID, InputOptions(allow_local=True))
+
+    def test_binary_invalid(self):
+        """ Expect a HXLIOException """
+        with self.assertRaises(hxl.input.HXLIOException):
+            make_input(FILE_BINARY_INVALID, InputOptions(allow_local=True))
 
     def test_csv_latin1(self):
         with make_input(FILE_CSV_LATIN1, InputOptions(allow_local=True, encoding="latin1")) as input:
