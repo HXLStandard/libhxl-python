@@ -149,6 +149,20 @@ HTML5_SIGS = [
     b"\n<bo",
 ]
 
+CSV_FILE_EXTS = [
+    'ssv',
+    'csv',
+    'tsv',
+    'txt',
+]
+
+CSV_MIME_TYPES = (
+    'text/plain',
+    'text/csv',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+)
+
 
 ########################################################################
 # Exported functions
@@ -444,8 +458,17 @@ def make_input(raw_source, input_options=None):
             return JSONInput(input, input_options)
 
         # fall back to CSV if all else fails
-        logger.debug('Making input from CSV')
-        return CSVInput(input, input_options)
+        if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
+            logger.debug('Making input from CSV')
+            return CSVInput(input, input_options)
+
+        raise HXLIOException(
+            'Cannot process as data (extension: {}, MIME type: {})'.format(
+                file_ext if file_ext else '<not provided>',
+                mime_type if mime_type else '<not provided>',
+            ),
+            url_or_filename
+        )
 
 
 def open_url_or_file(url_or_filename, input_options):
@@ -501,7 +524,12 @@ def open_url_or_file(url_or_filename, input_options):
                 raise HXLIOException("Security settings forbid accessing hostnames ending in .localdomain: {}", hostname)
 
         # It looks like a URL
-        file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
+
+        # grab the file extension again, but remove the leading '.'
+
+        if file_ext is None:
+            file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1][1:]
+        
         try:
             url = munge_url(url_or_filename, input_options)
             logup("Trying to open remote resource", {"url": url_or_filename})
