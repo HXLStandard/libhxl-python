@@ -1046,6 +1046,27 @@ class TestReplaceFilter(AbstractBaseFilterTest):
         # substitution
         self.assertEqual('Plains District', self.source.replace_data('(ains)$', r'\1 District', '#adm1', use_regex=True).values[1][2])
 
+    def test_map(self):
+        MAPPING = [
+            ['#x_pattern', '#x_substitution', '#x_tag'],
+            ['NGO B', 'NGO Bravo', 'org']
+        ]
+        source = self.source.replace_data_map(hxl.data(MAPPING))
+        self.assertEqual('NGO A', source.values[0][0])
+        self.assertEqual('NGO Bravo', source.values[1][0])
+        
+    def test_map_default(self):
+        MAPPING = [
+            ['#x_pattern', '#x_substitution', '#x_tag', '#x_regex'],
+            ['NGO B', 'NGO Bravo', 'org', ''],
+            ['^.*$', 'Other', 'org', 'True'],
+        ]
+        source = self.source.replace_data_map(hxl.data(MAPPING))
+        self.assertEqual('Other', source.values[0][0]) # defaulted
+        self.assertEqual('WASH', source.values[0][1]) # not defaulted (wrong column)
+        self.assertEqual('NGO Bravo', source.values[1][0]) # not defaulted (had a match)
+        
+
     def test_replace_after_append(self):
         # will test with different lengths of value arrays
         NEW_DATA = [
