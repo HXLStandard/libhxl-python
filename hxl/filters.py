@@ -2351,18 +2351,34 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
         self.queries = self._setup_queries(queries)
+        self.indices = self._setup_indices(self.replacements, self.columns)
+
 
     def filter_row(self, row):
         """@returns: the row values with replacements"""
         if hxl.model.RowQuery.match_list(row, self.queries):
             values = copy.copy(row.values)
-            for index, value in enumerate(values):
-                for replacement in self.replacements:
-                    value = replacement.sub(row.columns[index], value)
-                    values[index] = value
+            for i, replacement in enumerate(self.replacements):
+                indices = self.indices[i]
+                for index in indices:
+                    if index < len(values):
+                        values[index] = replacement.sub(row.columns[index], values[index])
             return values
         else:
             return row.values
+
+
+    def _setup_indices(self, replacements, columns):
+        """ Return a list of matching column indices for each replacement """
+        result = []
+        for replacement in replacements:
+            indices = []
+            for i, column in enumerate(columns):
+                if replacement.matches(column):
+                    indices.append(i)
+            result.append(indices)
+        return result
+
 
     class Replacement:
         """Replacement specification."""
@@ -2388,6 +2404,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
                 self.original = hxl.datatypes.normalise_string(self.original)
 
         def matches(self, column):
+            """ Return true if the replacement applies to the column provided """
             if self.patterns:
                 return hxl.model.TagPattern.match_list(column, self.patterns)
             else:
