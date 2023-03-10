@@ -2357,12 +2357,16 @@ class ReplaceDataFilter(AbstractStreamingFilter):
     def filter_row(self, row):
         """@returns: the row values with replacements"""
         if hxl.model.RowQuery.match_list(row, self.queries):
+            replaced = set()
             values = copy.copy(row.values)
             for i, replacement in enumerate(self.replacements):
                 indices = self.indices[i]
                 for index in indices:
-                    if index < len(values):
-                        values[index] = replacement.sub(values[index])
+                    if index not in replaced and index < len(values):
+                        new_value = replacement.sub(values[index])
+                        if new_value is not False:
+                            replaced.add(index)
+                            values[index] = new_value
             return values
         else:
             return row.values
@@ -2414,16 +2418,17 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             """
             Substitute inside the value, if appropriate.
             @param value: the cell value
-            @returns: the value, possibly changed
+            @returns: the new value if changed; False otherwise
             """
-            result = value
             
             if self.is_regex:
-                result = re.sub(self.original, self.replacement, str(value))
+                result = re.subn(self.original, self.replacement, str(value))
+                if result[1] > 0:
+                    return result[0]
             elif self.original == hxl.datatypes.normalise_string(value):
-                result = self.replacement
+                return self.replacement
 
-            return result
+            return False
 
         @staticmethod
         def parse_map(source):
