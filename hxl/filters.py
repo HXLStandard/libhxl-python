@@ -2387,6 +2387,12 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             if not self.is_regex:
                 self.original = hxl.datatypes.normalise_string(self.original)
 
+        def matches(self, column):
+            if self.patterns:
+                return hxl.model.TagPattern.match_list(column, self.patterns)
+            else:
+                return True
+
         def sub(self, column, value):
             """
             Substitute inside the value, if appropriate.
@@ -2394,14 +2400,15 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             @param value: the cell value
             @returns: the value, possibly changed
             """
-            if self.patterns and not hxl.model.TagPattern.match_list(column, self.patterns):
-                return value
-            elif self.is_regex:
-                return re.sub(self.original, self.replacement, str(value))
-            elif self.original == hxl.datatypes.normalise_string(value):
-                return self.replacement
-            else:
-                return value
+            result = value
+            
+            if self.matches(column):
+                if self.is_regex:
+                    result = re.sub(self.original, self.replacement, str(value))
+                elif self.original == hxl.datatypes.normalise_string(value):
+                    result = self.replacement
+
+            return result
 
         @staticmethod
         def parse_map(source):
