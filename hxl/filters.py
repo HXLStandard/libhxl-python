@@ -2362,7 +2362,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
                 indices = self.indices[i]
                 for index in indices:
                     if index < len(values):
-                        values[index] = replacement.sub(row.columns[index], values[index])
+                        values[index] = replacement.sub(values[index])
             return values
         else:
             return row.values
@@ -2410,20 +2410,18 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             else:
                 return True
 
-        def sub(self, column, value):
+        def sub(self, value):
             """
             Substitute inside the value, if appropriate.
-            @param column: the column definition
             @param value: the cell value
             @returns: the value, possibly changed
             """
             result = value
             
-            if self.matches(column):
-                if self.is_regex:
-                    result = re.sub(self.original, self.replacement, str(value))
-                elif self.original == hxl.datatypes.normalise_string(value):
-                    result = self.replacement
+            if self.is_regex:
+                result = re.sub(self.original, self.replacement, str(value))
+            elif self.original == hxl.datatypes.normalise_string(value):
+                result = self.replacement
 
             return result
 

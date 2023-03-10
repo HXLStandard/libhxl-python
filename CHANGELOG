@@ -1,5 +1,6 @@
 Release 4.28:
 	- simplify Excel handling to remove dependency on mmap and tmpfile
+	- speed up ReplaceDataFilter
 	- add patch from wynnw to fix crash reading some local files
 	- fixed issue where libhxl can't read directly from sys.stdin
 	- don't fall back to CSV if we have a MIME type or file extension that's not in the allow list (which is fairly liberal)
