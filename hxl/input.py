@@ -32,7 +32,7 @@ import hxl, hxl.filters
 from hxl.util import logup
 
 import abc, collections, csv, datetime, dateutil.parser, hashlib, \
-    io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, \
+    io, io_wrapper, json, jsonpath_ng.ext, logging, \
     os.path, re, requests, requests_cache, shutil, six, sys, \
     tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
@@ -148,6 +148,20 @@ HTML5_SIGS = [
     b"\n<BO",
     b"\n<bo",
 ]
+
+CSV_FILE_EXTS = [
+    'ssv',
+    'csv',
+    'tsv',
+    'txt',
+]
+
+CSV_MIME_TYPES = (
+    'text/plain',
+    'text/csv',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+)
 
 
 ########################################################################
@@ -353,21 +367,19 @@ def make_input(raw_source, input_options=None):
 
     """
 
-    def make_tempfile(input):
-        tmpfile = tempfile.NamedTemporaryFile()
-        shutil.copyfileobj(input, tmpfile)
-        tmpfile.seek(0)
-        input.close()
-        return tmpfile # have to return the object, so it doesn't get garbage collected and delete the file
-
     def wrap_stream(stream):
+        if hasattr(stream, 'mode') and 'b' not in stream.mode and hasattr(stream, 'buffer'):
+            # if the stream has a rawio buffer, use it
+            stream = stream.buffer
         if hasattr(stream, 'peek'):
             # already buffered
             return stream
         else:
+            # need to wrap with a buffer
             stream = io_wrapper.RawIOWrapper(stream)
             return io.BufferedReader(io_wrapper.RawIOWrapper(stream))
 
+        
     def match_sigs(sig, sigs):
         for s in sigs:
             if sig.startswith(s):
@@ -425,25 +437,12 @@ def make_input(raw_source, input_options=None):
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
-            tmpfile = None
-            contents = None
-
-            if fileno is not None:
-                 # it's already a file; don't make a new one
-                input.seek(0)
-                contents = mmap.mmap(fileno, 0)
-            elif content_length and content_length <= EXCEL_MEMORY_CUTOFF:
-                # it's small-ish, so load into memory
-                contents = input.read()
-            else:
-                # size unknown, so use a tempfile
-                tmpfile = make_tempfile(input)
-                contents = mmap.mmap(tmpfile.fileno(), 0)
+            contents = input.read()
 
             try:
                 # Is it really an XLS(X) file?
                 logger.debug('Trying input from an Excel file')
-                return ExcelInput(contents, input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
+                return ExcelInput(contents, input_options, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -459,8 +458,17 @@ def make_input(raw_source, input_options=None):
             return JSONInput(input, input_options)
 
         # fall back to CSV if all else fails
-        logger.debug('Making input from CSV')
-        return CSVInput(input, input_options)
+        if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
+            logger.debug('Making input from CSV')
+            return CSVInput(input, input_options)
+
+        raise HXLIOException(
+            'Cannot process as data (extension: {}, MIME type: {})'.format(
+                file_ext if file_ext else '<not provided>',
+                mime_type if mime_type else '<not provided>',
+            ),
+            url_or_filename
+        )
 
 
 def open_url_or_file(url_or_filename, input_options):
@@ -516,7 +524,12 @@ def open_url_or_file(url_or_filename, input_options):
                 raise HXLIOException("Security settings forbid accessing hostnames ending in .localdomain: {}", hostname)
 
         # It looks like a URL
-        file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
+
+        # grab the file extension again, but remove the leading '.'
+
+        if file_ext is None:
+            file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1][1:]
+        
         try:
             url = munge_url(url_or_filename, input_options)
             logup("Trying to open remote resource", {"url": url_or_filename})
@@ -560,7 +573,7 @@ def open_url_or_file(url_or_filename, input_options):
         try:
             info = os.stat(url_or_filename)
             content_length = info.st_size
-            file = io.open(url_or_filename, 'rb+')
+            file = io.open(url_or_filename, 'rb')
             fileno = file.fileno()
             return (file, mime_type, file_ext, encoding, content_length, fileno,)
         except Exception as e:
@@ -1099,38 +1112,20 @@ class ExcelInput(AbstractInput):
     workbook for the first sheet containing HXL hashtags; if that
     fails, will use the first sheet in the workbook.
 
-    Note that this requires a Python tempfile.TemporaryFile object,
-    with the Excel contents copied into it.
-
-    Example:
-    ```
-    tmpfile = tempfile.NamedTemporaryFile();
-    with open("data.xls", "r") as input:
-        shutil.copyfileobj(input, tmpfile)
-
-    with hxl.input.ExcelInput(tmpfile) as xlsx:
-        for raw_row in xlsx:
-            process_row(raw_row)
-    ```
-
     """
 
-    def __init__(self, contents, input_options, tmpfile, url_or_filename=None):
+    def __init__(self, contents, input_options, url_or_filename=None):
         """
 
-        One of tmpfile or contents must be specified.
-
         Args:
-            contents (buffer or mmap): contents of the Excel file
+            contents: contents of the Excel file
             input_options (InputOptions): options for reading a dataset.
-            tmpfile (tempfile.NamedTemporaryFile): temporary file object (keep to avoid garbage collection)
             url_or_filename (string): the original URL or filename or None
         """
         super().__init__(input_options)
         self.url_or_filename = url_or_filename
         self.is_repeatable = True
         self.contents = contents
-        self.tmpfile = tmpfile # prevent garbage collection
 
         self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
 

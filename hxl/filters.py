@@ -2351,18 +2351,38 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
         self.queries = self._setup_queries(queries)
+        self.indices = self._setup_indices(self.replacements, self.columns)
+
 
     def filter_row(self, row):
         """@returns: the row values with replacements"""
         if hxl.model.RowQuery.match_list(row, self.queries):
+            replaced = set()
             values = copy.copy(row.values)
-            for index, value in enumerate(values):
-                for replacement in self.replacements:
-                    value = replacement.sub(row.columns[index], value)
-                    values[index] = value
+            for i, replacement in enumerate(self.replacements):
+                indices = self.indices[i]
+                for index in indices:
+                    if index not in replaced and index < len(values):
+                        new_value = replacement.sub(values[index])
+                        if new_value is not False:
+                            replaced.add(index)
+                            values[index] = new_value
             return values
         else:
             return row.values
+
+
+    def _setup_indices(self, replacements, columns):
+        """ Return a list of matching column indices for each replacement """
+        result = []
+        for replacement in replacements:
+            indices = []
+            for i, column in enumerate(columns):
+                if replacement.matches(column):
+                    indices.append(i)
+            result.append(indices)
+        return result
+
 
     class Replacement:
         """Replacement specification."""
@@ -2387,21 +2407,28 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             if not self.is_regex:
                 self.original = hxl.datatypes.normalise_string(self.original)
 
-        def sub(self, column, value):
+        def matches(self, column):
+            """ Return true if the replacement applies to the column provided """
+            if self.patterns:
+                return hxl.model.TagPattern.match_list(column, self.patterns)
+            else:
+                return True
+
+        def sub(self, value):
             """
             Substitute inside the value, if appropriate.
-            @param column: the column definition
             @param value: the cell value
-            @returns: the value, possibly changed
+            @returns: the new value if changed; False otherwise
             """
-            if self.patterns and not hxl.model.TagPattern.match_list(column, self.patterns):
-                return value
-            elif self.is_regex:
-                return re.sub(self.original, self.replacement, str(value))
+            
+            if self.is_regex:
+                result = re.subn(self.original, self.replacement, str(value))
+                if result[1] > 0:
+                    return result[0]
             elif self.original == hxl.datatypes.normalise_string(value):
                 return self.replacement
-            else:
-                return value
+
+            return False
 
         @staticmethod
         def parse_map(source):
