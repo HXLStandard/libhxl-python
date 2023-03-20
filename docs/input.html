@@ -56,7 +56,7 @@ Examples:
     ```
     # Read a HXL-hashtagged dataset
     dataset = hxl.input.data(&#34;http://example.org/hxl-example.csv&#34;)
-    
+
     # Read a non-HXL dataset and add hashtags
     specs = [[&#39;Cluster&#39;, &#39;#sector&#39;], [&#34;Province&#34;, &#34;#adm1+name&#34;]]
     tagged_data = hxl.input.tagger(&#34;http://example.org/non-hxl-example.csv&#34;, specs)
@@ -81,7 +81,7 @@ import hxl, hxl.filters
 from hxl.util import logup
 
 import abc, collections, csv, datetime, dateutil.parser, hashlib, \
-    io, io_wrapper, json, jsonpath_ng.ext, logging, mmap, \
+    io, io_wrapper, json, jsonpath_ng.ext, logging, \
     os.path, re, requests, requests_cache, shutil, six, sys, \
     tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
@@ -198,6 +198,20 @@ HTML5_SIGS = [
     b&#34;\n&lt;bo&#34;,
 ]
 
+CSV_FILE_EXTS = [
+    &#39;ssv&#39;,
+    &#39;csv&#39;,
+    &#39;tsv&#39;,
+    &#39;txt&#39;,
+]
+
+CSV_MIME_TYPES = (
+    &#39;text/plain&#39;,
+    &#39;text/csv&#39;,
+    &#39;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&#39;,
+    &#39;application/vnd.ms-excel&#39;,
+)
+
 
 ########################################################################
 # Exported functions
@@ -250,10 +264,10 @@ def data(data, input_options=None):
                         return source
                     except:
                         pass
-        
+
         return HXLReader(make_input(data, input_options))
 
-    
+
 def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
     &#34;&#34;&#34;Open an untagged data source and add hashtags.
 
@@ -299,7 +313,7 @@ def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
         )
     )
 
-    
+
 def write_hxl(output, source, show_headers=True, show_tags=True):
     &#34;&#34;&#34;Serialize a HXL dataset to an output stream in CSV format.
 
@@ -313,12 +327,12 @@ def write_hxl(output, source, show_headers=True, show_tags=True):
 
     Raises:
         IOError: if there&#39;s a problem writing the output
-    
+
     &#34;&#34;&#34;
     for line in source.gen_csv(show_headers, show_tags):
         output.write(line)
 
-        
+
 def write_json(output, source, show_headers=True, show_tags=True, use_objects=False):
     &#34;&#34;&#34;Serialize a HXL dataset to an output stream.
 
@@ -365,7 +379,7 @@ def write_json(output, source, show_headers=True, show_tags=True, use_objects=Fa
 
     Raises:
         IOError: if there&#39;s a problem writing the output
-    
+
     &#34;&#34;&#34;
     for line in source.gen_json(show_headers, show_tags, use_objects):
         output.write(line)
@@ -402,21 +416,19 @@ def make_input(raw_source, input_options=None):
 
     &#34;&#34;&#34;
 
-    def make_tempfile(input):
-        tmpfile = tempfile.NamedTemporaryFile()
-        shutil.copyfileobj(input, tmpfile)
-        tmpfile.seek(0)
-        input.close()
-        return tmpfile # have to return the object, so it doesn&#39;t get garbage collected and delete the file
-
     def wrap_stream(stream):
+        if hasattr(stream, &#39;mode&#39;) and &#39;b&#39; not in stream.mode and hasattr(stream, &#39;buffer&#39;):
+            # if the stream has a rawio buffer, use it
+            stream = stream.buffer
         if hasattr(stream, &#39;peek&#39;):
             # already buffered
             return stream
         else:
+            # need to wrap with a buffer
             stream = io_wrapper.RawIOWrapper(stream)
             return io.BufferedReader(io_wrapper.RawIOWrapper(stream))
 
+        
     def match_sigs(sig, sigs):
         for s in sigs:
             if sig.startswith(s):
@@ -474,25 +486,12 @@ def make_input(raw_source, input_options=None):
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
-            tmpfile = None
-            contents = None
-
-            if fileno is not None:
-                 # it&#39;s already a file; don&#39;t make a new one
-                input.seek(0)
-                contents = mmap.mmap(fileno, 0)
-            elif content_length and content_length &lt;= EXCEL_MEMORY_CUTOFF:
-                # it&#39;s small-ish, so load into memory
-                contents = input.read()
-            else:
-                # size unknown, so use a tempfile
-                tmpfile = make_tempfile(input)
-                contents = mmap.mmap(tmpfile.fileno(), 0)
+            contents = input.read()
 
             try:
                 # Is it really an XLS(X) file?
                 logger.debug(&#39;Trying input from an Excel file&#39;)
-                return ExcelInput(contents, input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
+                return ExcelInput(contents, input_options, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -508,8 +507,17 @@ def make_input(raw_source, input_options=None):
             return JSONInput(input, input_options)
 
         # fall back to CSV if all else fails
-        logger.debug(&#39;Making input from CSV&#39;)
-        return CSVInput(input, input_options)
+        if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
+            logger.debug(&#39;Making input from CSV&#39;)
+            return CSVInput(input, input_options)
+
+        raise HXLIOException(
+            &#39;Cannot process as data (extension: {}, MIME type: {})&#39;.format(
+                file_ext if file_ext else &#39;&lt;not provided&gt;&#39;,
+                mime_type if mime_type else &#39;&lt;not provided&gt;&#39;,
+            ),
+            url_or_filename
+        )
 
 
 def open_url_or_file(url_or_filename, input_options):
@@ -559,13 +567,18 @@ def open_url_or_file(url_or_filename, input_options):
             # forbid localhost
             if hostname == &#34;localhost&#34;:
                 raise HXLIOException(&#34;Security settings forbid accessing localhost&#34;)
-                
+
             # forbid localhost
             if hostname.endswith(&#34;.localdomain&#34;):
                 raise HXLIOException(&#34;Security settings forbid accessing hostnames ending in .localdomain: {}&#34;, hostname)
-                
+
         # It looks like a URL
-        file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1]
+
+        # grab the file extension again, but remove the leading &#39;.&#39;
+
+        if file_ext is None:
+            file_ext = os.path.splitext(urllib.parse.urlparse(url_or_filename).path)[1][1:]
+        
         try:
             url = munge_url(url_or_filename, input_options)
             logup(&#34;Trying to open remote resource&#34;, {&#34;url&#34;: url_or_filename})
@@ -609,7 +622,7 @@ def open_url_or_file(url_or_filename, input_options):
         try:
             info = os.stat(url_or_filename)
             content_length = info.st_size
-            file = io.open(url_or_filename, &#39;rb+&#39;)
+            file = io.open(url_or_filename, &#39;rb&#39;)
             fileno = file.fileno()
             return (file, mime_type, file_ext, encoding, content_length, fileno,)
         except Exception as e:
@@ -660,7 +673,7 @@ class HXLAuthorizationException(HXLIOException):
 
     This exception means that the library was not allowed to read the remote resource.
     Sometimes adding an ``Authorization:`` HTTP header with a token will help.
-    
+
     &#34;&#34;&#34;
     def __init__(self, message, url, is_ckan=False):
         &#34;&#34;&#34;
@@ -676,7 +689,7 @@ class HXLAuthorizationException(HXLIOException):
 
 class HXLParseException(HXLIOException):
     &#34;&#34;&#34;A parsing error in a HXL dataset.
-    
+
     This exception means that something was wrong with the HXL tagging
     (or similar). The ``message`` will contain details, and if
     possible, there will be a column and row number to help the user
@@ -690,7 +703,7 @@ class HXLParseException(HXLIOException):
             source_row_number (int): the row number in the raw source data, if known.
             source_column_number (int): the column number in the raw source data, if known.
             url (str): the URL of the source data, if relevant.
-        
+
         &#34;&#34;&#34;
         super().__init__(message, url)
         self.source_row_number = source_row_number
@@ -722,7 +735,7 @@ class HXLTagsNotFoundException(HXLParseException):
         Args:
             message (str): the error message
             url (str): the URL of the source data, if available
-        
+
         &#34;&#34;&#34;
         super().__init__(message, url)
 
@@ -880,7 +893,7 @@ class AbstractInput(object):
         - hashtag hash (MD5 string, or null if not HXLated)
 
         (Currently supported only for Excel.)
-        
+
         &#34;&#34;&#34;
         raise NotImplementedError()
 
@@ -923,7 +936,7 @@ class CSVInput(AbstractInput):
 
         # guess the delimiter
         delimiter = CSVInput._detect_delimiter(input, input_options.encoding or &#34;utf-8&#34;)
-        
+
         self._input = io.TextIOWrapper(input, encoding=input_options.encoding, errors=&#34;replace&#34;)
         self._reader = csv.reader(self._input, delimiter=delimiter)
 
@@ -954,7 +967,7 @@ class CSVInput(AbstractInput):
             except Exception as e:
                 continue
             break
-        
+
         lines = re.split(r&#39;\r?\n&#39;, sample)
 
         # first, try for a hashtag row
@@ -977,10 +990,10 @@ class CSVInput(AbstractInput):
             if count &gt; max_count:
                 max_count = count
                 most_common_delim = delim
-                    
+
         logger.debug(&#34;Failed to parse a HXL hashtag row, so using most-common CSV delimiter \&#34;%s\&#34;&#34;, most_common_delim)
         return most_common_delim
-    
+
 
 class JSONInput(AbstractInput):
     &#34;&#34;&#34;Iterable: Read raw JSON rows from an input stream.
@@ -1093,7 +1106,7 @@ class JSONInput(AbstractInput):
     def _search_data(self, data):
         &#34;&#34;&#34;Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)
         @param data: top level of the JSON data to search
-        @returns: the 
+        @returns: the
         &#34;&#34;&#34;
 
         if hxl.datatypes.is_list(data):
@@ -1122,7 +1135,7 @@ class JSONInput(AbstractInput):
         def __init__(self, outer):
             self.outer = outer
             self._iterator = iter(self.outer.json_data)
-            
+
         def __next__(self):
             &#34;&#34;&#34;Return the next row in a tabular view of the data.&#34;&#34;&#34;
             if self.outer.show_headers:
@@ -1148,45 +1161,27 @@ class ExcelInput(AbstractInput):
     workbook for the first sheet containing HXL hashtags; if that
     fails, will use the first sheet in the workbook.
 
-    Note that this requires a Python tempfile.TemporaryFile object,
-    with the Excel contents copied into it.
-
-    Example:
-    ```
-    tmpfile = tempfile.NamedTemporaryFile();
-    with open(&#34;data.xls&#34;, &#34;r&#34;) as input:
-        shutil.copyfileobj(input, tmpfile)
-
-    with hxl.input.ExcelInput(tmpfile) as xlsx:
-        for raw_row in xlsx:
-            process_row(raw_row)
-    ```
-
     &#34;&#34;&#34;
 
-    def __init__(self, contents, input_options, tmpfile, url_or_filename=None):
+    def __init__(self, contents, input_options, url_or_filename=None):
         &#34;&#34;&#34;
 
-        One of tmpfile or contents must be specified.
-
         Args:
-            contents (buffer or mmap): contents of the Excel file
+            contents: contents of the Excel file
             input_options (InputOptions): options for reading a dataset.
-            tmpfile (tempfile.NamedTemporaryFile): temporary file object (keep to avoid garbage collection)
             url_or_filename (string): the original URL or filename or None
         &#34;&#34;&#34;
         super().__init__(input_options)
         self.url_or_filename = url_or_filename
         self.is_repeatable = True
         self.contents = contents
-        self.tmpfile = tmpfile # prevent garbage collection
 
         self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
 
         sheet_index = self.input_options.sheet_index
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
-            
+
         self._sheet = self._get_sheet(sheet_index)
         self.merged_values = {}
 
@@ -1200,7 +1195,7 @@ class ExcelInput(AbstractInput):
             for value in raw_row:
                 md5.update(hxl.datatypes.normalise_space(value).encode(&#39;utf-8&#39;))
             return md5.hexdigest()
-            
+
         result = {
             &#34;url_or_filename&#34;: self.url_or_filename,
             &#34;format&#34;: &#34;XLSX&#34; if self._workbook.biff_version == 0 else &#34;XLS&#34;,
@@ -1291,7 +1286,7 @@ class ExcelInput(AbstractInput):
     def _do_expand (self, row_num, col_num, value):
         &#34;&#34;&#34; Repeat a value in a merged section, if necessary.
         &#34;&#34;&#34;
-        
+
         if self.input_options.expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
@@ -1313,7 +1308,7 @@ class ExcelInput(AbstractInput):
             self.outer = outer
             self._row_index = 0
             self._col_max = 0
-            
+
         def __next__(self):
             if self._row_index &lt; self.outer._sheet.nrows:
                 row = []
@@ -1344,7 +1339,7 @@ class ExcelInput(AbstractInput):
                             &#39;&#39;,
                         )
                     )
-                    
+
                 self._row_index += 1
                 return row
             else:
@@ -1402,7 +1397,7 @@ class HXLReader(hxl.model.Dataset):
         self._iter = iter(self._input)
         self._columns = None
         self._source_row_number = -1 # TODO this belongs in the iterator
-        
+
     def __enter__(self):
         &#34;&#34;&#34;Context-start support.&#34;&#34;&#34;
         if self._input:
@@ -1474,7 +1469,7 @@ class HXLReader(hxl.model.Dataset):
 
     class _HXLIter:
         &#34;&#34;&#34;Internal iterator class&#34;&#34;&#34;
-        
+
         def __init__(self, outer):
             self.outer = outer
             self.row_number = -1
@@ -1531,11 +1526,11 @@ def from_spec(spec, allow_local_ok=False):
     Example:
     ```
     &#34;recipe:&#34; [
-        { 
+        {
             &#34;filter&#34;: &#34;with_rows&#34;,
             &#34;queries&#34;: [&#34;org=unicef&#34;]
         },
-        { 
+        {
             &#34;filter&#34;: &#34;count&#34;,
             &#34;tags&#34;: &#34;adm1+name&#34;
         }
@@ -1543,7 +1538,7 @@ def from_spec(spec, allow_local_ok=False):
     ```
 
     &#34;&#34;&#34;
-    
+
     if isinstance(spec, six.string_types):
         # a JSON string (parse it first)
         spec = json.loads(spec)
@@ -1708,7 +1703,7 @@ def munge_url(url, input_options):
 
 def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
     &#34;&#34;&#34;Look up a CKAN download URL starting from a dataset or resource page
-    
+
     If the link is to a dataset page, try the first resource. If it&#39;s
     to a resource page, look up the resource&#39;s download link. Either
     dataset_id or resource_id is required (will prefer resource_id
@@ -1777,7 +1772,7 @@ def _get_ckan_urls(site_url, dataset_id, resource_id, input_options):
             )
 
     return result_urls
-    
+
 
 def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
     &#34;&#34;&#34; Create an export for a Kobo survey, then return the download link.
@@ -1852,7 +1847,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         raise HXLAuthorizationException(&#34;Access not authorized&#34;, url=url)
     else:
         response.raise_for_status()
-        
+
     info_url = response.json().get(&#34;url&#34;)
 
     # 3. Look up the data record for the export to get the download URL
@@ -1975,7 +1970,7 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
                         return source
                     except:
                         pass
-        
+
         return HXLReader(make_input(data, input_options))</code></pre>
 </details>
 </dd>
@@ -2018,11 +2013,11 @@ properties for each filter type, and is documented at
 <a href="https://github.com/HXLStandard/hxl-proxy/wiki/JSON-recipes">https://github.com/HXLStandard/hxl-proxy/wiki/JSON-recipes</a></p>
 <p>Example:</p>
 <pre><code>&quot;recipe:&quot; [
-    { 
+    {
         &quot;filter&quot;: &quot;with_rows&quot;,
         &quot;queries&quot;: [&quot;org=unicef&quot;]
     },
-    { 
+    {
         &quot;filter&quot;: &quot;count&quot;,
         &quot;tags&quot;: &quot;adm1+name&quot;
     }
@@ -2073,11 +2068,11 @@ properties for each filter type, and is documented at
     Example:
     ```
     &#34;recipe:&#34; [
-        { 
+        {
             &#34;filter&#34;: &#34;with_rows&#34;,
             &#34;queries&#34;: [&#34;org=unicef&#34;]
         },
-        { 
+        {
             &#34;filter&#34;: &#34;count&#34;,
             &#34;tags&#34;: &#34;adm1+name&#34;
         }
@@ -2085,7 +2080,7 @@ properties for each filter type, and is documented at
     ```
 
     &#34;&#34;&#34;
-    
+
     if isinstance(spec, six.string_types):
         # a JSON string (parse it first)
         spec = json.loads(spec)
@@ -2207,21 +2202,19 @@ for raw_row in input:
 
     &#34;&#34;&#34;
 
-    def make_tempfile(input):
-        tmpfile = tempfile.NamedTemporaryFile()
-        shutil.copyfileobj(input, tmpfile)
-        tmpfile.seek(0)
-        input.close()
-        return tmpfile # have to return the object, so it doesn&#39;t get garbage collected and delete the file
-
     def wrap_stream(stream):
+        if hasattr(stream, &#39;mode&#39;) and &#39;b&#39; not in stream.mode and hasattr(stream, &#39;buffer&#39;):
+            # if the stream has a rawio buffer, use it
+            stream = stream.buffer
         if hasattr(stream, &#39;peek&#39;):
             # already buffered
             return stream
         else:
+            # need to wrap with a buffer
             stream = io_wrapper.RawIOWrapper(stream)
             return io.BufferedReader(io_wrapper.RawIOWrapper(stream))
 
+        
     def match_sigs(sig, sigs):
         for s in sigs:
             if sig.startswith(s):
@@ -2279,25 +2272,12 @@ for raw_row in input:
 
         if match_sigs(sig, XLS_SIGS) or match_sigs(sig, XLSX_SIGS):
 
-            tmpfile = None
-            contents = None
-
-            if fileno is not None:
-                 # it&#39;s already a file; don&#39;t make a new one
-                input.seek(0)
-                contents = mmap.mmap(fileno, 0)
-            elif content_length and content_length &lt;= EXCEL_MEMORY_CUTOFF:
-                # it&#39;s small-ish, so load into memory
-                contents = input.read()
-            else:
-                # size unknown, so use a tempfile
-                tmpfile = make_tempfile(input)
-                contents = mmap.mmap(tmpfile.fileno(), 0)
+            contents = input.read()
 
             try:
                 # Is it really an XLS(X) file?
                 logger.debug(&#39;Trying input from an Excel file&#39;)
-                return ExcelInput(contents, input_options, tmpfile=tmpfile, url_or_filename=url_or_filename)
+                return ExcelInput(contents, input_options, url_or_filename=url_or_filename)
             except xlrd.XLRDError:
                 # If not, see if it contains a CSV file
                 if match_sigs(sig, ZIP_SIGS): # more-restrictive
@@ -2313,8 +2293,17 @@ for raw_row in input:
             return JSONInput(input, input_options)
 
         # fall back to CSV if all else fails
-        logger.debug(&#39;Making input from CSV&#39;)
-        return CSVInput(input, input_options)</code></pre>
+        if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
+            logger.debug(&#39;Making input from CSV&#39;)
+            return CSVInput(input, input_options)
+
+        raise HXLIOException(
+            &#39;Cannot process as data (extension: {}, MIME type: {})&#39;.format(
+                file_ext if file_ext else &#39;&lt;not provided&gt;&#39;,
+                mime_type if mime_type else &#39;&lt;not provided&gt;&#39;,
+            ),
+            url_or_filename
+        )</code></pre>
 </details>
 </dd>
 <dt id="hxl.input.tagger"><code class="name flex">
@@ -2449,7 +2438,7 @@ to the data() function.</p>
 
     Raises:
         IOError: if there&#39;s a problem writing the output
-    
+
     &#34;&#34;&#34;
     for line in source.gen_csv(show_headers, show_tags):
         output.write(line)</code></pre>
@@ -2557,7 +2546,7 @@ to the data() function.</p>
 
     Raises:
         IOError: if there&#39;s a problem writing the output
-    
+
     &#34;&#34;&#34;
     for line in source.gen_json(show_headers, show_tags, use_objects):
         output.write(line)</code></pre>
@@ -2622,7 +2611,7 @@ at this stage.</p></div>
         - hashtag hash (MD5 string, or null if not HXLated)
 
         (Currently supported only for Excel.)
-        
+
         &#34;&#34;&#34;
         raise NotImplementedError()
 
@@ -2694,7 +2683,7 @@ Uses low-level row-wise input, so the source doesn't have to be HXLated.</p>
     - hashtag hash (MD5 string, or null if not HXLated)
 
     (Currently supported only for Excel.)
-    
+
     &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
@@ -2807,7 +2796,7 @@ alone.</p>
 
         # guess the delimiter
         delimiter = CSVInput._detect_delimiter(input, input_options.encoding or &#34;utf-8&#34;)
-        
+
         self._input = io.TextIOWrapper(input, encoding=input_options.encoding, errors=&#34;replace&#34;)
         self._reader = csv.reader(self._input, delimiter=delimiter)
 
@@ -2838,7 +2827,7 @@ alone.</p>
             except Exception as e:
                 continue
             break
-        
+
         lines = re.split(r&#39;\r?\n&#39;, sample)
 
         # first, try for a hashtag row
@@ -2861,7 +2850,7 @@ alone.</p>
             if count &gt; max_count:
                 max_count = count
                 most_common_delim = delim
-                    
+
         logger.debug(&#34;Failed to parse a HXL hashtag row, so using most-common CSV delimiter \&#34;%s\&#34;&#34;, most_common_delim)
         return most_common_delim</code></pre>
 </details>
@@ -2880,33 +2869,19 @@ alone.</p>
 </dd>
 <dt id="hxl.input.ExcelInput"><code class="flex name class">
 <span>class <span class="ident">ExcelInput</span></span>
-<span>(</span><span>contents, input_options, tmpfile, url_or_filename=None)</span>
+<span>(</span><span>contents, input_options, url_or_filename=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Iterable: Read raw XLS or XLSX (Excel) rows from a temporary file object</p>
 <p>If there is no sheet number specified, will scan the Excel
 workbook for the first sheet containing HXL hashtags; if that
 fails, will use the first sheet in the workbook.</p>
-<p>Note that this requires a Python tempfile.TemporaryFile object,
-with the Excel contents copied into it.</p>
-<p>Example:</p>
-<pre><code>tmpfile = tempfile.NamedTemporaryFile();
-with open(&quot;data.xls&quot;, &quot;r&quot;) as input:
-    shutil.copyfileobj(input, tmpfile)
-
-with hxl.input.ExcelInput(tmpfile) as xlsx:
-    for raw_row in xlsx:
-        process_row(raw_row)
-</code></pre>
-<p>One of tmpfile or contents must be specified.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>contents</code></strong> :&ensp;<code>buffer</code> or <code>mmap</code></dt>
+<dt><strong><code>contents</code></strong></dt>
 <dd>contents of the Excel file</dd>
 <dt><strong><code>input_options</code></strong> :&ensp;<code><a title="hxl.input.InputOptions" href="#hxl.input.InputOptions">InputOptions</a></code></dt>
 <dd>options for reading a dataset.</dd>
-<dt><strong><code>tmpfile</code></strong> :&ensp;<code>tempfile.NamedTemporaryFile</code></dt>
-<dd>temporary file object (keep to avoid garbage collection)</dd>
 <dt><strong><code>url_or_filename</code></strong> :&ensp;<code>string</code></dt>
 <dd>the original URL or filename or None</dd>
 </dl></div>
@@ -2921,45 +2896,27 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
     workbook for the first sheet containing HXL hashtags; if that
     fails, will use the first sheet in the workbook.
 
-    Note that this requires a Python tempfile.TemporaryFile object,
-    with the Excel contents copied into it.
-
-    Example:
-    ```
-    tmpfile = tempfile.NamedTemporaryFile();
-    with open(&#34;data.xls&#34;, &#34;r&#34;) as input:
-        shutil.copyfileobj(input, tmpfile)
-
-    with hxl.input.ExcelInput(tmpfile) as xlsx:
-        for raw_row in xlsx:
-            process_row(raw_row)
-    ```
-
     &#34;&#34;&#34;
 
-    def __init__(self, contents, input_options, tmpfile, url_or_filename=None):
+    def __init__(self, contents, input_options, url_or_filename=None):
         &#34;&#34;&#34;
 
-        One of tmpfile or contents must be specified.
-
         Args:
-            contents (buffer or mmap): contents of the Excel file
+            contents: contents of the Excel file
             input_options (InputOptions): options for reading a dataset.
-            tmpfile (tempfile.NamedTemporaryFile): temporary file object (keep to avoid garbage collection)
             url_or_filename (string): the original URL or filename or None
         &#34;&#34;&#34;
         super().__init__(input_options)
         self.url_or_filename = url_or_filename
         self.is_repeatable = True
         self.contents = contents
-        self.tmpfile = tmpfile # prevent garbage collection
 
         self._workbook = xlrd.open_workbook(file_contents=contents, on_demand=False, ragged_rows=True)
 
         sheet_index = self.input_options.sheet_index
         if sheet_index is None:
             sheet_index = self._find_hxl_sheet_index()
-            
+
         self._sheet = self._get_sheet(sheet_index)
         self.merged_values = {}
 
@@ -2973,7 +2930,7 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
             for value in raw_row:
                 md5.update(hxl.datatypes.normalise_space(value).encode(&#39;utf-8&#39;))
             return md5.hexdigest()
-            
+
         result = {
             &#34;url_or_filename&#34;: self.url_or_filename,
             &#34;format&#34;: &#34;XLSX&#34; if self._workbook.biff_version == 0 else &#34;XLS&#34;,
@@ -3064,7 +3021,7 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
     def _do_expand (self, row_num, col_num, value):
         &#34;&#34;&#34; Repeat a value in a merged section, if necessary.
         &#34;&#34;&#34;
-        
+
         if self.input_options.expand_merged:
             for merge in self._sheet.merged_cells:
                 row_min, row_max, col_min, col_max = merge
@@ -3086,7 +3043,7 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
             self.outer = outer
             self._row_index = 0
             self._col_max = 0
-            
+
         def __next__(self):
             if self._row_index &lt; self.outer._sheet.nrows:
                 row = []
@@ -3117,7 +3074,7 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
                             &#39;&#39;,
                         )
                     )
-                    
+
                 self._row_index += 1
                 return row
             else:
@@ -3148,7 +3105,7 @@ with hxl.input.ExcelInput(tmpfile) as xlsx:
         for value in raw_row:
             md5.update(hxl.datatypes.normalise_space(value).encode(&#39;utf-8&#39;))
         return md5.hexdigest()
-        
+
     result = {
         &#34;url_or_filename&#34;: self.url_or_filename,
         &#34;format&#34;: &#34;XLSX&#34; if self._workbook.biff_version == 0 else &#34;XLS&#34;,
@@ -3199,7 +3156,7 @@ Sometimes adding an <code>Authorization:</code> HTTP header with a token will he
 
     This exception means that the library was not allowed to read the remote resource.
     Sometimes adding an ``Authorization:`` HTTP header with a token will help.
-    
+
     &#34;&#34;&#34;
     def __init__(self, message, url, is_ckan=False):
         &#34;&#34;&#34;
@@ -3311,7 +3268,7 @@ locate the error.</p>
 </summary>
 <pre><code class="python">class HXLParseException(HXLIOException):
     &#34;&#34;&#34;A parsing error in a HXL dataset.
-    
+
     This exception means that something was wrong with the HXL tagging
     (or similar). The ``message`` will contain details, and if
     possible, there will be a column and row number to help the user
@@ -3325,7 +3282,7 @@ locate the error.</p>
             source_row_number (int): the row number in the raw source data, if known.
             source_column_number (int): the column number in the raw source data, if known.
             url (str): the URL of the source data, if relevant.
-        
+
         &#34;&#34;&#34;
         super().__init__(message, url)
         self.source_row_number = source_row_number
@@ -3394,7 +3351,7 @@ that's available for iteration and filter chaining.</p>
         self._iter = iter(self._input)
         self._columns = None
         self._source_row_number = -1 # TODO this belongs in the iterator
-        
+
     def __enter__(self):
         &#34;&#34;&#34;Context-start support.&#34;&#34;&#34;
         if self._input:
@@ -3466,7 +3423,7 @@ that's available for iteration and filter chaining.</p>
 
     class _HXLIter:
         &#34;&#34;&#34;Internal iterator class&#34;&#34;&#34;
-        
+
         def __init__(self, outer):
             self.outer = outer
             self.row_number = -1
@@ -3626,7 +3583,7 @@ Using the <code><a title="hxl.input.tagger" href="#hxl.input.tagger">tagger()</a
         Args:
             message (str): the error message
             url (str): the URL of the source data, if available
-        
+
         &#34;&#34;&#34;
         super().__init__(message, url)</code></pre>
 </details>
@@ -3845,7 +3802,7 @@ statement) to find the data rows.</p>
     def _search_data(self, data):
         &#34;&#34;&#34;Recursive, breadth-first search for usable tabular data (JSON array of arrays or array of objects)
         @param data: top level of the JSON data to search
-        @returns: the 
+        @returns: the
         &#34;&#34;&#34;
 
         if hxl.datatypes.is_list(data):
@@ -3874,7 +3831,7 @@ statement) to find the data rows.</p>
         def __init__(self, outer):
             self.outer = outer
             self._iterator = iter(self.outer.json_data)
-            
+
         def __next__(self):
             &#34;&#34;&#34;Return the next row in a tabular view of the data.&#34;&#34;&#34;
             if self.outer.show_headers:

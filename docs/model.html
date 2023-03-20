@@ -65,6 +65,8 @@ import abc, copy, csv, dateutil, hashlib, json, logging, operator, re, six
 
 import hxl
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 
@@ -98,7 +100,7 @@ class TagPattern(object):
 
     &#34;&#34;&#34;
 
-    
+
     PATTERN = r&#39;^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*(!)?\s*$&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
     &#34;&#34;&#34;Constant: regular expression to match a HXL tag pattern.
     &#34;&#34;&#34;
@@ -108,10 +110,10 @@ class TagPattern(object):
 
         self.include_attributes = set(include_attributes)
         &#34;&#34;&#34;Set of all attributes that must be present&#34;&#34;&#34;
-        
+
         self.exclude_attributes = set(exclude_attributes)
         &#34;&#34;&#34;Set of all attributes that must not be present&#34;&#34;&#34;
-        
+
         self.is_absolute = is_absolute
         &#34;&#34;&#34;True if this pattern is absolute (no extra attributes allowed)&#34;&#34;&#34;
 
@@ -191,7 +193,7 @@ class TagPattern(object):
 
         The [parse_list()](#hxl.model.TagPattern.parse_list) method
         will call this method to parse multiple patterns at once.
-        
+
         Args:
             s: the tag-pattern string to parse
 
@@ -246,7 +248,7 @@ class TagPattern(object):
             patterns = TagPattern.parse_list(&#34;#affected+f,#inneed+f&#34;)
             # or
             patterns = TagPattern.parse_list(&#34;#affected+f&#34;, &#34;#inneed+f&#34;)
-        
+
         Args:
             specs: the raw input (a list of strings, or a single string with commas separating the patterns)
 
@@ -371,7 +373,7 @@ class Dataset(object):
             for value in row:
                 md5.update(hxl.datatypes.normalise_space(value).encode(&#39;utf-8&#39;))
         return md5.hexdigest()
-    
+
     @property
     def headers(self):
         &#34;&#34;&#34;Return a list of header strings (for a spreadsheet row).
@@ -550,8 +552,10 @@ class Dataset(object):
         @returns: a new HXL source for chaining
         &#34;&#34;&#34;
         import hxl.filters
+        logup(&#39;Loading append list&#39;, {&#34;list&#34;: source_list_url}, level=&#39;debug&#39;)
         logger.debug(&#34;Loading append list from %s...&#34;, source_list_url)
         append_sources = hxl.filters.AppendFilter.parse_external_source_list(source_list_url)
+        logup(&#39;Done loading&#39;, {&#34;list&#34;: source_list_url}, level=&#39;debug&#39;)
         logger.debug(&#34;Done loading&#34;)
         return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)
 
@@ -649,7 +653,7 @@ class Dataset(object):
             purge=purge,
             queries=queries
         )
-    
+
     def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
         &#34;&#34;&#34;Merges values from a second dataset.
         @param merge_source: the second HXL data source
@@ -678,14 +682,14 @@ class Dataset(object):
         @return: filtered dataset.
         @see hxl.filters.ExplodeFilter
         &#34;&#34;&#34;
-        
+
         import hxl.filters
         return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
 
     def implode(self, label_pattern, value_pattern):
         &#34;&#34;&#34;Implodes a long dataset into a wide dataset
         @param label_pattern: the tag pattern to match the label column
-        @param value_pattern: the tag pattern to match the 
+        @param value_pattern: the tag pattern to match the
         @return: filtered dataset.
         @see hxl.filters.ImplodeFilter
         &#34;&#34;&#34;
@@ -770,7 +774,7 @@ class Dataset(object):
 class Column(object):
     &#34;&#34;&#34;
     The definition of a logical column in the HXL data.
-    &#34;&#34;&#34; 
+    &#34;&#34;&#34;
 
     # Regular expression to match a HXL tag
     PATTERN = r&#39;^\s*(#{token})((?:\s*\+{token})*)\s*$&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
@@ -800,7 +804,7 @@ class Column(object):
         Attributes are not sorted.
         &#34;&#34;&#34;
         return self.get_display_tag(sort_attributes=False)
-    
+
     def get_display_tag(self, sort_attributes=False):
         &#34;&#34;&#34;
         Generate a display version of the column hashtag
@@ -888,7 +892,7 @@ class Column(object):
         @param use_exception: if True, throw an exception for a malformed tagspec
         @returns: None if the string is empty, False if it&#39;s malformed (and use_exception is False), or a Column object otherwise
         &#34;&#34;&#34;
-        
+
         # Already parsed?
         if isinstance(raw_string, Column):
             return raw_string
@@ -896,7 +900,7 @@ class Column(object):
         # Empty string?
         if hxl.datatypes.is_empty(raw_string):
             return None
-        
+
         # Pattern for a single tag
         result = re.match(Column.PATTERN, raw_string)
         if result:
@@ -911,6 +915,7 @@ class Column(object):
             if use_exception:
                 raise hxl.HXLException(&#34;Malformed tag expression: &#34; + raw_string)
             else:
+                logup(&#39;Not a HXL hashtag spec&#39;, {&#34;string&#34;: raw_string}, level=&#39;debug&#39;)
                 logger.debug(&#34;Not a HXL hashtag spec: %s&#34;, raw_string)
                 return False
 
@@ -920,7 +925,7 @@ class Column(object):
         # Already parsed?
         if isinstance(raw_string, Column):
             return raw_string
-        
+
         matches = re.match(r&#39;^(.*)(#.*)$&#39;, raw_string)
         if matches:
             header = matches.group(1) if matches.group(1) else default_header
@@ -970,11 +975,12 @@ class Column(object):
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (nonEmptyCount &gt; 0) and ((hashtags_found/float(nonEmptyCount)) &gt;= FUZZY_HASHTAG_PERCENTAGE):
             if len(failed_hashtags) &gt; 0:
+                logup(&#39;Skipping column(s) with malformed hashtag specs&#39;, {&#34;hastags&#34;: &#39;, &#39;.join(failed_hashtags)}, level=&#39;error&#39;)
                 logger.error(&#39;Skipping column(s) with malformed hashtag specs: %s&#39;, &#39;, &#39;.join(failed_hashtags))
             return columns
         else:
             return None
-    
+
 
 class Row(object):
     &#34;&#34;&#34; An iterable row of values in a HXL dataset.
@@ -1154,7 +1160,7 @@ class RowQuery(object):
         self.is_aggregate=is_aggregate
         self.needs_aggregate = False
         &#34;&#34;&#34;Need to calculate an aggregate value&#34;&#34;&#34;
-        
+
         if is_aggregate:
             self.needs_aggregate = True
 
@@ -1169,6 +1175,7 @@ class RowQuery(object):
         @param dataset: the HXL dataset to use (must be cached)
         &#34;&#34;&#34;
         if not self.needs_aggregate:
+            logup(&#39;no aggregate calculation needed&#39;, level=&#39;warning&#39;)
             logger.warning(&#34;no aggregate calculation needed&#34;)
             return # no need to calculate
         if not dataset.is_cached:
@@ -1188,7 +1195,7 @@ class RowQuery(object):
         else:
             raise HXLException(&#34;Unrecognised aggregate: {}&#34;.format(value))
         self.needs_aggregate = False
-                               
+
     def match_row(self, row):
         &#34;&#34;&#34;Check if a key-value pair appears in a HXL row&#34;&#34;&#34;
 
@@ -1323,7 +1330,7 @@ class RowQuery(object):
             return (hxl.datatypes.is_date(s) is False)
         else:
             raise hxl.HXLException(&#39;Unknown is condition: {}&#39;.format(condition))
-    
+
 
     # Constant map of comparison operators
     OPERATOR_MAP = {
@@ -1335,7 +1342,7 @@ class RowQuery(object):
         &#39;&gt;=&#39;: operator.ge,
     }
 
-    
+
 # Static functions
 
 def get_column_indices(tag_patterns, columns):
@@ -1421,7 +1428,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
 <pre><code class="python">class Column(object):
     &#34;&#34;&#34;
     The definition of a logical column in the HXL data.
-    &#34;&#34;&#34; 
+    &#34;&#34;&#34;
 
     # Regular expression to match a HXL tag
     PATTERN = r&#39;^\s*(#{token})((?:\s*\+{token})*)\s*$&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
@@ -1451,7 +1458,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
         Attributes are not sorted.
         &#34;&#34;&#34;
         return self.get_display_tag(sort_attributes=False)
-    
+
     def get_display_tag(self, sort_attributes=False):
         &#34;&#34;&#34;
         Generate a display version of the column hashtag
@@ -1539,7 +1546,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
         @param use_exception: if True, throw an exception for a malformed tagspec
         @returns: None if the string is empty, False if it&#39;s malformed (and use_exception is False), or a Column object otherwise
         &#34;&#34;&#34;
-        
+
         # Already parsed?
         if isinstance(raw_string, Column):
             return raw_string
@@ -1547,7 +1554,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
         # Empty string?
         if hxl.datatypes.is_empty(raw_string):
             return None
-        
+
         # Pattern for a single tag
         result = re.match(Column.PATTERN, raw_string)
         if result:
@@ -1562,6 +1569,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
             if use_exception:
                 raise hxl.HXLException(&#34;Malformed tag expression: &#34; + raw_string)
             else:
+                logup(&#39;Not a HXL hashtag spec&#39;, {&#34;string&#34;: raw_string}, level=&#39;debug&#39;)
                 logger.debug(&#34;Not a HXL hashtag spec: %s&#34;, raw_string)
                 return False
 
@@ -1571,7 +1579,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
         # Already parsed?
         if isinstance(raw_string, Column):
             return raw_string
-        
+
         matches = re.match(r&#39;^(.*)(#.*)$&#39;, raw_string)
         if matches:
             header = matches.group(1) if matches.group(1) else default_header
@@ -1621,6 +1629,7 @@ RowQuery.OPERATOR_MAP[&#39;is&#39;] = RowQuery.operator_is
         # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
         if (nonEmptyCount &gt; 0) and ((hashtags_found/float(nonEmptyCount)) &gt;= FUZZY_HASHTAG_PERCENTAGE):
             if len(failed_hashtags) &gt; 0:
+                logup(&#39;Skipping column(s) with malformed hashtag specs&#39;, {&#34;hastags&#34;: &#39;, &#39;.join(failed_hashtags)}, level=&#39;error&#39;)
                 logger.error(&#39;Skipping column(s) with malformed hashtag specs: %s&#39;, &#39;, &#39;.join(failed_hashtags))
             return columns
         else:
@@ -1701,7 +1710,7 @@ def parse(raw_string, header=None, use_exception=False, column_number=None):
     @param use_exception: if True, throw an exception for a malformed tagspec
     @returns: None if the string is empty, False if it&#39;s malformed (and use_exception is False), or a Column object otherwise
     &#34;&#34;&#34;
-    
+
     # Already parsed?
     if isinstance(raw_string, Column):
         return raw_string
@@ -1709,7 +1718,7 @@ def parse(raw_string, header=None, use_exception=False, column_number=None):
     # Empty string?
     if hxl.datatypes.is_empty(raw_string):
         return None
-    
+
     # Pattern for a single tag
     result = re.match(Column.PATTERN, raw_string)
     if result:
@@ -1724,6 +1733,7 @@ def parse(raw_string, header=None, use_exception=False, column_number=None):
         if use_exception:
             raise hxl.HXLException(&#34;Malformed tag expression: &#34; + raw_string)
         else:
+            logup(&#39;Not a HXL hashtag spec&#39;, {&#34;string&#34;: raw_string}, level=&#39;debug&#39;)
             logger.debug(&#34;Not a HXL hashtag spec: %s&#34;, raw_string)
             return False</code></pre>
 </details>
@@ -1791,6 +1801,7 @@ def parse_list(raw_row, previous_row=None):
     # Have we seen at least FUZZY_HASHTAG_PERCENTAGE?
     if (nonEmptyCount &gt; 0) and ((hashtags_found/float(nonEmptyCount)) &gt;= FUZZY_HASHTAG_PERCENTAGE):
         if len(failed_hashtags) &gt; 0:
+            logup(&#39;Skipping column(s) with malformed hashtag specs&#39;, {&#34;hastags&#34;: &#39;, &#39;.join(failed_hashtags)}, level=&#39;error&#39;)
             logger.error(&#39;Skipping column(s) with malformed hashtag specs: %s&#39;, &#39;, &#39;.join(failed_hashtags))
         return columns
     else:
@@ -1812,7 +1823,7 @@ def parse_spec(raw_string, default_header=None, use_exception=False, column_numb
     # Already parsed?
     if isinstance(raw_string, Column):
         return raw_string
-    
+
     matches = re.match(r&#39;^(.*)(#.*)$&#39;, raw_string)
     if matches:
         header = matches.group(1) if matches.group(1) else default_header
@@ -2044,7 +2055,7 @@ and the <strong>iter</strong>() method to make itself iterable.</p>
             for value in row:
                 md5.update(hxl.datatypes.normalise_space(value).encode(&#39;utf-8&#39;))
         return md5.hexdigest()
-    
+
     @property
     def headers(self):
         &#34;&#34;&#34;Return a list of header strings (for a spreadsheet row).
@@ -2223,8 +2234,10 @@ and the <strong>iter</strong>() method to make itself iterable.</p>
         @returns: a new HXL source for chaining
         &#34;&#34;&#34;
         import hxl.filters
+        logup(&#39;Loading append list&#39;, {&#34;list&#34;: source_list_url}, level=&#39;debug&#39;)
         logger.debug(&#34;Loading append list from %s...&#34;, source_list_url)
         append_sources = hxl.filters.AppendFilter.parse_external_source_list(source_list_url)
+        logup(&#39;Done loading&#39;, {&#34;list&#34;: source_list_url}, level=&#39;debug&#39;)
         logger.debug(&#34;Done loading&#34;)
         return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)
 
@@ -2322,7 +2335,7 @@ and the <strong>iter</strong>() method to make itself iterable.</p>
             purge=purge,
             queries=queries
         )
-    
+
     def merge_data(self, merge_source, keys, tags, replace=False, overwrite=False, queries=[]):
         &#34;&#34;&#34;Merges values from a second dataset.
         @param merge_source: the second HXL data source
@@ -2351,14 +2364,14 @@ and the <strong>iter</strong>() method to make itself iterable.</p>
         @return: filtered dataset.
         @see hxl.filters.ExplodeFilter
         &#34;&#34;&#34;
-        
+
         import hxl.filters
         return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)
 
     def implode(self, label_pattern, value_pattern):
         &#34;&#34;&#34;Implodes a long dataset into a wide dataset
         @param label_pattern: the tag pattern to match the label column
-        @param value_pattern: the tag pattern to match the 
+        @param value_pattern: the tag pattern to match the
         @return: filtered dataset.
         @see hxl.filters.ImplodeFilter
         &#34;&#34;&#34;
@@ -2706,8 +2719,10 @@ def values(self):
     @returns: a new HXL source for chaining
     &#34;&#34;&#34;
     import hxl.filters
+    logup(&#39;Loading append list&#39;, {&#34;list&#34;: source_list_url}, level=&#39;debug&#39;)
     logger.debug(&#34;Loading append list from %s...&#34;, source_list_url)
     append_sources = hxl.filters.AppendFilter.parse_external_source_list(source_list_url)
+    logup(&#39;Done loading&#39;, {&#34;list&#34;: source_list_url}, level=&#39;debug&#39;)
     logger.debug(&#34;Done loading&#34;)
     return hxl.filters.AppendFilter(self, append_sources, add_columns=add_columns, queries=queries)</code></pre>
 </details>
@@ -2829,7 +2844,7 @@ By default, applies to every column with a +list attribute, and uses "|" as the 
     @return: filtered dataset.
     @see hxl.filters.ExplodeFilter
     &#34;&#34;&#34;
-    
+
     import hxl.filters
     return hxl.filters.ExplodeFilter(self, header_attribute, value_attribute)</code></pre>
 </details>
@@ -3014,7 +3029,7 @@ Warning: this method can be highly inefficient for large datasets.
 <pre><code class="python">def implode(self, label_pattern, value_pattern):
     &#34;&#34;&#34;Implodes a long dataset into a wide dataset
     @param label_pattern: the tag pattern to match the label column
-    @param value_pattern: the tag pattern to match the 
+    @param value_pattern: the tag pattern to match the
     @return: filtered dataset.
     @see hxl.filters.ImplodeFilter
     &#34;&#34;&#34;
@@ -3723,7 +3738,7 @@ If no index is provided ("None"), return the first non-empty value.
         self.is_aggregate=is_aggregate
         self.needs_aggregate = False
         &#34;&#34;&#34;Need to calculate an aggregate value&#34;&#34;&#34;
-        
+
         if is_aggregate:
             self.needs_aggregate = True
 
@@ -3738,6 +3753,7 @@ If no index is provided ("None"), return the first non-empty value.
         @param dataset: the HXL dataset to use (must be cached)
         &#34;&#34;&#34;
         if not self.needs_aggregate:
+            logup(&#39;no aggregate calculation needed&#39;, level=&#39;warning&#39;)
             logger.warning(&#34;no aggregate calculation needed&#34;)
             return # no need to calculate
         if not dataset.is_cached:
@@ -3757,7 +3773,7 @@ If no index is provided ("None"), return the first non-empty value.
         else:
             raise HXLException(&#34;Unrecognised aggregate: {}&#34;.format(value))
         self.needs_aggregate = False
-                               
+
     def match_row(self, row):
         &#34;&#34;&#34;Check if a key-value pair appears in a HXL row&#34;&#34;&#34;
 
@@ -3892,7 +3908,7 @@ If no index is provided ("None"), return the first non-empty value.
             return (hxl.datatypes.is_date(s) is False)
         else:
             raise hxl.HXLException(&#39;Unknown is condition: {}&#39;.format(condition))
-    
+
 
     # Constant map of comparison operators
     OPERATOR_MAP = {
@@ -4076,6 +4092,7 @@ Substitute the special values "min" and "max" with aggregates.
     @param dataset: the HXL dataset to use (must be cached)
     &#34;&#34;&#34;
     if not self.needs_aggregate:
+        logup(&#39;no aggregate calculation needed&#39;, level=&#39;warning&#39;)
         logger.warning(&#34;no aggregate calculation needed&#34;)
         return # no need to calculate
     if not dataset.is_cached:
@@ -4231,7 +4248,7 @@ constructor:</p>
 
     &#34;&#34;&#34;
 
-    
+
     PATTERN = r&#39;^\s*#?({token}|\*)((?:\s*[+-]{token})*)\s*(!)?\s*$&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
     &#34;&#34;&#34;Constant: regular expression to match a HXL tag pattern.
     &#34;&#34;&#34;
@@ -4241,10 +4258,10 @@ constructor:</p>
 
         self.include_attributes = set(include_attributes)
         &#34;&#34;&#34;Set of all attributes that must be present&#34;&#34;&#34;
-        
+
         self.exclude_attributes = set(exclude_attributes)
         &#34;&#34;&#34;Set of all attributes that must not be present&#34;&#34;&#34;
-        
+
         self.is_absolute = is_absolute
         &#34;&#34;&#34;True if this pattern is absolute (no extra attributes allowed)&#34;&#34;&#34;
 
@@ -4324,7 +4341,7 @@ constructor:</p>
 
         The [parse_list()](#hxl.model.TagPattern.parse_list) method
         will call this method to parse multiple patterns at once.
-        
+
         Args:
             s: the tag-pattern string to parse
 
@@ -4379,7 +4396,7 @@ constructor:</p>
             patterns = TagPattern.parse_list(&#34;#affected+f,#inneed+f&#34;)
             # or
             patterns = TagPattern.parse_list(&#34;#affected+f&#34;, &#34;#inneed+f&#34;)
-        
+
         Args:
             specs: the raw input (a list of strings, or a single string with commas separating the patterns)
 
@@ -4500,7 +4517,7 @@ def parse(s):
 
     The [parse_list()](#hxl.model.TagPattern.parse_list) method
     will call this method to parse multiple patterns at once.
-    
+
     Args:
         s: the tag-pattern string to parse
 
@@ -4581,7 +4598,7 @@ def parse_list(specs):
         patterns = TagPattern.parse_list(&#34;#affected+f,#inneed+f&#34;)
         # or
         patterns = TagPattern.parse_list(&#34;#affected+f&#34;, &#34;#inneed+f&#34;)
-    
+
     Args:
         specs: the raw input (a list of strings, or a single string with commas separating the patterns)
 

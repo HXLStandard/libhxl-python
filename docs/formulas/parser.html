@@ -31,6 +31,8 @@ import ply.yacc as yacc
 import hxl.model
 import hxl.formulas.functions as f
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 from hxl.formulas.lexer import tokens
@@ -98,6 +100,7 @@ def p_args_empty(p):
 
 # Error rule for syntax errors
 def p_error(p):
+    logup(&#39;Syntax error&#39;, {&#34;err&#34;: str(p)}, level=&#39;error&#39;)
     logger.error(&#34;Syntax error: %s&#34;, str(p))
 
 parser = yacc.yacc()</code></pre>
@@ -162,6 +165,7 @@ parser = yacc.yacc()</code></pre>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def p_error(p):
+    logup(&#39;Syntax error&#39;, {&#34;err&#34;: str(p)}, level=&#39;error&#39;)
     logger.error(&#34;Syntax error: %s&#34;, str(p))</code></pre>
 </details>
 </dd>

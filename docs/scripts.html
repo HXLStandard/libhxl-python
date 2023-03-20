@@ -392,7 +392,7 @@ options:
 &#34;&#34;&#34;
     run_script(hxlcut_main)
 
-    
+
 def hxldedup():
     &#34;&#34;&#34; Entry point for hxldedup console script
 ``` none
@@ -750,7 +750,7 @@ options:
 
 
 def hxlexplode():
-    &#34;&#34;&#34; Entry point for hxlexplode console script 
+    &#34;&#34;&#34; Entry point for hxlexplode console script
 ``` none
 usage: hxlexplode [-h] [--encoding [string]] [--sheet [number]]
                   [--selector [path]] [--http-header header]
@@ -1114,7 +1114,7 @@ def hxladd_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         const=True,
         default=False
     )
-        
+
     args = parser.parse_args(args)
 
     do_common_args(args)
@@ -1164,7 +1164,7 @@ def hxlappend_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         default=False
     )
     add_queries_arg(parser, &#39;From --append datasets, include only rows matching at least one query.&#39;)
-        
+
     args = parser.parse_args(args)
 
     do_common_args(args)
@@ -1265,7 +1265,7 @@ def hxlclean_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     add_queries_arg(parser, &#39;Clean only rows matching at least one query.&#39;)
 
     args = parser.parse_args(args)
-    
+
     do_common_args(args)
 
     with make_source(args, stdin) as source, make_output(args, stdout) as output:
@@ -1327,7 +1327,7 @@ def hxlcut_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34; Run hxlcut with command-line arguments.
 
     Remove columns.
-    
+
     &#34;&#34;&#34;
     parser = make_args(&#39;Remove columns from a HXL dataset.&#39;)
     parser.add_argument(
@@ -1485,7 +1485,7 @@ def hxlmerge_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     with make_source(args, stdin) as source, make_output(args, stdout) as output, hxl.input.data(args.merge, hxl.InputOptions(allow_local=True)) if args.merge else None as merge_source:
         filter = hxl.filters.MergeDataFilter(
             source, merge_source=merge_source,
-            keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite, 
+            keys=args.keys, tags=args.tags, replace=args.replace, overwrite=args.overwrite,
             queries=args.query
         )
         hxl.input.write_hxl(output.output, filter, show_tags=not args.strip_tags)
@@ -1579,7 +1579,7 @@ def hxlreplace_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         )
 
     add_queries_arg(parser, &#39;Replace only in rows that match at least one query.&#39;)
-    
+
     args = parser.parse_args(args)
 
     do_common_args(args)
@@ -1864,7 +1864,7 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
     &#34;&#34;&#34;
 
     def get_json (url_or_filename):
-        
+
         if not url_or_filename:
             return json.load(stdin)
 
@@ -1876,7 +1876,7 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
         else:
             with open(url_or_filename, &#34;r&#34;) as input:
                 return json.load(input)
-    
+
     parser = make_args(&#39;Process a HXL JSON spec&#39;)
     args = parser.parse_args(args)
 
@@ -2030,7 +2030,7 @@ def hxlvalidate_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             output.write(&#34;{:,} error(s), {:,} warnings\n&#34;.format(Counter.errors, Counter.warnings))
         else:
             output.write(&#34;{:,} error(s)\n&#34;.format(Counter.errors))
-            
+
         if Counter.errors &gt; 0:
             output.write(&#34;Validation failed.\n&#34;)
             return EXIT_ERROR
@@ -2185,7 +2185,7 @@ def make_input_options(args):
         sheet_index -= 1
 
     http_headers = make_headers(args)
-        
+
     return hxl.input.InputOptions(
         sheet_index=sheet_index,
         selector=args.selector,
@@ -2245,9 +2245,7 @@ class StreamOutput(object):
         pass
 
     def write(self, s):
-        self.output.write(s)
-            
-    </code></pre>
+        self.output.write(s)</code></pre>
 </details>
 </section>
 <section>
@@ -3018,7 +3016,7 @@ options:
 <span>def <span class="ident">hxlexplode</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Entry point for hxlexplode console script </p>
+<div class="desc"><p>Entry point for hxlexplode console script</p>
 <pre><code class="language-none">usage: hxlexplode [-h] [--encoding [string]] [--sheet [number]]
                   [--selector [path]] [--http-header header]
                   [--remove-headers] [--strip-tags] [--ignore-certs]
@@ -3065,7 +3063,7 @@ options:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def hxlexplode():
-    &#34;&#34;&#34; Entry point for hxlexplode console script 
+    &#34;&#34;&#34; Entry point for hxlexplode console script
 ``` none
 usage: hxlexplode [-h] [--encoding [string]] [--sheet [number]]
                   [--selector [path]] [--http-header header]

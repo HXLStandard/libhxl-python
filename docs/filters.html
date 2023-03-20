@@ -96,6 +96,7 @@ lower-level L{AbstractBaseFilter} directly for especially-complex cases.
 import hxl, hxl.formulas.eval as feval
 import abc, copy, dateutil.parser, itertools, json, jsonpath_ng.ext, logging, re, six, sys
 
+from hxl.util import logup
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +131,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
     example).
 
     Subclassing works like this::
-    
+
       class MyFilter(hxl.filters.AbstractBaseFilter):
 
           def __init__(self, source):
@@ -235,7 +236,7 @@ class AbstractBaseFilter(hxl.model.Dataset):
         &#34;&#34;&#34;
         raise NotImplementedError(&#34;No static _load method implemented.&#34;)
 
-    
+
 class AbstractStreamingFilter(AbstractBaseFilter):
     &#34;&#34;&#34;Abstract base class for streaming filters.
 
@@ -292,7 +293,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
         rows on the fly, without having to keep a copy of the entire
         dataset in memory.
 
-        @param row: the original L{hxl.model.Row} object.  
+        @param row: the original L{hxl.model.Row} object.
         @returns: A list of string values (I{not} a Row object) or
         C{None} to skip the row.
         @see: L{AbstractBaseFilter.filter_columns}
@@ -320,7 +321,7 @@ class AbstractStreamingFilter(AbstractBaseFilter):
             return self
 
         def __next__(self):
-            &#34;&#34;&#34;Return the next filtered row of data.  
+            &#34;&#34;&#34;Return the next filtered row of data.
 
             Uses the L{AbstractStreamingFilter.filter_row} method. The
             returned row is always a new object, so that if the client
@@ -403,7 +404,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
 
     def filter_rows(self):
         &#34;&#34;&#34;Filter all of the data together.
-        
+
         This method returns raw lists and strings, not objects from
         the L{hxl.model} module; for example, it could return the
         following for a three-row dataset::
@@ -412,7 +413,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
 
         The I{AbstractCachingFilter} class will construct the
         appropriate objects around the data.
-        
+
         @returns: a list of lists of strings, one list for each row.
         @see: L{AbstractBaseFilter.filter_columns}
         &#34;&#34;&#34;
@@ -451,7 +452,7 @@ class AbstractCachingFilter(AbstractBaseFilter):
                 self.values_iter = iter(self.outer._saved_rows)
             self.row_number += 1
             return hxl.model.Row(self.outer.columns, next(self.values_iter), self.row_number)
-        
+
 
 #
 # Utility classes
@@ -522,7 +523,8 @@ class Aggregator(object):
         # Numbers only for sum and average
         datatype = hxl.datatypes.typeof(value, self.pattern)
         if self.type in [&#39;sum&#39;, &#39;average&#39;] and datatype != &#39;number&#39;:
-            logger.error(&#34;Cannot use %s as a numeric value for aggregation; skipping.&#34;, value)
+            logup(&#34;Cannot use as a numeric value for aggregation; skipping.&#34;, {&#34;value&#34;: value}, level=&#39;info&#39;)
+            logger.warning(&#34;Cannot use %s as a numeric value for aggregation; skipping.&#34;, value)
             return
 
         normalised = hxl.datatypes.normalise(value, self.pattern)
@@ -568,7 +570,7 @@ class Aggregator(object):
 
     TAG_PATTERN = r&#39;#?{token}(?:\s*[+-]{token})*&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
     &#34;&#34;&#34;Regular expression for a tag pattern&#34;&#34;&#34;
-    
+
     COL_PATTERN = r&#39;#{token}(?:\s*\+{token})*&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
     &#34;&#34;&#34;Regular expression for an output column pattern&#34;&#34;&#34;
 
@@ -770,7 +772,7 @@ class AppendFilter(AbstractBaseFilter):
     &#34;&#34;&#34;Composable filter class to concatenate two datasets.
 
     Usage::
-    
+
         filter = AppendFilter(hxl.data(url), hxl.data(url2))
 
     This filter concatenates a second dataset to the end of the first
@@ -902,7 +904,7 @@ class AppendFilter(AbstractBaseFilter):
         def __init__(self, outer):
             &#34;&#34;&#34;@param outer: reference to outer object&#34;&#34;&#34;
             self.outer = outer
-            
+
             self._iterator = iter(outer.source)
             self._column_map = {i: i for i in range(len(self.outer.source.columns))}
             self._is_source = True
@@ -956,7 +958,7 @@ class AppendFilter(AbstractBaseFilter):
                 if append_source:
                     append_sources.append(append_source)
         return append_sources
-        
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Create an AppendFilter from a dict spec.
@@ -969,7 +971,7 @@ class AppendFilter(AbstractBaseFilter):
             )
         else:
             append_sources = req_arg(spec, &#39;append_sources&#39;)
-            
+
         return AppendFilter(
             source=source,
             append_sources=append_sources,
@@ -1099,7 +1101,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         format (remove commas or spaces between thousands, and use &#34;.&#34;
         as the decimal separator).
       - B{latlon}: attempt to normalise latitude and longitude values.
-      
+
     For each type of cleaning, you specify one or more L{tag
     patterns&lt;hxl.model.TagPattern&gt;} to which the cleaning applies (you
     may use string representations instead of creating the objects),
@@ -1184,7 +1186,7 @@ class CleanDataFilter(AbstractStreamingFilter):
         &#34;&#34;&#34;
         ddmm_count = 0
         mmdd_count = 0
-        
+
         # prescan columns to speed things up
         indices = []
         for i, column in enumerate(self.source.columns):
@@ -1206,7 +1208,7 @@ class CleanDataFilter(AbstractStreamingFilter):
 
         return (ddmm_count &gt;= mmdd_count)
 
-    
+
     def _clean_value(self, value, column):
         &#34;&#34;&#34;Clean a single value, using the column def for guidance.
         @returns: a single cleaned value
@@ -1235,6 +1237,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                     if self.date_format is not None:
                         value = dateutil.parser.parse(value).strftime(self.date_format)
                 except ValueError:
+                    logup(&#34;Cannot use as a date&#34;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as a date&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
@@ -1263,7 +1266,8 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if n is not None:
                     value = n
                 else:
-                    logger.warning(&#39;Cannot parse {} as a number&#39;, str(value))
+                    logup(&#39;Cannot parse as a number&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
+                    logger.warning(&#39;Cannot parse %s as a number&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
 
@@ -1274,6 +1278,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if lat is not None:
                     value = format(lat, &#39;0.4f&#39;)
                 else:
+                    logup(&#39;Cannot parse as a latitude&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as a latitude&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
@@ -1282,6 +1287,7 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if lon is not None:
                     value = format(lon, &#39;0.4f&#39;)
                 else:
+                    logup(&#39;Cannot parse as a longitude&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as a longitude&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
@@ -1290,10 +1296,11 @@ class CleanDataFilter(AbstractStreamingFilter):
                 if coord is not None:
                     value = &#39;{:.4f},{:.4f}&#39;.format(coord[0], coord[1])
                 else:
+                    logup(&#39;Cannot parse as geographical coordinates&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as geographical coordinates&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
-        
+
         return value
 
     def _match_patterns(self, patterns, column):
@@ -1400,7 +1407,7 @@ class ColumnFilter(AbstractStreamingFilter):
         is an include list, it must be in that list; if there is an
         exclude list, it must not be in that list.
 
-        @param column: the L{hxl.model.Column} to test 
+        @param column: the L{hxl.model.Column} to test
         @returns: True if the column should be included
 
         &#34;&#34;&#34;
@@ -1509,7 +1516,7 @@ class CountFilter(AbstractCachingFilter):
         # Add generated columns
         for aggregator in self.aggregators:
             columns.append(aggregator.column)
-            
+
         return columns
 
     def filter_rows(self):
@@ -1522,7 +1529,7 @@ class CountFilter(AbstractCachingFilter):
             raw_data.append(
                 list(aggregate[0]) + [aggregator.value if aggregator.value is not None else &#39;&#39; for aggregator in aggregate[1]]
             )
-            
+
         return raw_data
 
     def _aggregate_data(self):
@@ -1714,7 +1721,7 @@ class ExpandListsFilter(AbstractBaseFilter):
                     # yield a new row
                     yield hxl.model.Row(self.columns, values)
 
-        
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;New instance from a JSON-style dictionary.
@@ -1855,7 +1862,7 @@ class ImplodeFilter(AbstractBaseFilter):
     Cameroon,2014,150
     Cameroon,2015,120
 
-    will be converted to 
+    will be converted to
 
     Country,2015,2014,2013
     #country,#affected+label,#affected+label,#affected+label
@@ -1874,7 +1881,7 @@ class ImplodeFilter(AbstractBaseFilter):
         super(ImplodeFilter, self).__init__(source)
         self.label_pattern = label_pattern
         self.value_pattern = value_pattern
-        
+
         self.processed = False
         self.label_index = -1
         self.value_index = -1
@@ -1927,6 +1934,11 @@ class ImplodeFilter(AbstractBaseFilter):
                 if self.label_index == -1:
                     self.label_index = i
                 else:
+                    logup(&#39;[Implode filter] multiple columns match label pattern; using first match&#39;, {
+                        &#34;pattern&#34;: self.label_pattern,
+                        &#34;tag&#34;: self.source.columns[self.label_index].display_tag,
+                        &#34;header&#34;: self.source.columns[self.label_index].header
+                    }, level=&#39;info&#39;)
                     logger.warning(
                         &#34;[Implode filter] multiple columns match label pattern %s; using first match %s (%s)&#34;,
                         self.label_pattern,
@@ -1937,16 +1949,17 @@ class ImplodeFilter(AbstractBaseFilter):
                 if self.value_index == -1:
                     self.value_index = i
                 else:
+                    logup(&#39;[Implode filter] multiple columns match value pattern; using first match&#39;, {
+                        &#34;pattern&#34;: self.label_pattern
+                    }, level=&#39;info&#39;)
                     logger.warning(
                         &#34;[Implode filter] multiple columns match value pattern %s; using first match&#34;,
-                        self.value_pattern,
-                        self.source.columns[self.value_index].display_tag,
-                        self.source.columns[self.value_index].header
+                        self.value_pattern
                     )
 
         if self.label_index == -1:
             raise HXLFilterException(&#34;No matching label column for {}&#34;.format(self.label_pattern))
-        
+
         if self.value_index == -1:
             raise HXLFilterException(&#34;No matching value column for {}&#34;.format(self.value_pattern))
 
@@ -1977,10 +1990,11 @@ class ImplodeFilter(AbstractBaseFilter):
             if key not in self.rows:
                 self.rows[key] = {}
             if label in self.rows[key]:
+                logup(&#39;Multiple values in implode filter; using first match&#39;, {&#34;value&#34;: label, &#34;value_used&#34;: self.rows[key][label]}, level=&#39;info&#39;)
                 logger.error(&#34;Multiple values for %s in implode filter; using %s&#34;, label, self.rows[key][label])
             else:
                 self.rows[key][label] = value
-            
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Create an implode filter from a dict spec.
@@ -2057,7 +2071,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         &#34;&#34;&#34;Dictionary of values from merge source, indexed by key.&#34;&#34;&#34;
 
     def filter_columns(self):
-        &#34;&#34;&#34;Filter the columns to add newly-merged ones.  
+        &#34;&#34;&#34;Filter the columns to add newly-merged ones.
         Note: this is called only once, the first time someone
         accesses the Dataset.columns property, then the result is saved for future use.
         As a side effect, builds the _merge_indices specs for generating the merged data.
@@ -2066,10 +2080,10 @@ class MergeDataFilter(AbstractStreamingFilter):
 
         new_columns = list(self.source.columns)
         &#34;&#34;&#34;The new column list to return.&#34;&#34;&#34;
-        
+
         merge_column_index = len(self.source.columns)
         &#34;&#34;&#34;Target index for merging into the output dataset&#34;&#34;&#34;
-            
+
         # Check every pattern
         for pattern in self.merge_tags:
 
@@ -2137,7 +2151,7 @@ class MergeDataFilter(AbstractStreamingFilter):
         Uses *last* matching row for each key (top to bottom).
         @returns: a map of merge values
         &#34;&#34;&#34;
-        
+
         self.columns # make sure we&#39;ve created the _merge_indices map
 
         merge_values = {}
@@ -2257,7 +2271,7 @@ class RenameFilter(AbstractStreamingFilter):
             rename=req_arg(spec, &#39;specs&#39;)
         )
 
-    
+
 class JSONPathFilter(AbstractStreamingFilter):
     &#34;&#34;&#34;Extract values from a JSON string expression using JSONPath
     See http://goessner.net/articles/JsonPath/
@@ -2286,7 +2300,7 @@ class JSONPathFilter(AbstractStreamingFilter):
         values = list(row.values)
 
         if hxl.model.RowQuery.match_list(row, self.queries):
-        
+
             for i in self._indices:
                 try:
                     expr = json.loads(values[i])
@@ -2298,10 +2312,11 @@ class JSONPathFilter(AbstractStreamingFilter):
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
+                    logup(&#39;Skipping invalid JSON expression&#39;, {&#34;expression&#34;: str(values[i])}, level=&#39;info&#39;)
                     logger.warning(&#34;Skipping invalid JSON expression &#39;%s&#39;&#34;, values[i])
 
         return values
-    
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Create a JSONPath filter from a dict spec.
@@ -2316,7 +2331,7 @@ class JSONPathFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, &#39;queries&#39;)
         )
 
-    
+
 class FillDataFilter(AbstractStreamingFilter):
     &#34;&#34;&#34;Fill empty cells in a dataset.
     By default, fill all empty cells with the closest non-empty value in a previous row.
@@ -2349,7 +2364,7 @@ class FillDataFilter(AbstractStreamingFilter):
                 self._saved[i] = values[i]
             elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
                 values[i] = self._saved[i] if self._saved.get(i) else &#39;&#39;
-                    
+
         return values
 
     @staticmethod
@@ -2365,7 +2380,7 @@ class FillDataFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, &#39;queries&#39;),
         )
 
-    
+
 class ReplaceDataFilter(AbstractStreamingFilter):
     &#34;&#34;&#34;
     Composable filter class to replace values in a HXL dataset.
@@ -2392,18 +2407,38 @@ class ReplaceDataFilter(AbstractStreamingFilter):
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
         self.queries = self._setup_queries(queries)
+        self.indices = self._setup_indices(self.replacements, self.columns)
+
 
     def filter_row(self, row):
         &#34;&#34;&#34;@returns: the row values with replacements&#34;&#34;&#34;
         if hxl.model.RowQuery.match_list(row, self.queries):
+            replaced = set()
             values = copy.copy(row.values)
-            for index, value in enumerate(values):
-                for replacement in self.replacements:
-                    value = replacement.sub(row.columns[index], value)
-                    values[index] = value
+            for i, replacement in enumerate(self.replacements):
+                indices = self.indices[i]
+                for index in indices:
+                    if index not in replaced and index &lt; len(values):
+                        new_value = replacement.sub(values[index])
+                        if new_value is not False:
+                            replaced.add(index)
+                            values[index] = new_value
             return values
         else:
             return row.values
+
+
+    def _setup_indices(self, replacements, columns):
+        &#34;&#34;&#34; Return a list of matching column indices for each replacement &#34;&#34;&#34;
+        result = []
+        for replacement in replacements:
+            indices = []
+            for i, column in enumerate(columns):
+                if replacement.matches(column):
+                    indices.append(i)
+            result.append(indices)
+        return result
+
 
     class Replacement:
         &#34;&#34;&#34;Replacement specification.&#34;&#34;&#34;
@@ -2428,21 +2463,28 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             if not self.is_regex:
                 self.original = hxl.datatypes.normalise_string(self.original)
 
-        def sub(self, column, value):
+        def matches(self, column):
+            &#34;&#34;&#34; Return true if the replacement applies to the column provided &#34;&#34;&#34;
+            if self.patterns:
+                return hxl.model.TagPattern.match_list(column, self.patterns)
+            else:
+                return True
+
+        def sub(self, value):
             &#34;&#34;&#34;
             Substitute inside the value, if appropriate.
-            @param column: the column definition
             @param value: the cell value
-            @returns: the value, possibly changed
+            @returns: the new value if changed; False otherwise
             &#34;&#34;&#34;
-            if self.patterns and not hxl.model.TagPattern.match_list(column, self.patterns):
-                return value
-            elif self.is_regex:
-                return re.sub(self.original, self.replacement, str(value))
+            
+            if self.is_regex:
+                result = re.subn(self.original, self.replacement, str(value))
+                if result[1] &gt; 0:
+                    return result[0]
             elif self.original == hxl.datatypes.normalise_string(value):
                 return self.replacement
-            else:
-                return value
+
+            return False
 
         @staticmethod
         def parse_map(source):
@@ -2489,7 +2531,7 @@ class ReplaceDataFilter(AbstractStreamingFilter):
             queries=opt_arg(spec, &#39;queries&#39;, [])
         )
 
-        
+
 class RowCountFilter(AbstractStreamingFilter):
     &#34;&#34;&#34;
     Composable filter class to count lines (and nothing else)
@@ -2497,7 +2539,7 @@ class RowCountFilter(AbstractStreamingFilter):
     The output is identical to the input; the line count is
     stored in the filter itself.  As a result, there is no corresponding
     command-line utility.
-    
+
     Usage:
 
     &lt;pre&gt;
@@ -2516,7 +2558,7 @@ class RowCountFilter(AbstractStreamingFilter):
         if hxl.model.RowQuery.match_list(row, self.queries):
             self.row_count += 1
         return row.values
-    
+
 
 class RowFilter(AbstractStreamingFilter):
     &#34;&#34;&#34;
@@ -2565,7 +2607,7 @@ class RowFilter(AbstractStreamingFilter):
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Construct a row filter from a dict spec.&#34;&#34;&#34;
-        
+
         reverse = False
         if spec.get(&#39;filter&#39;) == &#39;without_rows&#39;:
             reverse = True
@@ -2577,7 +2619,7 @@ class RowFilter(AbstractStreamingFilter):
             mask=opt_arg(spec, &#39;mask&#39;, [])
         )
 
-    
+
 class SortFilter(AbstractCachingFilter):
     &#34;&#34;&#34;
     Composable filter class to sort a HXL dataset.
@@ -2768,12 +2810,12 @@ def from_recipe(source, recipe):
 
         # Create the filter
         source = loader(source, spec)
-        
+
     return source
 
 
 def list_product(lists, head=[]):
-    &#34;&#34;&#34;Generate the cartesian product of a list of lists 
+    &#34;&#34;&#34;Generate the cartesian product of a list of lists
     The elements of the result will be all possible combinations of the elements of
     the input lists.
     @param lists: a list of lists
@@ -2883,7 +2925,7 @@ as the methods and arguments in hxl.model.Dataset.</p>
 
         # Create the filter
         source = loader(source, spec)
-        
+
     return source</code></pre>
 </details>
 </dd>
@@ -2939,7 +2981,7 @@ the input lists.
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def list_product(lists, head=[]):
-    &#34;&#34;&#34;Generate the cartesian product of a list of lists 
+    &#34;&#34;&#34;Generate the cartesian product of a list of lists
     The elements of the result will be all possible combinations of the elements of
     the input lists.
     @param lists: a list of lists
@@ -3074,7 +3116,7 @@ columns will now be '#org' and '#adm1'.</p>
     example).
 
     Subclassing works like this::
-    
+
       class MyFilter(hxl.filters.AbstractBaseFilter):
 
           def __init__(self, source):
@@ -3421,7 +3463,7 @@ using Python's default sorting method.</p>
 
     def filter_rows(self):
         &#34;&#34;&#34;Filter all of the data together.
-        
+
         This method returns raw lists and strings, not objects from
         the L{hxl.model} module; for example, it could return the
         following for a three-row dataset::
@@ -3430,7 +3472,7 @@ using Python's default sorting method.</p>
 
         The I{AbstractCachingFilter} class will construct the
         appropriate objects around the data.
-        
+
         @returns: a list of lists of strings, one list for each row.
         @see: L{AbstractBaseFilter.filter_columns}
         &#34;&#34;&#34;
@@ -3520,7 +3562,7 @@ appropriate objects around the data.</p>
 </summary>
 <pre><code class="python">def filter_rows(self):
     &#34;&#34;&#34;Filter all of the data together.
-    
+
     This method returns raw lists and strings, not objects from
     the L{hxl.model} module; for example, it could return the
     following for a three-row dataset::
@@ -3529,7 +3571,7 @@ appropriate objects around the data.</p>
 
     The I{AbstractCachingFilter} class will construct the
     appropriate objects around the data.
-    
+
     @returns: a list of lists of strings, one list for each row.
     @see: L{AbstractBaseFilter.filter_columns}
     &#34;&#34;&#34;
@@ -3684,7 +3726,7 @@ omitting rows where the org name is "Unknown".</p>
         rows on the fly, without having to keep a copy of the entire
         dataset in memory.
 
-        @param row: the original L{hxl.model.Row} object.  
+        @param row: the original L{hxl.model.Row} object.
         @returns: A list of string values (I{not} a Row object) or
         C{None} to skip the row.
         @see: L{AbstractBaseFilter.filter_columns}
@@ -3712,7 +3754,7 @@ omitting rows where the org name is "Unknown".</p>
             return self
 
         def __next__(self):
-            &#34;&#34;&#34;Return the next filtered row of data.  
+            &#34;&#34;&#34;Return the next filtered row of data.
 
             Uses the L{AbstractStreamingFilter.filter_row} method. The
             returned row is always a new object, so that if the client
@@ -3765,7 +3807,7 @@ omitting rows where the org name is "Unknown".</p>
 unchanged. Subclasses can use it to replace, add or suppress
 rows on the fly, without having to keep a copy of the entire
 dataset in memory.</p>
-<p>@param row: the original L{hxl.model.Row} object.<br>
+<p>@param row: the original L{hxl.model.Row} object.
 @returns: A list of string values (I{not} a Row object) or
 C{None} to skip the row.
 @see: L{AbstractBaseFilter.filter_columns}</p></div>
@@ -3782,7 +3824,7 @@ def filter_row(self, row):
     rows on the fly, without having to keep a copy of the entire
     dataset in memory.
 
-    @param row: the original L{hxl.model.Row} object.  
+    @param row: the original L{hxl.model.Row} object.
     @returns: A list of string values (I{not} a Row object) or
     C{None} to skip the row.
     @see: L{AbstractBaseFilter.filter_columns}
@@ -4277,7 +4319,8 @@ See the L{parse} and L{parse_list} static methods for creating an aggregator fro
         # Numbers only for sum and average
         datatype = hxl.datatypes.typeof(value, self.pattern)
         if self.type in [&#39;sum&#39;, &#39;average&#39;] and datatype != &#39;number&#39;:
-            logger.error(&#34;Cannot use %s as a numeric value for aggregation; skipping.&#34;, value)
+            logup(&#34;Cannot use as a numeric value for aggregation; skipping.&#34;, {&#34;value&#34;: value}, level=&#39;info&#39;)
+            logger.warning(&#34;Cannot use %s as a numeric value for aggregation; skipping.&#34;, value)
             return
 
         normalised = hxl.datatypes.normalise(value, self.pattern)
@@ -4323,7 +4366,7 @@ See the L{parse} and L{parse_list} static methods for creating an aggregator fro
 
     TAG_PATTERN = r&#39;#?{token}(?:\s*[+-]{token})*&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
     &#34;&#34;&#34;Regular expression for a tag pattern&#34;&#34;&#34;
-    
+
     COL_PATTERN = r&#39;#{token}(?:\s*\+{token})*&#39;.format(token=hxl.datatypes.TOKEN_PATTERN)
     &#34;&#34;&#34;Regular expression for an output column pattern&#34;&#34;&#34;
 
@@ -4512,7 +4555,8 @@ def parse_list(specs):
     # Numbers only for sum and average
     datatype = hxl.datatypes.typeof(value, self.pattern)
     if self.type in [&#39;sum&#39;, &#39;average&#39;] and datatype != &#39;number&#39;:
-        logger.error(&#34;Cannot use %s as a numeric value for aggregation; skipping.&#34;, value)
+        logup(&#34;Cannot use as a numeric value for aggregation; skipping.&#34;, {&#34;value&#34;: value}, level=&#39;info&#39;)
+        logger.warning(&#34;Cannot use %s as a numeric value for aggregation; skipping.&#34;, value)
         return
 
     normalised = hxl.datatypes.normalise(value, self.pattern)
@@ -4628,7 +4672,7 @@ second dataset</p></div>
     &#34;&#34;&#34;Composable filter class to concatenate two datasets.
 
     Usage::
-    
+
         filter = AppendFilter(hxl.data(url), hxl.data(url2))
 
     This filter concatenates a second dataset to the end of the first
@@ -4760,7 +4804,7 @@ second dataset</p></div>
         def __init__(self, outer):
             &#34;&#34;&#34;@param outer: reference to outer object&#34;&#34;&#34;
             self.outer = outer
-            
+
             self._iterator = iter(outer.source)
             self._column_map = {i: i for i in range(len(self.outer.source.columns))}
             self._is_source = True
@@ -4814,7 +4858,7 @@ second dataset</p></div>
                 if append_source:
                     append_sources.append(append_source)
         return append_sources
-        
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Create an AppendFilter from a dict spec.
@@ -4827,7 +4871,7 @@ second dataset</p></div>
             )
         else:
             append_sources = req_arg(spec, &#39;append_sources&#39;)
-            
+
         return AppendFilter(
             source=source,
             append_sources=append_sources,
@@ -5291,7 +5335,7 @@ L{hxl.model.RowQuery} objects.</p>
         format (remove commas or spaces between thousands, and use &#34;.&#34;
         as the decimal separator).
       - B{latlon}: attempt to normalise latitude and longitude values.
-      
+
     For each type of cleaning, you specify one or more L{tag
     patterns&lt;hxl.model.TagPattern&gt;} to which the cleaning applies (you
     may use string representations instead of creating the objects),
@@ -5376,7 +5420,7 @@ L{hxl.model.RowQuery} objects.</p>
         &#34;&#34;&#34;
         ddmm_count = 0
         mmdd_count = 0
-        
+
         # prescan columns to speed things up
         indices = []
         for i, column in enumerate(self.source.columns):
@@ -5398,7 +5442,7 @@ L{hxl.model.RowQuery} objects.</p>
 
         return (ddmm_count &gt;= mmdd_count)
 
-    
+
     def _clean_value(self, value, column):
         &#34;&#34;&#34;Clean a single value, using the column def for guidance.
         @returns: a single cleaned value
@@ -5427,6 +5471,7 @@ L{hxl.model.RowQuery} objects.</p>
                     if self.date_format is not None:
                         value = dateutil.parser.parse(value).strftime(self.date_format)
                 except ValueError:
+                    logup(&#34;Cannot use as a date&#34;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as a date&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
@@ -5455,7 +5500,8 @@ L{hxl.model.RowQuery} objects.</p>
                 if n is not None:
                     value = n
                 else:
-                    logger.warning(&#39;Cannot parse {} as a number&#39;, str(value))
+                    logup(&#39;Cannot parse as a number&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
+                    logger.warning(&#39;Cannot parse %s as a number&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
 
@@ -5466,6 +5512,7 @@ L{hxl.model.RowQuery} objects.</p>
                 if lat is not None:
                     value = format(lat, &#39;0.4f&#39;)
                 else:
+                    logup(&#39;Cannot parse as a latitude&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as a latitude&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
@@ -5474,6 +5521,7 @@ L{hxl.model.RowQuery} objects.</p>
                 if lon is not None:
                     value = format(lon, &#39;0.4f&#39;)
                 else:
+                    logup(&#39;Cannot parse as a longitude&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as a longitude&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
@@ -5482,10 +5530,11 @@ L{hxl.model.RowQuery} objects.</p>
                 if coord is not None:
                     value = &#39;{:.4f},{:.4f}&#39;.format(coord[0], coord[1])
                 else:
+                    logup(&#39;Cannot parse as geographical coordinates&#39;, {&#34;value&#34;: value}, level=&#39;info&#39;)
                     logger.warning(&#39;Cannot parse %s as geographical coordinates&#39;, str(value))
                     if self.purge:
                         value = &#39;&#39;
-        
+
         return value
 
     def _match_patterns(self, patterns, column):
@@ -5705,7 +5754,7 @@ dataset::</p>
         is an include list, it must be in that list; if there is an
         exclude list, it must not be in that list.
 
-        @param column: the L{hxl.model.Column} to test 
+        @param column: the L{hxl.model.Column} to test
         @returns: True if the column should be included
 
         &#34;&#34;&#34;
@@ -5946,7 +5995,7 @@ If the caller does not supply any aggregators, use "count() as Count#meta+count"
         # Add generated columns
         for aggregator in self.aggregators:
             columns.append(aggregator.column)
-            
+
         return columns
 
     def filter_rows(self):
@@ -5959,7 +6008,7 @@ If the caller does not supply any aggregators, use "count() as Count#meta+count"
             raw_data.append(
                 list(aggregate[0]) + [aggregator.value if aggregator.value is not None else &#39;&#39; for aggregator in aggregate[1]]
             )
-            
+
         return raw_data
 
     def _aggregate_data(self):
@@ -6029,7 +6078,7 @@ If the caller does not supply any aggregators, use "count() as Count#meta+count"
     # Add generated columns
     for aggregator in self.aggregators:
         columns.append(aggregator.column)
-        
+
     return columns</code></pre>
 </details>
 </dd>
@@ -6052,7 +6101,7 @@ If the caller does not supply any aggregators, use "count() as Count#meta+count"
         raw_data.append(
             list(aggregate[0]) + [aggregator.value if aggregator.value is not None else &#39;&#39; for aggregator in aggregate[1]]
         )
-        
+
     return raw_data</code></pre>
 </details>
 </dd>
@@ -6374,7 +6423,7 @@ of a set of duplicates.</p>
                     # yield a new row
                     yield hxl.model.Row(self.columns, values)
 
-        
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;New instance from a JSON-style dictionary.
@@ -6777,7 +6826,7 @@ Optionally restrict to specific columns and/or rows.</p>
                 self._saved[i] = values[i]
             elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
                 values[i] = self._saved[i] if self._saved.get(i) else &#39;&#39;
-                    
+
         return values
 
     @staticmethod
@@ -6824,7 +6873,7 @@ Optionally restrict to specific columns and/or rows.</p>
             self._saved[i] = values[i]
         elif (not self.queries) or (hxl.model.RowQuery.match_list(row, self.queries)):
             values[i] = self._saved[i] if self._saved.get(i) else &#39;&#39;
-                
+
     return values</code></pre>
 </details>
 </dd>
@@ -6934,7 +6983,7 @@ easier to distinguish filter-based exceptions in C{except:} clauses.</p>
 <p>Cameroon,2015,100
 Cameroon,2014,150
 Cameroon,2015,120</p>
-<p>will be converted to </p>
+<p>will be converted to</p>
 <p>Country,2015,2014,2013</p>
 <h1 id="countryaffectedlabelaffectedlabelaffectedlabel">country,#affected+label,#affected+label,#affected+label</h1>
 <p>Cameroon,100,150,120</p>
@@ -6959,7 +7008,7 @@ Cameroon,2015,120</p>
     Cameroon,2014,150
     Cameroon,2015,120
 
-    will be converted to 
+    will be converted to
 
     Country,2015,2014,2013
     #country,#affected+label,#affected+label,#affected+label
@@ -6978,7 +7027,7 @@ Cameroon,2015,120</p>
         super(ImplodeFilter, self).__init__(source)
         self.label_pattern = label_pattern
         self.value_pattern = value_pattern
-        
+
         self.processed = False
         self.label_index = -1
         self.value_index = -1
@@ -7031,6 +7080,11 @@ Cameroon,2015,120</p>
                 if self.label_index == -1:
                     self.label_index = i
                 else:
+                    logup(&#39;[Implode filter] multiple columns match label pattern; using first match&#39;, {
+                        &#34;pattern&#34;: self.label_pattern,
+                        &#34;tag&#34;: self.source.columns[self.label_index].display_tag,
+                        &#34;header&#34;: self.source.columns[self.label_index].header
+                    }, level=&#39;info&#39;)
                     logger.warning(
                         &#34;[Implode filter] multiple columns match label pattern %s; using first match %s (%s)&#34;,
                         self.label_pattern,
@@ -7041,16 +7095,17 @@ Cameroon,2015,120</p>
                 if self.value_index == -1:
                     self.value_index = i
                 else:
+                    logup(&#39;[Implode filter] multiple columns match value pattern; using first match&#39;, {
+                        &#34;pattern&#34;: self.label_pattern
+                    }, level=&#39;info&#39;)
                     logger.warning(
                         &#34;[Implode filter] multiple columns match value pattern %s; using first match&#34;,
-                        self.value_pattern,
-                        self.source.columns[self.value_index].display_tag,
-                        self.source.columns[self.value_index].header
+                        self.value_pattern
                     )
 
         if self.label_index == -1:
             raise HXLFilterException(&#34;No matching label column for {}&#34;.format(self.label_pattern))
-        
+
         if self.value_index == -1:
             raise HXLFilterException(&#34;No matching value column for {}&#34;.format(self.value_pattern))
 
@@ -7081,10 +7136,11 @@ Cameroon,2015,120</p>
             if key not in self.rows:
                 self.rows[key] = {}
             if label in self.rows[key]:
+                logup(&#39;Multiple values in implode filter; using first match&#39;, {&#34;value&#34;: label, &#34;value_used&#34;: self.rows[key][label]}, level=&#39;info&#39;)
                 logger.error(&#34;Multiple values for %s in implode filter; using %s&#34;, label, self.rows[key][label])
             else:
                 self.rows[key][label] = value
-            
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Create an implode filter from a dict spec.
@@ -7158,6 +7214,11 @@ Cameroon,2015,120</p>
             if self.label_index == -1:
                 self.label_index = i
             else:
+                logup(&#39;[Implode filter] multiple columns match label pattern; using first match&#39;, {
+                    &#34;pattern&#34;: self.label_pattern,
+                    &#34;tag&#34;: self.source.columns[self.label_index].display_tag,
+                    &#34;header&#34;: self.source.columns[self.label_index].header
+                }, level=&#39;info&#39;)
                 logger.warning(
                     &#34;[Implode filter] multiple columns match label pattern %s; using first match %s (%s)&#34;,
                     self.label_pattern,
@@ -7168,16 +7229,17 @@ Cameroon,2015,120</p>
             if self.value_index == -1:
                 self.value_index = i
             else:
+                logup(&#39;[Implode filter] multiple columns match value pattern; using first match&#39;, {
+                    &#34;pattern&#34;: self.label_pattern
+                }, level=&#39;info&#39;)
                 logger.warning(
                     &#34;[Implode filter] multiple columns match value pattern %s; using first match&#34;,
-                    self.value_pattern,
-                    self.source.columns[self.value_index].display_tag,
-                    self.source.columns[self.value_index].header
+                    self.value_pattern
                 )
 
     if self.label_index == -1:
         raise HXLFilterException(&#34;No matching label column for {}&#34;.format(self.label_pattern))
-    
+
     if self.value_index == -1:
         raise HXLFilterException(&#34;No matching value column for {}&#34;.format(self.value_pattern))
 
@@ -7208,6 +7270,7 @@ Cameroon,2015,120</p>
         if key not in self.rows:
             self.rows[key] = {}
         if label in self.rows[key]:
+            logup(&#39;Multiple values in implode filter; using first match&#39;, {&#34;value&#34;: label, &#34;value_used&#34;: self.rows[key][label]}, level=&#39;info&#39;)
             logger.error(&#34;Multiple values for %s in implode filter; using %s&#34;, label, self.rows[key][label])
         else:
             self.rows[key][label] = value</code></pre>
@@ -7309,7 +7372,7 @@ Optionally restrict to specific columns and/or rows</p>
         values = list(row.values)
 
         if hxl.model.RowQuery.match_list(row, self.queries):
-        
+
             for i in self._indices:
                 try:
                     expr = json.loads(values[i])
@@ -7321,10 +7384,11 @@ Optionally restrict to specific columns and/or rows</p>
                     else:
                         values[i] = hxl.datatypes.flatten(results, self.use_json)
                 except (ValueError, TypeError,) as e:
+                    logup(&#39;Skipping invalid JSON expression&#39;, {&#34;expression&#34;: str(values[i])}, level=&#39;info&#39;)
                     logger.warning(&#34;Skipping invalid JSON expression &#39;%s&#39;&#34;, values[i])
 
         return values
-    
+
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Create a JSONPath filter from a dict spec.
@@ -7495,7 +7559,7 @@ each dataset.)</p>
         &#34;&#34;&#34;Dictionary of values from merge source, indexed by key.&#34;&#34;&#34;
 
     def filter_columns(self):
-        &#34;&#34;&#34;Filter the columns to add newly-merged ones.  
+        &#34;&#34;&#34;Filter the columns to add newly-merged ones.
         Note: this is called only once, the first time someone
         accesses the Dataset.columns property, then the result is saved for future use.
         As a side effect, builds the _merge_indices specs for generating the merged data.
@@ -7504,10 +7568,10 @@ each dataset.)</p>
 
         new_columns = list(self.source.columns)
         &#34;&#34;&#34;The new column list to return.&#34;&#34;&#34;
-        
+
         merge_column_index = len(self.source.columns)
         &#34;&#34;&#34;Target index for merging into the output dataset&#34;&#34;&#34;
-            
+
         # Check every pattern
         for pattern in self.merge_tags:
 
@@ -7575,7 +7639,7 @@ each dataset.)</p>
         Uses *last* matching row for each key (top to bottom).
         @returns: a map of merge values
         &#34;&#34;&#34;
-        
+
         self.columns # make sure we&#39;ve created the _merge_indices map
 
         merge_values = {}
@@ -7654,7 +7718,7 @@ each dataset.)</p>
 <span>def <span class="ident">filter_columns</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Filter the columns to add newly-merged ones.<br>
+<div class="desc"><p>Filter the columns to add newly-merged ones.
 Note: this is called only once, the first time someone
 accesses the Dataset.columns property, then the result is saved for future use.
 As a side effect, builds the _merge_indices specs for generating the merged data.
@@ -7664,7 +7728,7 @@ As a side effect, builds the _merge_indices specs for generating the merged data
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def filter_columns(self):
-    &#34;&#34;&#34;Filter the columns to add newly-merged ones.  
+    &#34;&#34;&#34;Filter the columns to add newly-merged ones.
     Note: this is called only once, the first time someone
     accesses the Dataset.columns property, then the result is saved for future use.
     As a side effect, builds the _merge_indices specs for generating the merged data.
@@ -7673,10 +7737,10 @@ As a side effect, builds the _merge_indices specs for generating the merged data
 
     new_columns = list(self.source.columns)
     &#34;&#34;&#34;The new column list to return.&#34;&#34;&#34;
-    
+
     merge_column_index = len(self.source.columns)
     &#34;&#34;&#34;Target index for merging into the output dataset&#34;&#34;&#34;
-        
+
     # Check every pattern
     for pattern in self.merge_tags:
 
@@ -8065,18 +8129,38 @@ hxl.data(url).replace_data('foo', 'bar', '#activity')
         if isinstance(self.replacements, ReplaceDataFilter.Replacement):
             self.replacements = [self.replacements]
         self.queries = self._setup_queries(queries)
+        self.indices = self._setup_indices(self.replacements, self.columns)
+
 
     def filter_row(self, row):
         &#34;&#34;&#34;@returns: the row values with replacements&#34;&#34;&#34;
         if hxl.model.RowQuery.match_list(row, self.queries):
+            replaced = set()
             values = copy.copy(row.values)
-            for index, value in enumerate(values):
-                for replacement in self.replacements:
-                    value = replacement.sub(row.columns[index], value)
-                    values[index] = value
+            for i, replacement in enumerate(self.replacements):
+                indices = self.indices[i]
+                for index in indices:
+                    if index not in replaced and index &lt; len(values):
+                        new_value = replacement.sub(values[index])
+                        if new_value is not False:
+                            replaced.add(index)
+                            values[index] = new_value
             return values
         else:
             return row.values
+
+
+    def _setup_indices(self, replacements, columns):
+        &#34;&#34;&#34; Return a list of matching column indices for each replacement &#34;&#34;&#34;
+        result = []
+        for replacement in replacements:
+            indices = []
+            for i, column in enumerate(columns):
+                if replacement.matches(column):
+                    indices.append(i)
+            result.append(indices)
+        return result
+
 
     class Replacement:
         &#34;&#34;&#34;Replacement specification.&#34;&#34;&#34;
@@ -8101,21 +8185,28 @@ hxl.data(url).replace_data('foo', 'bar', '#activity')
             if not self.is_regex:
                 self.original = hxl.datatypes.normalise_string(self.original)
 
-        def sub(self, column, value):
+        def matches(self, column):
+            &#34;&#34;&#34; Return true if the replacement applies to the column provided &#34;&#34;&#34;
+            if self.patterns:
+                return hxl.model.TagPattern.match_list(column, self.patterns)
+            else:
+                return True
+
+        def sub(self, value):
             &#34;&#34;&#34;
             Substitute inside the value, if appropriate.
-            @param column: the column definition
             @param value: the cell value
-            @returns: the value, possibly changed
+            @returns: the new value if changed; False otherwise
             &#34;&#34;&#34;
-            if self.patterns and not hxl.model.TagPattern.match_list(column, self.patterns):
-                return value
-            elif self.is_regex:
-                return re.sub(self.original, self.replacement, str(value))
+            
+            if self.is_regex:
+                result = re.subn(self.original, self.replacement, str(value))
+                if result[1] &gt; 0:
+                    return result[0]
             elif self.original == hxl.datatypes.normalise_string(value):
                 return self.replacement
-            else:
-                return value
+
+            return False
 
         @staticmethod
         def parse_map(source):
@@ -8189,11 +8280,16 @@ hxl.data(url).replace_data('foo', 'bar', '#activity')
 <pre><code class="python">def filter_row(self, row):
     &#34;&#34;&#34;@returns: the row values with replacements&#34;&#34;&#34;
     if hxl.model.RowQuery.match_list(row, self.queries):
+        replaced = set()
         values = copy.copy(row.values)
-        for index, value in enumerate(values):
-            for replacement in self.replacements:
-                value = replacement.sub(row.columns[index], value)
-                values[index] = value
+        for i, replacement in enumerate(self.replacements):
+            indices = self.indices[i]
+            for index in indices:
+                if index not in replaced and index &lt; len(values):
+                    new_value = replacement.sub(values[index])
+                    if new_value is not False:
+                        replaced.add(index)
+                        values[index] = new_value
         return values
     else:
         return row.values</code></pre>
@@ -8279,7 +8375,7 @@ print("{} lines".format(counter.row_count);
     The output is identical to the input; the line count is
     stored in the filter itself.  As a result, there is no corresponding
     command-line utility.
-    
+
     Usage:
 
     &lt;pre&gt;
@@ -8426,7 +8522,7 @@ hxl.data(url).without_rows('org=OXFAM')
     @staticmethod
     def _load(source, spec):
         &#34;&#34;&#34;Construct a row filter from a dict spec.&#34;&#34;&#34;
-        
+
         reverse = False
         if spec.get(&#39;filter&#39;) == &#39;without_rows&#39;:
             reverse = True

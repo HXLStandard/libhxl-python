@@ -34,6 +34,8 @@ import logging, collections
 import hxl.datatypes
 import datetime
 
+from hxl.util import logup
+
 logger = logging.getLogger(__name__)
 
 #
@@ -143,6 +145,7 @@ def function(row, args):
     if f:
         return f(row, args[1:], True)
     else:
+        logup(&#39;Unknown function&#39;, {&#34;function&#34;: args[0]}, level=&#39;error&#39;)
         logger.error(&#34;Unknown function %s&#34;, args[0])
         return &#39;&#39;
 
@@ -244,13 +247,15 @@ def do_round(row, args, multiple=False):
     &#34;&#34;&#34;
     values = _deref(row, args, False)
     if len(values) &gt; 1:
+        logup(&#39;Ignoring extra arguments to round()&#39;, {&#34;args&#34;: str(values[1:])}, level=&#39;warning&#39;)
         logger.warning(&#34;Ignoring extra arguments to round(): %s&#34;, str(values[1:]))
     try:
         return round(values[0])
     except:
+        logup(&#39;Trying to round non-numeric value&#39;, {&#34;value&#34;: str(values[0])}, level=&#39;warning&#39;)
         logger.warning(&#34;Trying to round non-numeric value %s&#34;, values[0])
         return values[0]
-    
+
 def do_join(row, args, multiple=True):
     &#34;&#34;&#34;Join values with the separator provided.
     Also joins empty values (for consistency)
@@ -287,16 +292,19 @@ def do_datedif(row, args, multiple=False):
     elif len(values) == 3:
         unit = str(values[2]).upper()
     else:
+        logup(&#39;Wrong number of arguments to datedif()&#39;, level=&#39;error&#39;)
         logger.error(&#34;Wrong number of arguments to datedif()&#34;)
         return &#39;&#39;
     try:
         date1 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[0]), &#39;%Y-%m-%d&#39;)
     except:
+        logup(&#34;Can&#39;t parse date&#34;, {&#34;date&#34;: str(values[0])}, level=&#39;error&#39;)
         logger.error(&#34;Can&#39;t parse date: %s&#34;, values[0])
         return &#39;&#39;
     try:
         date2 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[1]), &#39;%Y-%m-%d&#39;)
     except:
+        logup(&#34;Can&#39;t parse date&#34;, {&#34;date&#34;: str(values[1])}, level=&#39;error&#39;)
         logger.error(&#34;Can&#39;t parse date: %s&#34;, values[1])
         return &#39;&#39;
     diff = date2-date1
@@ -309,7 +317,8 @@ def do_datedif(row, args, multiple=False):
     elif unit == &#39;D&#39;:
         return abs(diff.days)
     else:
-        logger.error(&#34;Unrecognised unit % for datediff()&#34;, unit)
+        logup(&#39;Unrecognised unit for datediff()&#39;, {&#34;unit&#34;: str(unit)}, level=&#39;error&#39;)
+        logger.error(&#34;Unrecognised unit %s for datediff()&#34;, str(unit))
         return &#39;&#39;
 
 
@@ -396,6 +405,7 @@ def _num(arg):
     try:
         return hxl.datatypes.normalise_number(arg)
     except (ValueError, TypeError):
+        logup(&#39;Cannot convert to a number for calculated field&#39;, {&#34;arg&#34;: arg}, level=&#39;warning&#39;)
         logger.warning(&#34;Cannot convert %s to a number for calculated field&#34;, arg)
         return 0</code></pre>
 </details>
@@ -558,16 +568,19 @@ USAGE: datedif(date1, date2[, unit])
     elif len(values) == 3:
         unit = str(values[2]).upper()
     else:
+        logup(&#39;Wrong number of arguments to datedif()&#39;, level=&#39;error&#39;)
         logger.error(&#34;Wrong number of arguments to datedif()&#34;)
         return &#39;&#39;
     try:
         date1 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[0]), &#39;%Y-%m-%d&#39;)
     except:
+        logup(&#34;Can&#39;t parse date&#34;, {&#34;date&#34;: str(values[0])}, level=&#39;error&#39;)
         logger.error(&#34;Can&#39;t parse date: %s&#34;, values[0])
         return &#39;&#39;
     try:
         date2 = datetime.datetime.strptime(hxl.datatypes.normalise_date(values[1]), &#39;%Y-%m-%d&#39;)
     except:
+        logup(&#34;Can&#39;t parse date&#34;, {&#34;date&#34;: str(values[1])}, level=&#39;error&#39;)
         logger.error(&#34;Can&#39;t parse date: %s&#34;, values[1])
         return &#39;&#39;
     diff = date2-date1
@@ -580,7 +593,8 @@ USAGE: datedif(date1, date2[, unit])
     elif unit == &#39;D&#39;:
         return abs(diff.days)
     else:
-        logger.error(&#34;Unrecognised unit % for datediff()&#34;, unit)
+        logup(&#39;Unrecognised unit for datediff()&#39;, {&#34;unit&#34;: str(unit)}, level=&#39;error&#39;)
+        logger.error(&#34;Unrecognised unit %s for datediff()&#34;, str(unit))
         return &#39;&#39;</code></pre>
 </details>
 </dd>
@@ -725,10 +739,12 @@ Otherwise, use lexical comparison (case- and space-insensitive)
     &#34;&#34;&#34;
     values = _deref(row, args, False)
     if len(values) &gt; 1:
+        logup(&#39;Ignoring extra arguments to round()&#39;, {&#34;args&#34;: str(values[1:])}, level=&#39;warning&#39;)
         logger.warning(&#34;Ignoring extra arguments to round(): %s&#34;, str(values[1:]))
     try:
         return round(values[0])
     except:
+        logup(&#39;Trying to round non-numeric value&#39;, {&#34;value&#34;: str(values[0])}, level=&#39;warning&#39;)
         logger.warning(&#34;Trying to round non-numeric value %s&#34;, values[0])
         return values[0]</code></pre>
 </details>
@@ -826,6 +842,7 @@ function(arg, arg&hellip;)
     if f:
         return f(row, args[1:], True)
     else:
+        logup(&#39;Unknown function&#39;, {&#34;function&#34;: args[0]}, level=&#39;error&#39;)
         logger.error(&#34;Unknown function %s&#34;, args[0])
         return &#39;&#39;</code></pre>
 </details>
