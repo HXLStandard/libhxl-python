@@ -1,4 +1,5 @@
-Release 4.28:
+2023-03-20 Release 4.28:
+	- update requirements to allow latest versions of dependencies
 	- don't fall back to CSV if we have a MIME type or file extension that's not in the allow list (which is fairly liberal)
 	- change behaviour of ReplaceDataFilter so that with a map, it stops after the first successful replacement for each value
 	- change to ReplaceDataFilter means that replacement maps can now have default values at the end
