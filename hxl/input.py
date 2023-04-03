@@ -218,6 +218,31 @@ def data(data, input_options=None):
 
         return HXLReader(make_input(data, input_options))
 
+    
+def info(data, input_options=None):
+    """ Return info about a data source (rather than the data itself)
+
+    Args:
+        data: a HXL data provider, file object, array, or string (representing a URL or file name).
+        input_options (InputOptions): options for reading a dataset.
+
+    Returns:
+        A dict containing info about the object.
+
+    Raises:
+        IOError: if there's an error loading the data.
+        hxl.HXLException: if there's a structural error in the data.
+        hxl.input.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
+
+    """
+    input = make_input(data, input_options)
+    result = {
+        "url_or_filename": input.url_or_filename,
+        "format": input.format,
+    }
+    return result
+
+
 
 def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
     """Open an untagged data source and add hashtags.
@@ -263,6 +288,7 @@ def tagger(data, specs, input_options=None, default_tag=None, match_all=False):
             match_all=match_all
         )
     )
+
 
 
 def write_hxl(output, source, show_headers=True, show_tags=True):
@@ -818,9 +844,10 @@ class AbstractInput(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, input_options):
+    def __init__(self, input_options, url_or_filename=None):
         super().__init__()
         self.input_options = input_options
+        self.url_or_filename = None
         self.is_repeatable = False
 
     def info(self):
@@ -876,20 +903,22 @@ class CSVInput(AbstractInput):
     _DELIMITERS = [",", "\t", ";", ":", "|"]
     """ CSV delimiters allowed """
 
-    def __init__(self, input, input_options):
+    def __init__(self, input, input_options, url_or_filename=None):
         """
         Args:
             input (io.IOBase): a byte input stream
             input_options (InputOptions): options for reading a dataset.
 
         """
-        super().__init__(input_options)
+        super().__init__(input_options, url_or_filename)
+
+        self.format = "CSV"
 
         # guess the delimiter
-        delimiter = CSVInput._detect_delimiter(input, input_options.encoding or "utf-8")
+        self.delimiter = CSVInput._detect_delimiter(input, input_options.encoding or "utf-8")
 
         self._input = io.TextIOWrapper(input, encoding=input_options.encoding, errors="replace")
-        self._reader = csv.reader(self._input, delimiter=delimiter)
+        self._reader = csv.reader(self._input, delimiter=self.delimiter)
 
     def __exit__(self, value, type, traceback):
         self._input.close()
@@ -964,16 +993,17 @@ class JSONInput(AbstractInput):
 
     """
 
-    def __init__(self, input, input_options):
+    def __init__(self, input, input_options, url_or_filename=None):
         """
         Args:
             input (io.IOBase): an input byte stream
             input_options (InputOptions): options for reading a dataset.
 
         """
-        super().__init__(input_options)
+        super().__init__(input_options, url_or_filename)
 
         # values to be set by _scan_data_element
+        self.format = 'JSON'
         self.type = None
         self.headers = []
         self.show_headers = False
@@ -1122,8 +1152,7 @@ class ExcelInput(AbstractInput):
             input_options (InputOptions): options for reading a dataset.
             url_or_filename (string): the original URL or filename or None
         """
-        super().__init__(input_options)
-        self.url_or_filename = url_or_filename
+        super().__init__(input_options, url_or_filename)
         self.is_repeatable = True
         self.contents = contents
 
@@ -1134,6 +1163,9 @@ class ExcelInput(AbstractInput):
             sheet_index = self._find_hxl_sheet_index()
 
         self._sheet = self._get_sheet(sheet_index)
+
+        self.format = "XLSX" if self._workbook.biff_version == 0 else "XLS"
+
         self.merged_values = {}
 
     def info (self):
@@ -1314,6 +1346,7 @@ class ArrayInput(AbstractInput):
 
         """
         super().__init__(input_options=None)
+        self.format = 'Array'
         self.data = data
         self.is_repeatable = True
 

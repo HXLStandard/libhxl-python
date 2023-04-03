@@ -163,44 +163,45 @@ class TestInput(unittest.TestCase):
             self.assertEqual("¿Qué?", header_row[1])
 
     def test_xlsx_info(self):
-        with make_input(FILE_XLSX_INFO, InputOptions(allow_local=True)) as input:
-            report = input.info()
+        report = hxl.input.info(FILE_XLSX_INFO, InputOptions(allow_local=True))
+        self.assertEqual("XLSX", report["format"])
+        self.assertEqual(2, len(report["sheets"]))
 
-            self.assertEqual("XLSX", report["format"])
-            
-            self.assertEqual(2, len(report["sheets"]))
+        # Sheet 1
+        self.assertEqual("input-quality-no-hxl", report["sheets"][0]["name"])
+        self.assertFalse(report["sheets"][0]["is_hidden"]),
+        self.assertEqual(5, report["sheets"][0]["nrows"]),
+        self.assertEqual(9, report["sheets"][0]["ncols"]),
+        self.assertTrue(report["sheets"][0]["has_merged_cells"])
+        self.assertFalse(report["sheets"][0]["is_hxlated"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][0]["header_hash"])
+        self.assertTrue(report["sheets"][0]["hashtag_hash"] is None)
 
-            # Sheet 1
-            self.assertEqual("input-quality-no-hxl", report["sheets"][0]["name"])
-            self.assertFalse(report["sheets"][0]["is_hidden"]),
-            self.assertEqual(5, report["sheets"][0]["nrows"]),
-            self.assertEqual(9, report["sheets"][0]["ncols"]),
-            self.assertTrue(report["sheets"][0]["has_merged_cells"])
-            self.assertFalse(report["sheets"][0]["is_hxlated"])
-            self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][0]["header_hash"])
-            self.assertTrue(report["sheets"][0]["hashtag_hash"] is None)
-
-            # Sheet 2
-            self.assertEqual("input-quality-hxl", report["sheets"][1]["name"])
-            self.assertFalse(report["sheets"][1]["is_hidden"]),
-            self.assertEqual(6, report["sheets"][1]["nrows"]),
-            self.assertEqual(9, report["sheets"][1]["ncols"]),
-            self.assertFalse(report["sheets"][1]["has_merged_cells"])
-            self.assertTrue(report["sheets"][1]["is_hxlated"])
-            self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
-            self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hashtag_hash"])
+        # Sheet 2
+        self.assertEqual("input-quality-hxl", report["sheets"][1]["name"])
+        self.assertFalse(report["sheets"][1]["is_hidden"]),
+        self.assertEqual(6, report["sheets"][1]["nrows"]),
+        self.assertEqual(9, report["sheets"][1]["ncols"]),
+        self.assertFalse(report["sheets"][1]["has_merged_cells"])
+        self.assertTrue(report["sheets"][1]["is_hxlated"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
+        self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hashtag_hash"])
 
     def test_csv_info(self):
-        with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
-            report = input.info()
+        report = hxl.input.info(FILE_CSV, InputOptions(allow_local=True))
+        self.assertEqual("CSV", report["format"])
 
     def test_xls_info(self):
-        with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
-            report = input.info()
+        report = hxl.input.info(FILE_XLS, InputOptions(allow_local=True))
+        self.assertEqual("XLS", report["format"])
 
-    def test_google_sheets_info(self):
-        with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
-            report = input.info()
+    def test_json_arrays_info(self):
+        report = hxl.input.info(FILE_JSON, InputOptions(allow_local=True))
+        self.assertEqual("JSON", report["format"])
+
+    def test_json_objects_info(self):
+        report = hxl.input.info(FILE_JSON_OBJECTS, InputOptions(allow_local=True))
+        self.assertEqual("JSON", report["format"])
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
