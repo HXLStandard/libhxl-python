@@ -240,8 +240,35 @@ def info(data, input_options=None):
         "url_or_filename": input.url_or_filename,
         "format": input.format,
     }
-    return result
 
+    if result["format"] in ("XLS", "XLSX",):
+        # use metadata
+        pass
+
+    else:
+        opening_rows = []
+        nrows = 0
+        ncols = 0
+
+        # iterate through the rows
+        for row in input:
+            nrows += 1
+            if len(row) > ncols:
+                ncols = len(row)
+            if nrows <= 25:
+                opening_rows.append(row)
+                
+        result["sheets"] = [
+            {
+                "name": "__DEFAULT__",
+                "nrows": nrows,
+                "ncols": ncols,
+                "is_hidden": False,
+                "has_merged_cells": False,
+            },
+        ]
+
+    return result
 
 
 def tagger(data, specs, input_options=None, default_tag=None, match_all=False):

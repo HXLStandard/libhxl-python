@@ -187,21 +187,27 @@ class TestInput(unittest.TestCase):
         self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
         self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hashtag_hash"])
 
-    def test_csv_info(self):
-        report = hxl.input.info(FILE_CSV, InputOptions(allow_local=True))
-        self.assertEqual("CSV", report["format"])
-
     def test_xls_info(self):
         report = hxl.input.info(FILE_XLS, InputOptions(allow_local=True))
         self.assertEqual("XLS", report["format"])
 
+    def test_csv_info(self):
+        report = hxl.input.info(FILE_CSV, InputOptions(allow_local=True))
+        self.assertEqual("CSV", report["format"])
+        self.assertEqual(7, report["sheets"][0]["nrows"])
+        self.assertEqual(9, report["sheets"][0]["ncols"])
+
     def test_json_arrays_info(self):
         report = hxl.input.info(FILE_JSON, InputOptions(allow_local=True))
         self.assertEqual("JSON", report["format"])
+        self.assertEqual(7, report["sheets"][0]["nrows"])
+        self.assertEqual(9, report["sheets"][0]["ncols"])
 
     def test_json_objects_info(self):
         report = hxl.input.info(FILE_JSON_OBJECTS, InputOptions(allow_local=True))
         self.assertEqual("JSON", report["format"])
+        self.assertEqual(5, report["sheets"][0]["nrows"])
+        self.assertEqual(9, report["sheets"][0]["ncols"])
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
