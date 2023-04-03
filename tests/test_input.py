@@ -190,6 +190,18 @@ class TestInput(unittest.TestCase):
             self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
             self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hashtag_hash"])
 
+    def test_csv_info(self):
+        with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
+            report = input.info()
+
+    def test_xls_info(self):
+        with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
+            report = input.info()
+
+    def test_google_sheets_info(self):
+        with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
+            report = input.info()
+
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
         self.assertTrue('#vocab' in source.tags)
