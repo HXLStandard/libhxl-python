@@ -1,3 +1,6 @@
+Release 4.29
+	- remove hxl.input.ExcelInput.info() and make a top-level hxl.input.info() function that works with every data type (also alias to hxl.info())
+
 2023-03-20 Release 4.28:
 	- update requirements to allow latest versions of dependencies
 	- don't fall back to CSV if we have a MIME type or file extension that's not in the allow list (which is fairly liberal)

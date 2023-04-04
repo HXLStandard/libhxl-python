@@ -222,6 +222,21 @@ def data(data, input_options=None):
 def info(data, input_options=None):
     """ Return info about a data source (rather than the data itself)
 
+    Top-level properties:
+    - url_or_filename
+    - format ("XLSX", "XLS", "CSV", "JSON", or "Arrays")
+    - sheets
+
+    Per-sheet properties:
+    - name (always "__DEFAULT__" if not XLS or XLSX)
+    - nrows
+    - ncols
+    - is_hidden (always False if not XLS or XLSX)
+    - has_merged_cells (always False if not XLSX)
+    - is_hxlated
+    - header_hash (hash of the first raw row)
+    - hxl_hashtag_hash (hash of the HXL hashtag row and preceding header row, if HXLated)
+        
     Args:
         data: a HXL data provider, file object, array, or string (representing a URL or file name).
         input_options (InputOptions): options for reading a dataset.
@@ -235,6 +250,7 @@ def info(data, input_options=None):
         hxl.input.HXLAuthorizationException: if the source requires some kind of authorisation (possibly fixable by adding an Authorization: header to the ``http_headers`` arg.
 
     """
+
     input = make_input(data, input_options)
     result = {
         "url_or_filename": input.url_or_filename,
@@ -242,21 +258,29 @@ def info(data, input_options=None):
     }
 
     if result["format"] in ("XLS", "XLSX",):
-        # use metadata
-        pass
+        # Excel metadata is special
+        result["sheets"] = input.get_sheet_info()
 
     else:
+        # Otherwise, compute from the content
+
+        # iterate through the rows
         opening_rows = []
         nrows = 0
         ncols = 0
-
-        # iterate through the rows
         for row in input:
             nrows += 1
             if len(row) > ncols:
                 ncols = len(row)
             if nrows <= 25:
                 opening_rows.append(row)
+
+        # See if the first 25 rows are HXLated
+        try:
+            source = HXLReader(opening_rows)
+            hxl_hashtag_hash = source.columns_hash
+        except HXLTagsNotFoundException:
+            hxl_hashtag_hash = None
                 
         result["sheets"] = [
             {
@@ -265,6 +289,9 @@ def info(data, input_options=None):
                 "ncols": ncols,
                 "is_hidden": False,
                 "has_merged_cells": False,
+                "is_hxlated": hxl_hashtag_hash is not None,
+                "header_hash": hash_row(opening_rows[0]) if nrows > 0 else None,
+                "hxl_hashtag_hash": hxl_hashtag_hash,
             },
         ]
 
@@ -877,31 +904,6 @@ class AbstractInput(object):
         self.url_or_filename = None
         self.is_repeatable = False
 
-    def info(self):
-        """ Get information about the raw dataset.
-        Uses low-level row-wise input, so the source doesn't have to be HXLated.
-
-        The result will be a dict with info about the workbook:
-
-        - format (e.g. "XLSX")
-        - sheets (list)
-
-        The following will appear for each sheet:
-
-        - sheet_name (string)
-        - is_hidden (boolean)
-        - nrows (int)
-        - ncols (int)
-        - has_merged_cells (boolean)
-        - is_hxlated (boolean)
-        - header_hash (MD5 string)
-        - hashtag hash (MD5 string, or null if not HXLated)
-
-        (Currently supported only for Excel.)
-
-        """
-        raise NotImplementedError()
-
     @abc.abstractmethod
     def __iter__(self):
         return self
@@ -1195,22 +1197,11 @@ class ExcelInput(AbstractInput):
 
         self.merged_values = {}
 
-    def info (self):
-        """ See method doc for parent class """
+    def get_sheet_info (self):
+        """ Return sheet metadata for the top-level info() function """
 
-        def hash_headers (raw_row):
-            """ Create a hash just for the first row of values
-            """
-            md5 = hashlib.md5()
-            for value in raw_row:
-                md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
-            return md5.hexdigest()
+        result = [] # list of dicts containing info for each sheet in the workbook
 
-        result = {
-            "url_or_filename": self.url_or_filename,
-            "format": "XLSX" if self._workbook.biff_version == 0 else "XLS",
-            "sheets": [],
-        }
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._get_sheet(sheet_index)
             columns = self._get_columns(sheet)
@@ -1221,10 +1212,10 @@ class ExcelInput(AbstractInput):
                 "ncols": sheet.ncols,
                 "has_merged_cells": (len(sheet.merged_cells) > 0),
                 "is_hxlated": (columns is not None),
-                "header_hash": hash_headers(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
-                "hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
+                "header_hash": hash_row(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
+                "hxl_hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
             }
-            result["sheets"].append(sheet_info)
+            result.append(sheet_info)
         return result
 
     def __iter__(self):
@@ -1373,7 +1364,7 @@ class ArrayInput(AbstractInput):
 
         """
         super().__init__(input_options=None)
-        self.format = 'Array'
+        self.format = 'Arrays'
         self.data = data
         self.is_repeatable = True
 
@@ -1892,6 +1883,15 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
         else:
             logger.warning("Kobo export not ready; will try again")
             time.sleep(2)
+
+
+def hash_row (row):
+    """ Create a hash for a row of values
+    """
+    md5 = hashlib.md5()
+    for value in row:
+        md5.update(hxl.datatypes.normalise_space(value).encode('utf-8'))
+    return md5.hexdigest()
 
 
 # end
