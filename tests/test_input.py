@@ -178,7 +178,7 @@ class TestInput(unittest.TestCase):
             self.assertTrue(report["sheets"][0]["has_merged_cells"])
             self.assertFalse(report["sheets"][0]["is_hxlated"])
             self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][0]["header_hash"])
-            self.assertTrue(report["sheets"][0]["hashtag_hash"] is None)
+            self.assertTrue(report["sheets"][0]["hxl_header_hash"] is None)
 
             # Sheet 2
             self.assertEqual("input-quality-hxl", report["sheets"][1]["name"])
@@ -188,7 +188,7 @@ class TestInput(unittest.TestCase):
             self.assertFalse(report["sheets"][1]["has_merged_cells"])
             self.assertTrue(report["sheets"][1]["is_hxlated"])
             self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
-            self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hashtag_hash"])
+            self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hxl_header_hash"])
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')

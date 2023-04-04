@@ -1163,7 +1163,7 @@ class ExcelInput(AbstractInput):
                 "has_merged_cells": (len(sheet.merged_cells) > 0),
                 "is_hxlated": (columns is not None),
                 "header_hash": hash_headers(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
-                "hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
+                "hxl_header_hash": hxl.model.Column.hash_list(columns) if columns else None,
             }
             result["sheets"].append(sheet_info)
         return result

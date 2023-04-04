@@ -1212,7 +1212,7 @@ class ExcelInput(AbstractInput):
                 &#34;has_merged_cells&#34;: (len(sheet.merged_cells) &gt; 0),
                 &#34;is_hxlated&#34;: (columns is not None),
                 &#34;header_hash&#34;: hash_headers(self._get_row(sheet, 0)) if sheet.nrows &gt; 0 else None,
-                &#34;hashtag_hash&#34;: hxl.model.Column.hash_list(columns) if columns else None,
+                &#34;hxl_header_hash&#34;: hxl.model.Column.hash_list(columns) if columns else None,
             }
             result[&#34;sheets&#34;].append(sheet_info)
         return result
@@ -2947,7 +2947,7 @@ fails, will use the first sheet in the workbook.</p>
                 &#34;has_merged_cells&#34;: (len(sheet.merged_cells) &gt; 0),
                 &#34;is_hxlated&#34;: (columns is not None),
                 &#34;header_hash&#34;: hash_headers(self._get_row(sheet, 0)) if sheet.nrows &gt; 0 else None,
-                &#34;hashtag_hash&#34;: hxl.model.Column.hash_list(columns) if columns else None,
+                &#34;hxl_header_hash&#34;: hxl.model.Column.hash_list(columns) if columns else None,
             }
             result[&#34;sheets&#34;].append(sheet_info)
         return result
@@ -3122,7 +3122,7 @@ fails, will use the first sheet in the workbook.</p>
             &#34;has_merged_cells&#34;: (len(sheet.merged_cells) &gt; 0),
             &#34;is_hxlated&#34;: (columns is not None),
             &#34;header_hash&#34;: hash_headers(self._get_row(sheet, 0)) if sheet.nrows &gt; 0 else None,
-            &#34;hashtag_hash&#34;: hxl.model.Column.hash_list(columns) if columns else None,
+            &#34;hxl_header_hash&#34;: hxl.model.Column.hash_list(columns) if columns else None,
         }
         result[&#34;sheets&#34;].append(sheet_info)
     return result</code></pre>
