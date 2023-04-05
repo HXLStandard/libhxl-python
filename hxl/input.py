@@ -235,7 +235,7 @@ def info(data, input_options=None):
     - has_merged_cells (always False if not XLSX)
     - is_hxlated
     - header_hash (hash of the first raw row)
-    - hxl_hashtag_hash (hash of the HXL hashtag row and preceding header row, if HXLated)
+    - hxl_header_hash (hash of the HXL hashtag row and preceding header row, if HXLated)
         
     Args:
         data: a HXL data provider, file object, array, or string (representing a URL or file name).
@@ -278,9 +278,9 @@ def info(data, input_options=None):
         # See if the first 25 rows are HXLated
         try:
             source = HXLReader(opening_rows)
-            hxl_hashtag_hash = source.columns_hash
+            hxl_header_hash = source.columns_hash
         except HXLTagsNotFoundException:
-            hxl_hashtag_hash = None
+            hxl_header_hash = None
                 
         result["sheets"] = [
             {
@@ -289,9 +289,9 @@ def info(data, input_options=None):
                 "ncols": ncols,
                 "is_hidden": False,
                 "has_merged_cells": False,
-                "is_hxlated": hxl_hashtag_hash is not None,
+                "is_hxlated": hxl_header_hash is not None,
                 "header_hash": hash_row(opening_rows[0]) if nrows > 0 else None,
-                "hxl_hashtag_hash": hxl_hashtag_hash,
+                "hxl_header_hash": hxl_header_hash,
             },
         ]
 
@@ -1213,7 +1213,7 @@ class ExcelInput(AbstractInput):
                 "has_merged_cells": (len(sheet.merged_cells) > 0),
                 "is_hxlated": (columns is not None),
                 "header_hash": hash_row(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
-                "hxl_hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
+                "hxl_header_hash": hxl.model.Column.hash_list(columns) if columns else None,
             }
             result.append(sheet_info)
         return result

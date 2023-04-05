@@ -65,8 +65,8 @@ browse-docs:
 
 # (re)generate emacs TAGS file
 etags:
-	find hxl tests -name '*.py' -o -name '*.csv' -print0 \
-	  | xargs -0 etags
+	find hxl tests -name '*.py' -o -name '*.csv' \
+	  | xargs etags
 
 # end
 
