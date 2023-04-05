@@ -1,5 +1,6 @@
 Release 4.29
 	- remove hxl.input.ExcelInput.info() and make a top-level hxl.input.info() function that works with every data type (also alias to hxl.info())
+	- update Makefile for new git branch structure (just dev and prod)
 
 2023-03-20 Release 4.28:
 	- update requirements to allow latest versions of dependencies
