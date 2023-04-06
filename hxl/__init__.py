@@ -81,7 +81,7 @@ import sys
 if sys.version_info < (3,):
     raise RuntimeError("libhxl requires Python 3 or higher")
 
-__version__="4.28"
+__version__="4.29"
 """Module version number
 see https://www.python.org/dev/peps/pep-0396/
 """
@@ -112,7 +112,7 @@ class HXLException(Exception):
 import hxl.geo
 import hxl.datatypes
 from hxl.model import TagPattern, Dataset, Column, Row, RowQuery
-from hxl.input import data, tagger, HXLParseException, write_hxl, make_input, InputOptions, from_spec
+from hxl.input import data, info, tagger, HXLParseException, write_hxl, make_input, InputOptions, from_spec
 from hxl.validation import schema, validate, HXLValidationException
 
 # end
