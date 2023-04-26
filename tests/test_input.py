@@ -326,7 +326,7 @@ class TestUntaggedInput(unittest.TestCase):
             input = hxl.make_input(FILE_NOTAG2, InputOptions(allow_local=True))
             list(input)
 
-class TestFunctions(unittest.TestCase):
+class TestFuncs(unittest.TestCase):
 
     DATA = [
         ['Sector', 'Organisation', 'Province name'],
@@ -334,6 +334,29 @@ class TestFunctions(unittest.TestCase):
         ['WASH', 'Org A', 'Coast'],
         ['Health', 'Org B', 'Plains']
     ]
+
+    ENCODED_URL = "https%3A%2F%2Fexample.org%2Fdata.csv"
+
+    INPUT_OPTIONS = hxl.input.InputOptions()
+
+    # TODO - add tests for munging other types of URLs
+
+    def test_url_munging_hxl_proxy(self):
+
+        # add .csv to data
+        url_in = "https://proxy.hxlstandard.org/data?url=$ENCODED_URL"
+        url_out = "https://proxy.hxlstandard.org/data.csv?url=$ENCODED_URL"
+        self.assertEqual(url_out, hxl.input.munge_url(url_in, self.INPUT_OPTIONS))
+
+        # strip /edit
+        url_in = "https://proxy.hxlstandard.org/data/edit?url=$ENCODED_URL"
+        url_out = "https://proxy.hxlstandard.org/data.csv?url=$ENCODED_URL"
+        self.assertEqual(url_out, hxl.input.munge_url(url_in, self.INPUT_OPTIONS))
+
+        # data/download should be unaltered
+        url_in = "https://proxy.hxlstandard.org/data/download/foo.csv"
+        url_out = "https://proxy.hxlstandard.org/data/download/foo.csv"
+        self.assertEqual(url_out, hxl.input.munge_url(url_in, self.INPUT_OPTIONS))
 
     def test_from_spec_tagged(self):
         source = hxl.from_spec({
