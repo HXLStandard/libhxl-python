@@ -1,5 +1,8 @@
 Release 5.0
 	- fix URL munging for direct-download HXL Proxy URLs
+	- add hxlinfo command-line script
+	- renamed hxl_headers field in output of hxl.input.info() to hxl_hashtags
+	- added headers, hxl_headers, and hxl_hashtags fields to output of hxl.input.info()
 
 2023-04-06 Release 4.29
 	- remove hxl.input.ExcelInput.info() and make a top-level hxl.input.info() function that works with every data type (also alias to hxl.info())

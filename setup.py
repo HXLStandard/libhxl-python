@@ -50,6 +50,7 @@ setup(
             'hxlfill = hxl.scripts:hxlfill',
             'hxlimplode = hxl.scripts:hxlimplode',
             'hxlhash = hxl.scripts:hxlhash',
+            'hxlinfo = hxl.scripts:hxlinfo',
             'hxlmerge = hxl.scripts:hxlmerge',
             'hxlrename = hxl.scripts:hxlrename',
             'hxlreplace = hxl.scripts:hxlreplace',
