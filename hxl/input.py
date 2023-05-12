@@ -902,7 +902,7 @@ class AbstractInput(object):
     def __init__(self, input_options, url_or_filename=None):
         super().__init__()
         self.input_options = input_options
-        self.url_or_filename = None
+        self.url_or_filename = url_or_filename
         self.is_repeatable = False
 
     @abc.abstractmethod
