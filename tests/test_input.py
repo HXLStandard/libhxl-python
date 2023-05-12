@@ -176,7 +176,7 @@ class TestInput(unittest.TestCase):
         self.assertTrue(report["sheets"][0]["has_merged_cells"])
         self.assertFalse(report["sheets"][0]["is_hxlated"])
         self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][0]["header_hash"])
-        self.assertTrue(report["sheets"][0]["hxl_header_hash"] is None)
+        self.assertTrue(report["sheets"][0]["hxl_hashtag_hash"] is None)
 
         # Sheet 2
         self.assertEqual("input-quality-hxl", report["sheets"][1]["name"])
@@ -186,7 +186,7 @@ class TestInput(unittest.TestCase):
         self.assertFalse(report["sheets"][1]["has_merged_cells"])
         self.assertTrue(report["sheets"][1]["is_hxlated"])
         self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
-        self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hxl_header_hash"])
+        self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hxl_hashtag_hash"])
 
     def test_xls_info(self):
         report = hxl.input.info(FILE_XLS_INFO, InputOptions(allow_local=True))
@@ -201,7 +201,7 @@ class TestInput(unittest.TestCase):
         #self.assertTrue(report["sheets"][0]["has_merged_cells"]) # can't detect in XLS yet
         self.assertFalse(report["sheets"][0]["is_hxlated"])
         self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][0]["header_hash"])
-        self.assertTrue(report["sheets"][0]["hxl_header_hash"] is None)
+        self.assertTrue(report["sheets"][0]["hxl_hashtag_hash"] is None)
 
         # Sheet 2
         self.assertEqual("input-quality-hxl", report["sheets"][1]["name"])
@@ -211,10 +211,79 @@ class TestInput(unittest.TestCase):
         self.assertFalse(report["sheets"][1]["has_merged_cells"])
         self.assertTrue(report["sheets"][1]["is_hxlated"])
         self.assertEqual("56c6270ee039646436af590e874e6f67", report["sheets"][1]["header_hash"])
-        self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hxl_header_hash"])
+        self.assertEqual("3252897e927737b2f6f423dccd07ac93", report["sheets"][1]["hxl_hashtag_hash"])
+
+    def test_excel_info(self):
+        HEADERS = ['¿Qué?', '', '', '¿Quién?', '¿Para quién?', '', '¿Dónde?', '¿Cuándo?',]
+        HXL_HEADERS = [
+            "Registro",
+            "Sector/Cluster",
+            "Subsector",
+            "Organización",
+            "Hombres",
+            "Mujeres",
+            "País",
+            "Departamento/Provincia/Estado",
+            None,
+        ]
+        HXL_HASHTAGS = [
+            "",
+            "#sector+es",
+            "#subsector+es",
+            "#org+es",
+            "#targeted+f",
+            "#targeted+m",
+            "#country",
+            "#adm1",
+            "#date+reported",
+        ]
+        
+        report = hxl.input.info(FILE_XLSX, InputOptions(allow_local=True))
+        self.assertEqual(FILE_XLSX, report["url_or_filename"])
+        self.assertEqual("XLSX", report["format"])
+        self.assertEqual(1, len(report["sheets"]))
+
+        sheet = report["sheets"][0]
+        self.assertEqual("input-valid", sheet["name"])
+        self.assertEqual(7, sheet["nrows"])
+        self.assertEqual(9, sheet["ncols"])
+        self.assertFalse(sheet["is_hidden"])
+        self.assertTrue(sheet["has_merged_cells"])
+        self.assertTrue(sheet["is_hxlated"])
+        self.assertEqual("b1c179c6f56b75507e1775ac4b7025d5", sheet["header_hash"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["hxl_header_hash"])
+        self.assertEqual("3252897e927737b2f6f423dccd07ac93", sheet["hxl_hashtag_hash"])
+        self.assertEqual(HEADERS, sheet["headers"])
+        self.assertEqual(HXL_HEADERS, sheet["hxl_headers"])
+        self.assertEqual(HXL_HASHTAGS, sheet["hxl_hashtags"])
 
     def test_csv_info(self):
+        HEADERS = ['Qué?', '', '', 'Quién?', 'Para quién?', '', 'Dónde?', 'Cuándo?']
+        HXL_HEADERS = [
+            "Registro",
+            "Sector/Cluster",
+            "Subsector",
+            "Organización",
+            "Hombres",
+            "Mujeres",
+            "País",
+            "Departamento/Provincia/Estado",
+            None,
+        ]
+        HXL_HASHTAGS = [
+            "",
+            "#sector+es",
+            "#subsector+es",
+            "#org+es",
+            "#targeted+f",
+            "#targeted+m",
+            "#country",
+            "#adm1",
+            "#date+reported",
+        ]
+        
         report = hxl.input.info(FILE_CSV, InputOptions(allow_local=True))
+        #self.assertEqual(FILE_CSV, report["url_or_filename"])
         self.assertEqual("CSV", report["format"])
         self.assertEqual(1, len(report["sheets"]))
 
@@ -226,7 +295,11 @@ class TestInput(unittest.TestCase):
         self.assertFalse(sheet["has_merged_cells"])
         self.assertTrue(sheet["is_hxlated"])
         self.assertEqual("88d0fd57e1dbfe721e41b7ab48248feb", sheet["header_hash"])
-        self.assertEqual("3252897e927737b2f6f423dccd07ac93", sheet["hxl_header_hash"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["hxl_header_hash"])
+        self.assertEqual("3252897e927737b2f6f423dccd07ac93", sheet["hxl_hashtag_hash"])
+        self.assertEqual(HEADERS, sheet["headers"])
+        self.assertEqual(HXL_HEADERS, sheet["hxl_headers"])
+        self.assertEqual(HXL_HASHTAGS, sheet["hxl_hashtags"])
 
     def test_json_arrays_info(self):
         report = hxl.input.info(FILE_JSON, InputOptions(allow_local=True))
@@ -240,7 +313,7 @@ class TestInput(unittest.TestCase):
         self.assertFalse(sheet["has_merged_cells"])
         self.assertTrue(sheet["is_hxlated"])
         self.assertEqual("88d0fd57e1dbfe721e41b7ab48248feb", sheet["header_hash"])
-        self.assertEqual("3252897e927737b2f6f423dccd07ac93", sheet["hxl_header_hash"])
+        self.assertEqual("3252897e927737b2f6f423dccd07ac93", sheet["hxl_hashtag_hash"])
 
     def test_json_objects_info(self):
         report = hxl.input.info(FILE_JSON_OBJECTS, InputOptions(allow_local=True))
@@ -254,7 +327,7 @@ class TestInput(unittest.TestCase):
         self.assertFalse(sheet["has_merged_cells"])
         self.assertTrue(sheet["is_hxlated"])
         self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["header_hash"])
-        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
+        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_hashtag_hash"])
 
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')

@@ -1434,7 +1434,7 @@ def hxlinfo_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
 
     do_common_args(args)
 
-    json.dump(hxl.input.info(args.infile or stdin, make_input_options(args)), stdout, indent=2)
+    json.dump(hxl.input.info(args.infile or stdin, make_input_options(args)), stdout, indent=2, ensure_ascii=False)
 
     return EXIT_OK
 
