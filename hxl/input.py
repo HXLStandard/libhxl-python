@@ -279,15 +279,13 @@ def info(data, input_options=None):
         # See if the first 25 rows are HXLated
         try:
             source = HXLReader(opening_rows)
-            hxl_headers = [column.header for column in source.columns]
-            hxl_hashtags = [column.display_tag for column in source.columns]
-            hxl_header_hash = hash_row(hxl_headers)
-            hxl_hashtag_hash = source.columns_hash
+            headers = [column.header for column in source.columns]
+            hxl_headers = [column.display_tag for column in source.columns]
+            is_hxlated= True
         except HXLTagsNotFoundException:
+            headers = opening_rows[0] if nrows > 0 else None
             hxl_headers = None
-            hxl_hashtags = None
-            hxl_header_hash = None
-            hxl_hashtag_hash = None
+            is_hxlated = False
                 
         result["sheets"] = [
             {
@@ -296,13 +294,11 @@ def info(data, input_options=None):
                 "ncols": ncols,
                 "is_hidden": False,
                 "has_merged_cells": False,
-                "is_hxlated": hxl_header_hash is not None,
-                "header_hash": hash_row(opening_rows[0]) if nrows > 0 else None,
-                "hxl_header_hash": hxl_header_hash,
-                "hxl_hashtag_hash": hxl_hashtag_hash,
-                "headers": opening_rows[0],
+                "is_hxlated": is_hxlated,
+                "header_hash": hash_row(headers) if headers else None,
+                "hxl_header_hash": hash_row(hxl_headers) if headers else None,
+                "headers": headers,
                 "hxl_headers": hxl_headers,
-                "hxl_hashtags": hxl_hashtags,
             },
         ]
 
@@ -540,7 +536,7 @@ def make_input(raw_source, input_options=None):
                     zf = zipfile.ZipFile(io.BytesIO(contents), "r")
                     for name in zf.namelist():
                         if os.path.splitext(name)[1].lower()==".csv":
-                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), input_options)
+                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), input_options, url_or_filename)
 
             raise HXLIOException("Cannot find CSV file or Excel content in zip archive")
 
@@ -551,7 +547,7 @@ def make_input(raw_source, input_options=None):
         # fall back to CSV if all else fails
         if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
             logger.debug('Making input from CSV')
-            return CSVInput(input, input_options)
+            return CSVInput(input, input_options, url_or_filename)
 
         raise HXLIOException(
             'Cannot process as data (extension: {}, MIME type: {})'.format(
@@ -1216,21 +1212,26 @@ class ExcelInput(AbstractInput):
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._get_sheet(sheet_index)
             columns = self._get_columns(sheet)
-            hxl_headers = [column.header for column in columns] if columns else None
-            hxl_hashtags = [column.display_tag for column in columns] if columns else None
+            if columns:
+                headers = [column.header for column in columns]
+                hxl_headers = [column.display_tag for column in columns]
+                is_hxlated = True
+            else:
+                headers = self._get_row(sheet, 0) if sheet.nrows > 0 else None
+                hxl_headers = None
+                is_hxlated = False
+                
             sheet_info = {
                 "name": sheet.name,
                 "is_hidden": (sheet.visibility > 0),
                 "nrows": sheet.nrows,
                 "ncols": sheet.ncols,
                 "has_merged_cells": (len(sheet.merged_cells) > 0),
-                "is_hxlated": (columns is not None),
-                "header_hash": hash_row(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
+                "is_hxlated": is_hxlated,
+                "header_hash": hash_row(headers) if headers else None,
                 "hxl_header_hash": hash_row(hxl_headers) if hxl_headers else None,
-                "hxl_hashtag_hash": hxl.model.Column.hash_list(columns) if columns else None,
-                "headers": self._get_row(sheet, 0) if sheet.nrows > 0 else None,
+                "headers": headers,
                 "hxl_headers": hxl_headers,
-                "hxl_hashtags": hxl_hashtags,
             }
             result.append(sheet_info)
         return result
