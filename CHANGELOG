@@ -1,4 +1,5 @@
-Release 5.0
+2023-05-18 Release 5.0
+	- milestone release
 	- fix URL munging for direct-download HXL Proxy URLs
 	- add hxlinfo command-line script
 	- added headers and hxl_headers fields to output of hxl.input.info()
