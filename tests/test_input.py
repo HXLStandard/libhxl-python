@@ -30,6 +30,7 @@ DATA = [
 ]
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
+FILE_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged.csv')
 FILE_TSV = _resolve_file('./files/test_io/input-valid.tsv')
 FILE_SSV = _resolve_file('./files/test_io/input-valid.ssv')
 FILE_ZIP_CSV = _resolve_file('./files/test_io/input-valid-csv.zip')
@@ -163,176 +164,6 @@ class TestInput(unittest.TestCase):
             header_row = next(iter(input))
             self.assertEqual("¿Qué?", header_row[1])
 
-    def test_xlsx_info(self):
-        """ Test the hxl.input.info() function for an XLSX file """
-
-        SHEET1_HEADERS = [
-            '',
-            '¿Qué?',
-            '',
-            '¿Quien?',
-            '¿Para quién?',
-            '',
-            '¿Dónde?',
-            '',
-            '¿Cuándo?'
-        ]
-        
-        SHEET2_HEADERS = [
-            "Registro",
-            "Sector/Cluster",
-            "Subsector",
-            "Organización",
-            "Hombres",
-            "Mujeres",
-            "País",
-            "Departamento/Provincia/Estado",
-            None,
-        ]
-        
-        SHEET2_HXL_HEADERS = [
-            "",
-            "#sector+es",
-            "#subsector+es",
-            "#org+es",
-            "#targeted+f",
-            "#targeted+m",
-            "#country",
-            "#adm1",
-            "#date+reported",
-        ]
-        
-        report = hxl.input.info(FILE_XLSX_INFO, InputOptions(allow_local=True))
-        self.assertEqual("XLSX", report["format"])
-        self.assertEqual(2, len(report["sheets"]))
-
-        # Sheet 1
-        sheet = report["sheets"][0]
-        self.assertEqual("input-quality-no-hxl", sheet["name"])
-        self.assertFalse(sheet["is_hidden"]),
-        self.assertEqual(6, sheet["nrows"]),
-        self.assertEqual(9, sheet["ncols"]),
-        self.assertTrue(sheet["has_merged_cells"])
-        self.assertFalse(sheet["is_hxlated"])
-        self.assertEqual("9457a89d10226d9f418ff422414f2889", sheet["header_hash"])
-        self.assertTrue(sheet["hxl_header_hash"] is None)
-        self.assertEqual(SHEET1_HEADERS, sheet["headers"])
-        self.assertIsNone(sheet["hxl_headers"])
-
-        # Sheet 2
-        sheet = report["sheets"][1]
-        self.assertEqual("input-quality-hxl", sheet["name"])
-        self.assertFalse(sheet["is_hidden"]),
-        self.assertEqual(7, sheet["nrows"]),
-        self.assertEqual(9, sheet["ncols"]),
-        self.assertFalse(sheet["has_merged_cells"])
-        self.assertTrue(sheet["is_hxlated"])
-        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
-        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
-        self.assertEqual(SHEET2_HEADERS, sheet["headers"])
-        self.assertEqual(SHEET2_HXL_HEADERS, sheet["hxl_headers"])
-
-    def test_xls_info(self):
-        report = hxl.input.info(FILE_XLS_INFO, InputOptions(allow_local=True))
-        self.assertEqual("XLS", report["format"])
-        self.assertEqual(2, len(report["sheets"]))
-
-        # Sheet 1
-        sheet = report["sheets"][0]
-        self.assertEqual("input-quality-no-hxl", sheet["name"])
-        self.assertFalse(sheet["is_hidden"]),
-        self.assertEqual(5, sheet["nrows"]),
-        self.assertEqual(9, sheet["ncols"]),
-        #self.assertTrue(sheet["has_merged_cells"]) # can't detect in XLS yet
-        self.assertFalse(sheet["is_hxlated"])
-        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
-        self.assertIsNone(sheet["hxl_header_hash"])
-
-        # Sheet 2
-        sheet = report["sheets"][1]
-        self.assertEqual("input-quality-hxl", sheet["name"])
-        self.assertFalse(sheet["is_hidden"]),
-        self.assertEqual(6, sheet["nrows"]),
-        self.assertEqual(9, sheet["ncols"]),
-        self.assertFalse(sheet["has_merged_cells"])
-        self.assertTrue(sheet["is_hxlated"])
-        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
-        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
-
-    def test_csv_info(self):
-        """ Test the hxl.input.info() function for a CSV file """
-
-        HEADERS = [
-            "Registro",
-            "Sector/Cluster",
-            "Subsector",
-            "Organización",
-            "Hombres",
-            "Mujeres",
-            "País",
-            "Departamento/Provincia/Estado",
-            None,
-        ]
-
-        HXL_HEADERS = [
-            "",
-            "#sector+es",
-            "#subsector+es",
-            "#org+es",
-            "#targeted+f",
-            "#targeted+m",
-            "#country",
-            "#adm1",
-            "#date+reported",
-        ]
-        
-        report = hxl.input.info(FILE_CSV, InputOptions(allow_local=True))
-        self.assertEqual(FILE_CSV, report["url_or_filename"])
-        self.assertEqual("CSV", report["format"])
-        self.assertEqual(1, len(report["sheets"]))
-
-        sheet = report["sheets"][0]
-        self.assertEqual("__DEFAULT__", sheet["name"])
-        self.assertEqual(7, sheet["nrows"])
-        self.assertEqual(9, sheet["ncols"])
-        self.assertFalse(sheet["is_hidden"])
-        self.assertFalse(sheet["has_merged_cells"])
-        self.assertTrue(sheet["is_hxlated"])
-        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
-        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
-        self.assertEqual(HEADERS, sheet["headers"])
-        self.assertEqual(HXL_HEADERS, sheet["hxl_headers"])
-
-    def test_json_arrays_info(self):
-        """ Test the hxl.input.info() function for a JSON arrays file """
-        
-        report = hxl.input.info(FILE_JSON, InputOptions(allow_local=True))
-        self.assertEqual("JSON", report["format"])
-        self.assertEqual(1, len(report["sheets"]))
-
-        sheet = report["sheets"][0]
-        self.assertEqual(7, sheet["nrows"])
-        self.assertEqual(9, sheet["ncols"])
-        self.assertFalse(sheet["is_hidden"])
-        self.assertFalse(sheet["has_merged_cells"])
-        self.assertTrue(sheet["is_hxlated"])
-        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
-        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
-
-    def test_json_objects_info(self):
-        report = hxl.input.info(FILE_JSON_OBJECTS, InputOptions(allow_local=True))
-        self.assertEqual(1, len(report["sheets"]))
-        self.assertEqual("JSON", report["format"])
-
-        sheet = report["sheets"][0]
-        self.assertEqual(5, sheet["nrows"])
-        self.assertEqual(9, sheet["ncols"])
-        self.assertFalse(sheet["is_hidden"])
-        self.assertFalse(sheet["has_merged_cells"])
-        self.assertTrue(sheet["is_hxlated"])
-        self.assertEqual("d41d8cd98f00b204e9800998ecf8427e", sheet["header_hash"])
-        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
-
     def test_ckan_resource(self):
         source = hxl.data('https://data.humdata.org/dataset/hxl-master-vocabulary-list/resource/d22dd1b6-2ff0-47ab-85c6-08aeb911a832')
         self.assertTrue('#vocab' in source.tags)
@@ -361,7 +192,7 @@ class TestUntaggedInput(unittest.TestCase):
     def test_untagged_json(self):
         with hxl.input.make_input(FILE_JSON_UNTAGGED, InputOptions(allow_local=True)) as input:
             self.assertEqual([
-                ['Qué?', '', '', 'Quién?', 'Para quién?', '', 'Dónde?', 'Cuándo?'],
+                ['', '¿Qué?', '', '¿Quién?', '¿Para quién?', '', '¿Dónde?', '', '¿Cuándo?'],
                 ['Registro', 'Sector/Cluster', 'Subsector', 'Organización', 'Hombres', 'Mujeres', 'País', 'Departamento/Provincia/Estado'],
                 ['001', 'WASH', 'Higiene', 'ACNUR', '100', '100', 'Panamá', 'Los Santos', '1 March 2015'],
                 ['002', 'Salud', 'Vacunación', 'OMS', '', '', 'Colombia', 'Cauca', ''],
@@ -402,6 +233,205 @@ class TestUntaggedInput(unittest.TestCase):
         with self.assertRaises(hxl.input.HXLIOException):
             input = hxl.make_input(FILE_NOTAG2, InputOptions(allow_local=True))
             list(input)
+
+
+class TestInfo(unittest.TestCase):
+    """ Test hxl.input.info() function on different file types """
+
+    NOHXL_HEADERS = [
+        '',
+        '¿Qué?',
+        '',
+        '¿Quién?',
+        '¿Para quién?',
+        '',
+        '¿Dónde?',
+        '',
+        '¿Cuándo?',
+    ]
+
+    HXL_HEADERS = [
+        "Registro",
+        "Sector/Cluster",
+        "Subsector",
+        "Organización",
+        "Hombres",
+        "Mujeres",
+        "País",
+        "Departamento/Provincia/Estado",
+        None,
+    ]
+
+    HXL_HASHTAGS = [
+        "",
+        "#sector+es",
+        "#subsector+es",
+        "#org+es",
+        "#targeted+f",
+        "#targeted+m",
+        "#country",
+        "#adm1",
+        "#date+reported",
+    ]
+    
+    def test_xlsx_info(self):
+        """ Test the hxl.input.info() function for an XLSX file """
+
+        report = hxl.input.info(FILE_XLSX_INFO, InputOptions(allow_local=True))
+        self.assertEqual("XLSX", report["format"])
+        self.assertEqual(2, len(report["sheets"]))
+
+        # Sheet 1: not HXL
+        sheet = report["sheets"][0]
+        self.assertEqual("input-quality-no-hxl", sheet["name"])
+        self.assertFalse(sheet["is_hidden"]),
+        self.assertEqual(6, sheet["nrows"]),
+        self.assertEqual(9, sheet["ncols"]),
+        self.assertTrue(sheet["has_merged_cells"])
+        self.assertFalse(sheet["is_hxlated"])
+        self.assertEqual("b1c179c6f56b75507e1775ac4b7025d5", sheet["header_hash"])
+        self.assertTrue(sheet["hxl_header_hash"] is None)
+        self.assertEqual(self.NOHXL_HEADERS, sheet["headers"])
+        self.assertIsNone(sheet["hxl_headers"]) # hxl_headers means hashtags
+
+        # Sheet 2: HXL
+        sheet = report["sheets"][1]
+        self.assertEqual("input-quality-hxl", sheet["name"])
+        self.assertFalse(sheet["is_hidden"]),
+        self.assertEqual(7, sheet["nrows"]),
+        self.assertEqual(9, sheet["ncols"]),
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertTrue(sheet["is_hxlated"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
+        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
+        self.assertEqual(self.HXL_HEADERS, sheet["headers"])
+        self.assertEqual(self.HXL_HASHTAGS, sheet["hxl_headers"])
+
+
+    def test_xls_info(self):
+        report = hxl.input.info(FILE_XLS_INFO, InputOptions(allow_local=True))
+        self.assertEqual("XLS", report["format"])
+        self.assertEqual(2, len(report["sheets"]))
+
+        # Sheet 1: no HXL
+        sheet = report["sheets"][0]
+        self.assertEqual("input-quality-no-hxl", sheet["name"])
+        self.assertFalse(sheet["is_hidden"]),
+        self.assertEqual(6, sheet["nrows"]),
+        self.assertEqual(9, sheet["ncols"]),
+        #self.assertTrue(sheet["has_merged_cells"]) # can't detect in XLS yet
+        self.assertFalse(sheet["is_hxlated"])
+        self.assertEqual("b1c179c6f56b75507e1775ac4b7025d5", sheet["header_hash"])
+        self.assertIsNone(sheet["hxl_header_hash"])
+        self.assertEqual(self.NOHXL_HEADERS, sheet["headers"])
+        self.assertIsNone(sheet["hxl_headers"])
+
+        # Sheet 2: HXL
+        sheet = report["sheets"][1]
+        self.assertEqual("input-quality-hxl", sheet["name"])
+        self.assertFalse(sheet["is_hidden"]),
+        self.assertEqual(7, sheet["nrows"]),
+        self.assertEqual(9, sheet["ncols"]),
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertTrue(sheet["is_hxlated"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
+        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
+        self.assertEqual(self.HXL_HEADERS, sheet["headers"])
+        self.assertEqual(self.HXL_HASHTAGS, sheet["hxl_headers"])
+
+    def test_csv_info_hxl(self):
+        """ Test the hxl.input.info() function for a CSV file """
+
+        report = hxl.input.info(FILE_CSV, InputOptions(allow_local=True))
+        self.assertEqual(FILE_CSV, report["url_or_filename"])
+        self.assertEqual("CSV", report["format"])
+        self.assertEqual(1, len(report["sheets"]))
+
+        sheet = report["sheets"][0]
+        self.assertEqual("__DEFAULT__", sheet["name"])
+        self.assertEqual(7, sheet["nrows"])
+        self.assertEqual(9, sheet["ncols"])
+        self.assertFalse(sheet["is_hidden"])
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertTrue(sheet["is_hxlated"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
+        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
+        self.assertEqual(self.HXL_HEADERS, sheet["headers"])
+        self.assertEqual(self.HXL_HASHTAGS, sheet["hxl_headers"]) # hxl_headers is the hashtag row
+
+    def test_csv_info_nohxl(self):
+        """ Test the hxl.input.info() function for a CSV file """
+
+        report = hxl.input.info(FILE_CSV_UNTAGGED, InputOptions(allow_local=True))
+        self.assertEqual(FILE_CSV_UNTAGGED, report["url_or_filename"])
+        self.assertEqual("CSV", report["format"])
+        self.assertEqual(1, len(report["sheets"]))
+
+        sheet = report["sheets"][0]
+        self.assertEqual("__DEFAULT__", sheet["name"])
+        self.assertEqual(6, sheet["nrows"])
+        self.assertEqual(9, sheet["ncols"])
+        self.assertFalse(sheet["is_hidden"])
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertFalse(sheet["is_hxlated"])
+        self.assertEqual("b1c179c6f56b75507e1775ac4b7025d5", sheet["header_hash"])
+        self.assertIsNone(sheet["hxl_header_hash"])
+        self.assertEqual(self.NOHXL_HEADERS, sheet["headers"])
+        self.assertIsNone(sheet["hxl_headers"]) # hxl_headers is the hashtag row
+
+    def test_json_arrays_info_hxl(self):
+        """ Test the hxl.input.info() function for a JSON arrays file """
+        
+        report = hxl.input.info(FILE_JSON, InputOptions(allow_local=True))
+        self.assertEqual(FILE_JSON, report["url_or_filename"])
+        self.assertEqual("JSON", report["format"])
+        self.assertEqual(1, len(report["sheets"]))
+
+        sheet = report["sheets"][0]
+        self.assertEqual(7, sheet["nrows"])
+        self.assertEqual(9, sheet["ncols"])
+        self.assertFalse(sheet["is_hidden"])
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertTrue(sheet["is_hxlated"])
+        self.assertEqual("56c6270ee039646436af590e874e6f67", sheet["header_hash"])
+        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
+        self.assertEqual(self.HXL_HEADERS, sheet["headers"])
+        self.assertEqual(self.HXL_HASHTAGS, sheet["hxl_headers"]) # hxl_headers is the hashtag row
+
+    def test_json_arrays_info_nohxl(self):
+        """ Test the hxl.input.info() function for a JSON arrays file """
+        
+        report = hxl.input.info(FILE_JSON_UNTAGGED, InputOptions(allow_local=True))
+        self.assertEqual(FILE_JSON_UNTAGGED, report["url_or_filename"])
+        self.assertEqual("JSON", report["format"])
+        self.assertEqual(1, len(report["sheets"]))
+
+        sheet = report["sheets"][0]
+        self.assertEqual(6, sheet["nrows"])
+        self.assertEqual(9, sheet["ncols"])
+        self.assertFalse(sheet["is_hidden"])
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertFalse(sheet["is_hxlated"])
+        self.assertEqual("b1c179c6f56b75507e1775ac4b7025d5", sheet["header_hash"])
+        self.assertIsNone(sheet["hxl_header_hash"])
+        self.assertEqual(self.NOHXL_HEADERS, sheet["headers"])
+        self.assertIsNone(sheet["hxl_headers"]) # hxl_headers is the hashtag row
+
+    def test_json_objects_info(self):
+        report = hxl.input.info(FILE_JSON_OBJECTS, InputOptions(allow_local=True))
+        self.assertEqual(1, len(report["sheets"]))
+        self.assertEqual("JSON", report["format"])
+
+        sheet = report["sheets"][0]
+        self.assertEqual(5, sheet["nrows"])
+        self.assertEqual(9, sheet["ncols"])
+        self.assertFalse(sheet["is_hidden"])
+        self.assertFalse(sheet["has_merged_cells"])
+        self.assertTrue(sheet["is_hxlated"])
+        self.assertEqual("d41d8cd98f00b204e9800998ecf8427e", sheet["header_hash"])
+        self.assertEqual("ccfd7a84d6697a870e95dd64fbac640c", sheet["hxl_header_hash"])
+
+    
 
 class TestFuncs(unittest.TestCase):
 

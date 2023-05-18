@@ -296,7 +296,7 @@ def info(data, input_options=None):
                 "has_merged_cells": False,
                 "is_hxlated": is_hxlated,
                 "header_hash": hash_row(headers) if headers else None,
-                "hxl_header_hash": hash_row(hxl_headers) if headers else None,
+                "hxl_header_hash": hash_row(hxl_headers) if hxl_headers else None,
                 "headers": headers,
                 "hxl_headers": hxl_headers,
             },
@@ -542,7 +542,7 @@ def make_input(raw_source, input_options=None):
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
-            return JSONInput(input, input_options)
+            return JSONInput(input, input_options, url_or_filename)
 
         # fall back to CSV if all else fails
         if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
