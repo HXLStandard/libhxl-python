@@ -18,7 +18,7 @@ setup(
     project_urls={
         'Documentation': 'https://hxlstandard.github.io/libhxl-python/index.html',
         'GitHub': 'https://github.com/HXLStandard/libhxl-python/',
-        'Changelog': 'https://github.com/HXLStandard/libhxl-python/blob/main/CHANGELOG',
+        'Changelog': 'https://github.com/HXLStandard/libhxl-python/blob/prod/CHANGELOG',
     },
     author='David Megginson',
     author_email='megginson@un.org',
