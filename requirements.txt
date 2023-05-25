@@ -1,12 +1,12 @@
-urllib3>=1.21.1<1.27 # version required by requests
 jsonpath-ng
 ply
 pytest
 python-dateutil
 python-io-wrapper>=0.2
-requests>=2.27
+requests
 requests_cache
 structlog
 unidecode
+urllib3
 wheel
 xlrd3>=1.1.0
