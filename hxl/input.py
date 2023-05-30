@@ -73,6 +73,7 @@ GOOGLE_SHEETS_XLSX_URL = r'^https?://[^/]+google.com/.*[^0-9A-Za-z_-]([0-9A-Za-z
 GOOGLE_FILE_URL = r'https?://drive.google.com/file/d/([0-9A-Za-z_-]+)/.*$'
 DROPBOX_URL = r'^https://www.dropbox.com/s/([0-9a-z]{15})/([^?]+)\?dl=[01]$'
 CKAN_URL = r'^(https?://[^/]+)/dataset/([^/]+)(?:/resource/([a-z0-9-]{36}))?$'
+HXL_PROXY_DOWNLOAD_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data(/[a-zA-Z0-9_]{6})?(/download/|\.(csv|json|objects\.json)).+$'
 HXL_PROXY_SAVED_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data/([a-zA-Z0-9_]{6})[^?]*(\?.*)?$'
 HXL_PROXY_ARGS_URL = r'^(https?://[^/]*proxy.hxlstandard.org)/data.*\?(.+)$'
 KOBO_URL = r'^https://kobo.humanitarianresponse.info/#/forms/([A-Za-z0-9]{16,32})/'
@@ -235,7 +236,7 @@ def info(data, input_options=None):
     - has_merged_cells (always False if not XLSX)
     - is_hxlated
     - header_hash (hash of the first raw row)
-    - hxl_hashtag_hash (hash of the HXL hashtag row and preceding header row, if HXLated)
+    - hxl_header_hash (hash of the HXL hashtag row and preceding header row, if HXLated)
         
     Args:
         data: a HXL data provider, file object, array, or string (representing a URL or file name).
@@ -278,9 +279,13 @@ def info(data, input_options=None):
         # See if the first 25 rows are HXLated
         try:
             source = HXLReader(opening_rows)
-            hxl_header_hash = source.columns_hash
+            headers = [column.header for column in source.columns]
+            hxl_headers = [column.display_tag for column in source.columns]
+            is_hxlated= True
         except HXLTagsNotFoundException:
-            hxl_header_hash = None
+            headers = opening_rows[0] if nrows > 0 else None
+            hxl_headers = None
+            is_hxlated = False
                 
         result["sheets"] = [
             {
@@ -289,9 +294,11 @@ def info(data, input_options=None):
                 "ncols": ncols,
                 "is_hidden": False,
                 "has_merged_cells": False,
-                "is_hxlated": hxl_header_hash is not None,
-                "header_hash": hash_row(opening_rows[0]) if nrows > 0 else None,
-                "hxl_header_hash": hxl_header_hash,
+                "is_hxlated": is_hxlated,
+                "header_hash": hash_row(headers) if headers else None,
+                "hxl_header_hash": hash_row(hxl_headers) if hxl_headers else None,
+                "headers": headers,
+                "hxl_headers": hxl_headers,
             },
         ]
 
@@ -529,18 +536,18 @@ def make_input(raw_source, input_options=None):
                     zf = zipfile.ZipFile(io.BytesIO(contents), "r")
                     for name in zf.namelist():
                         if os.path.splitext(name)[1].lower()==".csv":
-                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), input_options)
+                            return CSVInput(wrap_stream(io.BytesIO(zf.read(name))), input_options, url_or_filename)
 
             raise HXLIOException("Cannot find CSV file or Excel content in zip archive")
 
         elif (mime_type in JSON_MIME_TYPES) or (file_ext in JSON_FILE_EXTS) or match_sigs(sig, JSON_SIGS):
             logger.debug('Trying to make input as JSON')
-            return JSONInput(input, input_options)
+            return JSONInput(input, input_options, url_or_filename)
 
         # fall back to CSV if all else fails
         if (not file_ext or (file_ext in CSV_FILE_EXTS)) and (not mime_type or (mime_type in CSV_MIME_TYPES)):
             logger.debug('Making input from CSV')
-            return CSVInput(input, input_options)
+            return CSVInput(input, input_options, url_or_filename)
 
         raise HXLIOException(
             'Cannot process as data (extension: {}, MIME type: {})'.format(
@@ -901,7 +908,7 @@ class AbstractInput(object):
     def __init__(self, input_options, url_or_filename=None):
         super().__init__()
         self.input_options = input_options
-        self.url_or_filename = None
+        self.url_or_filename = url_or_filename
         self.is_repeatable = False
 
     @abc.abstractmethod
@@ -1205,15 +1212,26 @@ class ExcelInput(AbstractInput):
         for sheet_index in range(0, self._workbook.nsheets):
             sheet = self._get_sheet(sheet_index)
             columns = self._get_columns(sheet)
+            if columns:
+                headers = [column.header for column in columns]
+                hxl_headers = [column.display_tag for column in columns]
+                is_hxlated = True
+            else:
+                headers = self._get_row(sheet, 0) if sheet.nrows > 0 else None
+                hxl_headers = None
+                is_hxlated = False
+                
             sheet_info = {
                 "name": sheet.name,
                 "is_hidden": (sheet.visibility > 0),
                 "nrows": sheet.nrows,
                 "ncols": sheet.ncols,
                 "has_merged_cells": (len(sheet.merged_cells) > 0),
-                "is_hxlated": (columns is not None),
-                "header_hash": hash_row(self._get_row(sheet, 0)) if sheet.nrows > 0 else None,
-                "hxl_header_hash": hxl.model.Column.hash_list(columns) if columns else None,
+                "is_hxlated": is_hxlated,
+                "header_hash": hash_row(headers) if headers else None,
+                "hxl_header_hash": hash_row(hxl_headers) if hxl_headers else None,
+                "headers": headers,
+                "hxl_headers": hxl_headers,
             }
             result.append(sheet_info)
         return result
@@ -1683,6 +1701,11 @@ def munge_url(url, input_options):
     if result:
         url = 'https://www.dropbox.com/s/{0}/{1}?dl=1'.format(result.group(1), result.group(2))
         logger.info("Dropbox direct-download URL: %s", url)
+        return url
+
+    # Is it a HXL Proxy direct-download link?
+    if re.match(HXL_PROXY_DOWNLOAD_URL, url):
+        logger.info("HXL Proxy direct-download URL: %s", url)
         return url
 
     # Is it a HXL Proxy saved recipe?

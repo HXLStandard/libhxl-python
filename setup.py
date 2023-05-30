@@ -11,24 +11,29 @@ with open("README.md", "r") as fh:
 
 setup(
     name='libhxl',
-    version="4.28",
+    version="5.0",
     description='Python support library for the Humanitarian Exchange Language (HXL). See http://hxlstandard.org and https://github.com/HXLStandard/libhxl-python',
     long_description=long_description,
     long_description_content_type="text/markdown",
+    project_urls={
+        'Documentation': 'https://hxlstandard.github.io/libhxl-python/index.html',
+        'GitHub': 'https://github.com/HXLStandard/libhxl-python/',
+        'Changelog': 'https://github.com/HXLStandard/libhxl-python/blob/prod/CHANGELOG',
+    },
     author='David Megginson',
     author_email='megginson@un.org',
     url='http://hxlproject.org',
     install_requires=[
-        'urllib3>=1.21.1,<1.27', # version required by requests
         'jsonpath_ng',
         'ply',
         'pytest',
         'python-dateutil',
         'python-io-wrapper>=0.2',
-        'requests>=2.27',
+        'requests',
         'requests_cache',
         'structlog',
         'unidecode',
+        'urllib3', # version required by requests
         'wheel',
         'xlrd3>=1.1.0',
     ],
@@ -50,6 +55,7 @@ setup(
             'hxlfill = hxl.scripts:hxlfill',
             'hxlimplode = hxl.scripts:hxlimplode',
             'hxlhash = hxl.scripts:hxlhash',
+            'hxlinfo = hxl.scripts:hxlinfo',
             'hxlmerge = hxl.scripts:hxlmerge',
             'hxlrename = hxl.scripts:hxlrename',
             'hxlreplace = hxl.scripts:hxlreplace',

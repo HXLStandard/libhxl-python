@@ -50,6 +50,7 @@ __all__ = (
     'hxlfill',
     'hxlimplode',
     'hxlhash',
+    'hxlinfo',
     'hxlmerge',
     'hxlrename',
     'hxlreplace',
@@ -433,6 +434,43 @@ options:
 
 """
     run_script(hxlhash_main)
+
+
+def hxlinfo():
+    """ Entry point for hxlhash console script
+``` none
+usage: hxlinfo [-h] [--encoding [string]] [--sheet [number]]
+               [--selector [path]] [--http-header header]
+               [--ignore-certs] [--expand-merged] [--scan-ckan-resources]
+               [--log debug|info|warning|error|critical|none] [-H]
+               [infile]
+
+Return metadata for a data source in JSON format (the source does not have to be HXLated).
+
+positional arguments:
+  infile                HXL file to read (if omitted, use standard
+                        input).
+
+options:
+  -h, --help            show this help message and exit
+  --encoding [string]   Specify the character encoding of the input
+  --sheet [number]      Select sheet from a workbook (1 is first sheet)
+  --selector [path]     JSONPath expression for starting point in JSON
+                        input
+  --http-header header  Custom HTTP header to send with request
+  --ignore-certs        Don't verify SSL connections (useful for self-
+                        signed)
+  --expand-merged       Expand merged areas by repeating the value (Excel
+                        only)
+  --scan-ckan-resources
+                        For a CKAN dataset URL, scan all CKAN resources
+                        for one that's HXLated
+  --log debug|info|warning|error|critical|none
+                        Set minimum logging level
+```
+
+"""
+    run_script(hxlinfo_main)
 
 
 def hxlmerge():
@@ -1375,6 +1413,28 @@ def hxlhash_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
             print(source.columns_hash)
         else:
             print(source.data_hash)
+
+    return EXIT_OK
+
+
+def hxlinfo_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
+    """ Run hxlinfo with command-line arguments.
+
+    Display metadata for a data source.
+
+    Produces non-HXLated JSON output.
+
+    """
+    parser = make_args(
+        'Display JSON-formatted metadata for a data source (does not have to be HXLated).',
+        hxl_output=False
+    )
+
+    args = parser.parse_args(args)
+
+    do_common_args(args)
+
+    json.dump(hxl.input.info(args.infile or stdin, make_input_options(args)), stdout, indent=2, ensure_ascii=False)
 
     return EXIT_OK
 
