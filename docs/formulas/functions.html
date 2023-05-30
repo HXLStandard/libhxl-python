@@ -405,8 +405,8 @@ def _num(arg):
     try:
         return hxl.datatypes.normalise_number(arg)
     except (ValueError, TypeError):
-        logup(&#39;Cannot convert to a number for calculated field&#39;, {&#34;arg&#34;: arg}, level=&#39;warning&#39;)
-        logger.warning(&#34;Cannot convert %s to a number for calculated field&#34;, arg)
+        logup(&#39;Cannot convert to a number for calculated field&#39;, {&#34;arg&#34;: arg}, level=&#39;info&#39;)
+        logger.info(&#34;Cannot convert %s to a number for calculated field&#34;, arg)
         return 0</code></pre>
 </details>
 </section>
