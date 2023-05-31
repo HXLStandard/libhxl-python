@@ -30,7 +30,6 @@ setup(
         'python-dateutil',
         'python-io-wrapper>=0.2',
         'requests',
-        'requests_cache',
         'structlog',
         'unidecode',
         'urllib3', # version required by requests
