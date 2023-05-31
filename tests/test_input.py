@@ -223,7 +223,7 @@ class TestUntaggedInput(unittest.TestCase):
         """ Reject HTML for tagging """
 
         with self.assertRaises(hxl.input.HXLHTMLException):
-            input = hxl.make_input("https://example.org")
+            input = hxl.make_input("https://ourairports.com")
             list(input)
 
         with self.assertRaises(hxl.input.HXLIOException):
@@ -682,7 +682,7 @@ class TestParser(unittest.TestCase):
 
     def test_google_drive_file(self):
         # Google Drive, "open" link for file
-        with hxl.data(URL_GOOGLE_OPEN_FILE, InputOptions(timeout=10)) as source:
+        with hxl.data(URL_GOOGLE_OPEN_FILE, InputOptions(timeout=20)) as source:
             self.compare_input(source)
 
     def test_google_xlsx_view(self):
