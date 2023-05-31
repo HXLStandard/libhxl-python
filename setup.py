@@ -29,11 +29,11 @@ setup(
         'pytest',
         'python-dateutil',
         'python-io-wrapper>=0.2',
-        'requests',
-        'requests_cache',
+        'requests==2.31.0',
+        'requests_cache==1.0.1',
         'structlog',
-        'unidecode',
-        'urllib3', # version required by requests
+        'unidecode==1.3.6',
+        'urllib3==2.0.2', # version required by requests
         'wheel',
         'xlrd3>=1.1.0',
     ],
