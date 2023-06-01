@@ -33,7 +33,7 @@ from hxl.util import logup
 
 import abc, collections, csv, datetime, dateutil.parser, hashlib, \
     io, io_wrapper, json, jsonpath_ng.ext, logging, \
-    os.path, re, requests, requests_cache, shutil, six, sys, \
+    os.path, re, requests, shutil, six, sys, \
     tempfile, time, urllib.parse, xlrd3 as xlrd, zipfile
 
 logger = logging.getLogger(__name__)
@@ -1879,14 +1879,13 @@ def _get_kobo_url(asset_id, url, input_options, max_export_age_seconds=14400):
 
     fail_counter = 0
     while True:
-        with requests_cache.disabled():
-            logup("Getting info for Kobo export", {"url": info_url})
-            response = requests.get(
-                info_url,
-                verify=input_options.verify_ssl,
-                headers=http_headers
-            )
-            logup("Response for Kobo info", {"url": info_url, "status": response.status_code})
+        logup("Getting info for Kobo export", {"url": info_url})
+        response = requests.get(
+            info_url,
+            verify=input_options.verify_ssl,
+            headers=http_headers
+        )
+        logup("Response for Kobo info", {"url": info_url, "status": response.status_code})
 
         # check for errors
         if (response.status_code == 403): # CKAN sends "403 Forbidden" for a private file

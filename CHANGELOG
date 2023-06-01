@@ -1,3 +1,7 @@
+2023-06-01 Release 5.0.1
+	- loosen versions for dependencies
+	- remove dependency on requests_cache
+
 2023-05-18 Release 5.0
 	- milestone release
 	- fix URL munging for direct-download HXL Proxy URLs
