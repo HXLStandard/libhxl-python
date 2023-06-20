@@ -1505,7 +1505,7 @@ class HXLReader(hxl.model.Dataset):
             return hxl.model.Row(columns=columns, values=values, row_number=self.row_number, source_row_number=self.outer._source_row_number)
 
 
-def from_spec(spec, allow_local_ok=False):
+def from_spec(spec, input=None, allow_local_ok=False):
     """Build a full spec (including source) from a JSON-like data structure.
 
     The JSON spec can have the following top-level properties:
@@ -1564,7 +1564,7 @@ def from_spec(spec, allow_local_ok=False):
         spec = json.loads(spec)
 
     # source
-    input_spec = spec.get('input')
+    input_spec = spec.get('input', None)
     allow_local = spec.get('allow_local', False) and allow_local_ok
     sheet_index = spec.get('sheet_index', None)
     timeout = spec.get('timeout', None)
@@ -1578,12 +1578,9 @@ def from_spec(spec, allow_local_ok=False):
     tagger_spec = spec.get('tagger', None)
     recipe_spec = spec.get('recipe', [])
 
-    if not input_spec:
-        raise hxl.HXLException("No input property specified.")
-
     # set up the input
     input = make_input(
-        raw_source=input_spec,
+        raw_source=input if input else input_spec,
         input_options = InputOptions(
             allow_local=allow_local,
             sheet_index=sheet_index,
