@@ -155,6 +155,7 @@ CSV_FILE_EXTS = [
     'csv',
     'tsv',
     'txt',
+    'hxl',
 ]
 
 CSV_MIME_TYPES = (

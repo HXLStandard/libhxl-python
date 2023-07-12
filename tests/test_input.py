@@ -30,6 +30,7 @@ DATA = [
 ]
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
+FILE_CSV_HXL_EXT = _resolve_file('./files/test_io/input-valid.hxl')
 FILE_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged.csv')
 FILE_TSV = _resolve_file('./files/test_io/input-valid.tsv')
 FILE_SSV = _resolve_file('./files/test_io/input-valid.ssv')
@@ -61,10 +62,11 @@ FILE_NOTAG1 = _resolve_file('./files/test_io/input-notag1.html')
 FILE_NOTAG2 = _resolve_file('./files/test_io/input-notag2.html')
 FILE_BINARY_INVALID = _resolve_file('./files/test_io/input-invalid.png')
 
-URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.csv'
-URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.xlsx'
+URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/main/tests/files/test_io/input-valid.csv'
+URL_CSV_HXL_EXT = 'https://ourairports.com/countries/CA/airports.hxl'
+URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/main/tests/files/test_io/input-valid.xlsx'
 URL_XLS = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/test/tests/files/test_io/input-valid.xls'
-URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/master/tests/files/test_io/input-valid.json'
+URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/main/tests/files/test_io/input-valid.json'
 URL_GOOGLE_SHEET_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_SHEET_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 URL_GOOGLE_FILE = 'https://drive.google.com/file/d/1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb/view'
@@ -81,6 +83,11 @@ class TestInput(unittest.TestCase):
 
     def test_csv_comma_separated(self):
         with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_csv_hxl_ext(self):
+        with make_input(FILE_CSV_HXL_EXT, InputOptions(allow_local=True)) as input:
             self.assertFalse(input.is_repeatable)
             self.assertTrue('#sector' in hxl.data(input).tags)
 
@@ -644,6 +651,11 @@ class TestParser(unittest.TestCase):
         """Test reading from a remote CSV file (will fail without connectivity)."""
         with hxl.data(URL_CSV, InputOptions(timeout=10)) as source:
             self.compare_input(source)
+
+    def test_remote_csv_hxl_ext(self):
+        """Test reading from a remote CSV file with a .hxl extension (will fail without connectivity)."""
+        with hxl.data(URL_CSV_HXL_EXT, InputOptions(timeout=10)) as source:
+            self.assertTrue('#country' in source.tags)
 
     def test_remote_xlsx(self):
         """Test reading from a remote XLSX file (will fail without connectivity)."""
