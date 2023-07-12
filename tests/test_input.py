@@ -30,6 +30,7 @@ DATA = [
 ]
 
 FILE_CSV = _resolve_file('./files/test_io/input-valid.csv')
+FILE_CSV_HXL_EXT = _resolve_file('./files/test_io/input-valid.hxl')
 FILE_CSV_UNTAGGED = _resolve_file('./files/test_io/input-untagged.csv')
 FILE_TSV = _resolve_file('./files/test_io/input-valid.tsv')
 FILE_SSV = _resolve_file('./files/test_io/input-valid.ssv')
@@ -81,6 +82,11 @@ class TestInput(unittest.TestCase):
 
     def test_csv_comma_separated(self):
         with make_input(FILE_CSV, InputOptions(allow_local=True)) as input:
+            self.assertFalse(input.is_repeatable)
+            self.assertTrue('#sector' in hxl.data(input).tags)
+
+    def test_csv_hxl_ext(self):
+        with make_input(FILE_CSV_HXL_EXT, InputOptions(allow_local=True)) as input:
             self.assertFalse(input.is_repeatable)
             self.assertTrue('#sector' in hxl.data(input).tags)
 
