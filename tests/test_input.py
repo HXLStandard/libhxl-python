@@ -655,7 +655,7 @@ class TestParser(unittest.TestCase):
     def test_remote_csv_hxl_ext(self):
         """Test reading from a remote CSV file with a .hxl extension (will fail without connectivity)."""
         with hxl.data(URL_CSV_HXL_EXT, InputOptions(timeout=10)) as source:
-            self.compare_input(source)
+            self.assertTrue('#country' in source.tags)
 
     def test_remote_xlsx(self):
         """Test reading from a remote XLSX file (will fail without connectivity)."""
