@@ -1893,15 +1893,22 @@ def hxlspec_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
                 return json.load(input)
 
     parser = make_args('Process a HXL JSON spec')
+    parser.add_argument(
+        '-s',
+        '--spec',
+        help="JSON processing specification",
+        required=True,
+        metavar="spec.json",
+        type=get_json,
+    )
+
     args = parser.parse_args(args)
 
     do_common_args(args)
 
-    spec = get_json(args.infile)
-    source = hxl.input.from_spec(spec, allow_local_ok=True)
-
-    with make_output(args, stdout) as output:
-        hxl.input.write_hxl(output.output, source, show_tags=not args.strip_tags)
+    with make_input(args, stdin) as input, make_output(args, stdout) as output:
+        source = hxl.input.from_spec(args.spec, input=input, allow_local_ok=True)
+        hxl.input.write_hxl(output, source, show_tags=not args.strip_tags)
 
 
 def hxltag_main(args, stdin=STDIN, stdout=sys.stdout, stderr=sys.stderr):
