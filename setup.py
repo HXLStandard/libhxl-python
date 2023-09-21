@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='libhxl',
-    version="5.0.2",
+    version="5.0.3",
     description='Python support library for the Humanitarian Exchange Language (HXL). See http://hxlstandard.org and https://github.com/HXLStandard/libhxl-python',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -26,13 +26,12 @@ setup(
     install_requires=[
         'jsonpath_ng',
         'ply',
-        'pytest',
         'python-dateutil',
         'python-io-wrapper>=0.2',
         'requests',
         'structlog',
         'unidecode',
-        'urllib3', # version required by requests
+        'urllib3',
         'wheel',
         'xlrd3>=1.1.0',
     ],
@@ -40,7 +39,10 @@ setup(
     package_data={'hxl': ['*.json']},
     include_package_data=True,
     test_suite='tests',
-    tests_require = ['mock'],
+    tests_require = [
+        'pytest',
+        'mock'
+    ],
     entry_points={
         'console_scripts': [
             'hxladd = hxl.scripts:hxladd',
