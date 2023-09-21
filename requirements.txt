@@ -1,6 +1,5 @@
 jsonpath-ng
 ply
-pytest
 python-dateutil
 python-io-wrapper>=0.2
 requests

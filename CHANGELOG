@@ -1,3 +1,6 @@
+2023-09-19 Release 5.0.3
+	- remove pytest from requirements.txt, and move it to tests_require in setup.py
+
 2023-07-13 Release 5.0.2
 	- allow .hxl extension for CSV data
 	- change hxlspec script args to allow variable input source
