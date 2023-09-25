@@ -1,3 +1,6 @@
+2023-09-25 Release 5.1
+	- reduce log level for failed number conversion from INFO to DEBUG
+
 2023-09-19 Release 5.0.3
 	- remove pytest from requirements.txt, and move it to tests_require in setup.py
 
