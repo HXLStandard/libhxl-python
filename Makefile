@@ -47,7 +47,7 @@ test-install:
 # publish a new release on PyPi
 publish-pypi: $(VENV)
 	rm -rf dist/*
-	git checkout prod
+	git checkout upstream/prod
 	. $(VENV) \
 	  && pip install twine \
 	  && python setup.py sdist && twine upload dist/*

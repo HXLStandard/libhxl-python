@@ -376,6 +376,6 @@ def _num(arg):
     try:
         return hxl.datatypes.normalise_number(arg)
     except (ValueError, TypeError):
-        logup('Cannot convert to a number for calculated field', {"arg": arg}, level='info')
-        logger.info("Cannot convert %s to a number for calculated field", arg)
+        logup('Cannot convert to a number for calculated field', {"arg": arg}, level='debug')
+        logger.debug("Cannot convert %s to a number for calculated field", arg)
         return 0
