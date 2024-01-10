@@ -512,7 +512,7 @@ class Aggregator(object):
         else:
             raise HXLFilterException("Bad aggregator type for count filter: {}".format(type))
 
-    TAG_PATTERN = r'#?{token}(?:\s*[+-]{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
+    TAG_PATTERN = r'#?{token}(?:\s*[+-]{token})*!?'.format(token=hxl.datatypes.TOKEN_PATTERN)
     """Regular expression for a tag pattern"""
 
     COL_PATTERN = r'#{token}(?:\s*\+{token})*'.format(token=hxl.datatypes.TOKEN_PATTERN)
