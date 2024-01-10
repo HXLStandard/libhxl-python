@@ -131,7 +131,7 @@ class TestRecipe(AbstractBaseFilterTest):
         filtered = self.source.recipe({
             'filter': 'count',
             'patterns': 'sector',
-            'aggregators': 'sum(affected)'
+            'aggregators': 'sum(#affected!)'
         })
         self.assertEqual(type(filtered).__name__, 'CountFilter')
 
