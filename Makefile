@@ -48,6 +48,7 @@ test-install:
 publish-pypi: $(VENV)
 	rm -rf dist/*
 	git checkout upstream/prod
+	git pull upstream prod
 	. $(VENV) \
 	  && pip install twine \
 	  && python setup.py sdist && twine upload dist/*

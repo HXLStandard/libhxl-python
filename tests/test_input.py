@@ -62,11 +62,11 @@ FILE_NOTAG1 = _resolve_file('./files/test_io/input-notag1.html')
 FILE_NOTAG2 = _resolve_file('./files/test_io/input-notag2.html')
 FILE_BINARY_INVALID = _resolve_file('./files/test_io/input-invalid.png')
 
-URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/main/tests/files/test_io/input-valid.csv'
+URL_CSV = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/prod/tests/files/test_io/input-valid.csv'
 URL_CSV_HXL_EXT = 'https://ourairports.com/countries/CA/airports.hxl'
-URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/main/tests/files/test_io/input-valid.xlsx'
-URL_XLS = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/test/tests/files/test_io/input-valid.xls'
-URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/main/tests/files/test_io/input-valid.json'
+URL_XLSX = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/prod/tests/files/test_io/input-valid.xlsx'
+URL_XLS = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/prod/tests/files/test_io/input-valid.xls'
+URL_JSON = 'https://raw.githubusercontent.com/HXLStandard/libhxl-python/prod/tests/files/test_io/input-valid.json'
 URL_GOOGLE_SHEET_NOHASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit'
 URL_GOOGLE_SHEET_HASH = 'https://docs.google.com/spreadsheets/d/1VTswL-w9EI0IdGIBFZoZ-2RmIiebXKsrhv03yd7LlIg/edit#gid=299366282'
 URL_GOOGLE_FILE = 'https://drive.google.com/file/d/1iA0QU0CEywwCr-zDswg7C_RwZgLqS3gb/view'

@@ -1,3 +1,7 @@
+2024-01-10 Release 5.2
+	- update URLs for test files on GitHub
+	- fixed bug in aggregators that excluded tag patterns ending in "!"
+
 2023-09-25 Release 5.1
 	- reduce log level for failed number conversion from INFO to DEBUG
 
