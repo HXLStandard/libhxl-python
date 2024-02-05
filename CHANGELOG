@@ -1,4 +1,4 @@
-Release 5.2.1
+2024-02-05 Release 5.2.1
 	- make logup log level configurable via environment variable
 
 2024-01-10 Release 5.2
