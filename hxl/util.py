@@ -15,10 +15,6 @@ def logup(msg, props={}, level="notset"):
         props: additional properties for the log
 
     """
-    if level == 'notset':
-        level = os.getenv('LOGGING_LEVEL', 'INFO').lower()
-    input_logger = structlog.wrap_logger(logging.getLogger('hxl.REMOTE_ACCESS'))
-    props['function'] = sys._getframe(1).f_code.co_name
     levels = {
         "critical": 50,
         "error": 40,
@@ -26,4 +22,9 @@ def logup(msg, props={}, level="notset"):
         "info": 20,
         "debug": 10
     }
-    input_logger.log(level=levels[level], event=msg, **props)
+    if level == 'notset':
+        level = 'info'
+    if levels[level] >= levels[os.getenv('LOGGING_LEVEL', 'INFO').lower()]:
+        input_logger = structlog.wrap_logger(logging.getLogger('hxl.REMOTE_ACCESS'))
+        props['function'] = sys._getframe(1).f_code.co_name
+        input_logger.log(level=levels[level], event=msg, **props)
