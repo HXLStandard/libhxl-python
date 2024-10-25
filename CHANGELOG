@@ -1,3 +1,6 @@
+2024-10-25 Release 5.2.2
+	- fix logup error level
+
 2024-02-05 Release 5.2.1
 	- make logup log level configurable via environment variable
 
