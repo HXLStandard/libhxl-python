@@ -1,7 +1,7 @@
 jsonpath-ng
 ply
 python-dateutil
-python-io-wrapper>=0.2
+python-io-wrapper>=0.3.1
 requests
 structlog
 unidecode
