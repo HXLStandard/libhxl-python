@@ -22,7 +22,7 @@ In your code:
 ```
 import hxl
 
-url = "https://github.com/HXLStandard/libhxl-python/blob/main/tests/files/test_io/input-valid.csv"
+url = "https://raw.githubusercontent.com/HXLStandard/libhxl-python/prod/tests/files/test_io/input-valid.csv"
 
 data = hxl.data(url).with_rows("#sector=WASH").sort("#country")
 
